@@ -1,0 +1,15 @@
+.Rproj.user/*
+*.Rproj
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user
+.httr-oauth
+**/*_cache/
+**/cache/
+**/logs/
+**/derby.log
+/Assignments/**/*.xls
+/Assignments/**/*.xlsx
+/Lectures/13-Spark/Spark_files/
+/Lectures/13-Spark/data/*.csv

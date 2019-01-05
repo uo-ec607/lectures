@@ -1,0 +1,501 @@
+---
+title: "Lecture 1: Introduction"
+subtitle: "<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
+author: Grant McDermott | University of Oregon
+date: EC 607 #"`r format(Sys.time(), '%d %B %Y')`"
+output:
+  xaringan::moon_reader:
+    css: [default, metropolis, metropolis-fonts] 
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+class: inverse, center, middle
+
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+library(knitr)
+opts_chunk$set(
+  fig.align="center", #fig.width=6, fig.height=4.5, 
+  # out.width="748px", #out.length="520.75px",
+  dpi=300, #fig.path='Figs/',
+  cache=T#, echo=F, warning=F, message=F
+  )
+```
+
+# Prologue
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+
+# Survey
+
+Results from our [survey](https://goo.gl/forms/PjojERKMOpbo78JJ3)<sup>*</sup>...
+
+.footnote[[*] https://goo.gl/forms/PjojERKMOpbo78JJ3]
+
+---
+class: inverse, center, middle
+
+# Syllabus highlights
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+(Read the full document [here](https://github.com/uo-ec607/syllabus/blob/master/syllabus.pdf).)
+
+---
+
+# Why this course?
+
+Fill in the gaps left by traditional econometrics and methods classes.
+
+- Practical skills that tools that will benefit your dissertation and future career.
+- Neglected skills like how to actually find datasets in the wild and clean them.
+
+Data science skills are largely distinct from (and complementary to) the core 'metrics oeuvre familiar to economists.
+
+- Data viz, cleaning and wrangling; programming; cloud computation; relational databases; machine learing; etc.
+
+--
+
+> *"In short, we will cover things that I wish someone had taught me when I was starting out in graduate
+school."*
+
+--
+
+P.S. This is an "environmental" PhD seminar only in the most nominal sense. It is really an applied data science course taught by an environmental economist.
+
+---
+
+# You, at the end of this course
+
+![](pics/awesome.jpg)
+
+---
+# Grading
+
+| Component                           | Weight |
+|:-|-:|
+| 5 × homework assignments (15% each) | 75% |
+| 2 × short presentations (5% each)		| 10% |
+| 1 × peer-review						          | 10% |
+|	In-class participation						  | 5%  |
+
+- You can swap out one homework assignment for an (approved) final presentation of your own research.
+- Short presentations summarize either a key lecture reading, or an (approved) software package/platform.
+- We'll get to peer-review later in the course.
+
+---
+# Lecture outline
+
+### Data science basics
+
+- Introduction and software troubleshooting
+- Version control with Git(Hub)
+- Learning to love the shell
+- R language basics
+- Data cleaning and wrangling with the "Tidyverse"
+- Webscraping: (1) Server-side and CSS
+- Webscraping: (2) Client-side and APIs
+
+### Analysis and programming
+
+- Regression analysis in R
+- Spatial analysis in R
+- Functions in R: (1) Introductory concepts
+- Functions in R: (2) Advanced concepts
+- Parallel programming
+
+---
+# Lecture outline (cont.)
+
+### Scaling up: Big data and cloud computation
+
+- Docker
+- Virtual machines / cloud servers (Google Compute Engine)
+- High performance computing (Talapas cluster) 
+- Databases: SQL(ite) and BigQuery
+- Spark
+- Machine learning: (1)
+- Machine learning: (2)... Or, student project presentations (demand dependent)
+- Peer-review and student project presentations (demand dependent)
+
+---
+class: inverse, center, middle
+
+# Getting started
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+
+# Software installation and registration
+
+1. Download [R](https://www.r-project.org/).
+
+2. Download [RStudio](https://www.rstudio.com/products/rstudio/download/preview/).
+
+3. Download [git](https://git-scm.com/downloads).
+
+4. Create an account on [GitHub](https://github.com/) and register for a student/educator [discount](https://education.github.com/discount_requests/new).
+  - You will soon receive an invitation to the [course organization](https://github.com/UO-EC607-2019Winter) and [GitHub classroom](https://classroom.github.com), which is how we'll disseminate and submit assignments, receive feedback and grading, etc. 
+
+--
+
+If you had trouble completing any of these steps, please raise your hand.
+- My go-to place for installation guidance and troubleshooting is Jenny Bryan's http://happygitwithr.com.
+
+---
+
+# Checklist
+
+☑ Do you have the most recent version of R?
+  ```{r}
+  version$version.string
+  ```
+
+
+☑ Do you have the most recent version of RStudio? (The [preview version](https://www.rstudio.com/products/rstudio/download/preview/) is fine.)
+  ```{r eval=FALSE}
+  RStudio.Version()$version
+  ## Requires an interactive session but should return something like "[1] ‘1.1.463’"
+  ```
+
+☑ Have you updated all of your R packages? 
+  ```{r eval=FALSE}
+  update.packages(ask = FALSE, checkBuilt = TRUE)
+  ```
+  
+---
+
+# Checklist (cont.)
+
+Open up the [shell](http://happygitwithr.com/shell.html#shell).
+- Windows users, make sure that you installed a Bash-compatible version of the shell. If you installed [Git for Windows](https://gitforwindows.org), then you should be good to go.
+
+☑ Which version of Git have you installed?
+  ```{bash}
+  git --version
+  ```
+
+☑ Did you introduce yourself to Git? (Substitute in your details.)
+  ```{bash eval=FALSE}
+  git config --global user.name 'Grant McDermott'
+  git config --global user.email 'grantmcd@uoregon.edu'
+  git config --global --list
+  ```
+
+☑ Did you register an account in GitHub? 
+
+---
+
+# Checklist (cont.)
+
+We will make sure that everything is working properly with your R and GitHub setup in the next lecture.
+
+For the rest of today's lecture, I want to go over some very basic R concepts.
+
+--
+
+- Just so you know where we're headed: We'll return to these R concepts (and delve much deeper) next week after a brief, but important detour to the lands of Git(Hub) and the shell.
+  - Don't worry, it will all make sense. You'll see.
+
+---
+
+class: inverse, center, middle
+
+# R for data science
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+
+# Why R and RStudio?
+
+### Data science positivism
+
+- Alongside Python, R has become the *de facto* language for data science.
+  - See: [*The Impressive Growth of R*](https://stackoverflow.blog/2017/10/10/impressive-growth-r/), [*The Popularity of Data Science Software*](http://r4stats.com/articles/popularity/)
+- Open-source (free!) with a global user-base spanning academia and industry.
+  - "Do you want to be a profit source or a cost center?"
+
+### Bridge to applied economics and other tools
+
+- Already has all of the statistics and econometrics support, and is amazingly adaptable as a “glue” language to other
+programming languages and APIs.
+- The RStudio IDE and ecosystem allow for further, seemless integration.
+
+### Path dependency
+
+- It's also the language that I know best.
+--
+
+- (Learning multiple languages is a good idea, though.)
+
+---
+
+# Some R basics
+
+1. Everything has a name.
+
+2. Everything is an object.
+
+3. You do things using functions.
+
+4. Functions come pre-written in packages (i.e. "libraries"), although you can — and should! — write your own functions too.
+
+--
+
+</br>
+
+Points 1. and 2. can be summarised as an [object-orientated programming](https://en.wikipedia.org/wiki/Object-oriented_programming) (OOP) approach.
+  - Again, this may all sound really abstract now, but we'll see *lots* of examples in the coming weeks that will make things clear.
+
+---
+
+# R vs Stata
+
+If you're coming from Stata, some additional things worth emphasizing:
+
+- Multiple objects (e.g. data frames) can exist happily in the same workspace. 
+   - No more `keep`, `preserve`, `restore` hackery!
+   - This is a direct consequence of the OOP approach.
+
+- You will load packages at the start of every new R session. Make peace with this.
+  - "Base" R comes with tons of useful in-built functions. It also provides all the tools necessary for you to write your own functions. 
+  - However, many of R's best data science functions and tools come from external packages written by other users.
+
+- You don't need to `tset or xtset` your data. (Although you can too.)
+
+- R easily and infinitely parallelizes. For free.
+  - Compare the cost of a [Stata/MP](https://www.stata.com/statamp/) license, nevermind the fact that you effectively pay per core...
+
+---
+
+# R code example (linear regression)
+
+```{r}
+fit = lm(dist ~ 1 + speed, data = cars)
+summary(fit)
+```
+
+---
+
+# Base R plot
+
+```{r cars_basefig, fig.height=4, dev="svg"}
+par(mar = c(4, 4, 1, .1)) ## Just for nice plot margins on this slide deck
+plot(cars, pch = 19, col = 'darkgray', las = 1)
+abline(fit, lwd = 2)
+```
+
+---
+
+# ggplot2
+
+```{r gapm_plot, fig.height=4, dev="svg"}
+library(ggplot2)
+library(gapminder) ## For the gapminder data
+ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp)) + 
+  geom_point()
+```
+
+---
+class: inverse, center, middle
+
+# More ggplot2
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+
+# Install and load
+
+Open up your laptops. For the remainder of this first lecture, we're going contine playing around with (i.e. livecoding) [ggplot2](https://ggplot2.tidyverse.org/).
+
+If you don't have them already, install the `ggplot2` and `gapminder` packages via either:
+- **Console:** Enter `install.packages(c("ggplot2", "gapminder"), dependencies=T)`.
+- **RStudio:** Click the "Packages" tab in the bottom-right window pane. Then click "Install" and search for these two packages.
+  
+![](pics/install.gif)
+
+---
+
+# Install and load (cont.)
+
+Once the packages are installed, load them into your session with the `library()` function.
+```{r pkg_load, eval=FALSE}
+library(ggplot2)
+library(gapminder) ## Again, we're just using this package for its dataset
+```
+- While you only have to install a package once<sup>1</sup>, remember that you need to load it every time you want to use it in a new R session.
+- Notice too that you don't need quotes around the package names any more. Reason: R now recognises these packages as defined objects with given names. ("Everything in R is an object and everything has a name.")
+
+.footnote[
+<sup>1</sup> With the technical exception of updating a package, but we'll get there.
+]
+
+--
+*Note 1: A convenient way to combine the package installation and loading steps is with the [pacman package's](https://github.com/trinker/pacman) `p_load()` function. If you run `pacman::p_load(ggplot, gapminder)` it will first look to see whether it needs to install either package before loading them. Clever.*
+
+--
+
+*Note 2: We'll get to this next week, but if you want to run a function from an (installed) package without loading it, you can use the `PACKAGE::package_function()` syntax.*
+
+---
+
+# Brief aside: The gapminder dataset
+
+Because we're going to be plotting the [gapminder](https://github.com/jennybc/gapminder) dataset, it is helpful to know that it contains panel data on life expectancy, population size, and GDP per capita for 142 countries since the 1950s.
+
+```{r gapm}
+gapminder
+```
+
+
+---
+
+# Elements of ggplot2
+
+[Hadley Wickham's](http://hadley.nz/) ggplot2 is one of the most popular packages in the entire R cannon. 
+- It also happens to be built upon some deep visualization theory: i.e. Leland Wilkinson's [*The Grammar of Graphics*](https://www.amazon.com/Grammar-Graphics-Statistics-Computing/dp/0387245448).
+
+There's a lot to say about ggplot2's implementation of this "grammar of graphics" approach, but the three key elements are:
+
+1. Your plot ("the visualization") is linked to your variables ("the data") through various **aesthetic mappings**.
+2. Once those those aesthetic mappings are defined, you can choose to represent your data in many different ways by choosing different **geoms** (i.e. "geometric objects" like points, lines or bars).
+3. You build your plot in **layers**.
+
+--
+
+That's rather abstract, so let's revist each element in turn using our original plot call.
+
+---
+
+# 1. Aesthetic mappings
+
+Here's our earlier code again:
+
+```{r aesthetics1, eval=FALSE}
+ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp)) + 
+  geom_point()
+```
+
+Focus on the top line, which contains the initialising `ggplot()` function call. This function accepts various arguments, including:
+- Where the data come from (`data = gapminder`).
+- What the aesthetic mappings are (`mapping = aes(x = gdpPercap, y = lifeExp)`).<sup>1</sup>
+
+.footnote[
+<sup>1</sup> In fact, most people don't even bother writing out the "mapping =" part of the ggplot call. (Confirm for yourself that this still works.)
+]
+
+--
+
+The aesthetic mappings here are pretty simple: They just define an x-axis (GDP per capita) and a y-axis (life expecancy).
+  - To get a sense of the power and flexibility that comes with this approach, however, consider what happens if we add a few more aesthetics to the plot call...
+
+---
+
+# 1. Aesthetic mappings (cont.)
+
+```{r aesthetics2, fig.height=4, dev='svg'}
+## Note: I'm dropping the "mapping =" part to save horizontal space.
+ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp, size = pop, col = continent)) + 
+  geom_point()
+```
+
+---
+
+# 1. Aesthetic mappings (cont.)
+
+At this point, instead of repeating the same ggplot2 call every time, it will prove convenient to define an intermediate plot object that we can re-use.
+
+```{r p, fig.height=4, dev='svg'}
+p = ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp, size = pop, col = continent))
+p
+```
+
+---
+
+# 1. Aesthetic mappings (cont.)
+
+E.g. We can easily begin making our figure look better by adding some transparency to the points ("alpha"), and using a a different plot theme ("theme_bw()").
+
+```{r aesthetics3, fig.height=4, dev='svg'}
+p + 
+  geom_point(alpha = 0.3) +
+  theme_bw()
+```
+
+---
+
+# 2. Geoms
+
+Once your variable relationships defined by the aesthetic mappings, visualizing this in different ways is (mostly) a matter of using different geometric operations.
+
+```{r geoms1, fig.height=4, dev='svg'}
+ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) + 
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = "loess") +
+  theme_bw()
+```
+
+---
+
+# 3. Build your plot in layers
+
+We've already seen how we can chain (or "layer") consecutive plot elements using the `+` connectors.
+
+But you can really keep layering on the complexity or variation.
+- See next slide for figure, since we'll run out of vertical space here.
+
+```{r layers1}
+p2 =
+  p + 
+  geom_point(alpha = 0.3) +
+  scale_x_log10(labels = scales::comma) + ## Switch logarithmic scale on x-axis
+  scale_color_brewer(name = "Continent", palette = "Set1") +
+  scale_size(name = "Population", labels = scales::comma) +
+  labs(x = "Log (GDP per capita)", y = "Life Expectancy") +
+  theme_bw()
+```
+
+---
+
+# 3. Build your plot in layers
+
+```{r layers2, fig.height=4, dev='svg'}
+p2
+```
+
+---
+
+# What next?
+
+We have barely scratched the surface of ggplot2's functionality... let alone talked about the entire ecosystem of packages that has been built around it. Here's a super trivial example:
+ 
+```{r ipsum_theme, fig.height=4}
+p2 + hrbrthemes::theme_modern_rc() ## Use a different theme from the hrbrthemes package
+```
+
+---
+
+# What next? (cont.)
+
+We also haven't touched on ggplot2's relationship to "tidy" data.
+  - It actually forms part of a suite of packages collectively known as the [tidyverse](https://www.tidyverse.org/). We will get back to this in Lecture 5.
+
+Rest assured, you will be using ggplot2 throughout the rest of this course and developing your skills along the way.
+- Your very first assignment (coming up) is a chance specifically to hone some of those skills.
+
+In the meantime, I want you to do some reading and practice on your own. Pick either of the following (or choose among the litany of online resources) and work through their examples:
+- [Chapter 3](https://r4ds.had.co.nz/data-visualisation.html) of *R for Data Science* by Hadley Wickham and Garett Grolemund.
+- [Chapter 3](https://socviz.co/makeplot.html#how-ggplot-works) of *Data Visualization: A Practical Guide* by Kieran Healy. (Or just try a chapter at random.) 
+
+---
+class: inverse, center, middle
+
+# Next lecture: Deep dive into Git(Hub).
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
