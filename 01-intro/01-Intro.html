@@ -369,25 +369,21 @@ If you don't have them already, install the `ggplot2` and `gapminder` packages v
 
 # Install and load (cont.)
 
-Once the packages are installed, load them into your session with the `library()` function.
+Once the packages are installed, load them into your R session with the `library()` function.
 
 ```r
 library(ggplot2)
 library(gapminder) ## Again, we're just using this package for its dataset
 ```
-- While you only have to install a package once&lt;sup&gt;1&lt;/sup&gt;, remember that you need to load it every time you want to use it in a new R session.
 - Notice too that you don't need quotes around the package names any more. Reason: R now recognises these packages as defined objects with given names. ("Everything in R is an object and everything has a name.")
 
-.footnote[
-&lt;sup&gt;1&lt;/sup&gt; With the technical exception of updating a package, but we'll get there.
-]
-
 --
-*Note 1: A convenient way to combine the package installation and loading steps is with the [pacman package's](https://github.com/trinker/pacman) `p_load()` function. If you run `pacman::p_load(ggplot, gapminder)` it will first look to see whether it needs to install either package before loading them. Clever.*
+
+*Note 1:* A convenient way to combine the package installation and loading steps is with the [pacman package's](https://github.com/trinker/pacman) `p_load()` function. If you run `pacman::p_load(ggplot, gapminder)` it will first look to see whether it needs to install either package before loading them. Clever.
 
 --
 
-*Note 2: We'll get to this next week, but if you want to run a function from an (installed) package without loading it, you can use the `PACKAGE::package_function()` syntax.*
+*Note 2:* We'll get to this next week, but if you want to run a function from an (installed) package without loading it, you can use the `PACKAGE::package_function()` syntax.
 
 ---
 
@@ -428,18 +424,20 @@ gapminder
 There's a lot to say about ggplot2's implementation of this "grammar of graphics" approach, but the three key elements are:
 
 1. Your plot ("the visualization") is linked to your variables ("the data") through various **aesthetic mappings**.
+
 2. Once those those aesthetic mappings are defined, you can choose to represent your data in many different ways by choosing different **geoms** (i.e. "geometric objects" like points, lines or bars).
+
 3. You build your plot in **layers**.
 
 --
 
-That's rather abstract, so let's revist each element in turn using our original plot call.
+That's kind of abstract. Let's original each element in turn using our original plot call.
 
 ---
 
 # 1. Aesthetic mappings
 
-Here's our earlier code again:
+Here's our earlier ggplot2 code again:
 
 
 ```r
@@ -448,17 +446,17 @@ ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp)) +
 ```
 
 Focus on the top line, which contains the initialising `ggplot()` function call. This function accepts various arguments, including:
-- Where the data come from (`data = gapminder`).
-- What the aesthetic mappings are (`mapping = aes(x = gdpPercap, y = lifeExp)`).&lt;sup&gt;1&lt;/sup&gt;
+- Where the data come from (i.e. `data = gapminder`).
+- What the aesthetic mappings are (i.e. `mapping = aes(x = gdpPercap, y = lifeExp)`).&lt;sup&gt;1&lt;/sup&gt;
 
 .footnote[
-&lt;sup&gt;1&lt;/sup&gt; In fact, most people don't even bother writing out the "mapping =" part of the ggplot call. (Confirm for yourself that this still works.)
+&lt;sup&gt;1&lt;/sup&gt; Most people don't bother writing out the "mapping =" part of the ggplot call and just start with "aes(...)". Same for "data =". (Confirm for yourself that this still works.)
 ]
 
 --
 
 The aesthetic mappings here are pretty simple: They just define an x-axis (GDP per capita) and a y-axis (life expecancy).
-  - To get a sense of the power and flexibility that comes with this approach, however, consider what happens if we add a few more aesthetics to the plot call...
+- To get a sense of the power and flexibility that comes with this approach, however, consider what happens if we add more aesthetics to the plot call...
 
 ---
 
@@ -466,12 +464,25 @@ The aesthetic mappings here are pretty simple: They just define an x-axis (GDP p
 
 
 ```r
-## Note: I'm dropping the "mapping =" part to save horizontal space.
 ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp, size = pop, col = continent)) + 
-  geom_point()
+  geom_point(alpha = 0.3) ## "alpha" controls transparency. Takes a value between 0 and 1.
 ```
 
 &lt;img src="01-Intro_files/figure-html/aesthetics2-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+# 1. Aesthetic mappings (cont.)
+
+Note that we can assign the aesthetic mappings in the geom layer too.
+
+```r
+ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) + ## Applicable to all geoms
+  geom_point(aes(size = pop, col = continent), alpha = 0.3) ## Applicable to this geom only
+```
+
+&lt;img src="01-Intro_files/figure-html/aesthetics3-1.svg" style="display: block; margin: auto;" /&gt;
+
 
 ---
 
@@ -481,7 +492,8 @@ At this point, instead of repeating the same ggplot2 call every time, it will pr
 
 
 ```r
-p = ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp, size = pop, col = continent))
+## Note: I'm dropping the "mapping =" part to save horizontal space.
+p = ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp))
 p
 ```
 
@@ -489,86 +501,179 @@ p
 
 ---
 
-# 1. Aesthetic mappings (cont.)
+# 2. Geoms
 
-E.g. We can easily begin making our figure look better by adding some transparency to the points ("alpha"), and using a a different plot theme ("theme_bw()").
+Once your variable relationships have been defined by the aesthetic mappings, you can invoke and combine different geoms to generate different visulaizations.
 
 
 ```r
 p + 
-  geom_point(alpha = 0.3) +
-  theme_bw()
-```
-
-&lt;img src="01-Intro_files/figure-html/aesthetics3-1.svg" style="display: block; margin: auto;" /&gt;
-
----
-
-# 2. Geoms
-
-Once your variable relationships defined by the aesthetic mappings, visualizing this in different ways is (mostly) a matter of using different geometric operations.
-
-
-```r
-ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) + 
-  geom_point(alpha = 0.3) +
-  geom_smooth(method = "loess") +
-  theme_bw()
+  geom_point(alpha = 0.3)  +
+  geom_smooth(method = "loess") 
 ```
 
 &lt;img src="01-Intro_files/figure-html/geoms1-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
+# 2. Geoms (cont.)
+
+Aesthetics can be applied differentially across geoms.
+
+
+```r
+p + 
+  geom_point(aes(size = pop, col = continent), alpha = 0.3)  +
+  geom_smooth(method = "loess") 
+```
+
+&lt;img src="01-Intro_files/figure-html/geoms2-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+# 2. Geoms (cont.)
+
+The previous plot provides a good illustration of the power (or effect) that comes from assigning aesthetic mappings "globally" vs in the individual geom layers.
+- Compare: What happens if you run the below code chunk?
+
+
+```r
+ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp, size = pop, col = continent)) +
+  geom_point(alpha = 0.3)  +
+  geom_smooth(method = "loess") 
+```
+
+---
+
+# 2. Geoms (cont.)
+
+Similarly, note that some geoms only accept a subset of mappings. E.g. `geom_density()` doesn't know what to do with the "y" aesthetic mapping.
+
+
+```r
+p + geom_density()
+```
+
+```
+## Error: geom_density requires the following missing aesthetics: y
+```
+
+&lt;img src="01-Intro_files/figure-html/geoms4-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+# 2. Geoms (cont.)
+
+We can fix that by being more careful about how we build the plot.
+
+
+```r
+ggplot(data = gapminder) + ## i.e. No "global" aesthetic mappings"
+  geom_density(aes(x = gdpPercap, fill = continent), alpha=0.3)
+```
+
+&lt;img src="01-Intro_files/figure-html/geoms5-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
 # 3. Build your plot in layers
 
-We've already seen how we can chain (or "layer") consecutive plot elements using the `+` connectors.
+We've already seen how we can chain (or "layer") consecutive plot elements using the `+` connector.
+- The fact that we can create and then re-use an intermediate plot object (e.g. "p") is testament to this.
 
-But you can really keep layering on the complexity or variation.
-- See next slide for figure, since we'll run out of vertical space here.
+But it bears repeating: You can build out some truly impressive complexity and transformation of your visualization through this simple layering process.
+- Note that you don't have to touch your original data; ggplot2 takes care of all of that.
+- For example (see next slide for figure).
 
 
 ```r
 p2 =
   p + 
-  geom_point(alpha = 0.3) +
-  scale_x_log10(labels = scales::comma) + ## Switch logarithmic scale on x-axis
-  scale_color_brewer(name = "Continent", palette = "Set1") +
+  geom_point(aes(size = pop, col = continent), alpha = 0.3) +
+  scale_color_brewer(name = "Continent", palette = "Set1") + ## Different colour scale
+  scale_x_log10(labels = scales::dollar) + ## Switch to logarithmic scale on x-axis. Use dollar units.
   scale_size(name = "Population", labels = scales::comma) +
-  labs(x = "Log (GDP per capita)", y = "Life Expectancy") +
-  theme_bw()
+  labs(x = "Log (GDP per capita)", y = "Life Expectancy") + ## Better axis titles
+  theme_bw() ## Try a black and white plot theme
 ```
 
 ---
 
-# 3. Build your plot in layers
-
-
-```r
-p2
-```
+# 3. Build your plot in layers (cont.)
 
 &lt;img src="01-Intro_files/figure-html/layers2-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
-# What next?
+# What else?
 
-We have barely scratched the surface of ggplot2's functionality... let alone talked about the entire ecosystem of packages that has been built around it. Here's a super trivial example:
- 
+We have barely scratched the surface of ggplot2's functionality... let alone talked about the entire ecosystem of packages that has been built around it. 
+- Here's are two quick additional examples to whet your appetite
+
+--
+
+Note that you will need to install and load some additional packages if you want to recreate the next two figures on your own machine. A quick way to do this:
+
 
 ```r
-p2 + hrbrthemes::theme_modern_rc() ## Use a different theme from the hrbrthemes package
+if (!require("pacman")) install.packages("pacman")
+```
+
+```
+## Loading required package: pacman
+```
+
+```r
+pacman::p_load(hrbrthemes, gganimate)
+```
+
+---
+
+# What else? (cont.)
+
+Simple extension: Use an external package theme.
+
+```r
+# library(hrbrthemes)
+p2 + theme_ipsum()
 ```
 
 &lt;img src="01-Intro_files/figure-html/ipsum_theme-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
-# What next? (cont.)
+# What else? (cont.)
+
+Elaborate extension: Animation! (See the next slide for the resulting GIF.)
+
+```r
+# library(gganimate)
+ggplot(gapminder, aes(gdpPercap, lifeExp, size = pop, colour = country)) +
+  geom_point(alpha = 0.7, show.legend = FALSE) +
+  scale_colour_manual(values = country_colors) +
+  scale_size(range = c(2, 12)) +
+  scale_x_log10() +
+  facet_wrap(~continent) +
+  # Here comes the gganimate specific bits
+  labs(title = 'Year: {frame_time}', x = 'GDP per capita', y = 'life expectancy') +
+  transition_time(year) +
+  ease_aes('linear')
+```
+
+---
+
+# What else? (cont.)
+
+&lt;img src="01-Intro_files/figure-html/ggamin2-1.gif" style="display: block; margin: auto;" /&gt;
+
+
+---
+# What else? (cont.)
+
+There's a lot more to say, but I think we'll stop now for today's lecture.
 
 We also haven't touched on ggplot2's relationship to "tidy" data.
-  - It actually forms part of a suite of packages collectively known as the [tidyverse](https://www.tidyverse.org/). We will get back to this in Lecture 5.
+  - It actually forms part of a suite of packages collectively known as the [tidyverse](https://www.tidyverse.org/). 
+  - We will get back to this in Lecture 5.
 
 Rest assured, you will be using ggplot2 throughout the rest of this course and developing your skills along the way.
 - Your very first assignment (coming up) is a chance specifically to hone some of those skills.
