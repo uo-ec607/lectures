@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Lecture 2: Deep dive into Git(Hub)</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Grant McDermott | University of Oregon" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Lecture 2: Deep dive into Git(Hub)
+## <html>
+<div style="float:left">
+
+</div>
+<hr color='#EB811B' size=1px width=796px>
+</html>
+### Grant McDermott | University of Oregon
+### EC 607
+
+---
+
+
+
+
+# Why bother?
+
+&lt;div align="center"&gt;
+&lt;img src="http://phdcomics.com/comics/archive/phd101212s.gif" height=500&gt;
+&lt;/div&gt;
+
+---
+
+# Git(Hub) solves this problem
+
+### Git
+
+- Git is a distributed version control system. (Wait, what?)
+- Okay, try this: Imagine if Dropbox and the "Track changes" feature in MS Word had a baby. Git would be that baby.
+- In fact, it's even better than that because Git is specifically optimised for the type of things that economists spend a lot of time working on (e.g. code).
+- There is a learning curve, but I promise you that it's worth it.
+
+### GitHub
+
+- It's important to realise the Git and Github are distinct things.
+- GitHub is an online hosting platform that provides an array of services built on top of the Git system. (Similar platforms include Bitbucket and GitLab.)
+- Just like we don't *need* Rstudio to run R code, we don't *need* GitHub to use Git. But it makes our lives so much easier.
+
+---
+
+class: inverse, center, middle
+
+# Git(Hub) + RStudio
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+
+# Basic workflow
+
+1. Create a repository (AKA "repo") on GitHub and initialize with a README.
+2. Copy the HTTPS/SSH link (the green "Clone or Download" button).&lt;sup&gt;1&lt;/sup&gt;
+3. Open up RStudio.
+4. Navigate to **File -&gt; New Project -&gt; Version Control -&gt; Git**.
+5. Paste your copied link into the "Repository URL:" box.
+6. Check that your new repo is located where you want it to be ("Create project as subdirectory of:")
+
+.footnote[&lt;sup&gt;1&lt;/sup&gt; It's easiest to start with HTTPS, but &lt;a href="http://happygitwithr.com/ssh-keys.html#ssh-keys" target="_blank"&gt;SSH is advised&lt;/a&gt; for more advanced users.]
+
+---
+
+# Why this workflow?
+
+Creating the repo on GitHub first means that it will always be "upstream" of your (and any other) local copies.
+- In effect, this allows GitHub to act as the central node in the distributed VC network.
+- Especially valuable when you are collaborating on a project with others -- more on that later -- but also has advantages when you are working alone.
+
+RStudio Projects are great. They interact seemlessly with Git(Hub), as we've just seen, and they also solve absolute vs. relative path problems.
+  - You know that calling files from `USERNAME/Documents/Special-Subfolder/etc` makes you a bad person, right?
+
+---
+
+# Practice
+
+Practice this workflow by creating your own repo on GitHub and cloning it via an RStudio Project.
+- Call it "test-repo" or whatever you like. (You can delete it afterwards.)
+- Remember to initialize with a README.
+
+Pay attention to the top-right window panel in your RStudio IDE. 
+- Do you see the "Git" tab? Click on it.
+
+Open up the README (see the "Files" tab in the bottom-right window panel).
+- Add some text like "Hello World!" and save the file.
+- What has happened in the "Git" panel above?
+
+--
+
+If you haven't already done so, cloning these lecture notes from the course repo now is a good idea.
+
+---
+class: inverse, center, middle
+
+# Git from the shell
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+
+# Two steps forward, one step back?
+
+The GitHub + RStudio Project combination is likely the best setup for most of you.
+- RStudio provides a native Git interface for the major Git operations (committing, pulling, pushing, etc.)
+- We'll delve more deeply into this during subsequent lectures.
+
+However, today we're still going to practice commands from the &lt;a href="http://happygitwithr.com/ssh-keys.html#shell" target="_blank"&gt;shell&lt;/a&gt; because it's good for you to internalise the basics.
+- Not to mention more appropriate for projects that aren't primarily based in *R*.
+- We'll also discuss options for some standalone Git GUIs (e.g. GitKraken, SourceTree, Atom) towards the end of class.
+
+---
+
+# Main Git shell commands
+
+Clone the repo.
+```bash
+$ git clone REPOSITORY-URL
+```
+
+See the commit history (hit spacebar to scroll down or q to exit).
+```bash
+$ git log
+```
+
+What has changed? 
+```bash
+$ git status
+```
+---
+
+# Main Git shell commands (cont.)
+
+Add (or "stage") a file or group of files.
+```bash
+$ git add NAME-OF-FILE-OR-FOLDER
+```
+
+There are a bunch of useful flag options here too:
+
+- Stage updated files only (modified or deleted, but not new).
+```bash
+$ git add -u
+```
+- Stage new files only (not updated).
+```bash
+$ git add .
+```
+
+- Stage all files.
+```bash
+$ git add -A
+```
+
+---
+
+# Main Git shell commands (cont.)
+
+Commit your changes with a helpful message.
+```bash
+$ git commit -m "Added robustness check"
+```
+
+Pull from the upstream repository (i.e. GitHub).
+```bash
+$ git pull
+```
+
+Push any local changes that you've commited to the upstream repo (i.e. GitHub).
+```bash
+$ git push
+```
+
+---
+
+# Git recipe book
+
+1. Add (stage) and commit any local changes
+```bash
+$ git add -A
+$ git commit -m "Amazing new code"
+```
+
+2. Pull any changes from the upstream repo
+```bash
+$ git pull
+```
+
+3. (Fix any merge conflicts)
+
+4. Push your local changes to the GitHub repo
+```bash
+$ git push
+```
+
+--
+You can switch 1 and 2. The NB thing is to &lt;i&gt;**always pull from the upstream repo before you push any changes**&lt;/i&gt;. Seriously, do this even on solo projects. Making it a habit will save you headaches down the road.
+
+---
+class: inverse, center, middle
+
+# Merge conflicts
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+
+# Collaboration time 
+
+Turn to the person next to you. You are now partners. (Congratulations.)
+
+- Partner 1: Create repo on GitHub and invite Partner 2 to join you as a collaborator (see "Settings"). Clone the repo to your local machine.
+
+- Partner 2: Clone the repo to your local machine too. Make some edits to the README. Push these changes.
+
+- Partner 1: Make changes to the README on your machine too. Stage, commit and then try to push them (*after* pulling from the GitHub repo first!).
+
+--
+
+Did you (i.e. Partner 1) encounter a `merge conflict` error? 
+- Good, that's what we were trying to trigger.
+- Now, let's learn how to fix them.
+
+---
+
+# Merge conflicts
+
+Let's confirm what's going on.
+```bash
+$ git status
+```
+
+As part of the response, you should see something like:
+```bash
+Unmerged paths:
+  (use "git add &lt;file&gt;..." to mark resolution)
+
+   * both modified:   README.md 
+```
+- Git is protecting Partner 1 by refusing the merge. It wants to make sure that you don't accidentally overwrite all of your changes by pulling Partner 2's version of the README.
+
+--
+
+PS — In this case, the source of the problem was obvious. Once we start working on bigger projects, however, `git status` can provide a helpful summary to see which files are in conflict.
+
+---
+
+# Merge conflicts (cont.)
+
+Okay, let's open up the README file and take a look at what's happening.
+- Opening the README in RStudio is a good choice, although your preferred text editor is fine.&lt;sup&gt;1&lt;/sup&gt;
+
+You should see something like:
+```bash
+# README
+Some text here.
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+Text added by Partner 2.
+=======
+Text added by Partner 1.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 814e09178910383c128045ce67a58c9c1df3f558.
+More text here.
+```
+
+.footnote[&lt;sup&gt;1&lt;/sup&gt; I use and recommend &lt;a href="https://atom.io/" target="_blank"&gt;Atom&lt;/a&gt;. You can set your preferred default editor with `$ git config --global core.editor "PREFERRED_EDITOR"`.]
+
+---
+
+# Merge conflicts (cont.)
+
+What do these symbols mean?
+
+```bash
+# README
+Some text here.
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+Text added by Partner 2.
+=======
+Text added by Partner 1.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 814e09178910383c128045ce67a58c9c1df3f558.
+More text here.
+```
+
+---
+count: false
+
+# Merge conflicts (cont.)
+
+What do these symbols mean?
+
+```bash
+# README
+Some text here.
+*&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+Text added by Partner 2.
+=======
+Text added by Partner 1.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 814e09178910383c128045ce67a58c9c1df3f558.
+More text here.
+```
+
+- `&lt;&lt;&lt;&lt;&lt;&lt;&lt;` Indicates the start of the merge conflict.
+
+---
+count: false
+
+# Merge conflicts (cont.)
+
+What do these symbols mean?
+
+```bash
+# README
+Some text here.
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+Text added by Partner 2.
+*=======
+Text added by Partner 1.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 814e09178910383c128045ce67a58c9c1df3f558.
+More text here.
+```
+
+- `&lt;&lt;&lt;&lt;&lt;&lt;&lt;` Indicates the start of the merge conflict.
+- `=======` Indicates the break point used for comparison.
+
+---
+count: false
+
+# Merge conflicts (cont.)
+
+What do these symbols mean?
+
+```bash
+# README
+Some text here.
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+Text added by Partner 2.
+=======
+Text added by Partner 1.
+*&gt;&gt;&gt;&gt;&gt;&gt;&gt; 814e09178910383c128045ce67a58c9c1df3f558.
+More text here.
+```
+
+- `&lt;&lt;&lt;&lt;&lt;&lt;&lt;` Indicates the start of the merge conflict.
+- `=======` Indicates the break point used for comparison.
+- `&gt;&gt;&gt;&gt;&gt;&gt;&gt;` Indicates the end of the lines that had a merge conflict.
+
+---
+
+# Merge conflicts (cont.)
+
+Fixing these conflicts is a simple matter of (manually) editing the README file.
+- Delete the lines of the text that you don't want.
+- Delete the special Git merge conflict symbols.
+
+Once that's done, you should be able to stage, commit, pull and finally push your changes to the GitHub repo without any errors.
+
+--
+
+Caveats
+- Partner 1 gets to decide what to keep because they are the ones that fixed the merge conflict.
+- OTOH, the full commit history is preserved, so Partner 2 can always recover their changes if desired.
+- A more elegant and democratic solution to merge conflicts (and repo changes in general) is provided by Git **branches**. We'll get there soon.
+
+---
+
+# Aside: Line endings and different OSs
+
+During your collaboration, you may have encountered a situation where Git is highlighting differences on seemingly unchanged sentences.
+- If that is the case, check whether your partner is using a different OS to you.
+
+The "culprit" is the fact that Git adds an invisible character at the end of every line. (This is how Git tracks changes.)
+- For Linux and MacOS, that ending is "LF"
+- For Windows, that ending is "CRLF" (of course it is...)
+
+### Solution
+
+Open up the shell and enter
+
+```bash
+$ git config --global core.autocrlf input
+```
+
+(Windows users: Change `input` to `true`).
+
+--
+
+PS — More information here: https://help.github.com/articles/dealing-with-line-endings/
+
+---
+class: inverse, center, middle
+
+# Branches
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+
+# Why use branches
+
+Branches are one of the coolest features of Git(Hub).
+- Allow you to take a snapshot of your existing repo and try out a whole new idea *without affecting your main branch*.
+- Only once you (and your collaborators) are satisfied would you merge it back into the main branch.
+  - This is how most new features in modern software and apps are developed.
+  - It is also how bugs are identified and fixed.
+  - But researchers can easily -- and should! -- use it to try out new ideas and analysis (e.g. robustness checks, revisions, etc.)
+- If you aren't happy, then you can just delete the branch and continue as if nothing happened.
+
+---
+
+# How to branch
+
+Create a new branch on your local machine and switch to it:
+```bash
+$ git checkout -b NAME-OF-YOUR-NEW-BRANCH
+```
+
+Push the new branch to GitHub:
+```bash
+$ git push origin NAME-OF-YOUR-NEW-BRANCH
+```
+
+List all branches on your local machine:
+```bash
+$ git branch
+```
+
+Switch back to (e.g.) the master branch:
+```bash
+$ git checkout master
+```
+
+Delete a branch
+```bash
+$ git branch -d NAME-OF-YOUR-FAILED-BRANCH
+$ git push origin :NAME-OF-YOUR-FAILED-BRANCH
+```
+
+---
+
+# Merging branches and pull requests
+
+You have two options:
+
+### 1. Locally
+- Commit your final changes to the branch (let's call it "feature").
+- Switch back to the master branch: `$ git checkout master`
+- Merge in the branch changes: `$ git merge feature`
+- Delete the feature branch (optional): `$ git branch -d feature`
+  
+### 2. Remotely (i.e. *pull requests* on GitHub)
+- PRs are a way to notify collaborators — or yourself! — that you have completed a feature.
+- You write a summary of all the changes contained in the branch.
+- You then assign suggested reviewers of your code — often yourself — who are then able to approve these changes ("Merge pull request") on GitHub.
+- Let's practice this in class: See &lt;a href="https://help.github.com/articles/creating-a-pull-request/" target="_blank"&gt;here&lt;/a&gt; for instructions.
+
+---
+class: inverse, center, middle
+
+# Deciding what to track
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+(.gitgnore)
+
+---
+
+# .gitgnore
+
+A .gitignore file tells Git what to (wait for it...) ignore.
+
+This is especially useful if you want to exclude whole folders or a class of files (e.g. based on size or type).
+- Proprietary data files should be ignored from the beginning if you intend to make a repo public at some point.
+- Very large individual files (&gt;100 MB) exceed GitHub's maxmimum allowable size and should be ignored regardless See &lt;a href="https://help.github.com/articles/working-with-large-files/" target="_blank"&gt;here&lt;/a&gt; and &lt;a href="https://help.github.com/articles/versioning-large-files/" target=_"blank"&gt;here&lt;/a&gt;.
+
+I typically add compiled datasets (CSVs) to my .gitignore in the early stages of a project.
+- Reduces redundant version control history, where the main thing is the code that produces the compiled dataset, not the end CSV in of itself. ("Source is real.")
+- Simple to remove from my .gitignore once the project is being finalised (e.g. paper is being submitted).
+  
+---
+
+# .gitgnore (cont.)
+
+You can create a .gitignore file in multiple ways.
+
+- By selecting that option when you first create a repo on GitHub.
+- A .gitignore file is automatically created if you clone your repo using an RStudio Project (see next section).
+- You can create one with your preferred text editor. (Must be saved as ".gitignore".)
+- Or, you can just use the shell:
+  ```bash
+  touch .gitignore
+  ```
+
+---
+
+# .gitgnore (cont.)
+
+Once the .gitignore file is created, simply add in lines of text corresponding to the files that should be ignored.
+
+- To ignore a single a file: `FILE-I-WANT-TO-IGNORE.csv`
+
+- To ignore a whole folder (and all of its contents, subfolders, etc.): `FOLDER-NAME/**`
+
+- The standard shell commands and special characters apply.
+  - E.g. Ignore all CSV files in the repo: `*.csv`
+  - E.g. Ignore all files beginning with "test": `test*` 
+  
+--
+
+- Protip: We'll learn more about the shell next lecture, but you can directly add files names and text to your .gitignore file by using the `echo` command and `&gt;&gt;`.
+```bash
+$ echo "ANOTHER-FILE-I-WANT-TO-IGNORE.csv" &gt;&gt; .gitignore
+```
+
+---
+
+class: inverse, center, middle
+
+# Summary
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+
+# Recipe (shell commands in grey)
+
+1. Create a repo on GitHub and initiaize with a README.
+
+2. Clone the repo your local machine. Preferably using an RStudio Project, but as you wish. (E.g. Shell command: `$ git clone REPOSITORY-URL`)
+
+3. Stage any changes you make: `$ git add -A`
+
+4. Commit your changes: `$ git commit -m "Helpful message"`
+
+5. Pull from GitHub: `$ git pull`
+
+6. (Fix any merge conflicts.)
+
+7. Push your changes to GitHub: `$ git push`
+
+--
+
+Repeat steps 3--7, but particularly steps 3 &amp; 4, often.
+
+---
+
+# Coming up
+
+### Assignment 1
+
+Now that you've learned the necessary basics, Assignment 1 is up on GitHub Classroom.
+- Impress me with your ggplot2 skills.
+- Deadline: Due by the *start* of our next lecture.
+
+
+### Next lecture
+
+Learning to love the shell...
+
+---
+
+class: inverse, center, middle
+
+# Appendix: FAQ
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+
+# FAQ
+
+**Q: When should I commit (and push) changes?**
+
+**A: Early and often.**
+- It's not quite as important as saving your work regularly, but it's a close second.
+- You should certainly push everything that you want your collaborators to see.
+  
+**Q: Do I need branches if I am working on a solo project?**
+
+**A: You don't *need* them, but they offer big advantages in maintaining a sane workflow.**
+- Experiment without any risk to the main project!
+- If you combine them with pull requests, then you can compress significant additions to your project (which may comprise many small edits) into a single branch.
+
+---
+
+# FAQ (cont.)
+
+**Q: What's the difference between cloning and forking a repo?**
+
+**A: Cloning directly ties your local version to the original repo, while forking creates a copy on your GitHub (which you can then clone).**
+- &lt;a href="http://happygitwithr.com/clone.html" target="_blank"&gt;Cloning&lt;/a&gt; makes it easier to fetch updates (and is often the best choice for new GitHub users), but &lt;a href="http://happygitwithr.com/fork.html" target="_blank"&gt;forking&lt;/a&gt; has advantages too.
+
+**Q: What happens when something goes wrong?**
+
+**A: Think: "Oh shit, Git!"**
+- Seriously: http://ohshitgit.com/.
+  
+**Q: What happens when something goes &lt;i&gt;horribly&lt;/i&gt; wrong?**
+
+**A: Burn it down and start again.**
+- http://happygitwithr.com/burn.html
+- This is a great advantage of Git's distributed nature. If something goes horribly wrong, there's usually an intact version somewhere else.
+  
+---
+
+# FAQ (cont.)
+
+&lt;div align="center"&gt;
+&lt;img src="https://imgs.xkcd.com/comics/git_2x.png" height=500&gt;
+&lt;/div&gt;
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
