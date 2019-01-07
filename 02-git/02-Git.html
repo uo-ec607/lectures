@@ -41,8 +41,8 @@ class: center, middle, inverse, title-slide
 
 - Git is a distributed version control system. (Wait, what?)
 - Okay, try this: Imagine if Dropbox and the "Track changes" feature in MS Word had a baby. Git would be that baby.
-- In fact, it's even better than that because Git is specifically optimised for the type of things that economists spend a lot of time working on (e.g. code).
-- There is a learning curve, but I promise you that it's worth it.
+- In fact, it's even better than that because Git is optimised for the things that economists and data scientists spend a lot of time working on (e.g. code).
+- There's a learning curve, but I promise you that it's worth it.
 
 ### GitHub
 
@@ -65,7 +65,7 @@ Scientists and academic researchers are cottoning on too.
 - Benefits of VC and collaboration tools aside, Git(Hub) helps to operationalise the ideals of open science and reproducibility.
 - Journals have increasingly strict requirements regarding reproducibility and data access. GH makes this easy (DOI integration, off-the-shelf licences, etc.)
 - I host all of the code and data for my [papers](http://grantmcdermott.com/research/) on GH. Same for teaching materials. I even use it to host and maintain my [website](https://github.com/grantmcdermott/grantmcdermott.github.io).
-- **Read:** "[Democratic databases: science on GitHub](https://www.nature.com/news/democratic-databases-science-on-github-1.20719)" (*Nature*).
+- *Nature:* "[Democratic databases: science on GitHub](https://www.nature.com/news/democratic-databases-science-on-github-1.20719)" (Perkel, 2016).
 
 ---
 
@@ -84,7 +84,7 @@ One of the (many) great features of RStudio is how well it integrates version co
 
 --
 
-I also want to bookmark this as a general point that we'll revisit many times during the course: 
+I also want to bookmark a general point that we'll revisit many times during this course: 
 - The tools that we're using all form part of a coherent data science ecosystem.
 - Seemless integration greatly reduces the cognitive overhead ("aggregation") associated with traditional workflows, where you have juggle multiple programs and languages at the same time.
 
@@ -99,13 +99,17 @@ The starting point for our workflow is to link a GitHub repository (i.e. "repo")
 3. Open up RStudio.
 4. Navigate to **File -&gt; New Project -&gt; Version Control -&gt; Git**.
 5. Paste your copied link into the "Repository URL:" box.
-6. Check that your new repo is located where you want it to be ("Create project as subdirectory of:") and click "OK".
+6. Choose the project location ("Create project as subdirectory of:") and click "OK".
 
 .footnote[&lt;sup&gt;1&lt;/sup&gt; It's easiest to start with HTTPS, but &lt;a href="http://happygitwithr.com/ssh-keys.html#ssh-keys" target="_blank"&gt;SSH&lt;/a&gt; is advised for more advanced users.]
 
+--
+
+Practice by these steps now by creating your own repo on GitHub (call it "testing") and cloning it via an RStudio Project.
+
 ---
 
-# Why this setup?
+# Aside: Why this setup?
 
 Creating the repo on GitHub first means that it will always be "upstream" of your (and any other) local copies.
 - In effect, this allows GitHub to act as the central node in the distributed VC network.
@@ -118,22 +122,61 @@ RStudio Projects are great. Again, they interact seemlessly with Git(Hub), as we
 
 ---
 
-# Practice
+# Make some changes locally
 
-Practice by creating your own repo on GitHub and cloning it via an RStudio Project.
-- Call it "testing" (or whatever you like).
-- Remember to initialize with a README.
+(Back to our practice session.)
 
-Pay attention to the top-right window panel in your RStudio IDE. 
-- Do you see the "Git" tab? Click on it.
+Look at the top-right panel in your RStudio IDE. Do you see the "Git" tab? 
+- Click on it.
 
-Open up the README (see the "Files" tab in the bottom-right window panel).
+Now open up the README (see the "Files" tab in the bottom-right panel).
 - Add some text like "Hello World!" and save the file.
-- What has happened in the "Git" panel above?
 
 --
 
-Please raise your hand when you're done.
+Do you see any changes in the "Git" panel?
+- Now it's time to learn the four key Git operations...
+
+---
+
+# Main Git operations
+
+*Stage* (or "add")
+- Tell Git that you want to add changes to the repo history.
+
+*Commit*
+- Tell Git that, yes, you are sure these changes should be part of the repo history.
+
+*Pull*
+- Get any new changes made on the GitHub repo (i.e. the upstream remote), either by your collaborators or you on another machine.
+
+*Push*
+- Push any (commited) local changes to the GitHub repo
+
+--
+
+For the moment, it will be useful to group the first two operations and last two operations together. (They are often combined in practice, although you'll soon get a sense of why and when they should be split up.)
+
+---
+
+# Stage and Commit
+
+
+---
+
+# Push and Pull
+
+
+---
+
+# Recap
+
+Here's a step-by-step summary of what we just did.
+- We made same changes to a file locally and saved them.
+- We *staged* these local changes.
+- We *committed* these local changes to our Git history with a helpful message.
+- We *pulled* from the GitHub repo just in case anyone else made changes (not expected here, but good practice).
+- We *pushed* our changes to the GitHub repo.
 
 ---
 class: inverse, center, middle
@@ -452,7 +495,7 @@ Branches are one of the coolest features of Git(Hub).
 
 ---
 
-# How to branch
+# Branch shell commands
 
 Create a new branch on your local machine and switch to it:
 ```bash
