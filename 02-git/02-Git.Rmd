@@ -45,7 +45,24 @@ opts_chunk$set(
 
 - It's important to realise the Git and Github are distinct things.
 - GitHub is an online hosting platform that provides an array of services built on top of the Git system. (Similar platforms include Bitbucket and GitLab.)
-- Just like we don't *need* Rstudio to run R code, we don't *need* GitHub to use Git. But it makes our lives so much easier.
+- Just like we don't *need* Rstudio to run R code, we don't *need* GitHub to use Git... But it will make our lives so much easier.
+
+---
+
+# Git(Hub) for scientific research
+
+### From software development...
+
+Git and GitHub's role in global software develoment is not in question.
+- There's a high probability that your favourite app, program or package is built using Git-based tools. (RStudio is a case in point.)
+
+### ... to scientific research
+
+Scientists and academic researchers are cottoning on too. 
+- Benefits of VC and collaboration tools aside, Git(Hub) helps to operationalise the ideals of open science and reproducibility.
+- Journals have increasingly strict requirements regarding reproducibility and data access. GH makes this easy (DOI integration, off-the-shelf licences, etc.)
+- I host all of the code and data for my [papers](http://grantmcdermott.com/research/) on GH. Same for teaching materials. I even use it to host and maintain my [website](https://github.com/grantmcdermott/grantmcdermott.github.io).
+- **Read:** "[Democratic databases: science on GitHub](https://www.nature.com/news/democratic-databases-science-on-github-1.20719)" (*Nature*).
 
 ---
 
@@ -56,34 +73,52 @@ class: inverse, center, middle
 
 ---
 
-# Basic workflow
+# Seemless integration
 
-1. Create a repository (AKA "repo") on GitHub and initialize with a README.
+One of the (many) great features of RStudio is how well it integrates version control into your everyday workflow.
+- Even though Git is a completely separate program to R, they feel like part of the same "thing" in RStudio.
+- This next section is about learning the basic Git(Hub) commands and the recipe for successful project integration with RStudio.
+
+--
+
+I also want to bookmark this as a general point that we'll revisit many times during the course: 
+- The tools that we're using all form part of a coherent data science ecosystem.
+- Seemless integration greatly reduces the cognitive overhead ("aggregation") associated with traditional workflows, where you have juggle multiple programs and languages at the same time.
+
+---
+
+# Link a GitHub repo to an RStudio Project 
+
+The starting point for our workflow is to link a GitHub repository (i.e. "repo") to an RStudio Project. Here are the steps:
+
+1. Create the repo on GitHub and initialize with a README.
 2. Copy the HTTPS/SSH link (the green "Clone or Download" button).<sup>1</sup>
 3. Open up RStudio.
 4. Navigate to **File -> New Project -> Version Control -> Git**.
 5. Paste your copied link into the "Repository URL:" box.
-6. Check that your new repo is located where you want it to be ("Create project as subdirectory of:")
+6. Check that your new repo is located where you want it to be ("Create project as subdirectory of:") and click "OK".
 
-.footnote[<sup>1</sup> It's easiest to start with HTTPS, but <a href="http://happygitwithr.com/ssh-keys.html#ssh-keys" target="_blank">SSH is advised</a> for more advanced users.]
+.footnote[<sup>1</sup> It's easiest to start with HTTPS, but <a href="http://happygitwithr.com/ssh-keys.html#ssh-keys" target="_blank">SSH</a> is advised for more advanced users.]
 
 ---
 
-# Why this workflow?
+# Why this setup?
 
 Creating the repo on GitHub first means that it will always be "upstream" of your (and any other) local copies.
 - In effect, this allows GitHub to act as the central node in the distributed VC network.
-- Especially valuable when you are collaborating on a project with others -- more on that later -- but also has advantages when you are working alone.
+- Especially valuable when you are collaborating on a project with others — more on this later — but also has advantages when you are working alone.<sup>1</sup>
 
-RStudio Projects are great. They interact seemlessly with Git(Hub), as we've just seen, and they also solve absolute vs. relative path problems.
+RStudio Projects are great. Again, they interact seemlessly with Git(Hub), as we've just seen. They also solve absolute vs. relative path problems, since the .Rproj file acts as an anchor point for all other files in the repo.
   - You know that calling files from `USERNAME/Documents/Special-Subfolder/etc` makes you a bad person, right?
+
+.footnote[<sup>1</sup> If you would like to move an existing project to GitHub, my advice is still to create an empty repo there first, clone it locally, and then copy all your files across.]
 
 ---
 
 # Practice
 
-Practice this workflow by creating your own repo on GitHub and cloning it via an RStudio Project.
-- Call it "test-repo" or whatever you like. (You can delete it afterwards.)
+Practice by creating your own repo on GitHub and cloning it via an RStudio Project.
+- Call it "testing" (or whatever you like).
 - Remember to initialize with a README.
 
 Pay attention to the top-right window panel in your RStudio IDE. 
@@ -95,25 +130,30 @@ Open up the README (see the "Files" tab in the bottom-right window panel).
 
 --
 
-If you haven't already done so, cloning these lecture notes from the course repo now is a good idea.
+Please raise your hand when you're done.
 
 ---
 class: inverse, center, middle
 
-# Git from the shell
+# Git commands from the shell
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
 
 ---
 
 # Two steps forward, one step back?
 
-The GitHub + RStudio Project combination is likely the best setup for most of you.
-- RStudio provides a native Git interface for the major Git operations (committing, pulling, pushing, etc.)
-- We'll delve more deeply into this during subsequent lectures.
+The GitHub + RStudio Project combo is ideal for new users.
+- RStudio's Git integration and built-in GUI cover all the the major operations.
+- RStudio Projects FTW.
 
-However, today we're still going to practice commands from the <a href="http://happygitwithr.com/ssh-keys.html#shell" target="_blank">shell</a> because it's good for you to internalise the basics.
+However, I want to go over Git <a href="http://happygitwithr.com/ssh-keys.html#shell" target="_blank">shell</a> commands so that you can internalise the basics.
+- The shell is more powerful and flexible. Does things that the RStudio Git GUI can't.
 - Not to mention more appropriate for projects that aren't primarily based in *R*.
-- We'll also discuss options for some standalone Git GUIs (e.g. GitKraken, SourceTree, Atom) towards the end of class.
+- We'll also discuss options for standalone Git GUIs (e.g. GitKraken, SourceTree, Atom) towards the end of class.
+
+--
+
+Yes, we're going to cover the shell in depth next lecture, but think of this as a sneak preview.
 
 ---
 
@@ -214,9 +254,9 @@ class: inverse, center, middle
 
 Turn to the person next to you. You are now partners. (Congratulations.)
 
-- Partner 1: Create repo on GitHub and invite Partner 2 to join you as a collaborator (see "Settings"). Clone the repo to your local machine.
+- Partner 1: Invite Partner 2 to join you as a collaborator on the "testing" GitHub repo that you created earlier. (See "Settings".)
 
-- Partner 2: Clone the repo to your local machine too. Make some edits to the README. Push these changes.
+- Partner 2: Clone the repo to your local machine. Make some edits to the README. Push these changes.
 
 - Partner 1: Make changes to the README on your machine too. Stage, commit and then try to push them (*after* pulling from the GitHub repo first!).
 
@@ -252,8 +292,8 @@ PS — In this case, the source of the problem was obvious. Once we start workin
 
 # Merge conflicts (cont.)
 
-Okay, let's open up the README file and take a look at what's happening.
-- Opening the README in RStudio is a good choice, although your preferred text editor is fine.<sup>1</sup>
+Okay, let's see what's happening by opening up the README file.
+- RStudio is a good choice, although your preferred text editor is fine.<sup>1</sup>
 
 You should see something like:
 ```bash
@@ -267,7 +307,7 @@ Text added by Partner 1.
 More text here.
 ```
 
-.footnote[<sup>1</sup> I use and recommend <a href="https://atom.io/" target="_blank">Atom</a>. You can set your preferred default editor with `$ git config --global core.editor "PREFERRED_EDITOR"`.]
+.footnote[<sup>1</sup> I also use and recommend <a href="https://atom.io/" target="_blank">Atom</a>. You can set your preferred default editor with `$ git config --global core.editor "PREFERRED_EDITOR"`.]
 
 ---
 
@@ -362,18 +402,20 @@ Once that's done, you should be able to stage, commit, pull and finally push you
 --
 
 Caveats
-- Partner 1 gets to decide what to keep because they are the ones that fixed the merge conflict.
+- Partner 1 gets to decide what to keep because they fixed the merge conflict.
 - OTOH, the full commit history is preserved, so Partner 2 can always recover their changes if desired.
-- A more elegant and democratic solution to merge conflicts (and repo changes in general) is provided by Git **branches**. We'll get there soon.
+- A more elegant and democratic solution to merge conflicts (and repo changes in general) is provided by Git **branches**. We'll get there next.
 
 ---
 
 # Aside: Line endings and different OSs
 
+### Problem
+
 During your collaboration, you may have encountered a situation where Git is highlighting differences on seemingly unchanged sentences.
 - If that is the case, check whether your partner is using a different OS to you.
 
-The "culprit" is the fact that Git adds an invisible character at the end of every line. (This is how Git tracks changes.)
+The "culprit" is the fact that Git adds an invisible character at the end of every line. This is how Git tracks changes. (More info [here](https://help.github.com/articles/dealing-with-line-endings/).)
 - For Linux and MacOS, that ending is "LF"
 - For Windows, that ending is "CRLF" (of course it is...)
 
@@ -386,10 +428,6 @@ $ git config --global core.autocrlf input
 ```
 
 (Windows users: Change `input` to `true`).
-
---
-
-PS — More information here: https://help.github.com/articles/dealing-with-line-endings/
 
 ---
 class: inverse, center, middle
@@ -460,22 +498,34 @@ You have two options:
 ---
 class: inverse, center, middle
 
-# Deciding what to track
+# Other tips
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
 
-(.gitgnore)
+---
+
+# README
+
+README files are special in GitHub because they act as repo landing pages.
+- For a project tied to a research paper, this is where you should be explicit about the goal of the research paper, the software requirements, how to run the analysis, and so forth (e.g. [here](https://github.com/grantmcdermott/bycatch)).
+- On the other end of the scale, many GitHub repos are basically standalone README files. Think of these as version-controlled blog posts (e.g. [here](https://github.com/jfiksel/github-classroom-for-teachers)). 
+
+README files can also be added to the *sub-directories* of a repo, where they will act as a landing pages too.
+- Particularly useful for bigger projects. Say, where you are using multiple programming languages (e.g. [here](https://github.com/grantmcdermott/blueparadox/tree/master/R)), or want to add more detail about a dataset (e.g. [here](https://github.com/grantmcdermott/sceptic-priors/tree/master/Data)).
+
+READMEs should be written in Markdown, which GH automatically renders.
+- We'll learn more about [Markdown](https://www.markdownguide.org/) (and its close relation, [R Markdown](https://rmarkdown.rstudio.com/)) during the course of our homework assignments.
 
 ---
 
 # .gitgnore
 
-A .gitignore file tells Git what to (wait for it...) ignore.
+A .gitignore file tells Git what to — *wait for it* — ignore.
 
 This is especially useful if you want to exclude whole folders or a class of files (e.g. based on size or type).
 - Proprietary data files should be ignored from the beginning if you intend to make a repo public at some point.
-- Very large individual files (>100 MB) exceed GitHub's maxmimum allowable size and should be ignored regardless See <a href="https://help.github.com/articles/working-with-large-files/" target="_blank">here</a> and <a href="https://help.github.com/articles/versioning-large-files/" target=_"blank">here</a>.
+- Very large individual files (>100 MB) exceed GitHub's maxmimum allowable size and should be ignored regardless. See <a href="https://help.github.com/articles/working-with-large-files/" target="_blank">here</a> and <a href="https://help.github.com/articles/versioning-large-files/" target=_"blank">here</a>.
 
-I typically add compiled datasets (CSVs) to my .gitignore in the early stages of a project.
+I typically add compiled datasets to my .gitignore in the early stages of a project.
 - Reduces redundant version control history, where the main thing is the code that produces the compiled dataset, not the end CSV in of itself. ("Source is real.")
 - Simple to remove from my .gitignore once the project is being finalised (e.g. paper is being submitted).
   
@@ -485,35 +535,18 @@ I typically add compiled datasets (CSVs) to my .gitignore in the early stages of
 
 You can create a .gitignore file in multiple ways.
 
-- By selecting that option when you first create a repo on GitHub.
-- A .gitignore file is automatically created if you clone your repo using an RStudio Project (see next section).
-- You can create one with your preferred text editor. (Must be saved as ".gitignore".)
-- Or, you can just use the shell:
-  ```bash
-  touch .gitignore
-  ```
-
----
-
-# .gitgnore (cont.)
+- A .gitignore file was automatically generated if you cloned your repo with an RStudio Project.
+- You could also have the option of adding one when you first create a repo on GitHub.
+- Or, you can create one with your preferred text editor. (Must be saved as ".gitignore".)
 
 Once the .gitignore file is created, simply add in lines of text corresponding to the files that should be ignored.
 
 - To ignore a single a file: `FILE-I-WANT-TO-IGNORE.csv`
-
 - To ignore a whole folder (and all of its contents, subfolders, etc.): `FOLDER-NAME/**`
-
 - The standard shell commands and special characters apply.
   - E.g. Ignore all CSV files in the repo: `*.csv`
   - E.g. Ignore all files beginning with "test": `test*` 
   
---
-
-- Protip: We'll learn more about the shell next lecture, but you can directly add files names and text to your .gitignore file by using the `echo` command and `>>`.
-```bash
-$ echo "ANOTHER-FILE-I-WANT-TO-IGNORE.csv" >> .gitignore
-```
-
 ---
 
 class: inverse, center, middle
@@ -527,7 +560,7 @@ class: inverse, center, middle
 
 1. Create a repo on GitHub and initiaize with a README.
 
-2. Clone the repo your local machine. Preferably using an RStudio Project, but as you wish. (E.g. Shell command: `$ git clone REPOSITORY-URL`)
+2. Clone the repo to your local machine. Preferably using an RStudio Project, but as you wish. (E.g. Shell command: `$ git clone REPOSITORY-URL`)
 
 3. Stage any changes you make: `$ git add -A`
 
@@ -541,11 +574,15 @@ class: inverse, center, middle
 
 --
 
-Repeat steps 3--7, but particularly steps 3 & 4, often.
+Repeat steps 3—7 (but especially steps 3 and 4) often.
 
 ---
 
 # Coming up
+
+### Get the course materials
+
+If you haven't done so already, now is a good time to clone/fork the course materials to your local computer.
 
 ### Assignment 1
 
