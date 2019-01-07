@@ -37,9 +37,7 @@ class: inverse, center, middle
 
 # Survey
 
-Results from our [survey](https://goo.gl/forms/PjojERKMOpbo78JJ3)&lt;sup&gt;*&lt;/sup&gt;...
-
-.footnote[[*] https://goo.gl/forms/PjojERKMOpbo78JJ3]
+Results from our [survey](https://goo.gl/forms/PjojERKMOpbo78JJ3)...
 
 ---
 class: inverse, center, middle
@@ -76,7 +74,9 @@ P.S. This is an "environmental" PhD seminar only in the most nominal sense. It i
 
 # You, at the end of this course
 
-![](pics/awesome.jpg)
+&lt;div align="center"&gt;
+&lt;img src="pics/awesome.jpg"&gt;
+&lt;/div&gt;
 
 ---
 # Grading
@@ -211,14 +211,16 @@ Open up the [shell](http://happygitwithr.com/shell.html#shell).
 
 # Checklist (cont.)
 
-We will make sure that everything is working properly with your R and GitHub setup in the next lecture.
+We will make sure that everything is working properly with your R and GitHub setup next lecture.
 
 For the rest of today's lecture, I want to go over some very basic R concepts.
 
 --
 
-- Just so you know where we're headed: We'll return to these R concepts (and delve much deeper) next week after a brief, but important detour to the lands of Git(Hub) and the shell.
-  - Don't worry, it will all make sense. You'll see.
+&lt;/br&gt;
+
+PS — Just so you know where we're headed: We'll return to these R concepts (and delve much deeper) next week after a brief, but important detour to the lands of Git(Hub) and the shell.
+- Don't worry, it will all make sense. You'll see.
 
 ---
 
@@ -229,7 +231,12 @@ class: inverse, center, middle
 
 ---
 
-# Why R and RStudio?
+# Why R and RStudio? (cont.)
+&lt;img src="01-Intro_files/figure-html/indeeddotcom-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Why R and RStudio? (cont.)
 
 ### Data science positivism
 
@@ -255,9 +262,9 @@ programming languages and APIs.
 
 # Some R basics
 
-1. Everything has a name.
+1. Everything is an object.
 
-2. Everything is an object.
+2. Everything has a name.
 
 3. You do things using functions.
 
@@ -268,7 +275,7 @@ programming languages and APIs.
 &lt;/br&gt;
 
 Points 1. and 2. can be summarised as an [object-orientated programming](https://en.wikipedia.org/wiki/Object-oriented_programming) (OOP) approach.
-  - Again, this may all sound really abstract now, but we'll see *lots* of examples in the coming weeks that will make things clear.
+  - This may sound super abstract now, but in the coming weeks we'll see *lots* of examples will make things clear.
 
 ---
 
@@ -284,10 +291,10 @@ If you're coming from Stata, some additional things worth emphasizing:
   - "Base" R comes with tons of useful in-built functions. It also provides all the tools necessary for you to write your own functions. 
   - However, many of R's best data science functions and tools come from external packages written by other users.
 
-- You don't need to `tset or xtset` your data. (Although you can too.)
-
 - R easily and infinitely parallelizes. For free.
   - Compare the cost of a [Stata/MP](https://www.stata.com/statamp/) license, nevermind the fact that you effectively pay per core...
+
+- You don't need to `tset or xtset` your data. (Although you can too.)
 
 ---
 
@@ -375,15 +382,13 @@ Once the packages are installed, load them into your R session with the `library
 library(ggplot2)
 library(gapminder) ## Again, we're just using this package for its dataset
 ```
-- Notice too that you don't need quotes around the package names any more. Reason: R now recognises these packages as defined objects with given names. ("Everything in R is an object and everything has a name.")
+
+Notice too that you don't need quotes around the package names any more. Reason: R now recognises these packages as defined objects with given names. ("Everything in R is an object and everything has a name.")
 
 --
 
-*Note 1:* A convenient way to combine the package installation and loading steps is with the [pacman package's](https://github.com/trinker/pacman) `p_load()` function. If you run `pacman::p_load(ggplot, gapminder)` it will first look to see whether it needs to install either package before loading them. Clever.
-
---
-
-*Note 2:* We'll get to this next week, but if you want to run a function from an (installed) package without loading it, you can use the `PACKAGE::package_function()` syntax.
+PS — A convenient way to combine the package installation and loading steps is with the [pacman package's](https://github.com/trinker/pacman) `p_load()` function. If you run `pacman::p_load(ggplot, gapminder)` it will first look to see whether it needs to install either package before loading them. Clever.
+- We'll get to this next week, but if you want to run a function from an (installed) package without loading it, you can use the `PACKAGE::package_function()` syntax.
 
 ---
 
@@ -483,6 +488,23 @@ ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) + ## Applicable to all
 
 &lt;img src="01-Intro_files/figure-html/aesthetics3-1.svg" style="display: block; margin: auto;" /&gt;
 
+
+---
+
+# 1. Aesthetic mappings (cont.)
+
+Oops. What went wrong here?
+
+```r
+ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) + 
+  geom_point(aes(size = "big", col="black"), alpha = 0.3)
+```
+
+&lt;img src="01-Intro_files/figure-html/aesthetics_mistake-1.svg" style="display: block; margin: auto;" /&gt;
+
+--
+
+**Answer: **Aesthetics must be mapped to variables, not descriptions!
 
 ---
 

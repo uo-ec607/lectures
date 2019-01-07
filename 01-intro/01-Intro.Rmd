@@ -25,6 +25,8 @@ opts_chunk$set(
   dpi=300, #fig.path='Figs/',
   cache=T#, echo=F, warning=F, message=F
   )
+library(tidyverse)
+library(hrbrthemes)
 ```
 
 # Prologue
@@ -35,9 +37,7 @@ opts_chunk$set(
 
 # Survey
 
-Results from our [survey](https://goo.gl/forms/PjojERKMOpbo78JJ3)<sup>*</sup>...
-
-.footnote[[*] https://goo.gl/forms/PjojERKMOpbo78JJ3]
+Results from our [survey](https://goo.gl/forms/PjojERKMOpbo78JJ3)...
 
 ---
 class: inverse, center, middle
@@ -74,7 +74,9 @@ P.S. This is an "environmental" PhD seminar only in the most nominal sense. It i
 
 # You, at the end of this course
 
-![](pics/awesome.jpg)
+<div align="center">
+<img src="pics/awesome.jpg">
+</div>
 
 ---
 # Grading
@@ -196,14 +198,16 @@ Open up the [shell](http://happygitwithr.com/shell.html#shell).
 
 # Checklist (cont.)
 
-We will make sure that everything is working properly with your R and GitHub setup in the next lecture.
+We will make sure that everything is working properly with your R and GitHub setup next lecture.
 
 For the rest of today's lecture, I want to go over some very basic R concepts.
 
 --
 
-- Just so you know where we're headed: We'll return to these R concepts (and delve much deeper) next week after a brief, but important detour to the lands of Git(Hub) and the shell.
-  - Don't worry, it will all make sense. You'll see.
+</br>
+
+PS — Just so you know where we're headed: We'll return to these R concepts (and delve much deeper) next week after a brief, but important detour to the lands of Git(Hub) and the shell.
+- Don't worry, it will all make sense. You'll see.
 
 ---
 
@@ -214,7 +218,42 @@ class: inverse, center, middle
 
 ---
 
-# Why R and RStudio?
+# Why R and RStudio? (cont.)
+```{R, indeeddotcom, echo = F, fig.height = 6, fig.width = 9, dev = "svg"}
+# The popularity data
+pop_df <- 
+  data.frame(
+  lang = c("SQL", "Python", "R", "SAS", "Matlab", "SPSS", "Stata"),
+  n_jobs = c(107130, 66976, 48772, 25644, 11464, 3717, 1624),
+  free = c(T, T, T, F, F, F, F)
+  )
+## Plot it
+pop_df %>% 
+  mutate(lang = lang %>% factor(ordered = T)) %>%
+  ggplot(aes(x = lang, y = n_jobs, fill = free)) +
+  geom_col() +
+  geom_hline(yintercept = 0) +
+  aes(x = reorder(lang, -n_jobs), fill = reorder(free, -free)) +
+  xlab("Statistical language") +
+  scale_y_continuous(label = scales::comma) +
+  ylab("Number of jobs") +
+  labs(
+    title = "Comparing statistical languages",
+    subtitle = "Number of job postings on Indeed.com, 2019/01/06"
+    ) +
+  scale_fill_manual(
+    "Free?",
+    labels = c("True", "False"),
+    values = c("#f92672", "darkslategray")
+    ) +
+  ggthemes::theme_pander(base_size = 17) +
+  # theme_ipsum() +
+  theme(legend.position = "bottom")
+```
+
+---
+
+# Why R and RStudio? (cont.)
 
 ### Data science positivism
 
@@ -240,9 +279,9 @@ programming languages and APIs.
 
 # Some R basics
 
-1. Everything has a name.
+1. Everything is an object.
 
-2. Everything is an object.
+2. Everything has a name.
 
 3. You do things using functions.
 
@@ -253,7 +292,7 @@ programming languages and APIs.
 </br>
 
 Points 1. and 2. can be summarised as an [object-orientated programming](https://en.wikipedia.org/wiki/Object-oriented_programming) (OOP) approach.
-  - Again, this may all sound really abstract now, but we'll see *lots* of examples in the coming weeks that will make things clear.
+  - This may sound super abstract now, but in the coming weeks we'll see *lots* of examples will make things clear.
 
 ---
 
@@ -269,10 +308,10 @@ If you're coming from Stata, some additional things worth emphasizing:
   - "Base" R comes with tons of useful in-built functions. It also provides all the tools necessary for you to write your own functions. 
   - However, many of R's best data science functions and tools come from external packages written by other users.
 
-- You don't need to `tset or xtset` your data. (Although you can too.)
-
 - R easily and infinitely parallelizes. For free.
   - Compare the cost of a [Stata/MP](https://www.stata.com/statamp/) license, nevermind the fact that you effectively pay per core...
+
+- You don't need to `tset or xtset` your data. (Although you can too.)
 
 ---
 
@@ -331,15 +370,13 @@ Once the packages are installed, load them into your R session with the `library
 library(ggplot2)
 library(gapminder) ## Again, we're just using this package for its dataset
 ```
-- Notice too that you don't need quotes around the package names any more. Reason: R now recognises these packages as defined objects with given names. ("Everything in R is an object and everything has a name.")
+
+Notice too that you don't need quotes around the package names any more. Reason: R now recognises these packages as defined objects with given names. ("Everything in R is an object and everything has a name.")
 
 --
 
-*Note 1:* A convenient way to combine the package installation and loading steps is with the [pacman package's](https://github.com/trinker/pacman) `p_load()` function. If you run `pacman::p_load(ggplot, gapminder)` it will first look to see whether it needs to install either package before loading them. Clever.
-
---
-
-*Note 2:* We'll get to this next week, but if you want to run a function from an (installed) package without loading it, you can use the `PACKAGE::package_function()` syntax.
+PS — A convenient way to combine the package installation and loading steps is with the [pacman package's](https://github.com/trinker/pacman) `p_load()` function. If you run `pacman::p_load(ggplot, gapminder)` it will first look to see whether it needs to install either package before loading them. Clever.
+- We'll get to this next week, but if you want to run a function from an (installed) package without loading it, you can use the `PACKAGE::package_function()` syntax.
 
 ---
 
@@ -414,6 +451,20 @@ ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) + ## Applicable to all
   geom_point(aes(size = pop, col = continent), alpha = 0.3) ## Applicable to this geom only
 ```
 
+
+---
+
+# 1. Aesthetic mappings (cont.)
+
+Oops. What went wrong here?
+```{r aesthetics_mistake, warning=FALSE,dev='svg'}
+ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) + 
+  geom_point(aes(size = "big", col="black"), alpha = 0.3)
+```
+
+--
+
+**Answer: **Aesthetics must be mapped to variables, not descriptions!
 
 ---
 
