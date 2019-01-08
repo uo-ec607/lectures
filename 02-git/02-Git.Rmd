@@ -24,6 +24,33 @@ opts_chunk$set(
   )
 ```
 
+class: inverse, center, middle
+
+# Prologue
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+
+# Student presentation: R Markdown
+
+Resources:
+- Website: https://rmarkdown.rstudio.com/
+- Cheatsheat: https://github.com/rstudio/cheatsheets/raw/master/rmarkdown-2.0.pdf (auto download)
+- Book: [*R Markdown: The Definitive Guide*](https://bookdown.org/yihui/rmarkdown/) (Yihui Xie, JJ Allaire, and Garrett Grolemund)
+
+Other points:
+- You will be submitting all of your assignments as R Markdown documents.
+- FWIW, my lecture slides and notes are all written in R Markdown too. (E.g. This slide deck is built the [xaringan package](https://github.com/yihui/xaringan/wiki) with the metroplis theme.)
+
+---
+
+class: inverse, center, middle
+
+# Git and GitHub
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+---
+
 # Why bother?
 
 <div align="center">
@@ -83,7 +110,7 @@ One of the (many) great features of RStudio is how well it integrates version co
 
 I also want to bookmark a general point that we'll revisit many times during this course: 
 - The tools that we're using all form part of a coherent data science ecosystem.
-- Seemless integration greatly reduces the cognitive overhead ("aggregation") associated with traditional workflows, where you have juggle multiple programs and languages at the same time.
+- Greatly reduces the cognitive overhead ("aggregation") associated with traditional workflows, where you have juggle multiple programs and languages at the same time.
 
 ---
 
@@ -96,84 +123,114 @@ The starting point for our workflow is to link a GitHub repository (i.e. "repo")
 3. Open up RStudio.
 4. Navigate to **File -> New Project -> Version Control -> Git**.
 5. Paste your copied link into the "Repository URL:" box.
-6. Choose the project location ("Create project as subdirectory of:") and click "OK".
+6. Choose the project location ("Create project as subdirectory of:") and click **Create Project**.
+  - You may be challenged for your GitHub credential. Learn how to cache these for future use [here](https://happygitwithr.com/credential-caching.html).
 
 .footnote[<sup>1</sup> It's easiest to start with HTTPS, but <a href="http://happygitwithr.com/ssh-keys.html#ssh-keys" target="_blank">SSH</a> is advised for more advanced users.]
 
 --
 
-Practice by these steps now by creating your own repo on GitHub (call it "testing") and cloning it via an RStudio Project.
+Practice by these steps by creating your own repo on GitHub — call it "test" — and cloning it via an RStudio Project. (GIF walkthrough on the next slide...)
 
 ---
 
-# Aside: Why this setup?
+# Link a GitHub repo to an RStudio Project 
 
-Creating the repo on GitHub first means that it will always be "upstream" of your (and any other) local copies.
-- In effect, this allows GitHub to act as the central node in the distributed VC network.
-- Especially valuable when you are collaborating on a project with others — more on this later — but also has advantages when you are working alone.<sup>1</sup>
-
-RStudio Projects are great. Again, they interact seemlessly with Git(Hub), as we've just seen. They also solve absolute vs. relative path problems, since the .Rproj file acts as an anchor point for all other files in the repo.
-  - You know that calling files from `USERNAME/Documents/Special-Subfolder/etc` makes you a bad person, right?
-
-.footnote[<sup>1</sup> If you would like to move an existing project to GitHub, my advice is still to create an empty repo there first, clone it locally, and then copy all your files across.]
+<div align="center">
+<img src="pics/git-create-repo.gif" height=500>
+</div>
 
 ---
 
-# Make some changes locally
-
-(Back to our practice session.)
+# Make some local changes
 
 Look at the top-right panel in your RStudio IDE. Do you see the "Git" tab? 
-- Click on it.
+- Click on it. 
+- There should already be some files in there, which we'll ignore for the moment.<sup>1</sup>
 
 Now open up the README (see the "Files" tab in the bottom-right panel).
 - Add some text like "Hello World!" and save the file.
+- Do you see any changes in the "Git" panel? Good. (Raise your hand if not.)
 
---
 
-Do you see any changes in the "Git" panel?
-- Now it's time to learn the four key Git operations...
+.footnote[<sup>1</sup> They're important, but not for the purposes of this section.]
+
+---
+
+# Make some local changes 
+
+<div align="center">
+<img src="pics/git-local-change.gif" height=500>
+</div>
 
 ---
 
 # Main Git operations
 
-*Stage* (or "add")
-- Tell Git that you want to add changes to the repo history.
+Now that you've cloned your first repo, it's time to learn the four main Git operations.
 
-*Commit*
-- Tell Git that, yes, you are sure these changes should be part of the repo history.
-
-*Pull*
-- Get any new changes made on the GitHub repo (i.e. the upstream remote), either by your collaborators or you on another machine.
-
-*Push*
-- Push any (commited) local changes to the GitHub repo
+1. **Stage** (or "add")
+  - Tell Git that you want to add changes to the repo history (file edits, additions, deletions, etc.).
+2. **Commit**
+  - Tell Git that, yes, you are sure these changes should be part of the repo history.
+3. **Pull**
+  - Get any new changes made on the GitHub repo (i.e. the upstream remote), either by your collaborators or you on another machine.
+4. **Push**
+  - Push any (commited) local changes to the GitHub repo
 
 --
 
-For the moment, it will be useful to group the first two operations and last two operations together. (They are often combined in practice, although you'll soon get a sense of why and when they should be split up.)
+For the moment, it will be useful to group the first two operations and last two operations together. (They are often combined in practice too, although you'll soon get a sense of when and why they should be split up.)
+
+--
+
+Ready for more GIFs?
 
 ---
 
 # Stage and Commit
 
+<div align="center">
+<img src="pics/git-stage-commit.gif" height=500>
+</div>
 
 ---
 
 # Push and Pull
 
+<div align="center">
+<img src="pics/git-push-pull.gif" height=500>
+</div>
 
 ---
 
 # Recap
 
 Here's a step-by-step summary of what we just did.
-- We made same changes to a file locally and saved them.
-- We *staged* these local changes.
-- We *committed* these local changes to our Git history with a helpful message.
-- We *pulled* from the GitHub repo just in case anyone else made changes (not expected here, but good practice).
-- We *pushed* our changes to the GitHub repo.
+- Made same changes to a file and saved them locally.
+- *Staged* these local changes.
+- *Committed* these local changes to our Git history with a helpful message.
+- *Pulled* from the GitHub repo just in case anyone else made changes (not expected here, but good practice).
+- *Pushed* our changes to the GitHub repo.
+
+</br>
+
+**NB.** Always pull from the upstream repo before you push any changes. Seriously, do this even on solo projects. Making it a habit will save you headaches down the road.
+
+---
+
+# Aside: Why this workflow?
+
+Creating the repo on GitHub first means that it will always be "upstream" of your (and any other) local copies.
+- In effect, this allows GitHub to act as the central node in the distributed VC network.
+- Especially valuable when you are collaborating on a project with others — more on this later — but also has advantages when you are working alone.
+- If you would like to move an existing project to GitHub, my advice is still to create an empty repo there first, clone it locally, and then copy all your files across.
+
+RStudio Projects are great. 
+- Again, they interact seemlessly with Git(Hub), as we've just seen. 
+- They also solve absolute vs. relative path problems, since the .Rproj file acts as an anchor point for all other files in the repo.<sup>1</sup>
+
+.footnote[<sup>1</sup> You know that calling files from `YourComputer/YourName/Documents/Special-Subfolder/etc` in your scripts makes you a bad person, right?]
 
 ---
 class: inverse, center, middle
@@ -183,20 +240,20 @@ class: inverse, center, middle
 
 ---
 
-# Two steps forward, one step back?
+# Why bother with the shell?
 
 The GitHub + RStudio Project combo is ideal for new users.
-- RStudio's Git integration and built-in GUI cover all the the major operations.
+- RStudio's Git integration and built-in GUI cover all the major operations.
 - RStudio Projects FTW.
 
 However, I want to go over Git <a href="http://happygitwithr.com/ssh-keys.html#shell" target="_blank">shell</a> commands so that you can internalise the basics.
-- The shell is more powerful and flexible. Does things that the RStudio Git GUI can't.
-- Not to mention more appropriate for projects that aren't primarily based in *R*.
-- We'll also discuss options for standalone Git GUIs (e.g. GitKraken, SourceTree, Atom) towards the end of class.
+- The shell is more powerful and flexible. Does some things that the RStudio Git GUI can't.
+- Potentially more appropriate for projects that aren't primarily based in R. (Although, no real harm from using RStudio Projects to clone a non-R repo.)
+- Also, I'm kinda tired of screen recording animated GIFs.
 
 --
 
-Yes, we're going to cover the shell in depth next lecture, but think of this as a sneak preview.
+(Yes, we're going to cover the shell in depth next lecture, but think of this as a sneak preview.)
 
 ---
 
@@ -220,13 +277,17 @@ $ git status
 
 # Main Git shell commands (cont.)
 
-Add (or "stage") a file or group of files.
+Stage ("add") a file or group of files.
 ```bash
 $ git add NAME-OF-FILE-OR-FOLDER
 ```
 
-There are a bunch of useful flag options here too:
+You can use [wildcard](https://ryanstutorials.net/linuxtutorial/wildcards.php) characters to stage a group of files (e.g. sharing a common prefix). There are a bunch of useful flag options too:
 
+- Stage all files.
+```bash
+$ git add -A
+```
 - Stage updated files only (modified or deleted, but not new).
 ```bash
 $ git add -u
@@ -236,18 +297,13 @@ $ git add -u
 $ git add .
 ```
 
-- Stage all files.
-```bash
-$ git add -A
-```
-
 ---
 
 # Main Git shell commands (cont.)
 
-Commit your changes with a helpful message.
+Commit your changes.
 ```bash
-$ git commit -m "Added robustness check"
+$ git commit -m "Helpful message"
 ```
 
 Pull from the upstream repository (i.e. GitHub).
@@ -259,31 +315,6 @@ Push any local changes that you've commited to the upstream repo (i.e. GitHub).
 ```bash
 $ git push
 ```
-
----
-
-# Git recipe book
-
-1. Add (stage) and commit any local changes
-```bash
-$ git add -A
-$ git commit -m "Amazing new code"
-```
-
-2. Pull any changes from the upstream repo
-```bash
-$ git pull
-```
-
-3. (Fix any merge conflicts)
-
-4. Push your local changes to the GitHub repo
-```bash
-$ git push
-```
-
---
-You can switch 1 and 2. The NB thing is to <i>**always pull from the upstream repo before you push any changes**</i>. Seriously, do this even on solo projects. Making it a habit will save you headaches down the road.
 
 ---
 class: inverse, center, middle
