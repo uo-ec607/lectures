@@ -1,5 +1,5 @@
 ---
-title: "Lecture 2: Deep dive into Git(Hub)"
+title: "Lecture 2: Version control with Git(Hub)"
 subtitle: "<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
 author: Grant McDermott | University of Oregon
 date: EC 607 #"`r format(Sys.time(), '%d %B %Y')`"
@@ -35,13 +35,34 @@ class: inverse, center, middle
 # Student presentation: R Markdown
 
 Resources:
-- Website: https://rmarkdown.rstudio.com/
-- Cheatsheat: https://github.com/rstudio/cheatsheets/raw/master/rmarkdown-2.0.pdf (auto download)
-- Book: [*R Markdown: The Definitive Guide*](https://bookdown.org/yihui/rmarkdown/) (Yihui Xie, JJ Allaire, and Garrett Grolemund)
+- Website: https://rmarkdown.rstudio.com
+- Cheatsheat: https://github.com/rstudio/cheatsheets/raw/master/rmarkdown-2.0.pdf
+- Book: [*R Markdown: The Definitive Guide*](https://bookdown.org/yihui/rmarkdown) (Yihui Xie, JJ Allaire, and Garrett Grolemund)
 
 Other points:
 - You will be submitting all of your assignments as R Markdown documents.
-- FWIW, my lecture slides and notes are all written in R Markdown too. (E.g. This slide deck is built the [xaringan package](https://github.com/yihui/xaringan/wiki) with the metroplis theme.)
+- FWIW, my lecture slides and notes are all written in R Markdown too. (E.g. This slide deck is built using the [xaringan package](https://github.com/yihui/xaringan/wiki) with the metropolis theme.)
+
+---
+
+# Before we start
+
+We went through a sofware installation check during the previous lecture. By now you should have:
+
+☑ Installed [R](https://www.r-project.org/).
+
+☑ Installed [RStudio](https://www.rstudio.com/products/rstudio/download/preview/).
+
+☑ Installed [Git](https://git-scm.com/downloads).
+
+☑ Created an account on [GitHub](https://github.com/) 
+
+☑ Accepted an invitation to EC 607 course repo (quarter specific).
+
+
+</br>
+
+If in doubt about software, please consult Jenny Bryan's amazing guide: http://happygitwithr.com.
 
 ---
 
@@ -66,7 +87,7 @@ class: inverse, center, middle
 - Git is a distributed version control system. (Wait, what?)
 - Okay, try this: Imagine if Dropbox and the "Track changes" feature in MS Word had a baby. Git would be that baby.
 - In fact, it's even better than that because Git is optimised for the things that economists and data scientists spend a lot of time working on (e.g. code).
-- There's a learning curve, but I promise you that it's worth it.
+- There is a learning curve, but I promise you it's worth it.
 
 ### GitHub
 
@@ -123,8 +144,7 @@ The starting point for our workflow is to link a GitHub repository (i.e. "repo")
 3. Open up RStudio.
 4. Navigate to **File -> New Project -> Version Control -> Git**.
 5. Paste your copied link into the "Repository URL:" box.
-6. Choose the project location ("Create project as subdirectory of:") and click **Create Project**.
-  - You may be challenged for your GitHub credential. Learn how to cache these for future use [here](https://happygitwithr.com/credential-caching.html).
+6. Choose the project path ("Create project as subdirectory of:") and click **Create Project**.
 
 .footnote[<sup>1</sup> It's easiest to start with HTTPS, but <a href="http://happygitwithr.com/ssh-keys.html#ssh-keys" target="_blank">SSH</a> is advised for more advanced users.]
 
@@ -148,8 +168,8 @@ Look at the top-right panel in your RStudio IDE. Do you see the "Git" tab?
 - Click on it. 
 - There should already be some files in there, which we'll ignore for the moment.<sup>1</sup>
 
-Now open up the README (see the "Files" tab in the bottom-right panel).
-- Add some text like "Hello World!" and save the file.
+Now open up the README file (see the "Files" tab in the bottom-right panel).
+- Add some text like "Hello World!" and save the README.
 - Do you see any changes in the "Git" panel? Good. (Raise your hand if not.)
 
 
@@ -167,10 +187,10 @@ Now open up the README (see the "Files" tab in the bottom-right panel).
 
 # Main Git operations
 
-Now that you've cloned your first repo, it's time to learn the four main Git operations.
+Now that you've cloned your first repo and made some local changes, it's time to learn the four main Git operations.
 
 1. **Stage** (or "add")
-  - Tell Git that you want to add changes to the repo history (file edits, additions, deletions, etc.).
+  - Tell Git that you want to add changes to the repo history (file edits, additions, deletions, etc.)
 2. **Commit**
   - Tell Git that, yes, you are sure these changes should be part of the repo history.
 3. **Pull**
@@ -194,6 +214,10 @@ Ready for more GIFs?
 <img src="pics/git-stage-commit.gif" height=500>
 </div>
 
+--
+
+Note the helpful commit message to ourselves.
+
 ---
 
 # Push and Pull
@@ -201,6 +225,10 @@ Ready for more GIFs?
 <div align="center">
 <img src="pics/git-push-pull.gif" height=500>
 </div>
+
+--
+
+You may be challenged for your GitHub credentials. Learn how to cache these [here](https://happygitwithr.com/credential-caching.html).
 
 ---
 
@@ -210,16 +238,16 @@ Here's a step-by-step summary of what we just did.
 - Made same changes to a file and saved them locally.
 - *Staged* these local changes.
 - *Committed* these local changes to our Git history with a helpful message.
-- *Pulled* from the GitHub repo just in case anyone else made changes (not expected here, but good practice).
+- *Pulled* from the GitHub repo just in case anyone else made changes too (not expected here, but good practice).
 - *Pushed* our changes to the GitHub repo.
 
 </br>
 
-**NB.** Always pull from the upstream repo before you push any changes. Seriously, do this even on solo projects. Making it a habit will save you headaches down the road.
+NB aside: Always pull from the upstream repo *before* you push any changes. Seriously, do this even on solo projects; making it a habit will save you headaches down the road.
 
 ---
 
-# Aside: Why this workflow?
+# Why this workflow?
 
 Creating the repo on GitHub first means that it will always be "upstream" of your (and any other) local copies.
 - In effect, this allows GitHub to act as the central node in the distributed VC network.
@@ -248,7 +276,7 @@ The GitHub + RStudio Project combo is ideal for new users.
 
 However, I want to go over Git <a href="http://happygitwithr.com/ssh-keys.html#shell" target="_blank">shell</a> commands so that you can internalise the basics.
 - The shell is more powerful and flexible. Does some things that the RStudio Git GUI can't.
-- Potentially more appropriate for projects that aren't primarily based in R. (Although, no real harm from using RStudio Projects to clone a non-R repo.)
+- Potentially more appropriate for projects that aren't primarily based in R. (Although, no real harm in using RStudio Projects to clone a non-R repo.)
 - Also, I'm kinda tired of screen recording animated GIFs.
 
 --
@@ -328,15 +356,17 @@ class: inverse, center, middle
 
 Turn to the person next to you. You are now partners. (Congratulations.)
 
-- Partner 1: Invite Partner 2 to join you as a collaborator on the "testing" GitHub repo that you created earlier. (See "Settings".)
+- P1: Invite P2 to join you as a collaborator on the "test" GitHub repo that you created earlier. (See the *Settings* tab of your repo.)
 
-- Partner 2: Clone the repo to your local machine. Make some edits to the README. Push these changes.
+- P2: Clone P1's repo to your local machine.<sup>1</sup> Make some edits to the README. Stage, commit and push these changes.
 
-- Partner 1: Make changes to the README on your machine too. Stage, commit and then try to push them (*after* pulling from the GitHub repo first!).
+- P1: Now make changes to the README on your machine too. Stage, commit and then try to push them (*after* pulling from the GitHub repo first).
+
+.footnote[<sup>1</sup> Change into a new directory first or give it a different name to avoid conflicts with your own "test" repo. Don't worry, Git tracking will still work if you change the repo name locally.]
 
 --
 
-Did you (i.e. Partner 1) encounter a `merge conflict` error? 
+Did P1 encounter a `merge conflict` error? 
 - Good, that's what we were trying to trigger.
 - Now, let's learn how to fix them.
 
@@ -356,18 +386,14 @@ Unmerged paths:
 
    * both modified:   README.md 
 ```
-- Git is protecting Partner 1 by refusing the merge. It wants to make sure that you don't accidentally overwrite all of your changes by pulling Partner 2's version of the README.
-
---
-
-PS — In this case, the source of the problem was obvious. Once we start working on bigger projects, however, `git status` can provide a helpful summary to see which files are in conflict.
+Git is protecting P1 by refusing the merge. It wants to make sure that you don't accidentally overwrite all of your changes by pulling P2's version of the README.
+- In this case, the source of the problem was obvious. Once we start working on bigger projects, however, `git status` can provide a helpful summary to see which files are in conflict.
 
 ---
 
 # Merge conflicts (cont.)
 
-Okay, let's see what's happening by opening up the README file.
-- RStudio is a good choice, although your preferred text editor is fine.<sup>1</sup>
+Okay, let's see what's happening here by opening up the README file. RStudio is a good choice, although your preferred text editor is fine.<sup>1</sup>
 
 You should see something like:
 ```bash
@@ -418,7 +444,7 @@ Text added by Partner 1.
 More text here.
 ```
 
-- `<<<<<<<` Indicates the start of the merge conflict.
+- `<<<<<<< HEAD` Indicates the start of the merge conflict.
 
 ---
 count: false
@@ -438,7 +464,7 @@ Text added by Partner 1.
 More text here.
 ```
 
-- `<<<<<<<` Indicates the start of the merge conflict.
+- `<<<<<<< HEAD` Indicates the start of the merge conflict.
 - `=======` Indicates the break point used for comparison.
 
 ---
@@ -459,9 +485,9 @@ Text added by Partner 1.
 More text here.
 ```
 
-- `<<<<<<<` Indicates the start of the merge conflict.
+- `<<<<<<< HEAD` Indicates the start of the merge conflict.
 - `=======` Indicates the break point used for comparison.
-- `>>>>>>>` Indicates the end of the lines that had a merge conflict.
+- `>>>>>>> <long string>` Indicates the end of the lines that had a merge conflict.
 
 ---
 
@@ -469,15 +495,15 @@ More text here.
 
 Fixing these conflicts is a simple matter of (manually) editing the README file.
 - Delete the lines of the text that you don't want.
-- Delete the special Git merge conflict symbols.
+- Then, delete the special Git merge conflict symbols.
 
 Once that's done, you should be able to stage, commit, pull and finally push your changes to the GitHub repo without any errors.
 
 --
 
 Caveats
-- Partner 1 gets to decide what to keep because they fixed the merge conflict.
-- OTOH, the full commit history is preserved, so Partner 2 can always recover their changes if desired.
+- P1 gets to decide what to keep because they fixed the merge conflict.
+- OTOH, the full commit history is preserved, so P2 can always recover their changes if desired.
 - A more elegant and democratic solution to merge conflicts (and repo changes in general) is provided by Git **branches**. We'll get there next.
 
 ---
@@ -506,20 +532,30 @@ $ git config --global core.autocrlf input
 ---
 class: inverse, center, middle
 
-# Branches
+# Branches and forking
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
 
 ---
 
-# Why use branches
+# What are branches and why use them?
 
-Branches are one of the coolest features of Git(Hub).
-- Allow you to take a snapshot of your existing repo and try out a whole new idea *without affecting your main branch*.
-- Only once you (and your collaborators) are satisfied would you merge it back into the main branch.
+Branches are one of Git's coolest features.
+- Allow you to take a snapshot of your existing repo and try out a whole new idea *without affecting* your main (i.e. "master") branch.
+- Only once you (and your collaborators) are 100% satisfied, would you merge it back into the master branch.<sup>1</sup>
   - This is how most new features in modern software and apps are developed.
-  - It is also how bugs are identified and fixed.
-  - But researchers can easily -- and should! -- use it to try out new ideas and analysis (e.g. robustness checks, revisions, etc.)
-- If you aren't happy, then you can just delete the branch and continue as if nothing happened.
+  - It is also how bugs are caught and fixed.
+  - But researchers can easily — and should! — use it to try out new ideas and analysis (e.g. robustness checks, revisions, etc.)
+- If you aren't happy, then you can just delete the experimental branch and continue as if nothing happened.
+
+.footnote[<sup>1</sup> You can actually have branches of branches (of branches). But let's not get ahead of ourselves.]
+
+---
+
+# Create a new branch in RStudio
+
+<div align="center">
+<img src="pics/git-new-branch.gif" height=500>
+</div>
 
 ---
 
@@ -553,21 +589,52 @@ $ git push origin :NAME-OF-YOUR-FAILED-BRANCH
 
 ---
 
-# Merging branches and pull requests
+# Merging branches + Pull requests
 
 You have two options:
 
 ### 1. Locally
-- Commit your final changes to the branch (let's call it "feature").
+- Commit your final changes to the new branch (say we call it "new-idea").
 - Switch back to the master branch: `$ git checkout master`
-- Merge in the branch changes: `$ git merge feature`
-- Delete the feature branch (optional): `$ git branch -d feature`
+- Merge in the new-idea branch changes: `$ git merge new-idea`
+- Delete the new-idea branch (optional): `$ git branch -d new-idea`
   
 ### 2. Remotely (i.e. *pull requests* on GitHub)
 - PRs are a way to notify collaborators — or yourself! — that you have completed a feature.
 - You write a summary of all the changes contained in the branch.
-- You then assign suggested reviewers of your code — often yourself — who are then able to approve these changes ("Merge pull request") on GitHub.
+- You then assign suggested reviewers of your code — including yourself potentially — who are then able to approve these changes ("Merge pull request") on GitHub.
 - Let's practice this in class: See <a href="https://help.github.com/articles/creating-a-pull-request/" target="_blank">here</a> for instructions.
+
+---
+
+# Forks
+
+Git forks lie somewhere between cloning a repo and and branching from it.
+- In fact, if you fork a repo then you are really creating a copy of it.
+
+Forking a repo on GitHub is [very simple](https://help.github.com/articles/fork-a-repo/); just click the "Fork" button in the top-right corner of said repo.
+- This will create an independent copy of the repo under your GitHub account.
+- Try this now. Use of [my repos](https://github.com/grantmcdermott?tab=repositories) if you can't think of anyone else's.
+
+Once you fork a repo, you are free to do anything you want to it. (It's yours.) However, forking — in combination with pull requests — is actually how much of the world's software is developed. For example:
+- Outside user *B* forks *A*'s repo. She adds a new feature (or fixes a bug she's identified) and then [issues an upstream pull request](https://help.github.com/articles/creating-a-pull-request-from-a-fork/).
+- *A* is notified and can then decide whether to merge *B*'s contribution with the main project.
+
+---
+
+# Forks (cont.)
+
+Creating forks is super easy as we've just seen. However, maintaining them involves some more leg work if you want to stay up to date with the original repo.
+- GitHub: "[Syncing a fork](https://help.github.com/articles/syncing-a-fork/)"
+- OTOH, this isn't going to be an issue for completed projects. E.g. Forking the repo that contains the code and data of a published paper.
+
+--
+
+### Peer-review
+
+Remember that peer-review component of the course (i.e. 10% of your final grade)? Well, now is a good time to tell you that forks, branches, and pull requests are effectively what I will be expecting of you.
+- Grades aside, I want to encourage you to start thinking about contributing to software projects in general.
+- Seriously, it can be something as simple as correcting typos or language. Many great programmers and data scientists are not English first-language speakers. Helping to improve package documentation is a small way to say thanks. (More [here](https://yihui.name/en/2013/06/fix-typo-in-documentation).)
 
 ---
 class: inverse, center, middle
@@ -620,6 +687,13 @@ Once the .gitignore file is created, simply add in lines of text corresponding t
 - The standard shell commands and special characters apply.
   - E.g. Ignore all CSV files in the repo: `*.csv`
   - E.g. Ignore all files beginning with "test": `test*` 
+
+---
+
+# GitHub Issues
+
+[GitHub Issues](https://guides.github.com/features/issues/) are another great way to interact with your collaborators and/or package maintainers.
+- If you spot any problems with these lecture notes, please file an issue [here](https://github.com/uo-ec607/lectures/issues)!
   
 ---
 
