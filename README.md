@@ -1,8 +1,8 @@
 # Lecture notes for "Environmental Economics and Data Science"
 
-This a PhD seminar taught by [Grant McDermott](http://grantmcdermott.com) at the University of Oregon's Economics Department. 
+This is a graduate economics seminar taught by [Grant McDermott](http://grantmcdermott.com) at the University of Oregon. 
 
-Please read the [syllabus](https://github.com/uo-ec607/syllabus/blob/master/syllabus.pdf) before you go through any of the lectures, to get a better sense of the aims and scope of the course. I also have some minor requests (in the "FAQ" section right at the end) if you are interested in adapting the material here for your own course.
+Please read the [syllabus](https://github.com/uo-ec607/syllabus/blob/master/syllabus.pdf) before you go through any of the lectures. This will detail the sofware requirements, and give you a better sense of the aims and scope of the course. I also have some minor requests (in the "FAQ" section right at the end) if you are interested in adapting the material here for your own course.
 
 ## Lecture outline and quicklinks
 
