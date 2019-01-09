@@ -7,7 +7,7 @@ Please read the [syllabus](https://github.com/uo-ec607/syllabus/blob/master/syll
 ## Lecture outline and quicklinks
 
 1. [Introduction: Motivation, software installation, and data visualization](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.html)
-2. [Version control with Git(Hub)](https://raw.githack.com/uo-ec607/lectures/master/01-intro/02-git/02-Git.html)
+2. [Version control with Git(Hub)](https://raw.githack.com/uo-ec607/lectures/master/02-git/02-Git.html)
 3. Learning to love the shell
 4. R language basics
 5. Data cleaning and wrangling with the “Tidyverse”
