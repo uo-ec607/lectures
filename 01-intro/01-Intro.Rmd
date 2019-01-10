@@ -59,7 +59,7 @@ Fill in the gaps left by traditional econometrics and methods classes.
 
 Data science skills are largely distinct from (and complementary to) the core 'metrics oeuvre familiar to economists.
 
-- Data viz, cleaning and wrangling; programming; cloud computation; relational databases; machine learing; etc.
+- Data viz, cleaning and wrangling; programming; cloud computation; relational databases; machine learning; etc.
 
 --
 
@@ -97,7 +97,7 @@ P.S. This is an "environmental" PhD seminar only in the most nominal sense. It i
 
 ### Data science basics
 
-- Introduction and software troubleshooting
+- Introduction: Motivation, software installation, and data visualization
 - Version control with Git(Hub)
 - Learning to love the shell
 - R language basics
@@ -142,7 +142,7 @@ class: inverse, center, middle
 
 2. Download [RStudio](https://www.rstudio.com/products/rstudio/download/preview/).
 
-3. Download [git](https://git-scm.com/downloads).
+3. Download [Git](https://git-scm.com/downloads).
 
 4. Create an account on [GitHub](https://github.com/) and register for a student/educator [discount](https://education.github.com/discount_requests/new).
   - You will soon receive an invitation to the [course organization](https://github.com/UO-EC607-2019Winter) and [GitHub classroom](https://classroom.github.com), which is how we'll disseminate and submit assignments, receive feedback and grading, etc. 
@@ -285,7 +285,7 @@ programming languages and APIs.
 
 3. You do things using functions.
 
-4. Functions come pre-written in packages (i.e. "libraries"), although you can — and should! — write your own functions too.
+4. Functions come pre-written in packages (i.e. "libraries"), although you can — and should — write your own functions too.
 
 --
 
@@ -301,7 +301,7 @@ Points 1. and 2. can be summarised as an [object-orientated programming](https:/
 If you're coming from Stata, some additional things worth emphasizing:
 
 - Multiple objects (e.g. data frames) can exist happily in the same workspace. 
-   - No more `keep`, `preserve`, `restore` hackery!
+   - No more `keep`, `preserve`, `restore` hackery.
    - This is a direct consequence of the OOP approach.
 
 - You will load packages at the start of every new R session. Make peace with this.
@@ -353,7 +353,7 @@ class: inverse, center, middle
 
 # Install and load
 
-Open up your laptops. For the remainder of this first lecture, we're going contine playing around with (i.e. livecoding) [ggplot2](https://ggplot2.tidyverse.org/).
+Open up your laptops. For the remainder of this first lecture, we're going contine playing around with [ggplot2](https://ggplot2.tidyverse.org/) (i.e. livecoding).
 
 If you don't have them already, install the `ggplot2` and `gapminder` packages via either:
 - **Console:** Enter `install.packages(c("ggplot2", "gapminder"), dependencies=T)`.
@@ -393,7 +393,7 @@ gapminder
 
 # Elements of ggplot2
 
-[Hadley Wickham's](http://hadley.nz/) ggplot2 is one of the most popular packages in the entire R cannon. 
+[Hadley Wickham's](http://hadley.nz/) ggplot2 is one of the most popular packages in the entire R canon. 
 - It also happens to be built upon some deep visualization theory: i.e. Leland Wilkinson's [*The Grammar of Graphics*](https://www.amazon.com/Grammar-Graphics-Statistics-Computing/dp/0387245448).
 
 There's a lot to say about ggplot2's implementation of this "grammar of graphics" approach, but the three key elements are:
