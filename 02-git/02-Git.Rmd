@@ -228,7 +228,7 @@ Note the helpful commit message to ourselves.
 
 --
 
-You may be challenged for your GitHub credentials. Learn how to cache these [here](https://happygitwithr.com/credential-caching.html).
+See [here](https://github.com/richelbilderbeek/Cer2016/issues/6) if you get `Error: unable to read askpass response from 'rpostback-askpass'`.
 
 ---
 
@@ -244,6 +244,10 @@ Here's a step-by-step summary of what we just did.
 </br>
 
 NB aside: Always pull from the upstream repo *before* you push any changes. Seriously, do this even on solo projects; making it a habit will save you headaches down the road.
+
+--
+
+PS — You were likely challenged for your GitHub credentials at some point. Learn how to cache these [here](https://happygitwithr.com/credential-caching.html).
 
 ---
 
