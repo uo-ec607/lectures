@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Lecture 3: Learning to love the shell</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Grant McDermott | University of Oregon" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Lecture 3: Learning to love the shell
+## <html>
+<div style="float:left">
+
+</div>
+<hr color='#EB811B' size=1px width=796px>
+</html>
+### Grant McDermott | University of Oregon
+### EC 607
+
+---
+
+
+
+
+class: inverse, center, middle
+
+# Prologue
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+
+# Checklist
+
+☑ Have you cloned the course lecture repo to your local machine?
+
+☑ Once that's done, pull to get the latest lecture slides.
+
+
+Recommended: Spruce up your GitHub profiles. 
+- Add your full name, a profile picture, link to website, etc.
+- No-one wants to work with or hire a barcode.
+
+---
+
+class: inverse, center, middle
+
+# Intro
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+
+# The UNIX philosophy
+
+&gt; **Do One Thing And Do It Well.** 
+
+The DOTADIW ideal can be applied across the computing spectrum: commands, functions, programs, etc.
+- By pairing and chaining well-designed individual components, we can build powerful and much more complex larger systems.
+- You can see why the UNIX philosophy is also referred to as "minimalist and modular".
+  
+This philosphy is very clearly expressed in the design of the UNIX shell, its various forms, and its commands.
+
+---
+
+# Definitions
+
+The "shell", "terminal", "command prompt"... are all basically&lt;sup&gt;1&lt;/sup&gt; different names for the same thing.
+- They are all referring to a *command line interface* (CLI).
+  
+There are many variants of the shell — even within UNIX — but we're going to work with [Bash](https://www.gnu.org/software/bash/) (**B**ourne **A**gain **SH**ell).
+- Default shell on Linux and MacOS.
+- Windows users can install it via Git for Windows ([here](https://gitforwindows.org/)), or the new Windows Subsystem for Linux ([here](https://docs.microsoft.com/en-us/windows/wsl/install-win10" target)).
+
+
+.footnote[
+&lt;sup&gt;1&lt;/sup&gt; [Truth be told](https://unix.stackexchange.com/questions/4126/what-is-the-exact-difference-between-a-terminal-a-shell-a-tty-and-a-con), there are some subtle and rather important differences, as well as some pretty interesting history behind them. But we'll abstract from these differences here.
+]
+
+--
+
+FWIW, I primarily use the zsh shell in my day-to-day work (with some custom theming), which is why it might look somewhat different to yours during live coding sessions. 
+
+---
+
+# Why bother with the shell?
+
+1. Power
+  - Both for executing commands and for fixing problems.
+2. Reproducibility
+ - Scripting is reproducible, while clicking is not.
+3. Interacting with servers and super computers
+  - The shell is often the only game in town for high performance computing. We'll cover this in more depth in a later lecture.
+4. Automating workflow and analysis pipelines
+  - Easily tracking and reproducing an entire project (combining multiple programs, scripts, etc.).
+
+--
+
+- We're going to focus on 1, 2 and 3 in this course. That's not to say that 4 is unimportant (&lt;a href="http://stat545.com/automation00_index.html" target="_blank"&gt;far from it&lt;/a&gt;), but we won't have time to cover it here. 
+
+---
+class: inverse, center, middle
+
+# Bash shell basics
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+
+# First look
+
+Open up the Bash shell ([Linux](https://www.wikihow.com/Open-a-Terminal-Window-in-Ubuntu), [Mac](https://www.techwalla.com/articles/how-to-open-terminal-on-a-macbook), [Windows](https://www.howtogeek.com/265900/everything-you-can-do-with-windows-10s-new-bash-shell/)). You should see something like:
+
+```bash
+username@hostname:~$ 
+```
+
+This is shell-speak for "who am I and where am I?"
+  &lt;!-- - Type in `$ whoami` without the leading dollar sign to confirm. --&gt;
+
+---
+count: false
+
+# First look
+
+Open up the Bash shell ([Linux](https://www.wikihow.com/Open-a-Terminal-Window-in-Ubuntu), [Mac](https://www.techwalla.com/articles/how-to-open-terminal-on-a-macbook), [Windows](https://www.howtogeek.com/265900/everything-you-can-do-with-windows-10s-new-bash-shell/)). You should see something like:
+
+&lt;p style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;
+&lt;span style='background: #ffff88;'&gt;username&lt;/span&gt;@hostname:~$
+&lt;/p&gt;
+
+This is shell-speak for "who am I and where am I?"
+  &lt;!-- - Type in `$ whoami` without the leading dollar sign to confirm. --&gt;
+
+- &lt;span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.225em;";&gt;
+&lt;span style='background: #ffff88;'&gt;username&lt;/span&gt;&lt;/span&gt; denotes a specific user (one of potentially many on this computer). 
+
+---
+count: false
+
+# First look
+
+Open up the shell ([Linux](https://www.wikihow.com/Open-a-Terminal-Window-in-Ubuntu), [Mac](https://www.techwalla.com/articles/how-to-open-terminal-on-a-macbook), [Windows](https://www.howtogeek.com/265900/everything-you-can-do-with-windows-10s-new-bash-shell/)). You should see something like:
+
+&lt;p style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;
+username&lt;span style='background: #ffff88;'&gt;@hostname&lt;/span&gt;:~$
+&lt;/p&gt;
+
+This is shell-speak for "who am I and where am I?"
+  &lt;!-- - Type in `$ whoami` without the leading dollar sign to confirm. --&gt;
+
+- `username` denotes a specific user (one of potentially many on this computer). 
+
+- &lt;span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.225em;";&gt;
+&lt;span style='background: #ffff88;'&gt;hostname&lt;/span&gt;&lt;/span&gt; denotes the name of the computer or server.
+
+---
+count: false
+
+# First look
+
+Open up the shell ([Linux](https://www.wikihow.com/Open-a-Terminal-Window-in-Ubuntu), [Mac](https://www.techwalla.com/articles/how-to-open-terminal-on-a-macbook), [Windows](https://www.howtogeek.com/265900/everything-you-can-do-with-windows-10s-new-bash-shell/)). You should see something like:
+
+&lt;p style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;
+username@hostname&lt;span style='background: #ffff88;'&gt;:~&lt;/span&gt;$
+&lt;/p&gt;
+
+This is shell-speak for "who am I and where am I?"
+  &lt;!-- - Type in `$ whoami` without the leading dollar sign to confirm. --&gt;
+
+- `username` denotes a specific user (one of potentially many on this computer). 
+
+- `hostname` denotes the name of the computer or server.
+
+- &lt;span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.225em;";&gt;
+&lt;span style='background: #ffff88;'&gt;~&lt;/span&gt;&lt;/span&gt; denotes the directory path (where `~` signifies the user's home directory).
+
+
+---
+count: false
+
+# First look
+
+Open up the shell ([Linux](https://www.wikihow.com/Open-a-Terminal-Window-in-Ubuntu), [Mac](https://www.techwalla.com/articles/how-to-open-terminal-on-a-macbook), [Windows](https://www.howtogeek.com/265900/everything-you-can-do-with-windows-10s-new-bash-shell/)). You should see something like:
+
+&lt;p style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;
+username@hostname:~&lt;span style='background: #ffff88;'&gt;$&lt;/span&gt;
+&lt;/p&gt;
+
+This is shell-speak for "who am I and where am I?"
+  &lt;!-- - Type in `$ whoami` without the leading dollar sign to confirm. --&gt;
+
+- `username` denotes a specific user (one of potentially many on this computer). 
+
+- `hostname` denotes the name of the computer or server.
+
+- `~` denotes the directory path (where `~` signifies the user's home directory).
+
+- &lt;span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.225em;";&gt;
+&lt;span style='background: #ffff88;'&gt;$&lt;/span&gt;&lt;/span&gt; denotes the start of the command prompt.
+  - We'll get to this later, but for a special "super user" called root, the dollar sign will change to a `#`.
+
+---
+
+# Useful keyboard shortcuts
+
+- `Tab` completion.
+
+- Use the `↑` (and `↓`) keys to scroll through previous commands.
+
+- `Ctrl`+`→` (and `Ctrl`+`←`) to skip whole words at a time.
+
+- `Ctrl`+`a` moves the cursor to the beginning of the line.
+
+- `Ctrl`+`e` moves the cursor to the end of the line.
+
+- `Ctrl`+`k` deletes everything to the right of the cursor.
+
+- `Ctrl`+`u` deletes everything to the left of the cursor.
+
+- `Ctrl`+`Shift`+`c` to copy and `Ctrl`+`Shift`+`v` to paste.
+
+- `clear` to clear your terminal.
+
+---
+
+# Syntax
+
+All shell commands will have the same basic syntax:
+
+**&lt;center&gt;command option(s) argument(s)&lt;/center&gt;**
+
+- Examples:
+
+  ```bash
+  $ ls -lh ~/Documents/
+  ```
+  ```bash
+  $ sort -u myfile.txt
+  ```
+
+---
+count: false
+
+# Syntax
+
+All shell commands will have the same basic syntax:
+
+**&lt;center&gt;&lt;span style='background: #ffff88;'&gt;command&lt;/span&gt; option(s) argument(s)&lt;/center&gt;**
+
+- Examples:
+
+  &lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;$ 
+&lt;span style='background: #ffff88;'&gt;ls&lt;/span&gt; -lh ~/Documents/&lt;/span&gt;
+  &lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;$ 
+&lt;span style='background: #ffff88;'&gt;sort&lt;/span&gt; -u myfile.txt&lt;/span&gt;
+
+---
+count: false
+
+# Syntax
+
+All shell commands will have the same basic syntax:
+
+**&lt;center&gt;command &lt;span style='background: #ffff88;'&gt;option(s)&lt;/span&gt; argument(s)&lt;/center&gt;**
+
+- Examples:
+
+  &lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;$ ls
+&lt;span style='background: #ffff88;'&gt;-lh&lt;/span&gt; ~/Documents/&lt;/span&gt;
+  &lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;$ sort
+&lt;span style='background: #ffff88;'&gt;-u&lt;/span&gt; myfile.txt&lt;/span&gt;
+
+
+---
+count: false
+
+# Syntax
+
+All shell commands will have the same basic syntax:
+
+**&lt;center&gt;command option(s) &lt;span style='background: #ffff88;'&gt;argument(s)&lt;/span&gt;&lt;/center&gt;**
+
+- Examples:
+
+  &lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;$ ls -lh
+&lt;span style='background: #ffff88;'&gt;~/Documents/&lt;/span&gt;&lt;/span&gt;
+  &lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;$ sort -u
+&lt;span style='background: #ffff88;'&gt;myfile.txt&lt;/span&gt;&lt;/span&gt;
+
+--
+
+- You don't always need options or arguments. (E.g. `$ ls ~/Documents/` and `$ ls -lh` are both valid commands that will yield output.)
+
+- However, you always need a **command**.
+
+---
+
+# Syntax (cont.)
+
+**options**
+- Start with a dash.
+- Usually one letter.
+- Multiple options can be chained together under a single dash.
+  ```bash
+  $ ls -l -a -h /var/log
+  $ ls -lah /var/log
+  ```
+- An exception is with (rarer) options requiring two dashes.
+  ```bash
+  $ ls --group-directories-first --human-readable /var/log
+  ```
+
+**arguments**
+- Tell the command *what* to operate on.
+- Usually a file, path, or a set of files and folders.
+
+---
+
+# Help
+
+The `man` command ("manual pages") is your friend if you ever need help.
+
+```bash
+$ man ls
+```
+- Hit "h" to see the help notes of the `man` command itself (e.g. you'll see that the spacebar causes you to move down one window) and "q" to quit.
+
+--
+
+I also like the `cheat` utility, which provides a readable summary / cheatsheet for a command. You'll need to &lt;a href="https://github.com/chrisallenlane/cheat" target="_blank"&gt;install&lt;/a&gt; it first. (Not available to Windows users.)
+```bash
+$ cheat ls
+```
+
+---
+class: center, middle
+
+# Files, folders and permissions
+
+---
+
+# Navigation
+
+- `pwd` prints (the current) working directory.
+
+- `cd` lets you change directory.
+  - You can use absolute paths, but it's better to use relative paths and invoke special symbols for a user's home folder (`~`), current directory (`.`), and parent directory (`..`) as needed. 
+  ```bash
+  $ cd ~/Documents/Papers
+  $ cd ../.. # Goes up two folders (BTW, hashes define comments in Bash shell.)
+  ```
+---
+
+# Navigation (cont.)
+
+Beware of folder names that contain spaces. 
+
+- Simply writing, say, `$ cd My Documents` won't work. (Why?)
+
+--
+
+  - Small brain: Use quotation marks: `$ cd "My Documents"`.
+
+  - Big brain: Use Tab completion to automatically "escape" the space: `$ cd My\ Documents`. 
+  
+  - Galaxy brain: Don't use spaces in file and folder names.
+
+---
+
+# Navigation (cont.)
+
+&lt;img src="pics/expanding-brain.jpg" alt="Brain" height="450px"/&gt;
+
+---
+
+# Listing files and their properties
+
+- We're about to go into more depth about the `ls` command.
+
+- To do this effectively, it will be helpful if we're all working off the same group of files and folders.
+
+- Clone &lt;a href="https://github.com/scottsimpson/commandlinebasics" target="_blank"&gt;this repo&lt;/a&gt; to your home folder, navigate to the "Excercise Files" subfolder, and list the files with the `-l` option ("long format").
+
+```bash
+$ cd ~
+$ git clone https://github.com/scottsimpson/commandlinebasics.git
+$ cd commandlinebasics/Exercise\ Files/ # Remember to escape the space!
+$ ls -lh
+total 138K
+drwxrwxrwx 1 root root 4.0K Apr 10 17:23 departments
+-rwxrwxrwx 1 root root  160 Apr 10 17:23 dupes.txt
+-rwxrwxrwx 1 root root 128K Apr 10 17:23 log.tar.gz
+-rwxrwxrwx 1 root root 1.5K Apr 10 17:23 poems.txt
+-rwxrwxrwx 1 root root  129 Apr 10 17:23 simple_data.txt
+-rwxrwxrwx 1 root root   70 Apr 10 17:23 test.sh
+```
+
+---
+
+# Listing files and their properties (cont.)
+
+What does this all mean? Let's focus on the top line.
+
+```bash
+drwxrwxrwx 1 root root 4.0K Apr 10 17:23 departments
+```
+
+---
+count:false
+
+# Listing files and their properties (cont.)
+
+What does this all mean? Let's focus on the top line.
+
+&lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;
+&lt;span style='background: #ffff88;'&gt;d&lt;/span&gt;rwxrwxrwx 1 root root 4.0K Apr 10 17:23 departments&lt;/span&gt;
+
+- The first column denotes the object type:
+  - `d` (directory or folder), - `l` (link), or `-` (file)
+
+---
+
+count:false
+
+# Listing files and their properties (cont.)
+
+What does this all mean? Let's focus on the top line.
+
+&lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;d&lt;span style='background: #ffff88;'&gt;&lt;span style='color: #e41a1c;'&gt;rwx&lt;/span&gt;&lt;span style='color: #377eb8;'&gt;rwx&lt;/span&gt;&lt;span style='color: #4daf4a;'&gt;rwx&lt;/span&gt;&lt;/span&gt; 1 root root 4.0K Apr 10 17:23 departments&lt;/span&gt;
+
+- &lt;span style='color: #A9A9A9;'&gt;The first column denotes the object type:
+  - `d` (directory or folder), - `l` (link), or `-` (file)&lt;/span&gt;
+- Next, we see the permissions associated with the object's three possible user types: 1) &lt;span style='color: #e41a1c;'&gt;owner&lt;/span&gt;, 2) &lt;span style='color: #377eb8;'&gt;the owner's group&lt;/span&gt;, and 3) &lt;span style='color: #4daf4a;'&gt;all other users&lt;/span&gt;.
+  - All three user types have full `r` (read), `w` (write), and `x` (execute) access in this example.
+  - &lt;b&gt;`-`&lt;/b&gt; denotes missing permissions for a class of operations.
+
+---
+count:false
+
+# Listing files and their properties (cont.)
+
+What does this all mean? Let's focus on the top line.
+
+&lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;drwxrwxrwx &lt;span style='background: #ffff88;'&gt;1&lt;/span&gt; root root 4.0K Apr 10 17:23 departments&lt;/span&gt;
+
+- &lt;span style='color: #A9A9A9;'&gt;The first column denotes the object type:
+  - `d` (directory or folder), - `l` (link), or `-` (file)&lt;/span&gt;
+- &lt;span style='color: #A9A9A9;'&gt;Next, we see the permissions associated with the object's three possible user types: 1) owner, 2) the owner's group, and 3) all other users.
+  - All three user types have full `r` (read), `w` (write), and `x` (execute) access in this example.
+  - &lt;b&gt;`-`&lt;/b&gt; denotes missing permissions for a class of operations.&lt;/span&gt;
+- The number of [hard links](http://www.giannistsakiris.com/2011/04/15/counting-and-listing-hard-links-on-linux/) to the object.
+
+---
+count:false
+
+# Listing files and their properties (cont.)
+
+What does this all mean? Let's focus on the top line.
+
+&lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;drwxrwxrwx 1 &lt;span style='background: #ffff88;'&gt;&lt;span style='color: #e41a1c;'&gt;root&lt;/span&gt; &lt;span style='color: #377eb8;'&gt;root&lt;/span&gt;&lt;/span&gt; 4.0K Apr 10 17:23 departments&lt;/span&gt;
+
+- &lt;span style='color: #A9A9A9;'&gt;The first column denotes the object type:
+  - `d` (directory or folder), - `l` (link), or `-` (file)&lt;/span&gt;
+- &lt;span style='color: #A9A9A9;'&gt;Next, we see the permissions associated with the object's three possible user types: 1) owner, 2) the owner's group, and 3) all other users.
+  - All three user types have full `r` (read), `w` (write), and `x` (execute) access in this example.
+  - &lt;b&gt;`-`&lt;/b&gt; denotes missing permissions for a class of operations.&lt;/span&gt;
+- &lt;span style='color: #A9A9A9;'&gt;The number of hard links to the object.&lt;/span&gt;
+- We also see the identity of the object's &lt;span style='color: #e41a1c;'&gt;owner&lt;/span&gt; and their &lt;span style='color: #377eb8;'&gt;group&lt;/span&gt;.
+  - More information about the super user "root" shortly.
+
+---
+
+count:false
+
+# Listing files and their properties (cont.)
+
+What does this all mean? Let's focus on the top line.
+
+&lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;drwxrwxrwx 1 root root &lt;span style='background: #ffff88;'&gt;4.0K Apr 10 17:23 departments&lt;/span&gt;&lt;/span&gt;
+
+- &lt;span style='color: #A9A9A9;'&gt;The first column denotes the object type:
+  - `d` (directory or folder), - `l` (link), or `-` (file)&lt;/span&gt;
+- &lt;span style='color: #A9A9A9;'&gt;Next, we see the permissions associated with the object's three possible user types: 1) owner, 2) the owner's group, and 3) all other users.
+  - All three user types have full `r` (read), `w` (write), and `x` (execute) access in this example.
+  - &lt;b&gt;`-`&lt;/b&gt; denotes missing permissions for a class of operations.&lt;/span&gt;
+- &lt;span style='color: #A9A9A9;'&gt;The number of hard links to the object.&lt;/span&gt;
+- &lt;span style='color: #A9A9A9;'&gt;We also see the identity of the object's owner and their group.
+  - More information about the super user "root" shortly.&lt;/span&gt;
+- Finally, we see some descriptive elements about the object: 
+  - Size, date and time of creation, and the object name.
+
+---
+
+# The super user: "root" and `sudo`
+
+There are two main user roles on a linux system:   
+1. Normal users 
+2. A super user (AKA "root")
+
+Difference is one of priviledge. 
+- Super users can make system changes, install software, browse through different users' home folders, etc. Normal users are much more restricted in what they can do.
+- Explains why Unix-based OS's are much more resilient to security threats like viruses. Need super user priviledges to install (malicious) software.
+
+To log in the super user, you need to know (or [set](http://mixeduperic.com/ubuntu/how-to-set-the-root-password-in-ubuntu.html)) root's password. 
+- Note the extra visual cue: Root's command prompt is a `#` (not a `$`).
+  ```bash
+  root@laptop:~#
+  ```
+
+---
+
+# The super user: "root" and `sudo` (cont.)
+
+It's generally considered very poor practice to log in as root.
+- You needlessly risk messing up your system. Remember there's no "undo" option when working through the shell.
+
+How, then, can normal users perform meaningful system operations (including installing new programs and updating software)?
+
+--
+
+**Answer:** Invoke temporary super user status with &lt;span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.225em;";&gt;
+&lt;span style='background: #ffff88;'&gt;sudo&lt;/span&gt;&lt;/span&gt;. 
+--
+
+- Stands for "super user do".
+- Simply prepend `sudo` to whatever command you want to run.
+
+```bash
+grant@laptop:~$ apt install libxml2-dev ## fails
+grant@laptop:~$ sudo apt install libxml2-dev ## works
+```
+
+???
+
+You have to be a "permitted" user to invoke `sudo`. This should be enabled by default on your personal laptop, but if not see [here](https://www.thegeekstuff.com/2010/09/sudo-command-examples/embed/) or [here](https://www.digitalocean.com/community/tutorials/how-to-create-a-sudo-user-on-ubuntu-quickstart).
+
+---
+
+# Create and remove folders
+
+---
+
+# Copy, move, and delete files and folders
+
+---
+
+# Finding files
+
+---
+
+# File permissions
+
+
+---
+
+
+# Exercise
+
+- Clone (or open) this repo: https://github.com/remi-daigle/shell
+- Then let's open up the shell..
+
+---
+class: center, middle
+
+# Next class: Taking *R* and RStudio for a text drive.
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
