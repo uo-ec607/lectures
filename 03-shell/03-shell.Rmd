@@ -10,6 +10,7 @@ output:
     nature:
       highlightStyle: github
       highlightLines: true
+      highlightSpans: true
       countIncrementalSlides: false
 ---
 
@@ -27,7 +28,6 @@ opts_chunk$set(
 class: inverse, center, middle
 
 # Prologue
-
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
 
 ---
@@ -41,7 +41,7 @@ class: inverse, center, middle
 
 Recommended: Spruce up your GitHub profiles. 
 - Add your full name, a profile picture, link to website, etc.
-- No-one wants to work with or hire a barcode.
+- No-one wants to work with (or hire) a barcode.
 
 ---
 
@@ -58,46 +58,48 @@ class: inverse, center, middle
 
 The DOTADIW ideal can be applied across the computing spectrum: commands, functions, programs, etc.
 - By pairing and chaining well-designed individual components, we can build powerful and much more complex larger systems.
-- You can see why the UNIX philosophy is also referred to as "minimalist and modular".
+- You can see why the Unix philosophy is also referred to as "minimalist and modular".
   
-This philosphy is very clearly expressed in the design of the UNIX shell, its various forms, and its commands.
+This philosphy is very clearly expressed in the design of the Unix shell, its various forms, and its commands.
 
 ---
 
 # Definitions
 
-The "shell", "terminal", "command prompt"... are all basically<sup>1</sup> different names for the same thing.
+The "shell", "terminal", "tty", "command prompt"... these are basically<sup>1</sup> just different names for the same thing.
 - They are all referring to a *command line interface* (CLI).
   
-There are many variants of the shell — even within UNIX — but we're going to work with [Bash](https://www.gnu.org/software/bash/) (**B**ourne **A**gain **SH**ell).
+There are many variants of the shell — even within Unix — but we're going to work with [**Bash**](https://www.gnu.org/software/bash/) (**B**ourne **a**gain **sh**ell).
 - Default shell on Linux and MacOS.
 - Windows users can install it via Git for Windows ([here](https://gitforwindows.org/)), or the new Windows Subsystem for Linux ([here](https://docs.microsoft.com/en-us/windows/wsl/install-win10" target)).
 
 
 .footnote[
-<sup>1</sup> [Truth be told](https://unix.stackexchange.com/questions/4126/what-is-the-exact-difference-between-a-terminal-a-shell-a-tty-and-a-con), there are some subtle and rather important differences, as well as some pretty interesting history behind them. But we'll abstract from these differences here.
+<sup>1</sup> [Truth be told](https://unix.stackexchange.com/questions/4126/what-is-the-exact-difference-between-a-terminal-a-shell-a-tty-and-a-con), there are some subtle and sometimes important differences, as well as some pretty interesting history behind them. But we can abstract from these differences here.
 ]
 
 --
 
-FWIW, I primarily use the zsh shell in my day-to-day work (with some custom theming), which is why it might look somewhat different to yours during live coding sessions. 
+FWIW, I primarily use the Z shell (zsh) in my day-to-day work, which is why it might look [somewhat different](https://ohmyz.sh/) to yours during live coding sessions. 
 
 ---
 
 # Why bother with the shell?
 
 1. Power
-  - Both for executing commands and for fixing problems.
+  - Both for executing commands and for fixing problems. There are some things you just can't do in an IDE or GUI.
+  - It also avoids memory complications associated with certain applications and/or IDEs. We'll get to this issue later in the course.
 2. Reproducibility
  - Scripting is reproducible, while clicking is not.
 3. Interacting with servers and super computers
-  - The shell is often the only game in town for high performance computing. We'll cover this in more depth in a later lecture.
+  - The shell is often the only game in town for high performance computing. We'll get to this later in the course.
 4. Automating workflow and analysis pipelines
-  - Easily tracking and reproducing an entire project (combining multiple programs, scripts, etc.).
+  - Easily track and reproduce an entire project (e.g. use a Makefile to combine multiple programs, scripts, etc.)
 
 --
 
-- We're going to focus on 1, 2 and 3 in this course. That's not to say that 4 is unimportant (<a href="http://stat545.com/automation00_index.html" target="_blank">far from it</a>), but we won't have time to cover it here. 
+We're going to focus on 1, 2 and 3 in this course. That's not to say that 4 is unimportant (far from it), but we just won't have time to cover it. 
+- [Here](http://stat545.com/Classroom/notes/cm109.nb.html), [here](https://ropenscilabs.github.io/drake-manual/index.html), and [here](https://web.stanford.edu/~gentzkow/research/CodeAndData.pdf) are great places to learn about automation on your own if you're interested.
 
 ---
 class: inverse, center, middle
@@ -109,95 +111,100 @@ class: inverse, center, middle
 
 # First look
 
-Open up the Bash shell ([Linux](https://www.wikihow.com/Open-a-Terminal-Window-in-Ubuntu), [Mac](https://www.techwalla.com/articles/how-to-open-terminal-on-a-macbook), [Windows](https://www.howtogeek.com/265900/everything-you-can-do-with-windows-10s-new-bash-shell/)). You should see something like:
+Open up your Bash shell. 
+- [Linux](https://www.wikihow.com/Open-a-Terminal-Window-in-Ubuntu) (You already know what you're doing, but still...)
+- [Mac](https://www.techwalla.com/articles/how-to-open-terminal-on-a-macbook)
+- [Windows](https://www.howtogeek.com/265900/everything-you-can-do-with-windows-10s-new-bash-shell/)
+
+You can also access the Bash shell through RStudio, by clicking on the "Terminal" tab of the bottom-left window pane (i.e. next to the "Console" tab).
+- This should run Bash by default if it is installed on your system. See [here](https://support.rstudio.com/hc/en-us/articles/115010737148-Using-the-RStudio-Terminal) for more details.
+
+---
+
+# First look (cont.)
+
+You should see something like:
 
 ```bash
-username@hostname:~$ 
+ username@hostname:~$
 ```
 
-This is shell-speak for "who am I and where am I?"
+This is shell-speak for: "Who am I and where am I?"
   <!-- - Type in `$ whoami` without the leading dollar sign to confirm. -->
 
 ---
 count: false
 
-# First look
+# First look (cont.)
 
-Open up the Bash shell ([Linux](https://www.wikihow.com/Open-a-Terminal-Window-in-Ubuntu), [Mac](https://www.techwalla.com/articles/how-to-open-terminal-on-a-macbook), [Windows](https://www.howtogeek.com/265900/everything-you-can-do-with-windows-10s-new-bash-shell/)). You should see something like:
+You should see something like:
 
-<p style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";>
-<span style='background: #ffff88;'>username</span>@hostname:~$
-</p>
+```bash
+ `username`@hostname:~$ 
+```
 
-This is shell-speak for "who am I and where am I?"
-  <!-- - Type in `$ whoami` without the leading dollar sign to confirm. -->
-
-- <span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.225em;";>
-<span style='background: #ffff88;'>username</span></span> denotes a specific user (one of potentially many on this computer). 
-
----
-count: false
-
-# First look
-
-Open up the shell ([Linux](https://www.wikihow.com/Open-a-Terminal-Window-in-Ubuntu), [Mac](https://www.techwalla.com/articles/how-to-open-terminal-on-a-macbook), [Windows](https://www.howtogeek.com/265900/everything-you-can-do-with-windows-10s-new-bash-shell/)). You should see something like:
-
-<p style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";>
-username<span style='background: #ffff88;'>@hostname</span>:~$
-</p>
-
-This is shell-speak for "who am I and where am I?"
-  <!-- - Type in `$ whoami` without the leading dollar sign to confirm. -->
+This is shell-speak for: "Who am I and where am I?"
 
 - `username` denotes a specific user (one of potentially many on this computer). 
 
-- <span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.225em;";>
-<span style='background: #ffff88;'>hostname</span></span> denotes the name of the computer or server.
 
 ---
 count: false
 
-# First look
+# First look (cont.)
 
-Open up the shell ([Linux](https://www.wikihow.com/Open-a-Terminal-Window-in-Ubuntu), [Mac](https://www.techwalla.com/articles/how-to-open-terminal-on-a-macbook), [Windows](https://www.howtogeek.com/265900/everything-you-can-do-with-windows-10s-new-bash-shell/)). You should see something like:
+You should see something like:
 
-<p style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";>
-username@hostname<span style='background: #ffff88;'>:~</span>$
-</p>
+```bash
+ username`@hostname`:~$ 
+```
 
-This is shell-speak for "who am I and where am I?"
-  <!-- - Type in `$ whoami` without the leading dollar sign to confirm. -->
+This is shell-speak for: "Who am I and where am I?"
 
 - `username` denotes a specific user (one of potentially many on this computer). 
 
-- `hostname` denotes the name of the computer or server.
+- `@hostname` denotes the name of the computer or server.
 
-- <span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.225em;";>
-<span style='background: #ffff88;'>~</span></span> denotes the directory path (where `~` signifies the user's home directory).
+---
+count: false
+
+# First look (cont.)
+
+You should see something like:
+
+```bash
+ username@hostname`:~`$ 
+```
+
+This is shell-speak for: "Who am I and where am I?"
+
+- `username` denotes a specific user (one of potentially many on this computer). 
+
+- `@hostname` denotes the name of the computer or server.
+
+- `:~` denotes the directory path (where `~` signifies the user's home directory).
 
 
 ---
 count: false
 
-# First look
+# First look (cont.)
 
-Open up the shell ([Linux](https://www.wikihow.com/Open-a-Terminal-Window-in-Ubuntu), [Mac](https://www.techwalla.com/articles/how-to-open-terminal-on-a-macbook), [Windows](https://www.howtogeek.com/265900/everything-you-can-do-with-windows-10s-new-bash-shell/)). You should see something like:
+You should see something like:
 
-<p style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";>
-username@hostname:~<span style='background: #ffff88;'>$</span>
-</p>
+```bash
+ username@hostname:~`$`
+```
 
-This is shell-speak for "who am I and where am I?"
-  <!-- - Type in `$ whoami` without the leading dollar sign to confirm. -->
+This is shell-speak for: "Who am I and where am I?"
 
 - `username` denotes a specific user (one of potentially many on this computer). 
 
-- `hostname` denotes the name of the computer or server.
+- `@hostname` denotes the name of the computer or server.
 
-- `~` denotes the directory path (where `~` signifies the user's home directory).
+- `:~` denotes the directory path (where `~` signifies the user's home directory).
 
-- <span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.225em;";>
-<span style='background: #ffff88;'>$</span></span> denotes the start of the command prompt.
+- `$` denotes the start of the command prompt.
   - We'll get to this later, but for a special "super user" called root, the dollar sign will change to a `#`.
 
 ---
@@ -250,10 +257,12 @@ All shell commands will have the same basic syntax:
 
 - Examples:
 
-  <p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";>$ 
-<span style='background: #ffff88;'>ls</span> -lh ~/Documents/</span>
-  <p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";>$ 
-<span style='background: #ffff88;'>sort</span> -u myfile.txt</span>
+  ```bash
+  $ `ls` -lh ~/Documents/
+  ```
+  ```bash
+  $ `sort` -u myfile.txt
+  ```
 
 ---
 count: false
@@ -266,10 +275,12 @@ All shell commands will have the same basic syntax:
 
 - Examples:
 
-  <p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";>$ ls
-<span style='background: #ffff88;'>-lh</span> ~/Documents/</span>
-  <p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";>$ sort
-<span style='background: #ffff88;'>-u</span> myfile.txt</span>
+  ```bash
+  $ ls `-lh` ~/Documents/
+  ```
+  ```bash
+  $ sort `-u` myfile.txt
+  ```
 
 
 ---
@@ -283,16 +294,18 @@ All shell commands will have the same basic syntax:
 
 - Examples:
 
-  <p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";>$ ls -lh
-<span style='background: #ffff88;'>~/Documents/</span></span>
-  <p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";>$ sort -u
-<span style='background: #ffff88;'>myfile.txt</span></span>
+  ```bash
+  $ ls -lh `~/Documents/`
+  ```
+  ```bash
+  $ sort -u `myfile.txt`
+  ```
 
 --
 
+**commands**
 - You don't always need options or arguments. (E.g. `$ ls ~/Documents/` and `$ ls -lh` are both valid commands that will yield output.)
-
-- However, you always need a **command**.
+- However, you always need a command.
 
 ---
 
@@ -334,9 +347,10 @@ $ cheat ls
 ```
 
 ---
-class: center, middle
+class: inverse, center, middle
 
 # Files, folders and permissions
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
 
 ---
 
@@ -356,7 +370,11 @@ class: center, middle
 
 Beware of folder names that contain spaces. 
 
-- Simply writing, say, `$ cd My Documents` won't work. (Why?)
+- Why doesn't `$ cd My Documents` work? (Try typing it in.)
+
+--
+
+**Answer:** Bash syntax is unapologetically strict about spaces and ordering. It thinks that "My" and "Documents" are separate arguments.
 
 --
 
@@ -370,16 +388,16 @@ Beware of folder names that contain spaces.
 
 # Navigation (cont.)
 
+<div align="center">
 <img src="pics/expanding-brain.jpg" alt="Brain" height="450px"/>
+</div>
 
 ---
 
 # Listing files and their properties
 
-- We're about to go into more depth about the `ls` command.
-
+We're about to go into more depth about the `ls` command.
 - To do this effectively, it will be helpful if we're all working off the same group of files and folders.
-
 - Clone <a href="https://github.com/scottsimpson/commandlinebasics" target="_blank">this repo</a> to your home folder, navigate to the "Excercise Files" subfolder, and list the files with the `-l` option ("long format").
 
 ```bash
@@ -490,9 +508,23 @@ What does this all mean? Let's focus on the top line.
 - Finally, we see some descriptive elements about the object: 
   - Size, date and time of creation, and the object name.
 
+
+---
+class: inverse, center, middle
+
+# User roles and file permissions
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
 ---
 
-# The super user: "root" and `sudo`
+# File permissions
+
+Let's think a bit more about the permissions that we saw attached to the previous file.
+
+
+---
+
+# The super user: root, sudo, etc.
 
 There are two main user roles on a linux system:   
 1. Normal users 
@@ -510,7 +542,7 @@ To log in the super user, you need to know (or [set](http://mixeduperic.com/ubun
 
 ---
 
-# The super user: "root" and `sudo` (cont.)
+# The super user: root, sudo, etc. (cont.)
 
 It's generally considered very poor practice to log in as root.
 - You needlessly risk messing up your system. Remember there's no "undo" option when working through the shell.
@@ -519,8 +551,7 @@ How, then, can normal users perform meaningful system operations (including inst
 
 --
 
-**Answer:** Invoke temporary super user status with <span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.225em;";>
-<span style='background: #ffff88;'>sudo</span></span>. 
+**Answer:** Invoke temporary super user status with `sudo`.
 --
 
 - Stands for "super user do".
@@ -537,6 +568,13 @@ You have to be a "permitted" user to invoke `sudo`. This should be enabled by de
 
 ---
 
+class: inverse, center, middle
+
+# Manipulating files and folders
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+
 # Create and remove folders
 
 ---
@@ -549,8 +587,15 @@ You have to be a "permitted" user to invoke `sudo`. This should be enabled by de
 
 ---
 
-# File permissions
+# Added
 
+- Pipes
+- Variables
+- Functions and for loops
+- Math?
+
+For next lecture:
+- Matrices, lists and other types of objects
 
 ---
 
@@ -561,6 +606,6 @@ You have to be a "permitted" user to invoke `sudo`. This should be enabled by de
 - Then let's open up the shell..
 
 ---
-class: center, middle
+class: inverse, center, middle
 
 # Next class: Taking *R* and RStudio for a text drive.
