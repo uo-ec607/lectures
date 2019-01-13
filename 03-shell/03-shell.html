@@ -45,6 +45,13 @@ Recommended: Spruce up your GitHub profiles.
 - Add your full name, a profile picture, link to website, etc.
 - No-one wants to work with (or hire) a barcode.
 
+--
+
+&lt;/br&gt;
+
+Today's lecture is the last detour before we get back to data analyis with R and RStudio.
+- Laying proper foundations with Git and the shell will put us in a strong positon for advanced data science work as the course develops.
+
 ---
 
 class: inverse, center, middle
@@ -54,35 +61,41 @@ class: inverse, center, middle
 
 ---
 
-# The UNIX philosophy
+# The Unix philosophy
 
-&gt; **Do One Thing And Do It Well.** 
+The shell tools that we're going to be using today have their roots in the [Unix](https://en.wikipedia.org/wiki/Unix) family of operating systems originally developed at Bells Labs in the 1970s.
+
+Besides paying homage, acknowledging the Unix lineage is important because these tools still embody the "[Unix philosophy](https://en.wikipedia.org/wiki/Unix_philosophy)":
+
+&gt; **Do One Thing And Do It Well** 
+
+--
 
 The DOTADIW ideal can be applied across the computing spectrum: commands, functions, programs, etc.
 - By pairing and chaining well-designed individual components, we can build powerful and much more complex larger systems.
 - You can see why the Unix philosophy is also referred to as "minimalist and modular".
   
-This philosphy is very clearly expressed in the design of the Unix shell, its various forms, and its commands.
+Again, this philosophy is very clearly expressed in the design and functionality of the Unix shell.
 
 ---
 
 # Definitions
 
-The "shell", "terminal", "tty", "command prompt"... these are basically&lt;sup&gt;1&lt;/sup&gt; just different names for the same thing.
+Don't be thrown off by terminology: The "shell", "terminal", "tty", "command prompt", etc. 
+- These are all basically&lt;sup&gt;1&lt;/sup&gt; just different names for the same thing.
 - They are all referring to a *command line interface* (CLI).
   
-There are many variants of the shell — even within Unix — but we're going to work with [**Bash**](https://www.gnu.org/software/bash/) (**B**ourne **a**gain **sh**ell).
+There are many shell variants&lt;sup&gt;2&lt;/sup&gt;, but we're going to focus on [**Bash**](https://www.gnu.org/software/bash/) (i.e. **B**ourne **a**gain **sh**ell).
 - Default shell on Linux and MacOS.
-- Windows users can install it via Git for Windows ([here](https://gitforwindows.org/)), or the new Windows Subsystem for Linux ([here](https://docs.microsoft.com/en-us/windows/wsl/install-win10" target)).
+- Windows users should have installed it via Git for Windows ([here](https://gitforwindows.org/)), or the new Windows Subsystem for Linux ([here](https://docs.microsoft.com/en-us/windows/wsl/install-win10" target)).
 
 
 .footnote[
-&lt;sup&gt;1&lt;/sup&gt; [Truth be told](https://unix.stackexchange.com/questions/4126/what-is-the-exact-difference-between-a-terminal-a-shell-a-tty-and-a-con), there are some subtle and sometimes important differences, as well as some pretty interesting history behind them. But we can abstract from these differences here.
+&lt;sup&gt;1&lt;/sup&gt; [Truth be told](https://unix.stackexchange.com/questions/4126/what-is-the-exact-difference-between-a-terminal-a-shell-a-tty-and-a-con), there are some subtle and sometimes important differences, as well as some interesting history behind the names. But we can safely ignore these here.
+
+&lt;sup&gt;2&lt;/sup&gt; For the record, I primarily use the Z shell (zsh) in my day-to-day work, which is why it might look [somewhat different](https://ohmyz.sh/) to yours during live coding sessions.
 ]
 
---
-
-FWIW, I primarily use the Z shell (zsh) in my day-to-day work, which is why it might look [somewhat different](https://ohmyz.sh/) to yours during live coding sessions. 
 
 ---
 
@@ -207,7 +220,7 @@ This is shell-speak for: "Who am I and where am I?"
 - `:~` denotes the directory path (where `~` signifies the user's home directory).
 
 - `$` denotes the start of the command prompt.
-  - We'll get to this later, but for a special "super user" called root, the dollar sign will change to a `#`.
+  - We'll get to this later, but for a special "superuser" called root, the dollar sign will change to a `#`.
 
 ---
 
@@ -235,11 +248,11 @@ This is shell-speak for: "Who am I and where am I?"
 
 # Syntax
 
-All shell commands will have the same basic syntax:
+All shell commands have the same basic syntax:
 
 **&lt;center&gt;command option(s) argument(s)&lt;/center&gt;**
 
-- Examples:
+Examples:
 
   ```bash
   $ ls -lh ~/Documents/
@@ -253,11 +266,11 @@ count: false
 
 # Syntax
 
-All shell commands will have the same basic syntax:
+All shell commands have the same basic syntax:
 
 **&lt;center&gt;&lt;span style='background: #ffff88;'&gt;command&lt;/span&gt; option(s) argument(s)&lt;/center&gt;**
 
-- Examples:
+Examples:
 
   ```bash
   $ `ls` -lh ~/Documents/
@@ -271,11 +284,11 @@ count: false
 
 # Syntax
 
-All shell commands will have the same basic syntax:
+All shell commands have the same basic syntax:
 
 **&lt;center&gt;command &lt;span style='background: #ffff88;'&gt;option(s)&lt;/span&gt; argument(s)&lt;/center&gt;**
 
-- Examples:
+Examples:
 
   ```bash
   $ ls `-lh` ~/Documents/
@@ -290,11 +303,11 @@ count: false
 
 # Syntax
 
-All shell commands will have the same basic syntax:
+All shell commands have the same basic syntax:
 
 **&lt;center&gt;command option(s) &lt;span style='background: #ffff88;'&gt;argument(s)&lt;/span&gt;&lt;/center&gt;**
 
-- Examples:
+Examples:
 
   ```bash
   $ ls -lh `~/Documents/`
@@ -304,6 +317,8 @@ All shell commands will have the same basic syntax:
   ```
 
 --
+
+&lt;/br&gt;
 
 **commands**
 - You don't always need options or arguments. (E.g. `$ ls ~/Documents/` and `$ ls -lh` are both valid commands that will yield output.)
@@ -343,7 +358,7 @@ $ man ls
 
 --
 
-I also like the `cheat` utility, which provides a readable summary / cheatsheet for a command. You'll need to &lt;a href="https://github.com/chrisallenlane/cheat" target="_blank"&gt;install&lt;/a&gt; it first. (Not available to Windows users.)
+I also like the `cheat` utility, which provides a readable summary / cheatsheet for a command. You'll need to [install](https://github.com/chrisallenlane/cheat) it first. (Linux and MacOS only.)
 ```bash
 $ cheat ls
 ```
@@ -351,7 +366,7 @@ $ cheat ls
 ---
 class: inverse, center, middle
 
-# Files, folders and permissions
+# Files and folders
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
 
 ---
@@ -372,11 +387,11 @@ class: inverse, center, middle
 
 Beware of folder names that contain spaces. 
 
-- Why doesn't `$ cd My Documents` work? (Try typing it in.)
+- Why won't `$ cd My Documents` work?
 
 --
 
-**Answer:** Bash syntax is unapologetically strict about spaces and ordering. It thinks that "My" and "Documents" are separate arguments.
+**Answer:** Bash syntax is unapologetically strict about spaces and ordering. Here it thinks that "My" and "Documents" are separate arguments.
 
 --
 
@@ -391,7 +406,7 @@ Beware of folder names that contain spaces.
 # Navigation (cont.)
 
 &lt;div align="center"&gt;
-&lt;img src="pics/expanding-brain.jpg" alt="Brain" height="450px"/&gt;
+&lt;img src="pics/expanding-brain.jpg" alt="Brain" height="550px"/&gt;
 &lt;/div&gt;
 
 ---
@@ -400,20 +415,18 @@ Beware of folder names that contain spaces.
 
 We're about to go into more depth about the `ls` command.
 - To do this effectively, it will be helpful if we're all working off the same group of files and folders.
-- Clone &lt;a href="https://github.com/scottsimpson/commandlinebasics" target="_blank"&gt;this repo&lt;/a&gt; to your home folder, navigate to the "Excercise Files" subfolder, and list the files with the `-l` option ("long format").
+- Navigate to the "exercises" subfolder of this lecture folder and list the files with the `-lh` option ("long format", "human readable").
 
 ```bash
-$ cd ~
-$ git clone https://github.com/scottsimpson/commandlinebasics.git
-$ cd commandlinebasics/Exercise\ Files/ # Remember to escape the space!
+$ cd examples ## Assumes you are starting off in the "03-shell" lecture folder
 $ ls -lh
-total 138K
-drwxrwxrwx 1 root root 4.0K Apr 10 17:23 departments
--rwxrwxrwx 1 root root  160 Apr 10 17:23 dupes.txt
--rwxrwxrwx 1 root root 128K Apr 10 17:23 log.tar.gz
--rwxrwxrwx 1 root root 1.5K Apr 10 17:23 poems.txt
--rwxrwxrwx 1 root root  129 Apr 10 17:23 simple_data.txt
--rwxrwxrwx 1 root root   70 Apr 10 17:23 test.sh
+total 136K
+drwxr-xr-x 2 grant users 4.0K Jan 12 22:02  ABC
+drwxr-xr-x 2 grant users 4.0K Jan 12 14:53 'Bad folder name'
+drwxr-xr-x 2 grant users 4.0K Jan 12 21:33  meals
+-rwxr-xr-x 1 grant users   48 Jan 12 22:13  hello.sh
+-rw-r--r-- 1 grant users  153 Jan 12 21:20  reps.txt
+-rw-r--r-- 1 grant users 120K Jan 12 14:58  sonnets.txt
 ```
 
 ---
@@ -423,7 +436,7 @@ drwxrwxrwx 1 root root 4.0K Apr 10 17:23 departments
 What does this all mean? Let's focus on the top line.
 
 ```bash
-drwxrwxrwx 1 root root 4.0K Apr 10 17:23 departments
+drwxr-xr-x 2 grant users 4.0K Jan 12 22:02 ABC
 ```
 
 ---
@@ -434,7 +447,7 @@ count:false
 What does this all mean? Let's focus on the top line.
 
 &lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;
-&lt;span style='background: #ffff88;'&gt;d&lt;/span&gt;rwxrwxrwx 1 root root 4.0K Apr 10 17:23 departments&lt;/span&gt;
+&lt;span style='background: #ffff88;'&gt;d&lt;/span&gt;rwxr-xr-x 2 grant users 4.0K Jan 12 22:02 ABC&lt;/span&gt;
 
 - The first column denotes the object type:
   - `d` (directory or folder), - `l` (link), or `-` (file)
@@ -447,12 +460,12 @@ count:false
 
 What does this all mean? Let's focus on the top line.
 
-&lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;d&lt;span style='background: #ffff88;'&gt;&lt;span style='color: #e41a1c;'&gt;rwx&lt;/span&gt;&lt;span style='color: #377eb8;'&gt;rwx&lt;/span&gt;&lt;span style='color: #4daf4a;'&gt;rwx&lt;/span&gt;&lt;/span&gt; 1 root root 4.0K Apr 10 17:23 departments&lt;/span&gt;
+&lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;d&lt;span style='background: #ffff88;'&gt;&lt;span style='color: #e41a1c;'&gt;rwx&lt;/span&gt;&lt;span style='color: #377eb8;'&gt;r-x&lt;/span&gt;&lt;span style='color: #4daf4a;'&gt;r-x&lt;/span&gt;&lt;/span&gt; 2 grant users 4.0K Jan 12 22:02 ABC&lt;/span&gt;
 
 - &lt;span style='color: #A9A9A9;'&gt;The first column denotes the object type:
   - `d` (directory or folder), - `l` (link), or `-` (file)&lt;/span&gt;
 - Next, we see the permissions associated with the object's three possible user types: 1) &lt;span style='color: #e41a1c;'&gt;owner&lt;/span&gt;, 2) &lt;span style='color: #377eb8;'&gt;the owner's group&lt;/span&gt;, and 3) &lt;span style='color: #4daf4a;'&gt;all other users&lt;/span&gt;.
-  - All three user types have full `r` (read), `w` (write), and `x` (execute) access in this example.
+  - Permissions reflect `r` (read), `w` (write), or `x` (execute) access.
   - &lt;b&gt;`-`&lt;/b&gt; denotes missing permissions for a class of operations.
 
 ---
@@ -462,12 +475,12 @@ count:false
 
 What does this all mean? Let's focus on the top line.
 
-&lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;drwxrwxrwx &lt;span style='background: #ffff88;'&gt;1&lt;/span&gt; root root 4.0K Apr 10 17:23 departments&lt;/span&gt;
+&lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;drwxr-xr-x &lt;span style='background: #ffff88;'&gt;2&lt;/span&gt; grant users 4.0K Jan 12 22:02 ABC&lt;/span&gt;
 
 - &lt;span style='color: #A9A9A9;'&gt;The first column denotes the object type:
   - `d` (directory or folder), - `l` (link), or `-` (file)&lt;/span&gt;
 - &lt;span style='color: #A9A9A9;'&gt;Next, we see the permissions associated with the object's three possible user types: 1) owner, 2) the owner's group, and 3) all other users.
-  - All three user types have full `r` (read), `w` (write), and `x` (execute) access in this example.
+  - Permissions reflect `r` (read), `w` (write), or `x` (execute) access.
   - &lt;b&gt;`-`&lt;/b&gt; denotes missing permissions for a class of operations.&lt;/span&gt;
 - The number of [hard links](http://www.giannistsakiris.com/2011/04/15/counting-and-listing-hard-links-on-linux/) to the object.
 
@@ -478,16 +491,15 @@ count:false
 
 What does this all mean? Let's focus on the top line.
 
-&lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;drwxrwxrwx 1 &lt;span style='background: #ffff88;'&gt;&lt;span style='color: #e41a1c;'&gt;root&lt;/span&gt; &lt;span style='color: #377eb8;'&gt;root&lt;/span&gt;&lt;/span&gt; 4.0K Apr 10 17:23 departments&lt;/span&gt;
+&lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;drwxr-xr-x 2 &lt;span style='background: #ffff88;'&gt;&lt;span style='color: #e41a1c;'&gt;grant&lt;/span&gt; &lt;span style='color: #377eb8;'&gt;users&lt;/span&gt;&lt;/span&gt; 4.0K Jan 12 22:02 ABC&lt;/span&gt;
 
 - &lt;span style='color: #A9A9A9;'&gt;The first column denotes the object type:
   - `d` (directory or folder), - `l` (link), or `-` (file)&lt;/span&gt;
 - &lt;span style='color: #A9A9A9;'&gt;Next, we see the permissions associated with the object's three possible user types: 1) owner, 2) the owner's group, and 3) all other users.
-  - All three user types have full `r` (read), `w` (write), and `x` (execute) access in this example.
+  - Permissions reflect `r` (read), `w` (write), or `x` (execute) access.
   - &lt;b&gt;`-`&lt;/b&gt; denotes missing permissions for a class of operations.&lt;/span&gt;
 - &lt;span style='color: #A9A9A9;'&gt;The number of hard links to the object.&lt;/span&gt;
 - We also see the identity of the object's &lt;span style='color: #e41a1c;'&gt;owner&lt;/span&gt; and their &lt;span style='color: #377eb8;'&gt;group&lt;/span&gt;.
-  - More information about the super user "root" shortly.
 
 ---
 
@@ -497,16 +509,15 @@ count:false
 
 What does this all mean? Let's focus on the top line.
 
-&lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;drwxrwxrwx 1 root root &lt;span style='background: #ffff88;'&gt;4.0K Apr 10 17:23 departments&lt;/span&gt;&lt;/span&gt;
+&lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;drwxr-xr-x 2 grant users &lt;span style='background: #ffff88;'&gt;4.0K Jan 12 22:02 ABC&lt;/span&gt;&lt;/span&gt;
 
 - &lt;span style='color: #A9A9A9;'&gt;The first column denotes the object type:
   - `d` (directory or folder), - `l` (link), or `-` (file)&lt;/span&gt;
 - &lt;span style='color: #A9A9A9;'&gt;Next, we see the permissions associated with the object's three possible user types: 1) owner, 2) the owner's group, and 3) all other users.
-  - All three user types have full `r` (read), `w` (write), and `x` (execute) access in this example.
+  - Permissions reflect `r` (read), `w` (write), or `x` (execute) access.
   - &lt;b&gt;`-`&lt;/b&gt; denotes missing permissions for a class of operations.&lt;/span&gt;
 - &lt;span style='color: #A9A9A9;'&gt;The number of hard links to the object.&lt;/span&gt;
-- &lt;span style='color: #A9A9A9;'&gt;We also see the identity of the object's owner and their group.
-  - More information about the super user "root" shortly.&lt;/span&gt;
+- &lt;span style='color: #A9A9A9;'&gt;We also see the identity of the object's owner and their group.&lt;/span&gt;
 - Finally, we see some descriptive elements about the object: 
   - Size, date and time of creation, and the object name.
 
@@ -519,54 +530,135 @@ class: inverse, center, middle
 
 ---
 
-# File permissions
+class: center, middle
 
-Let's think a bit more about the permissions that we saw attached to the previous file.
-
+*Disclaimer: This next section is tailored towards Unix-based operating systems (Linux or MacOS). However, it will become relevant to everyone (even Windows users) once we start interacting with Linux servers, spinning up Docker containers, etc. later in the course.*
 
 ---
 
-# The super user: root, sudo, etc.
+# The superuser: root, sudo, etc.
 
-There are two main user roles on a linux system:   
+There are two main user roles on a Linux system:   
 1. Normal users 
-2. A super user (AKA "root")
+2. A superuser (AKA "root")
 
 Difference is one of priviledge. 
-- Super users can make system changes, install software, browse through different users' home folders, etc. Normal users are much more restricted in what they can do.
-- Explains why Unix-based OS's are much more resilient to security threats like viruses. Need super user priviledges to install (malicious) software.
+- Superusers can make system changes, install software, browse through different users' home folders, etc. Normal users are much more restricted in what they can do.
+- Explains why Unix-based OS's are much more resilient to security threats like viruses. Need superuser priviledges to install (potentially malicious) software.
 
-To log in the super user, you need to know (or [set](http://mixeduperic.com/ubuntu/how-to-set-the-root-password-in-ubuntu.html)) root's password. 
-- Note the extra visual cue: Root's command prompt is a `#` (not a `$`).
+--
+
+To fully switch over to the superuser, you can type `sudo -s`. 
+- Remember to type `exit` to switch back!
+- Note the extra visual cue: root's command prompt is a `#` (not a `$`).
   ```bash
   root@laptop:~#
   ```
 
+However...
+
 ---
 
-# The super user: root, sudo, etc. (cont.)
+# The superuser: root, sudo, etc. (cont.)
 
-It's generally considered very poor practice to log in as root.
-- You needlessly risk messing up your system. Remember there's no "undo" option when working through the shell.
-
-How, then, can normal users perform meaningful system operations (including installing new programs and updating software)?
+It is generally considered very poor practice to switch over to root for long periods, since you needlessly risk messing up your system. 
+- Remember there's no "undo" option when working through the shell.
 
 --
 
-**Answer:** Invoke temporary super user status with `sudo`.
+**Question:** How, then, can normal users perform meaningful system operations (including installing new programs and updating software)?
+
 --
 
-- Stands for "super user do".
+**Answer:** Invoke temporary superuser status with `sudo`.
+
+- Stands for "superuser do".
 - Simply prepend `sudo` to whatever command you want to run.
 
 ```bash
-grant@laptop:~$ apt install libxml2-dev ## fails
-grant@laptop:~$ sudo apt install libxml2-dev ## works
+grant@laptop:~$ ls /root ## fails
+grant@laptop:~$ sudo ls /root ## works
 ```
 
-???
+--
 
-You have to be a "permitted" user to invoke `sudo`. This should be enabled by default on your personal laptop, but if not see [here](https://www.thegeekstuff.com/2010/09/sudo-command-examples/embed/) or [here](https://www.digitalocean.com/community/tutorials/how-to-create-a-sudo-user-on-ubuntu-quickstart).
+&lt;/br&gt;
+
+*Note: You have to be a "permitted" user to invoke `sudo`. This should be enabled by default on your personal laptop, but if not see [here](https://www.thegeekstuff.com/2010/09/sudo-command-examples/embed/) or [here](https://www.digitalocean.com/community/tutorials/how-to-create-a-sudo-user-on-ubuntu-quickstart).*
+
+---
+
+# Changing permissions and ownership
+
+Let's go back to the folder that we saw previously.
+
+```bash
+drwxr-xr-x 2 grant users 4.0K Jan 12 22:12  ABC
+```
+
+We can change the permissions and ownership of this folder with the `chmod` and `chown` commands, respectively.
+- We'll review these in turn.
+- Note that I'm going to use the "recursive" option (i.e. `-R`), but only because ABC is a folder. You can drop that when modifying individual files.
+
+
+---
+
+# chmod
+
+Changing permissions using `chmod` depends on how those permissions are represented. 
+- There are two options: 1) Octal notation and 2) Symbolic notation. 
+- We'll go into more detail on the next slide, but let's see some examples first.
+- (Test the results yourself using `$ ls -lh ABC` afterwards.)
+
+**Example 1: rwxrwxrwx.** Read, write and execute permission for all users.
+- Octal: `$ chmod -R 777 ABC`
+- Symbolic: `$ chmod -R a=rwx ABC`
+
+**Example 2: rwxr-xr-x.** Read, write and execute permission for the main user (i.e. owner) of the file. For all other users, read and execute permission only.
+- Octal: `$ chmod -R 755 ABC`
+- Symbolic: `$ chmod -R u=rwx,g=rx,o=rx ABC`
+
+--
+
+Now that we've seen some examples, let's get into the logic behind them.
+
+---
+
+# chmod (cont.)
+
+### Octal notation
+
+Takes advantage of the fact that `4` (for "read"), `2` (for "write"), and `1` (for "execute") can be combined in unambiguous ways.
+- 7 (= 4 + 2 + 1) means read, write and execute permission.
+- 5 (= 4 + 0 + 1) means read and execute permission, but not write permission.
+- etc. 
+- Note that Octal notation requires a number for each of the three user types: owner, owner's group, and all others. E.g. `chmod 777 myfile.txt`
+
+### Symbolic notation
+
+Links permissions to different symbols (i.e. abbreviations).
+- Users: `u` ("User/owner"), `g` ("Group"), `o` ("Others""), `a` ("All")
+- Permissions: `r` ("read"), `w` ("write"), `x` ("execute")
+- Changes: `+` ("add permissions"), `-` ("remove permissions"), `=` ("set new permissions") 
+
+---
+
+# chmod (cont.)
+
+Here's a quick comparison table with some common permission levels.
+
+| Octal value | Symbolic value    | Permission level |
+|:-----------:|:-----------------:|:----------------:|
+| 777         | a+rwx             | rwxrwxrwx        |
+| 770         | u+rwx,g+rwx,o-rwx | rwx------        |
+| 755         | a+rwx,g=rw,o=rw   | rwxrwxrwx        |
+| 700         | u+rwx,g-rwx,o-rwx | rwx------        |
+| 644         | u=rw,g=r,o=r      | rw-r--r--        |
+
+
+--
+
+Note that changing permissions via the Symbolic method doesn't need the whole entry. E.g. To go from the first line to the second, I'd only need `$ chmod o-rwx myfile`
 
 ---
 
@@ -577,11 +669,13 @@ class: inverse, center, middle
 
 ---
 
-# Create and remove folders
+# Copy, move, and delete files and folders
+
+Wildcards
 
 ---
 
-# Copy, move, and delete files and folders
+# Create and remove folders
 
 ---
 
@@ -591,10 +685,13 @@ class: inverse, center, middle
 
 # Added
 
+- Regex
 - Pipes
+- wc (line, word, characters)
 - Variables
 - Functions and for loops
 - Math?
+- top and htop
 
 For next lecture:
 - Matrices, lists and other types of objects
@@ -610,7 +707,8 @@ For next lecture:
 ---
 class: inverse, center, middle
 
-# Next class: Taking *R* and RStudio for a text drive.
+# Next class: *R* language basics
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
     </textarea>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({
