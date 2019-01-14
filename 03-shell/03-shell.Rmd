@@ -22,7 +22,7 @@ opts_chunk$set(
   fig.align="center", #fig.width=6, fig.height=4.5, 
   # out.width="748px", #out.length="520.75px",
   dpi=300, #fig.path='Figs/',
-  cache=T#, echo=F, warning=F, message=F
+  cache=F#, echo=F, warning=F, message=F
   )
 ## Next hook based on this SO answer: https://stackoverflow.com/a/39025054
 knit_hooks$set(
@@ -337,7 +337,7 @@ Examples:
 
 # Syntax (cont.)
 
-**options**
+**options** (also called **flags**)
 - Start with a dash.
 - Usually one letter.
 - Multiple options can be chained together under a single dash.
@@ -371,7 +371,7 @@ man ls
 
 I also like the [cheat](https://github.com/chrisallenlane/cheat) utility, which provides a more readable summary / cheatsheet of various command. You'll need to install it first. (Linux and MacOS only.)
 
-```bash
+```
 $ cheat ls
 
 ## # Displays everything in the target directory
@@ -410,12 +410,12 @@ class: inverse, center, middle
 You can use absolute paths, but it's better to use relative paths and invoke special symbols for a user's home folder (`~`), current directory (`.`), and parent directory (`..`) as needed. 
 
 ```{bash nav1}
-cd ~/Documents/Papers
 pwd
 ```
 
 ```{bash nav2}
-cd ../.. ## Goes back up two directories.
+cd examples ## Move into the "examples" sub-directory of this lecture directory.
+cd ../.. ## Now go back up two directories.
 pwd
 ```
 
@@ -579,22 +579,124 @@ Note: We'll return to file permissions and ownership at the end of the lecture.
 
 class: inverse, center, middle
 
-# Manipulating files and folders
+# Manipulating files and directories
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
 
 ---
 
-# Copy, move, and delete files and folders
+# Create files and dirs: touch and mkdir
 
-Wildcards
+Let's take directories first. To create a directory use `mkdir`:
+```{bash mkdir}
+mkdir testing
+```
+
+To create (empty) files, we can use `touch`:
+```{bash touch}
+touch testing/test1.txt testing/test2.txt testing/test3.txt
+```
+
+Check that it worked
+```{bash}
+ls testing
+```
 
 ---
 
-# Create and remove folders
+# Remove files and dirs: rm and rmdir
+
+Let's delete the objects that we just created. Start with one of the .txt files, by using `rm`.
+- We could delete all the files at the same time, but you'll see why I want to keep some.
+
+```{bash rm1}
+rm testing/test1.txt
+```
+
+The equivalent command for directories is `rmdir`.
+```{bash rmdir, error=T}
+rmdir testing
+```
+
+--
+
+Uh oh... It won't let us delete the directory while it still has files inside of it. The solution is to use the `rm` command again with the "recursive" (`-r` or `-R`) and "force" (`-f`) options. 
+- Excluding the `-f` option is safer, but will trigger a confirmation prompt for every file, which I'd rather avoid here.
+
+```{bash rm2, error=T}
+rm -rf testing ## Success
+```
 
 ---
 
-# Finding files
+# Copying files and directories: cp
+
+The syntax for copying is `$ cp objectname (copyname)`
+- If you don't provide a name for the copied object, it will just take the old name.
+- However, if there is already an object with the same name in the target destination, then you'll have to use `-f` to force an overwrite.
+
+```{bash cp1}
+## Show that the "copies" sub-directory is empty
+ls examples/copies
+```
+
+```{bash cp2}
+## Now copy across a file (with a new name)
+cp examples/reps.txt examples/copies/reps-copy.txt
+ls examples/copies
+```
+
+--
+
+You can use `cp` to copy directories, although you'll need the `-r` (or `-R`) flag if you want to recursively copy over everything inside of it to. 
+- Try this by copying over the `meals/` directory to `copies/`.
+
+---
+
+# Moving and renaming files: mv 
+
+The syntax for this command is `$ mv file (newfilename)` 
+- Note that moving a file with the "newfilename" option is a convenient<sup>1</sup> way to rename a file.
+
+```{bash mv}
+ ## Rename reps-copy to reps2 by moving it with a new name
+mv examples/copies/reps-copy.txt examples/copies/reps2.txt
+ls examples/copies
+```
+
+.footnote[
+<sup>1</sup> Your convenience mileage may vary.
+]
+
+---
+
+# Wildcards
+
+[Wildcards](http://tldp.org/LDP/GNU-Linux-Tools-Summary/html/x11655.htm) are special characters that can be used as a replacement for other characters. The two most important ones are:
+
+`*` replaces any number of characters. 
+- Convenient when you want to copy, move, or delete a whole class of files.
+  ```{bash asterisk}
+  cp examples/*.sh examples/copies ## Copy any file with an .sh extension to "copies"
+  rm examples/copies/* ## Delete everything in the "copies" directory
+  ```
+  
+`?` replaces a single character. 
+- Convenient when you want to discriminate between similarly named files.
+  ```{bash qmark}
+  ls examples/meals/??nday.csv
+  ls examples/meals/?onday.csv
+  ```  
+
+???
+
+We've already seen one wildcard in the form of the backlash (`\`) that was used to escape spaces in file and folder names, e.g. `$ cd My\ Documents`.
+
+---
+
+class: inverse, center, middle
+
+# Working with text files
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
 
 ---
 
@@ -606,10 +708,8 @@ Wildcards
 - Variables
 - Functions and for loops
 - Math?
+- ssh
 - top and htop
-
-For next lecture:
-- Matrices, lists and other types of objects
 
 ---
 class: inverse, center, middle
@@ -698,15 +798,18 @@ We can change the permissions and ownership of this folder with the `chmod` and 
 # chmod
 
 Changing permissions using `chmod` depends on how those permissions are represented. 
-- There are two options: 1) Octal notation and 2) Symbolic notation. 
+
+There are two options: 1) Octal notation and 2) Symbolic notation. 
 - We'll go into more detail on the next slide, but let's see some examples first.
-- (Test the results yourself using `$ ls -lh ABC` afterwards.)
+- (Test the results yourself using the `ls -lh` command afterwards.)
 
 --
 
 **Example 1: rwxrwxrwx.** Read, write and execute permission for all users.
 - Octal: `$ chmod -R 777 ABC`
 - Symbolic: `$ chmod -R a=rwx ABC`
+
+--
 
 **Example 2: rwxr-xr-x.** Read, write and execute permission for the main user (i.e. owner) of the file. For all other users, read and execute permission only.
 - Octal: `$ chmod -R 755 ABC`
@@ -778,19 +881,19 @@ class: inverse, center, middle
 
 ---
 
-# Exercises
+# Next steps
 
-Open up the "exercises" subfolder associated with this lecture. Now I want you to try and play around with the contents using some of the different Bash commands we've practiced today.
-- Change the permissions on an indivdual.
+### Exercises
+
+Open up the "exercises" subfolder associated with this lecture. I want you to try and play around with the contents using some of the different Bash commands we've practiced today.
+- Change the permissions on an indivdual file or a whole directory.
 - Read in some lines of text and pipe them to another file.
 - Count the number of times Shakespeare refers to "mistress" or "love" in his Sonnets.
 - Merge the separate CSVs in the "meals" subfolder into one document.
 - Write a new bash script and execute it.
 - Etc.
 
----
-
-# Further reading
+### Further reading
 
 - [The Unix Shell](http://swcarpentry.github.io/shell-novice/) (Software Carpentery)
 - [The Unix Workbench](https://seankross.com/the-unix-workbench/) (Sean Kross)
