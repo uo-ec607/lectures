@@ -144,6 +144,8 @@ You should see something like:
  username@hostname:~$
 ```
 
+--
+
 This is shell-speak for: "Who am I and where am I?"
   &lt;!-- - Type in `$ whoami` without the leading dollar sign to confirm. --&gt;
 
@@ -248,7 +250,7 @@ This is shell-speak for: "Who am I and where am I?"
 
 # Syntax
 
-All shell commands have the same basic syntax:
+All Bash commands have the same basic syntax:
 
 **&lt;center&gt;command option(s) argument(s)&lt;/center&gt;**
 
@@ -266,7 +268,7 @@ count: false
 
 # Syntax
 
-All shell commands have the same basic syntax:
+All Bash commands have the same basic syntax:
 
 **&lt;center&gt;&lt;span style='background: #ffff88;'&gt;command&lt;/span&gt; option(s) argument(s)&lt;/center&gt;**
 
@@ -284,7 +286,7 @@ count: false
 
 # Syntax
 
-All shell commands have the same basic syntax:
+All Bash commands have the same basic syntax:
 
 **&lt;center&gt;command &lt;span style='background: #ffff88;'&gt;option(s)&lt;/span&gt; argument(s)&lt;/center&gt;**
 
@@ -303,7 +305,7 @@ count: false
 
 # Syntax
 
-All shell commands have the same basic syntax:
+All Bash commands have the same basic syntax:
 
 **&lt;center&gt;command option(s) &lt;span style='background: #ffff88;'&gt;argument(s)&lt;/span&gt;&lt;/center&gt;**
 
@@ -333,8 +335,8 @@ Examples:
 - Usually one letter.
 - Multiple options can be chained together under a single dash.
   ```bash
-  $ ls -l -a -h /var/log
-  $ ls -lah /var/log
+  $ ls -l -a -h /var/log ## This works
+  $ ls -lah /var/log ## So does this
   ```
 - An exception is with (rarer) options requiring two dashes.
   ```bash
@@ -350,17 +352,283 @@ Examples:
 # Help
 
 The `man` command ("manual pages") is your friend if you ever need help.
+- Tip: Hit spacebar to scroll down a page at a time, "h" to see the help notes of the `man` command itself and "q" to quit.
+
 
 ```bash
 $ man ls
 ```
-- Hit "h" to see the help notes of the `man` command itself (e.g. you'll see that the spacebar causes you to move down one window) and "q" to quit.
 
---
+```
+## LS(1)                            User Commands                           LS(1)
+## 
+## NAME
+##        ls - list directory contents
+## 
+## SYNOPSIS
+##        ls [OPTION]... [FILE]...
+## 
+## DESCRIPTION
+##        List  information  about  the FILEs (the current directory by default).
+##        Sort entries alphabetically if none of -cftuvSUX nor --sort  is  speci‐
+##        fied.
+## 
+##        Mandatory  arguments  to  long  options are mandatory for short options
+##        too.
+## 
+##        -a, --all
+##               do not ignore entries starting with .
+## 
+##        -A, --almost-all
+##               do not list implied . and ..
+## 
+##        --author
+##               with -l, print the author of each file
+## 
+##        -b, --escape
+##               print C-style escapes for nongraphic characters
+## 
+##        --block-size=SIZE
+##               with  -l,  scale  sizes  by  SIZE  when  printing  them;   e.g.,
+##               '--block-size=M'; see SIZE format below
+## 
+##        -B, --ignore-backups
+##               do not list implied entries ending with ~
+## 
+##        -c     with -lt: sort by, and show, ctime (time of last modification of
+##               file status information); with -l: show ctime and sort by  name;
+##               otherwise: sort by ctime, newest first
+## 
+##        -C     list entries by columns
+## 
+##        --color[=WHEN]
+##               colorize  the output; WHEN can be 'always' (default if omitted),
+##               'auto', or 'never'; more info below
+## 
+##        -d, --directory
+##               list directories themselves, not their contents
+## 
+##        -D, --dired
+##               generate output designed for Emacs' dired mode
+## 
+##        -f     do not sort, enable -aU, disable -ls --color
+## 
+##        -F, --classify
+##               append indicator (one of */=&gt;@|) to entries
+## 
+##        --file-type
+##               likewise, except do not append '*'
+## 
+##        --format=WORD
+##               across -x, commas -m, horizontal -x, long -l, single-column  -1,
+##               verbose -l, vertical -C
+## 
+##        --full-time
+##               like -l --time-style=full-iso
+## 
+##        -g     like -l, but do not list owner
+## 
+##        --group-directories-first
+##               group directories before files;
+## 
+##               can   be  augmented  with  a  --sort  option,  but  any  use  of
+##               --sort=none (-U) disables grouping
+## 
+##        -G, --no-group
+##               in a long listing, don't print group names
+## 
+##        -h, --human-readable
+##               with -l and -s, print sizes like 1K 234M 2G etc.
+## 
+##        --si   likewise, but use powers of 1000 not 1024
+## 
+##        -H, --dereference-command-line
+##               follow symbolic links listed on the command line
+## 
+##        --dereference-command-line-symlink-to-dir
+##               follow each command line symbolic link
+## 
+##               that points to a directory
+## 
+##        --hide=PATTERN
+##               do not list implied entries matching shell  PATTERN  (overridden
+##               by -a or -A)
+## 
+##        --hyperlink[=WHEN]
+##               hyperlink file names; WHEN can be 'always' (default if omitted),
+##               'auto', or 'never'
+## 
+##        --indicator-style=WORD
+##               append indicator with style WORD to entry names: none (default),
+##               slash (-p), file-type (--file-type), classify (-F)
+## 
+##        -i, --inode
+##               print the index number of each file
+## 
+##        -I, --ignore=PATTERN
+##               do not list implied entries matching shell PATTERN
+## 
+##        -k, --kibibytes
+##               default  to  1024-byte  blocks for disk usage; used only with -s
+##               and per directory totals
+## 
+##        -l     use a long listing format
+## 
+##        -L, --dereference
+##               when showing file information for a symbolic link, show informa‐
+##               tion  for  the file the link references rather than for the link
+##               itself
+## 
+##        -m     fill width with a comma separated list of entries
+## 
+##        -n, --numeric-uid-gid
+##               like -l, but list numeric user and group IDs
+## 
+##        -N, --literal
+##               print entry names without quoting
+## 
+##        -o     like -l, but do not list group information
+## 
+##        -p, --indicator-style=slash
+##               append / indicator to directories
+## 
+##        -q, --hide-control-chars
+##               print ? instead of nongraphic characters
+## 
+##        --show-control-chars
+##               show nongraphic characters as-is (the default, unless program is
+##               'ls' and output is a terminal)
+## 
+##        -Q, --quote-name
+##               enclose entry names in double quotes
+## 
+##        --quoting-style=WORD
+##               use  quoting style WORD for entry names: literal, locale, shell,
+##               shell-always,  shell-escape,  shell-escape-always,   c,   escape
+##               (overrides QUOTING_STYLE environment variable)
+## 
+##        -r, --reverse
+##               reverse order while sorting
+## 
+##        -R, --recursive
+##               list subdirectories recursively
+## 
+##        -s, --size
+##               print the allocated size of each file, in blocks
+## 
+##        -S     sort by file size, largest first
+## 
+##        --sort=WORD
+##               sort  by  WORD instead of name: none (-U), size (-S), time (-t),
+##               version (-v), extension (-X)
+## 
+##        --time=WORD
+##               with -l, show time as WORD instead of default modification time:
+##               atime  or  access  or  use  (-u); ctime or status (-c); also use
+##               specified time as sort key if --sort=time (newest first)
+## 
+##        --time-style=TIME_STYLE
+##               time/date format with -l; see TIME_STYLE below
+## 
+##        -t     sort by modification time, newest first
+## 
+##        -T, --tabsize=COLS
+##               assume tab stops at each COLS instead of 8
+## 
+##        -u     with -lt: sort by, and show, access time; with -l:  show  access
+##               time  and  sort  by name; otherwise: sort by access time, newest
+##               first
+## 
+##        -U     do not sort; list entries in directory order
+## 
+##        -v     natural sort of (version) numbers within text
+## 
+##        -w, --width=COLS
+##               set output width to COLS.  0 means no limit
+## 
+##        -x     list entries by lines instead of by columns
+## 
+##        -X     sort alphabetically by entry extension
+## 
+##        -Z, --context
+##               print any security context of each file
+## 
+##        -1     list one file per line.  Avoid '\n' with -q or -b
+## 
+##        --help display this help and exit
+## 
+##        --version
+##               output version information and exit
+## 
+##        The SIZE argument is an integer and  optional  unit  (example:  10K  is
+##        10*1024).   Units  are  K,M,G,T,P,E,Z,Y  (powers  of 1024) or KB,MB,...
+##        (powers of 1000).
+## 
+##        The TIME_STYLE argument can be  full-iso,  long-iso,  iso,  locale,  or
+##        +FORMAT.   FORMAT  is  interpreted  like in date(1).  If FORMAT is FOR‐
+##        MAT1&lt;newline&gt;FORMAT2, then FORMAT1 applies to non-recent files and FOR‐
+##        MAT2  to  recent files.  TIME_STYLE prefixed with 'posix-' takes effect
+##        only outside the POSIX locale.  Also the TIME_STYLE  environment  vari‐
+##        able sets the default style to use.
+## 
+##        Using  color  to distinguish file types is disabled both by default and
+##        with --color=never.  With --color=auto, ls emits color codes only  when
+##        standard  output is connected to a terminal.  The LS_COLORS environment
+##        variable can change the settings.  Use the dircolors command to set it.
+## 
+##    Exit status:
+##        0      if OK,
+## 
+##        1      if minor problems (e.g., cannot access subdirectory),
+## 
+##        2      if serious trouble (e.g., cannot access command-line argument).
+## 
+## AUTHOR
+##        Written by Richard M. Stallman and David MacKenzie.
+## 
+## REPORTING BUGS
+##        GNU coreutils online help: &lt;https://www.gnu.org/software/coreutils/&gt;
+##        Report ls translation bugs to &lt;https://translationproject.org/team/&gt;
+## 
+## COPYRIGHT
+##        Copyright © 2018 Free Software Foundation, Inc.   License  GPLv3+:  GNU
+##        GPL version 3 or later &lt;https://gnu.org/licenses/gpl.html&gt;.
+##        This  is  free  software:  you  are free to change and redistribute it.
+##        There is NO WARRANTY, to the extent permitted by law.
+## 
+## SEE ALSO
+##        Full documentation at: &lt;https://www.gnu.org/software/coreutils/ls&gt;
+##        or available locally via: info '(coreutils) ls invocation'
+## 
+## GNU coreutils 8.30                August 2018                            LS(1)
+```
 
-I also like the `cheat` utility, which provides a readable summary / cheatsheet for a command. You'll need to [install](https://github.com/chrisallenlane/cheat) it first. (Linux and MacOS only.)
+---
+
+# Help (cont.)
+
+I also like the [cheat](https://github.com/chrisallenlane/cheat) utility, which provides a more readable summary / cheatsheet of various command. You'll need to install it first. (Linux and MacOS only.)
+
 ```bash
 $ cheat ls
+
+## # Displays everything in the target directory
+## ls path/to/the/target/directory
+## 
+## # Displays everything including hidden files
+## ls -a
+## 
+## # Displays all files, along with the size (with unit suffixes) and timestamp
+## ls -lh 
+## 
+## # Display files, sorted by size
+## ls -S
+## 
+## # Display directories only
+## ls -d */
+## 
+## # Display directories only, include hidden
+## ls -d .*/ */
 ```
 
 ---
@@ -373,25 +641,43 @@ class: inverse, center, middle
 
 # Navigation
 
-- `pwd` prints (the current) working directory.
+- `pwd` to print (the current) working directory.
 
-- `cd` lets you change directory.
-  - You can use absolute paths, but it's better to use relative paths and invoke special symbols for a user's home folder (`~`), current directory (`.`), and parent directory (`..`) as needed. 
-  ```bash
-  $ cd ~/Documents/Papers
-  $ cd ../.. # Goes up two folders (BTW, hashes define comments in Bash shell.)
-  ```
+- `cd` to change directory.
+
+You can use absolute paths, but it's better to use relative paths and invoke special symbols for a user's home folder (`~`), current directory (`.`), and parent directory (`..`) as needed. 
+
+
+```bash
+$ cd ~/Documents/Papers
+$ pwd
+```
+
+```
+## /home/grant/Documents/Papers
+```
+
+
+```bash
+$ cd ../.. ## Goes back up two directories.
+$ pwd
+```
+
+```
+## /home/grant/Documents/Teaching/EC607
+```
+
 ---
 
 # Navigation (cont.)
 
-Beware of folder names that contain spaces. 
+Beware of directory names that contain spaces. Say you have a directory called "My Documents". (I'm looking at you, Windows.)
 
 - Why won't `$ cd My Documents` work?
 
 --
 
-**Answer:** Bash syntax is unapologetically strict about spaces and ordering. Here it thinks that "My" and "Documents" are separate arguments.
+**Answer:** Bash syntax is super pedantic about spaces and ordering. Here it thinks that "My" and "Documents" are separate arguments.
 
 --
 
@@ -415,18 +701,22 @@ Beware of folder names that contain spaces.
 
 We're about to go into more depth about the `ls` command.
 - To do this effectively, it will be helpful if we're all working off the same group of files and folders.
-- Navigate to the "exercises" subfolder of this lecture folder and list the files with the `-lh` option ("long format", "human readable").
+- Navigate to the `exercises/` sub-directory of this lecture folder and list the files with the `-lh` option ("long format", "human readable").
+
 
 ```bash
 $ cd examples ## Assumes you are starting off in the "03-shell" lecture folder
 $ ls -lh
-total 136K
-drwxr-xr-x 2 grant users 4.0K Jan 12 22:02  ABC
-drwxr-xr-x 2 grant users 4.0K Jan 12 14:53 'Bad folder name'
-drwxr-xr-x 2 grant users 4.0K Jan 12 21:33  meals
--rwxr-xr-x 1 grant users   48 Jan 12 22:13  hello.sh
--rw-r--r-- 1 grant users  153 Jan 12 21:20  reps.txt
--rw-r--r-- 1 grant users 120K Jan 12 14:58  sonnets.txt
+```
+
+```
+## total 140K
+## drwxr-xr-x 2 grant users 4.0K Jan 12 22:12 ABC
+## drwxr-xr-x 2 grant users 4.0K Jan 12 22:12 Bad folder name
+## -rwxr-xr-x 1 grant users   48 Jan 12 22:13 hello.sh
+## drwxr-xr-x 2 grant users 4.0K Jan 12 22:12 meals
+## -rw-r--r-- 1 grant users  153 Jan 12 21:20 reps.txt
+## -rw-r--r-- 1 grant users 120K Jan 12 14:58 sonnets.txt
 ```
 
 ---
@@ -436,7 +726,7 @@ drwxr-xr-x 2 grant users 4.0K Jan 12 21:33  meals
 What does this all mean? Let's focus on the top line.
 
 ```bash
-drwxr-xr-x 2 grant users 4.0K Jan 12 22:02 ABC
+drwxr-xr-x 2 grant users 4.0K Jan 12 22:12 ABC
 ```
 
 ---
@@ -447,7 +737,7 @@ count:false
 What does this all mean? Let's focus on the top line.
 
 &lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;
-&lt;span style='background: #ffff88;'&gt;d&lt;/span&gt;rwxr-xr-x 2 grant users 4.0K Jan 12 22:02 ABC&lt;/span&gt;
+&lt;span style='background: #ffff88;'&gt;d&lt;/span&gt;rwxr-xr-x 2 grant users 4.0K Jan 12 22:12 ABC&lt;/span&gt;
 
 - The first column denotes the object type:
   - `d` (directory or folder), - `l` (link), or `-` (file)
@@ -460,7 +750,7 @@ count:false
 
 What does this all mean? Let's focus on the top line.
 
-&lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;d&lt;span style='background: #ffff88;'&gt;&lt;span style='color: #e41a1c;'&gt;rwx&lt;/span&gt;&lt;span style='color: #377eb8;'&gt;r-x&lt;/span&gt;&lt;span style='color: #4daf4a;'&gt;r-x&lt;/span&gt;&lt;/span&gt; 2 grant users 4.0K Jan 12 22:02 ABC&lt;/span&gt;
+&lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;d&lt;span style='background: #ffff88;'&gt;&lt;span style='color: #e41a1c;'&gt;rwx&lt;/span&gt;&lt;span style='color: #377eb8;'&gt;r-x&lt;/span&gt;&lt;span style='color: #4daf4a;'&gt;r-x&lt;/span&gt;&lt;/span&gt; 2 grant users 4.0K Jan 12 22:12 ABC&lt;/span&gt;
 
 - &lt;span style='color: #A9A9A9;'&gt;The first column denotes the object type:
   - `d` (directory or folder), - `l` (link), or `-` (file)&lt;/span&gt;
@@ -475,7 +765,7 @@ count:false
 
 What does this all mean? Let's focus on the top line.
 
-&lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;drwxr-xr-x &lt;span style='background: #ffff88;'&gt;2&lt;/span&gt; grant users 4.0K Jan 12 22:02 ABC&lt;/span&gt;
+&lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;drwxr-xr-x &lt;span style='background: #ffff88;'&gt;2&lt;/span&gt; grant users 4.0K Jan 12 22:12 ABC&lt;/span&gt;
 
 - &lt;span style='color: #A9A9A9;'&gt;The first column denotes the object type:
   - `d` (directory or folder), - `l` (link), or `-` (file)&lt;/span&gt;
@@ -491,7 +781,7 @@ count:false
 
 What does this all mean? Let's focus on the top line.
 
-&lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;drwxr-xr-x 2 &lt;span style='background: #ffff88;'&gt;&lt;span style='color: #e41a1c;'&gt;grant&lt;/span&gt; &lt;span style='color: #377eb8;'&gt;users&lt;/span&gt;&lt;/span&gt; 4.0K Jan 12 22:02 ABC&lt;/span&gt;
+&lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;drwxr-xr-x 2 &lt;span style='background: #ffff88;'&gt;&lt;span style='color: #e41a1c;'&gt;grant&lt;/span&gt; &lt;span style='color: #377eb8;'&gt;users&lt;/span&gt;&lt;/span&gt; 4.0K Jan 12 22:12 ABC&lt;/span&gt;
 
 - &lt;span style='color: #A9A9A9;'&gt;The first column denotes the object type:
   - `d` (directory or folder), - `l` (link), or `-` (file)&lt;/span&gt;
@@ -502,14 +792,13 @@ What does this all mean? Let's focus on the top line.
 - We also see the identity of the object's &lt;span style='color: #e41a1c;'&gt;owner&lt;/span&gt; and their &lt;span style='color: #377eb8;'&gt;group&lt;/span&gt;.
 
 ---
-
 count:false
 
 # Listing files and their properties (cont.)
 
 What does this all mean? Let's focus on the top line.
 
-&lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;drwxr-xr-x 2 grant users &lt;span style='background: #ffff88;'&gt;4.0K Jan 12 22:02 ABC&lt;/span&gt;&lt;/span&gt;
+&lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;drwxr-xr-x 2 grant users &lt;span style='background: #ffff88;'&gt;4.0K Jan 12 22:12 ABC&lt;/span&gt;&lt;/span&gt;
 
 - &lt;span style='color: #A9A9A9;'&gt;The first column denotes the object type:
   - `d` (directory or folder), - `l` (link), or `-` (file)&lt;/span&gt;
@@ -521,144 +810,29 @@ What does this all mean? Let's focus on the top line.
 - Finally, we see some descriptive elements about the object: 
   - Size, date and time of creation, and the object name.
 
-
 ---
-class: inverse, center, middle
+count:false
 
-# User roles and file permissions
-&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+# Listing files and their properties (cont.)
 
----
-
-class: center, middle
-
-*Disclaimer: This next section is tailored towards Unix-based operating systems (Linux or MacOS). However, it will become relevant to everyone (even Windows users) once we start interacting with Linux servers, spinning up Docker containers, etc. later in the course.*
-
----
-
-# The superuser: root, sudo, etc.
-
-There are two main user roles on a Linux system:   
-1. Normal users 
-2. A superuser (AKA "root")
-
-Difference is one of priviledge. 
-- Superusers can make system changes, install software, browse through different users' home folders, etc. Normal users are much more restricted in what they can do.
-- Explains why Unix-based OS's are much more resilient to security threats like viruses. Need superuser priviledges to install (potentially malicious) software.
-
---
-
-To fully switch over to the superuser, you can type `sudo -s`. 
-- Remember to type `exit` to switch back!
-- Note the extra visual cue: root's command prompt is a `#` (not a `$`).
-  ```bash
-  root@laptop:~#
-  ```
-
-However...
-
----
-
-# The superuser: root, sudo, etc. (cont.)
-
-It is generally considered very poor practice to switch over to root for long periods, since you needlessly risk messing up your system. 
-- Remember there's no "undo" option when working through the shell.
-
---
-
-**Question:** How, then, can normal users perform meaningful system operations (including installing new programs and updating software)?
-
---
-
-**Answer:** Invoke temporary superuser status with `sudo`.
-
-- Stands for "superuser do".
-- Simply prepend `sudo` to whatever command you want to run.
+What does this all mean? Let's focus on the top line.
 
 ```bash
-grant@laptop:~$ ls /root ## fails
-grant@laptop:~$ sudo ls /root ## works
+drwxr-xr-x 2 grant users 4.0K Jan 12 22:12 ABC
 ```
 
---
+- The first column denotes the object type:
+  - `d` (directory or folder), - `l` (link), or `-` (file)
+- Next, we see the permissions associated with the object's three possible user types: 1) owner, 2) the owner's group, and 3) all other users.
+  - Permissions reflect `r` (read), `w` (write), or `x` (execute) access.
+  - &lt;b&gt;`-`&lt;/b&gt; denotes missing permissions for a class of operations.
+- The number of hard links to the object.
+- We also see the identity of the object's owner and their group.
+- Finally, we see some descriptive elements about the object: 
+  - Size, date and time of creation, and the object name.
 
 &lt;/br&gt;
-
-*Note: You have to be a "permitted" user to invoke `sudo`. This should be enabled by default on your personal laptop, but if not see [here](https://www.thegeekstuff.com/2010/09/sudo-command-examples/embed/) or [here](https://www.digitalocean.com/community/tutorials/how-to-create-a-sudo-user-on-ubuntu-quickstart).*
-
----
-
-# Changing permissions and ownership
-
-Let's go back to the folder that we saw previously.
-
-```bash
-drwxr-xr-x 2 grant users 4.0K Jan 12 22:12  ABC
-```
-
-We can change the permissions and ownership of this folder with the `chmod` and `chown` commands, respectively.
-- We'll review these in turn.
-- Note that I'm going to use the "recursive" option (i.e. `-R`), but only because ABC is a folder. You can drop that when modifying individual files.
-
-
----
-
-# chmod
-
-Changing permissions using `chmod` depends on how those permissions are represented. 
-- There are two options: 1) Octal notation and 2) Symbolic notation. 
-- We'll go into more detail on the next slide, but let's see some examples first.
-- (Test the results yourself using `$ ls -lh ABC` afterwards.)
-
-**Example 1: rwxrwxrwx.** Read, write and execute permission for all users.
-- Octal: `$ chmod -R 777 ABC`
-- Symbolic: `$ chmod -R a=rwx ABC`
-
-**Example 2: rwxr-xr-x.** Read, write and execute permission for the main user (i.e. owner) of the file. For all other users, read and execute permission only.
-- Octal: `$ chmod -R 755 ABC`
-- Symbolic: `$ chmod -R u=rwx,g=rx,o=rx ABC`
-
---
-
-Now that we've seen some examples, let's get into the logic behind them.
-
----
-
-# chmod (cont.)
-
-### Octal notation
-
-Takes advantage of the fact that `4` (for "read"), `2` (for "write"), and `1` (for "execute") can be combined in unambiguous ways.
-- 7 (= 4 + 2 + 1) means read, write and execute permission.
-- 5 (= 4 + 0 + 1) means read and execute permission, but not write permission.
-- etc. 
-- Note that Octal notation requires a number for each of the three user types: owner, owner's group, and all others. E.g. `chmod 777 myfile.txt`
-
-### Symbolic notation
-
-Links permissions to different symbols (i.e. abbreviations).
-- Users: `u` ("User/owner"), `g` ("Group"), `o` ("Others""), `a` ("All")
-- Permissions: `r` ("read"), `w` ("write"), `x` ("execute")
-- Changes: `+` ("add permissions"), `-` ("remove permissions"), `=` ("set new permissions") 
-
----
-
-# chmod (cont.)
-
-Here's a quick comparison table with some common permission levels.
-
-| Octal value | Symbolic value    | Permission level |
-|:-----------:|:-----------------:|:----------------:|
-| 777         | a+rwx             | rwxrwxrwx        |
-| 770         | u+rwx,g+rwx,o-rwx | rwx------        |
-| 755         | a+rwx,g=rw,o=rw   | rwxrwxrwx        |
-| 700         | u+rwx,g-rwx,o-rwx | rwx------        |
-| 644         | u=rw,g=r,o=r      | rw-r--r--        |
-
-
---
-
-Note that changing permissions via the Symbolic method doesn't need the whole entry. E.g. To go from the first line to the second, I'd only need `$ chmod o-rwx myfile`
+Note: We'll return to file permissions and ownership at the end of the lecture.
 
 ---
 
@@ -697,12 +871,189 @@ For next lecture:
 - Matrices, lists and other types of objects
 
 ---
+class: inverse, center, middle
+
+# User roles and file permissions
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+
+# Disclaimer
+
+*This next section is tailored towards Unix-based operating systems, like Linux or MacOS. However, what we learn here will become relevant to everyone (even Windows users) once we start interacting with Linux servers, spinning up Docker containers, etc. later in the course.*
+
+---
+
+# The superuser: root, sudo, etc.
+
+There are two main user roles on a Linux system:   
+1. Normal users 
+2. A superuser (AKA "root")
+
+Difference is one of priviledge. 
+- Superusers can make system changes, install software, browse through different users' home folders, etc. Normal users are much more restricted in what they can do.
+- Explains why Unix-based OS's are much more resilient to security threats like viruses. Need superuser priviledges to install (potentially malicious) software.
+
+---
+
+# The superuser: root, sudo, etc. (cont.)
+
+You *can* log in as the superuser&lt;sup&gt;1&lt;/sup&gt;... but this is generally considered very poor practice, since you needlessly risk messing up your system. 
+- There are no safety checks and no "undo" options.
+
+.footnote[
+&lt;sup&gt;1&lt;/sup&gt; Hit "p" on this slide if you really want to know how.
+]
+
+???
+To switch over to the superuser, you can type `sudo -s`.
+- Note the extra visual cue: root's command prompt is a `#` (not a `$`).
+  ```
+  root@laptop:~#
+  ```
+
+Remember to type `exit` to switch back!
+
+(Close these presenter notes by hitting "p" again.)
+
+--
+
+**Question:** How, then, can normal users perform meaningful system operations (including installing new programs and updating software)?
+
+--
+
+**Answer:** Invoke temporary superuser status with `sudo`.
+
+- Stands for "superuser do".
+- Simply prepend `sudo` to whatever command you want to run.
+
+```bash
+grant@laptop:~$ ls /root ## fails
+grant@laptop:~$ sudo ls /root ## works
+```
+
+???
+
+Note that you have to be a "permitted" user to invoke `sudo`. 
+- This should be enabled by default on your personal laptop, but if not see [here](https://www.thegeekstuff.com/2010/09/sudo-command-examples/embed/) or [here](https://www.digitalocean.com/community/tutorials/how-to-create-a-sudo-user-on-ubuntu-quickstart).
+
+---
+
+# Changing permissions and ownership
+
+Let's go back to the `ABC/` directory that we saw previously while exploring the ls command.
+
+```bash
+drwxr-xr-x 2 grant users 4.0K Jan 12 22:12  ABC
+```
+
+We can change the permissions and ownership of this folder with the `chmod` and `chown` commands, respectively.
+- We'll review these in turn.
+- Note that I'm going to use the "recursive" option (i.e. `-R`), but only because ABC is a folder. You can drop that when modifying individual files.
 
 
-# Exercise
+---
 
-- Clone (or open) this repo: https://github.com/remi-daigle/shell
-- Then let's open up the shell..
+# chmod
+
+Changing permissions using `chmod` depends on how those permissions are represented. 
+- There are two options: 1) Octal notation and 2) Symbolic notation. 
+- We'll go into more detail on the next slide, but let's see some examples first.
+- (Test the results yourself using `$ ls -lh ABC` afterwards.)
+
+--
+
+**Example 1: rwxrwxrwx.** Read, write and execute permission for all users.
+- Octal: `$ chmod -R 777 ABC`
+- Symbolic: `$ chmod -R a=rwx ABC`
+
+**Example 2: rwxr-xr-x.** Read, write and execute permission for the main user (i.e. owner) of the file. For all other users, read and execute permission only.
+- Octal: `$ chmod -R 755 ABC`
+- Symbolic: `$ chmod -R u=rwx,g=rx,o=rx ABC`
+
+--
+
+Now that we've seen some examples, let's get into the logic behind them.
+
+---
+
+# chmod (cont.)
+
+### Octal notation
+
+Takes advantage of the fact that `4` (for "read"), `2` (for "write"), and `1` (for "execute") can be combined in unambiguous ways.
+- 7 (= 4 + 2 + 1) means read, write and execute permission.
+- 5 (= 4 + 0 + 1) means read and execute permission, but not write permission.
+- etc. 
+- Note that Octal notation requires a number for each of the three user types: owner, owner's group, and all others. E.g. `$ chmod 777 myfile.txt`
+
+### Symbolic notation
+
+Links permissions to different symbols (i.e. abbreviations).
+- Users: `u` ("User/owner"), `g` ("Group"), `o` ("Others""), `a` ("All")
+- Permissions: `r` ("read"), `w` ("write"), `x` ("execute")
+- Changes: `+` ("add permissions"), `-` ("remove permissions"), `=` ("set new permissions") 
+
+---
+
+# chmod (cont.)
+
+Here's a quick comparison table with some common permission levels.
+
+| Octal value | Symbolic value    | Permission level |
+|:-----------:|:-----------------:|:----------------:|
+| 777         | a+rwx             | rwxrwxrwx        |
+| 770         | u+rwx,g+rwx,o-rwx | rwx------        |
+| 755         | a+rwx,g=rw,o=rw   | rwxrwxrwx        |
+| 700         | u+rwx,g-rwx,o-rwx | rwx------        |
+| 644         | u=rw,g=r,o=r      | rw-r--r--        |
+
+
+--
+
+&lt;/br&gt; 
+
+PS — Note the Symbolic method allows for relative changes, which means that you don't necessarily need to write out the whole entry in the table above. E.g. To go from the first line to the second line, you'd only need `$ chmod o-rwx myfile`.
+
+---
+
+# chown
+
+Changing file ownership is somewhat easier than changing permissions, because you don't have to remember the different Octal and Symbolic notation mappings. 
+- E.g. Say there is another user on your computer called "alice", then you could just assign her ownership of the ABC subfolder using:
+ ```bash
+ $ chown -R alice ABC
+ ```
+
+Things get a little more interesting when we want to add new users and groups, or change an existing users group.
+- I'll save that for a later lecture on cloud servers, though.
+
+---
+
+class: inverse, center, middle
+
+# Next steps
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+
+# Exercises
+
+Open up the "exercises" subfolder associated with this lecture. Now I want you to try and play around with the contents using some of the different Bash commands we've practiced today.
+- Change the permissions on an indivdual.
+- Read in some lines of text and pipe them to another file.
+- Count the number of times Shakespeare refers to "mistress" or "love" in his Sonnets.
+- Merge the separate CSVs in the "meals" subfolder into one document.
+- Write a new bash script and execute it.
+- Etc.
+
+---
+
+# Further reading
+
+- [The Unix Shell](http://swcarpentry.github.io/shell-novice/) (Software Carpentery)
+- [The Unix Workbench](https://seankross.com/the-unix-workbench/) (Sean Kross)
+
 
 ---
 class: inverse, center, middle
