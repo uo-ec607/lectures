@@ -654,8 +654,8 @@ You can use `cp` to copy directories, although you'll need the `-r` (or `-R`) fl
 
 # Moving and renaming files: mv 
 
-The syntax for this command is `$ mv file (newfilename)` 
-- Note that moving a file with the "newfilename" option is a convenient<sup>1</sup> way to rename a file.
+The syntax for moving is `$ mv object (newobjectname)` 
+- Note that moving an object with the "newobjectname" option is a convenient<sup>1</sup> way to rename it.
 
 ```{bash mv}
  ## Rename reps-copy to reps2 by moving it with a new name
@@ -700,16 +700,201 @@ class: inverse, center, middle
 
 ---
 
-# Added
+# Counting text: wc
 
-- Regex
-- Pipes
-- wc (line, word, characters)
-- Variables
-- Functions and for loops
-- Math?
-- ssh
-- top and htop
+You can use the `wc` command to count:
+- lines of text, 
+- the number of words, and
+- the number of characters.
+
+Let's demonstrate with a text file containing all of Shakespeare's Sonnets.<sup>1</sup>
+
+```{bash wc}
+wc examples/sonnets.txt
+```
+
+.footnote[
+<sup>1</sup> Courtesy of [Project Gutenburg](http://www.gutenberg.org/cache/epub/1041/pg1041.txt).
+]
+
+--
+
+You couldn't tell here, but it's worth noting that the character count is actually higher than we'd get if we (bothered) counted by hand.
+- Reason: It counts the invisible newline character "/n".
+
+---
+
+# Reading text
+
+### Read everything: cat
+
+The simplest way to read in text is with the `cat` ("concatenate") command. 
+- One problem with large files is that `cat` will read in *all* of the text. You can scroll back up in your shell window, but it can undoubtedly be a pain.
+
+Again, using Shakespeare's Sonnets.
+- I'm going to use the `-n` ("number") flag too because I want to show line numbers.
+
+```{bash cat}
+cat -n examples/sonnets.txt
+```
+
+---
+
+# Reading text (cont.)
+
+### Scroll: more and less
+
+The `more` and `less` commands provide a bit of additional functionality around `cat`,for example by allowing you to move through long text one page at a time.
+- Try this yourself with `$ more examples.txt`
+- You can move forward and back using the "f" and "b" keys, and quit by hitting "q".
+
+### Preview: head and tail
+
+The `head` and `tail` commands let you limit yourself to a preview of the text, down to a specified number of rows. (The default is 10 rows if you don't specify a number.)
+
+```{bash head}
+head -n 3 examples/sonnets.txt ## First 3 rows
+# head examples/sonnets.txt ## First 10 rows (default)
+```
+
+---
+
+# Reading text (cont.)
+
+### Preview: head and tail (cont.)
+
+The `tail` works very similarly to `head`, but starting from the bottom. For example, we can see the very last row of a file as follows
+
+```{bash tail1}
+head -n 1 examples/sonnets.txt ## Last row
+```
+
+However, there's one other neat option that I want to show you. By using the `-n +N` option, we can specify that we want to preview all lines starting from row N *and after*. E.g.
+
+```{bash tail2}
+tail -n +60 examples/sonnets.txt ## Show everything from line 60
+```
+
+---
+
+# Find patterns: grep
+
+To find patterns in text, we can use regular expression-type matching with `grep`. 
+
+For example, say we want to find the famous opening line to Shakespeare's Sonnet 18.
+- I'm going to include the `-n` ("number") flag here, which give me the line that it occurs on. 
+
+```{bash grep}
+grep -n "Shall I compare thee" examples/sonnets.txt
+```
+
+--
+
+By default, `grep` returns all matching patters. 
+- What happens if you run `$ grep -n "summer" examples/sonnets.txt`?
+- Or, for that matter, `$ grep -n "the" examples/sonnets.txt`?
+
+---
+
+class: inverse, center, middle
+
+# Redirecting and pipes
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+
+# Redirect: >
+
+You can send output from the shell to a file using the redirect operator `>`
+
+For example, let's print a message to the shell using the `echo` command.
+
+```{bash}
+echo "At first, I was afraid, I was petrified"
+```
+
+--
+
+If you wanted to save this output to a file, you need simply redirect it to the filename of choice.
+
+```{bash}
+echo "At first, I was afraid, I was petrified" > survive.txt
+find survive.txt ## Show that it now exists
+```
+
+---
+
+# Redirect: > (cont.)
+
+If you want to *append* text to an existing file, then you should use `>>`.
+- Using `>` will just try to rewrite the existing file contents.
+
+```{bash}
+echo "'Kept thinking I could never live without you by my side" >> survive.txt
+cat survive.txt
+```
+
+```{bash, echo = F}
+## Remove file so that we do't keep adding to it when we re-knit these slides
+rm survive.txt
+```
+
+--
+
+</br>
+
+(Don't be shy. You can hum the rest of the song to yourself now.)
+
+--
+
+</br>
+
+Aside: I often use this sequence when adding files to my .gitignore. E.g. `$ echo "*.csv" >>  .gitignore`.
+
+---
+
+# Pipes: |
+
+The pipe operator `|` is one of the coolest features in Bash.
+- It let's you send (i.e. "pipe") intermediate output to another command.
+- In other words, it allows us to chain together a sequence of simple operations and thereby implement a more complex operation. (DOTADITW!)
+
+Let me demonstrate using a very simple example.
+
+```{bash pipe1}
+cat -n examples/sonnets.txt | head -n100 | tail -n10
+```
+
+---
+
+# Pipes: | (cont.)
+
+Now let's say that I want to pull out all of text from (but limited to) Sonnet 18. 
+- How might you go about this using the Bash pipe and other commands?
+- Tip: Use your knowledge of the starting line (i.e. 336) and the fact that sonnets are 14 lines long.
+
+--
+
+```{bash pipe2}
+tail -n +336 examples/sonnets.txt | head -n14
+```
+
+---
+
+# Sorting and removing repetition: sort
+
+```{bash reps}
+cat examples/reps.txt
+```
+
+There is quite a bit of repetition here (and a double entendre). Let's go about fixing that. 
+
+We can remove duplicate lines in various ways in Bash, but here I'll go for a simple `sort` command using the `-u` ("unique") flag. 
+- I'll also add a `-r` ("reverse") flag, but only because `sort` orders alphabetically and this makes less sense for this simple example.
+
+```{bash sort}
+sort -ur examples/reps.txt
+```
 
 ---
 class: inverse, center, middle
@@ -881,13 +1066,27 @@ class: inverse, center, middle
 
 ---
 
+# Things we didn't cover today
+
+I know we covered a lot of ground today and I hope that I've given you a sense of how Bash works and how useful it can be.
+- My main goal is to help "demistify" it, so that you aren't intimidated when you need to use shell commands later on.
+
+At the same time, there's a lot that we didn't cover today.
+- For loops, variables and functions, scripts, SSH, memory control (e.g. top and htop), etc.
+- We'll get to some of these topics in the later lectures, but please try to work some of the suggested exercises on the next slide and make use of the recommended readings.
+
+
+ 
+
+---
+
 # Next steps
 
 ### Exercises
 
 Open up the "exercises" subfolder associated with this lecture. I want you to try and play around with the contents using some of the different Bash commands we've practiced today.
 - Change the permissions on an indivdual file or a whole directory.
-- Read in some lines of text and pipe them to another file.
+- Read in (or fix) some lines of text from one file and pipe them to another file.
 - Count the number of times Shakespeare refers to "mistress" or "love" in his Sonnets.
 - Merge the separate CSVs in the "meals" subfolder into one document.
 - Write a new bash script and execute it.
