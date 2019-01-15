@@ -78,8 +78,7 @@ Besides paying homage, acknowledging the Unix lineage is important because these
 
 --
 
-The DOTADIW ideal can be applied across the computing spectrum: commands, functions, programs, etc.
-- By pairing and chaining well-designed individual components, we can build powerful and much more complex larger systems.
+By pairing and chaining well-designed individual components, we can build powerful and much more complex larger systems.
 - You can see why the Unix philosophy is also referred to as "minimalist and modular".
   
 Again, this philosophy is very clearly expressed in the design and functionality of the Unix shell.
@@ -121,7 +120,7 @@ There are many shell variants<sup>2</sup>, but we're going to focus on [**Bash**
 --
 
 We're going to focus on 1, 2 and 3 in this course. That's not to say that 4 is unimportant (far from it), but we just won't have time to cover it. 
-- [Here](http://stat545.com/Classroom/notes/cm109.nb.html), [here](https://ropenscilabs.github.io/drake-manual/index.html), and [here](https://web.stanford.edu/~gentzkow/research/CodeAndData.pdf) are great places to learn about automation on your own if you're interested.
+- [Here](http://stat545.com/Classroom/notes/cm109.nb.html), [here](https://ropenscilabs.github.io/drake-manual/index.html), and [here](https://web.stanford.edu/~gentzkow/research/CodeAndData.pdf) are great places to start learning about automation on your own.
 
 ---
 class: inverse, center, middle
@@ -396,7 +395,7 @@ $ cheat ls
 ---
 class: inverse, center, middle
 
-# Files and folders
+# Files and directories
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
 
 ---
@@ -577,14 +576,7 @@ Note: We'll return to file permissions and ownership at the end of the lecture.
 
 ---
 
-class: inverse, center, middle
-
-# Manipulating files and directories
-<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
-
----
-
-# Create files and dirs: touch and mkdir
+# Create: touch and mkdir
 
 Let's take directories first. To create a directory use `mkdir`:
 ```{bash mkdir}
@@ -603,7 +595,7 @@ ls testing
 
 ---
 
-# Remove files and dirs: rm and rmdir
+# Remove: rm and rmdir
 
 Let's delete the objects that we just created. Start with one of the .txt files, by using `rm`.
 - We could delete all the files at the same time, but you'll see why I want to keep some.
@@ -628,39 +620,39 @@ rm -rf testing ## Success
 
 ---
 
-# Copying files and directories: cp
+# Copy: cp
 
 The syntax for copying is `$ cp objectname (copyname)`
 - If you don't provide a name for the copied object, it will just take the old name.
 - However, if there is already an object with the same name in the target destination, then you'll have to use `-f` to force an overwrite.
 
 ```{bash cp1}
-## Show that the "copies" sub-directory is empty
-ls examples/copies
+## Show that the "extra-copies" sub-directory is empty
+ls examples/extra-copies
 ```
 
 ```{bash cp2}
 ## Now copy across a file (with a new name)
-cp examples/reps.txt examples/copies/reps-copy.txt
-ls examples/copies
+cp examples/reps.txt examples/extra-copies/reps-copy.txt
+ls examples/extra-copies
 ```
 
 --
 
 You can use `cp` to copy directories, although you'll need the `-r` (or `-R`) flag if you want to recursively copy over everything inside of it to. 
-- Try this by copying over the `meals/` directory to `copies/`.
+- Try this by copying over the `meals/` directory to `extra-copies/`.
 
 ---
 
-# Moving and renaming files: mv 
+# Move and rename: mv 
 
 The syntax for moving is `$ mv object (newobjectname)` 
 - Note that moving an object with the "newobjectname" option is a convenient<sup>1</sup> way to rename it.
 
 ```{bash mv}
  ## Rename reps-copy to reps2 by moving it with a new name
-mv examples/copies/reps-copy.txt examples/copies/reps2.txt
-ls examples/copies
+mv examples/extra-copies/reps-copy.txt examples/extra-copies/reps2.txt
+ls examples/extra-copies
 ```
 
 .footnote[
@@ -673,19 +665,19 @@ ls examples/copies
 
 [Wildcards](http://tldp.org/LDP/GNU-Linux-Tools-Summary/html/x11655.htm) are special characters that can be used as a replacement for other characters. The two most important ones are:
 
-`*` replaces any number of characters. 
-- Convenient when you want to copy, move, or delete a whole class of files.
-  ```{bash asterisk}
-  cp examples/*.sh examples/copies ## Copy any file with an .sh extension to "copies"
-  rm examples/copies/* ## Delete everything in the "copies" directory
-  ```
+### 1. Replace any number of characters with `*`. 
+Convenient when you want to copy, move, or delete a whole class of files.
+```{bash asterisk}
+cp examples/*.sh examples/extra-copies ## Copy any file with an .sh extension to "extra-copies"
+rm examples/extra-copies/* ## Delete everything in the "extra-copies" directory
+```
   
-`?` replaces a single character. 
-- Convenient when you want to discriminate between similarly named files.
-  ```{bash qmark}
-  ls examples/meals/??nday.csv
-  ls examples/meals/?onday.csv
-  ```  
+### 2. Replace a single character with `?`
+Convenient when you want to discriminate between similarly named files.
+```{bash qmark}
+ls examples/meals/??nday.csv
+ls examples/meals/?onday.csv
+```  
 
 ???
 
@@ -700,12 +692,18 @@ class: inverse, center, middle
 
 ---
 
+# Motivation
+
+Economists and other (data) scientists spend a lot of time working with text, including scripts, Markdown documents, and delimited text files like CSVs. 
+
+It therefore makes sense to spend a few slides showing off some Bash shell capabilities for working with text files.
+- We'll only scratch the surface, but hopefully you'll get an idea of how powerful the shell is in the text domain.
+
+---
+
 # Counting text: wc
 
-You can use the `wc` command to count:
-- lines of text, 
-- the number of words, and
-- the number of characters.
+You can use the `wc` command to count: 1) lines of text, 2) the number of words, and 3) the number of characters.
 
 Let's demonstrate with a text file containing all of Shakespeare's Sonnets.<sup>1</sup>
 
@@ -719,8 +717,9 @@ wc examples/sonnets.txt
 
 --
 
-You couldn't tell here, but it's worth noting that the character count is actually higher than we'd get if we (bothered) counted by hand.
-- Reason: It counts the invisible newline character "/n".
+</br> 
+
+PS — You couldn't tell here, but the character count is actually higher than we'd get if we (bothered) counting by hand, because `wc` counts the invisible newline character "/n".
 
 ---
 
@@ -731,7 +730,7 @@ You couldn't tell here, but it's worth noting that the character count is actual
 The simplest way to read in text is with the `cat` ("concatenate") command. 
 - One problem with large files is that `cat` will read in *all* of the text. You can scroll back up in your shell window, but it can undoubtedly be a pain.
 
-Again, using Shakespeare's Sonnets.
+Again, let's demonstrate using Shakespeare's Sonnets.
 - I'm going to use the `-n` ("number") flag too because I want to show line numbers.
 
 ```{bash cat}
@@ -796,6 +795,23 @@ By default, `grep` returns all matching patters.
 
 ---
 
+# Sorting and removing duplicates: sort
+
+We can remove duplicate lines in various ways in Bash, but I'll demonstrate using `sort`.
+
+```{bash reps}
+cat examples/reps.txt
+```
+
+There is quite a bit of repetition here (and a double entendre). Let's go about fixing that. 
+- Note the use of the `-u` ("unique") flag to remove duplicates. I'll also add a `-r` ("reverse") flag, but only because `sort` orders alphabetically and this makes less sense for this simple example.
+
+```{bash sort}
+sort -ur examples/reps.txt
+```
+
+---
+
 class: inverse, center, middle
 
 # Redirecting and pipes
@@ -827,7 +843,7 @@ find survive.txt ## Show that it now exists
 # Redirect: > (cont.)
 
 If you want to *append* text to an existing file, then you should use `>>`.
-- Using `>` will just try to rewrite the existing file contents.
+- Using `>` will try to overwrite the existing file contents.
 
 ```{bash}
 echo "'Kept thinking I could never live without you by my side" >> survive.txt
@@ -857,7 +873,7 @@ Aside: I often use this sequence when adding files to my .gitignore. E.g. `$ ech
 
 The pipe operator `|` is one of the coolest features in Bash.
 - It let's you send (i.e. "pipe") intermediate output to another command.
-- In other words, it allows us to chain together a sequence of simple operations and thereby implement a more complex operation. (DOTADITW!)
+- In other words, it allows us to chain together a sequence of simple operations and thereby implement a more complex operation. (DOTADIW!)
 
 Let me demonstrate using a very simple example.
 
@@ -869,7 +885,7 @@ cat -n examples/sonnets.txt | head -n100 | tail -n10
 
 # Pipes: | (cont.)
 
-Now let's say that I want to pull out all of text from (but limited to) Sonnet 18. 
+An exercise: Say I want to pull out all of text from (but limited to) Sonnet 18. 
 - How might you go about this using the Bash pipe and other commands?
 - Tip: Use your knowledge of the starting line (i.e. 336) and the fact that sonnets are 14 lines long.
 
@@ -877,23 +893,6 @@ Now let's say that I want to pull out all of text from (but limited to) Sonnet 1
 
 ```{bash pipe2}
 tail -n +336 examples/sonnets.txt | head -n14
-```
-
----
-
-# Sorting and removing repetition: sort
-
-```{bash reps}
-cat examples/reps.txt
-```
-
-There is quite a bit of repetition here (and a double entendre). Let's go about fixing that. 
-
-We can remove duplicate lines in various ways in Bash, but here I'll go for a simple `sort` command using the `-u` ("unique") flag. 
-- I'll also add a `-r` ("reverse") flag, but only because `sort` orders alphabetically and this makes less sense for this simple example.
-
-```{bash sort}
-sort -ur examples/reps.txt
 ```
 
 ---
@@ -906,7 +905,7 @@ class: inverse, center, middle
 
 # Disclaimer
 
-*This next section is tailored towards Unix-based operating systems, like Linux or MacOS. However, what we learn here will become relevant to everyone (even Windows users) once we start interacting with Linux servers, spinning up Docker containers, etc. later in the course.*
+*This next section is tailored towards Unix-based operating systems, like Linux or MacOS, which I have saved it for the end. However, what we learn here will become relevant to everyone (even Windows users) once we start interacting with Linux servers, spinning up Docker containers, etc. later in the course.*
 
 ---
 
