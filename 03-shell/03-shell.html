@@ -712,8 +712,8 @@ $ ls -lh
 ## total 144K
 ## drwxr-xr-x 2 grant users 4.0K Jan 12 22:12 ABC
 ## drwxr-xr-x 2 grant users 4.0K Jan 12 22:12 Bad folder name
-## drwxr-xr-x 2 grant users 4.0K Jan 14 22:09 extra-copies
-## -rwxr-xr-x 1 grant users   48 Jan 12 22:13 hello.sh
+## drwxr-xr-x 2 grant users 4.0K Jan 14 23:01 extra-copies
+## -rwxr-xr-x 1 grant users   37 Jan 14 22:36 hello.sh
 ## drwxr-xr-x 2 grant users 4.0K Jan 13 20:34 meals
 ## -rwxrwxrwx 1 grant users  153 Jan 12 21:20 reps.txt
 ## -rw-r--r-- 1 grant users 120K Jan 12 14:58 sonnets.txt
@@ -7280,6 +7280,116 @@ $ tail -n +336 examples/sonnets.txt | head -n14
 ##     So long as men can breathe, or eyes can see,
 ##     So long lives this, and this gives life to thee.
 ```
+
+---
+class: inverse, center, middle
+
+# Scripting
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+
+# Hello World!
+
+Writing code and commands interactively in the shell makes a lot of sense when you are exploring data, file structures, etc.
+
+However, it's also possible (and often desirable) to write reproducible shell scripts that combine a sequence of commands.
+- These scripts are demarcated by their `.sh` file extension.
+
+--
+
+Let's look at the contents of a short script that I've included in the examples folder.
+
+
+```bash
+$ cat examples/hello.sh
+```
+
+```
+## #!/bin/sh
+## echo -e "\nHello World!\n"
+```
+
+--
+
+I'm sure that you already have a good idea of what this script is meant to do, but it will prove useful to quickly go through some things together.
+
+---
+
+# Hello World! (cont.)
+
+```bash
+*#!/bin/sh
+echo -e "\nHello World!\n"
+
+```
+
+- `#!/bin/sh` is a [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix), indicating which program to run the command with (here: any Bash-compatible shell). However, it is typically ignored (note that it begins with the hash comment character.)
+
+---
+count: false
+
+# Hello World! (cont.)
+
+```bash
+#!/bin/sh
+*echo -e "\nHello World!\n"
+
+```
+
+- `#!/bin/sh` is a [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix), indicating which program to run the command with (here: any Bash-compatible shell). However, it is typically ignored (note that it begins with the hash comment character.)
+- `echo -e "\nHello World!\n"` is the actual command that we want to run.
+
+---
+count: false
+
+# Hello World! (cont.)
+
+```bash
+#!/bin/sh
+echo -e "\nHello World!\n"
+
+```
+
+- `#!/bin/sh` is a [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix), indicating which program to run the command with (here: any Bash-compatible shell). However, it is typically ignored (note that it begins with the hash comment character.)
+- `echo -e "\nHello World!\n"` is the actual command that we want to run.
+
+To run this simple script, you can just type in the file name and press enter.
+
+
+```bash
+$ examples/hello.sh
+$ # bash examples/hello.sh ## Also works
+
+```
+
+```
+## 
+## Hello World!
+```
+
+--
+
+(Surprise!)
+
+---
+
+# Editing and writing with nano
+
+Say you want to edit my (amazing) script. 
+- Maybe you want to add some additional lines of text, or maybe you're bothered by the fact that there should be a comma after "Hello". (It's a salutation, dammit!) 
+
+We already seen how to append text lines to a file, but when it comes to larger jobs or more complicated editing work, you're better off using [nano](https://www.nano-editor.org/).
+- In-built shell text editor.
+
+Open up the script in nano by typing `$ nano examples/hello.sh`. 
+- Note that the functionality is more limited than a normal text editor.
+- Once you are finished editing, hit "Ctrl+X", then "y" and enter to exit.
+- Finally, run the edited version of the script.
+
+--
+
+PS — If you've been having trouble executing this script (or want to limit who else can execute it), then you need to alter its permissions. Which takes us neatly on to our final section...
 
 ---
 class: inverse, center, middle
