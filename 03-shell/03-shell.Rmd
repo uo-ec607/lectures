@@ -324,7 +324,22 @@ Examples:
   $ sort -u `myfile.txt`
   ```
 
---
+---
+
+# Syntax
+
+All Bash commands have the same basic syntax:
+
+**<center>command option(s) argument(s)</center>**
+
+Examples:
+
+  ```bash
+  $ ls -lh ~/Documents/
+  ```
+  ```bash
+  $ sort -u myfile.txt
+  ```
 
 </br>
 
@@ -452,11 +467,11 @@ Beware of directory names that contain spaces. Say you have a directory called "
 
 We're about to go into more depth about the `ls` command.
 - To do this effectively, it will be helpful if we're all working off the same group of files and folders.
-- Navigate to the `exercises/` sub-directory of this lecture folder and list the files with the `-lh` option ("long format", "human readable").
+- Navigate to the directory containing these lecture notes (i.e. `03-shell`). Now list the contents of the  `examples/` sub-directory with the `-lh` option ("long format", "human readable").
 
 ```{bash ls}
-cd examples ## Assumes you are starting off in the "03-shell" lecture folder
-ls -lh
+# cd PathWhereYouClonedThisRepo/lectures/03-shell ## change as needed
+ls -lh examples
 ```
 
 ---
@@ -665,19 +680,19 @@ ls examples/extra-copies
 
 [Wildcards](http://tldp.org/LDP/GNU-Linux-Tools-Summary/html/x11655.htm) are special characters that can be used as a replacement for other characters. The two most important ones are:
 
-### 1. Replace any number of characters with `*`. 
-Convenient when you want to copy, move, or delete a whole class of files.
-```{bash asterisk}
-cp examples/*.sh examples/extra-copies ## Copy any file with an .sh extension to "extra-copies"
-rm examples/extra-copies/* ## Delete everything in the "extra-copies" directory
-```
-  
-### 2. Replace a single character with `?`
-Convenient when you want to discriminate between similarly named files.
-```{bash qmark}
-ls examples/meals/??nday.csv
-ls examples/meals/?onday.csv
-```  
+1. Replace any number of characters with `*`. 
+ - Convenient when you want to copy, move, or delete a whole class of files.
+  ```{bash asterisk}
+  cp examples/*.sh examples/extra-copies ## Copy any file with an .sh extension to "extra-copies"
+  rm examples/extra-copies/* ## Delete everything in the "extra-copies" directory
+  ```
+
+2. Replace a single character with `?`
+ - Convenient when you want to discriminate between similarly named files.
+  ```{bash qmark}
+  ls examples/meals/??nday.csv
+  ls examples/meals/?onday.csv
+  ```  
 
 ???
 
@@ -795,6 +810,46 @@ By default, `grep` returns all matching patters.
 
 ---
 
+# Manipulate text: sed and awk
+
+There are two main commands for manipulating text in the shell, namely `sed` and `awk`.
+- Both of these are very powerful and flexible (`awk` is particularly good with CSVs).
+
+I'm going to show two basic examples without going into depth, but I strongly encourage you to explore more on your own.
+
+--
+
+**Example 1.** Replace one text pattern with another.
+
+```{bash nursery}
+cat examples/nursery.txt
+```
+
+Now, change "Jack" to "Bill".
+
+```{bash sed1a}
+sed -i "s/Jack/Bill/g" examples/nursery.txt
+cat examples/nursery.txt
+```
+
+```{bash, echo=F}
+## Change it back for when we want to re-knit the file.
+sed -i "s/Bill/Jack/g" examples/nursery.txt
+```
+
+---
+
+# Manipulate text: sed and awk (cont.)
+
+**Example 2.** Find and count the 10 most commonly used words in Shakespeare's Sonnets.
+- Note: We'll learn more about the pipe operator (`|`) in a few slides.
+
+```{bash sed2}
+sed -e 's/\s/\n/g' < examples/sonnets.txt | sort | uniq -c | sort -nr | head -10
+```
+
+---
+
 # Sorting and removing duplicates: sort
 
 We can remove duplicate lines in various ways in Bash, but I'll demonstrate using `sort`.
@@ -803,7 +858,7 @@ We can remove duplicate lines in various ways in Bash, but I'll demonstrate usin
 cat examples/reps.txt
 ```
 
-There is quite a bit of repetition here (and a double entendre). Let's go about fixing that. 
+There's a fair bit of repetition in this file (and a double entendre). Let's fix that. 
 - Note the use of the `-u` ("unique") flag to remove duplicates. I'll also add a `-r` ("reverse") flag, but only because `sort` orders alphabetically and this makes less sense for this simple example.
 
 ```{bash sort}
@@ -1064,15 +1119,14 @@ Note that you have to be a "permitted" user to invoke `sudo`.
 
 # Changing permissions and ownership
 
-Let's go back to the `ABC/` directory that we saw previously while exploring the ls command.
+Let's think back to the `ABC/` directory that we saw previously while exploring the ls command.
 
 ```bash
 drwxr-xr-x 2 grant users 4.0K Jan 12 22:12  ABC
 ```
 
-We can change the permissions and ownership of this folder with the `chmod` and `chown` commands, respectively.
-- We'll review these in turn.
-- Note that I'm going to use the "recursive" option (i.e. `-R`), but only because ABC is a folder. You can drop that when modifying individual files.
+We can change the permissions and ownership of this folder with the `chmod` and `chown` commands, respectively. We'll now review these in turn.
+- Note that I'm going to use the "recursive" option (i.e. `-R`) in the examples that follow, but only because `ABC/` is a directory. You can drop that when modifying individual files.
 
 
 ---
@@ -1169,7 +1223,7 @@ I know we covered a lot of ground today and I hope that I've given you a sense o
 - My main goal is to help "demistify" it, so that you aren't intimidated when you need to use shell commands later on.
 
 At the same time, there's a lot that we didn't cover today.
-- For loops, variables and functions, scripts, SSH, memory control (e.g. top and htop), etc.
+- For loops, variables and functions, SSH, memory management (e.g. [top](https://ss64.com/bash/top.html) and [htop](https://hisham.hm/htop/)), etc.
 - We'll get to some of these topics in the later lectures, but please try to work some of the suggested exercises on the next slide and make use of the recommended readings.
 
 
@@ -1181,7 +1235,7 @@ At the same time, there's a lot that we didn't cover today.
 
 ### Exercises
 
-Open up the "exercises" subfolder associated with this lecture. I want you to try and play around with the contents using some of the different Bash commands we've practiced today.
+Navigate to the `examples/` sub-directory associated with this lecture. I want you to try and play around with the contents using some of the different Bash commands we've practiced today.
 - Change the permissions on an indivdual file or a whole directory.
 - Read in (or fix) some lines of text from one file and pipe them to another file.
 - Count the number of times Shakespeare refers to "mistress" or "love" in his Sonnets.
