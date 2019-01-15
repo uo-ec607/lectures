@@ -14,7 +14,7 @@ Alternatively, I'll be adding hyperlinks to completed lectures in the section be
 
 1. [Introduction: Motivation, software installation, and data visualization](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.html)
 2. [Version control with Git(Hub)](https://raw.githack.com/uo-ec607/lectures/master/02-git/02-Git.html)
-3. Learning to love the shell
+3. [Learning to love the shell](https://raw.githack.com/uo-ec607/lectures/master/03-shell/03-shell.html)
 4. R language basics
 5. Data cleaning and wrangling with the “Tidyverse”
 6. Webscraping: (1) Server-side and CSS
