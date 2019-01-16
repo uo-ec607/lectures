@@ -749,8 +749,8 @@ PS — You couldn't tell here, but the character count is actually higher than w
 The simplest way to read in text is with the `cat` ("concatenate") command. 
 - One problem with large files is that `cat` will read in *all* of the text. You can scroll back up in your shell window, but it can undoubtedly be a pain.
 
-Again, let's demonstrate using Shakespeare's Sonnets.
-- I'm going to use the `-n` ("number") flag too because I want to show line numbers.
+Again, let's demonstrate using Shakespeare's Sonnets. (This will overflow the slide.)
+- I'm going to use the `-n` ("number") flag because I want to show line numbers.
 
 ```{bash cat}
 cat -n examples/sonnets.txt
@@ -763,7 +763,7 @@ cat -n examples/sonnets.txt
 ### Scroll: more and less
 
 The `more` and `less` commands provide a bit of additional functionality around `cat`,for example by allowing you to move through long text one page at a time.
-- Try this yourself with `$ more examples.txt`
+- Try this yourself with `$ more examples/sonnets.txt`
 - You can move forward and back using the "f" and "b" keys, and quit by hitting "q".
 
 ### Preview: head and tail
@@ -784,13 +784,13 @@ head -n 3 examples/sonnets.txt ## First 3 rows
 The `tail` works very similarly to `head`, but starting from the bottom. For example, we can see the very last row of a file as follows
 
 ```{bash tail1}
-head -n 1 examples/sonnets.txt ## Last row
+tail -n 1 examples/sonnets.txt ## Last row
 ```
 
 However, there's one other neat option that I want to show you. By using the `-n +N` option, we can specify that we want to preview all lines starting from row N *and after*. E.g.
 
 ```{bash tail2}
-tail -n +60 examples/sonnets.txt ## Show everything from line 60
+tail -n +3024 examples/sonnets.txt ## Show everything from line 3024
 ```
 
 ---
@@ -931,7 +931,7 @@ Aside: I often use this sequence when adding files to my .gitignore. E.g. `$ ech
 # Pipes: |
 
 The pipe operator `|` is one of the coolest features in Bash.
-- It let's you send (i.e. "pipe") intermediate output to another command.
+- It lets you send (i.e. "pipe") intermediate output to another command.
 - In other words, it allows us to chain together a sequence of simple operations and thereby implement a more complex operation. (DOTADIW!)
 
 Let me demonstrate using a very simple example.
