@@ -607,3 +607,12 @@ dev.off()
 You may also have noticed that RStudio has convenient buttons for clearing your workspace environment and removing (individual) plots. Just look for these icons in the relevant window panels:
 
 ![](pics/broom.png?display=inline-block)
+
+---
+
+class: inverse, center, middle
+
+# Next class: Data wrangling and cleaning with the Tidyverse
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
