@@ -374,7 +374,7 @@ $ man ls
 ```
 
 ```
-## LS(1)                                                                                                          User Commands                                                                                                         LS(1)
+## LS(1)                            User Commands                           LS(1)
 ## 
 ## NAME
 ##        ls - list directory contents
@@ -383,9 +383,12 @@ $ man ls
 ##        ls [OPTION]... [FILE]...
 ## 
 ## DESCRIPTION
-##        List information about the FILEs (the current directory by default).  Sort entries alphabetically if none of -cftuvSUX nor --sort is specified.
+##        List  information  about  the FILEs (the current directory by default).
+##        Sort entries alphabetically if none of -cftuvSUX nor --sort  is  speci‐
+##        fied.
 ## 
-##        Mandatory arguments to long options are mandatory for short options too.
+##        Mandatory  arguments  to  long  options are mandatory for short options
+##        too.
 ## 
 ##        -a, --all
 ##               do not ignore entries starting with .
@@ -400,17 +403,21 @@ $ man ls
 ##               print C-style escapes for nongraphic characters
 ## 
 ##        --block-size=SIZE
-##               with -l, scale sizes by SIZE when printing them; e.g., '--block-size=M'; see SIZE format below
+##               with  -l,  scale  sizes  by  SIZE  when  printing  them;   e.g.,
+##               '--block-size=M'; see SIZE format below
 ## 
 ##        -B, --ignore-backups
 ##               do not list implied entries ending with ~
 ## 
-##        -c     with -lt: sort by, and show, ctime (time of last modification of file status information); with -l: show ctime and sort by name; otherwise: sort by ctime, newest first
+##        -c     with -lt: sort by, and show, ctime (time of last modification of
+##               file status information); with -l: show ctime and sort by  name;
+##               otherwise: sort by ctime, newest first
 ## 
 ##        -C     list entries by columns
 ## 
 ##        --color[=WHEN]
-##               colorize the output; WHEN can be 'always' (default if omitted), 'auto', or 'never'; more info below
+##               colorize  the output; WHEN can be 'always' (default if omitted),
+##               'auto', or 'never'; more info below
 ## 
 ##        -d, --directory
 ##               list directories themselves, not their contents
@@ -427,7 +434,8 @@ $ man ls
 ##               likewise, except do not append '*'
 ## 
 ##        --format=WORD
-##               across -x, commas -m, horizontal -x, long -l, single-column -1, verbose -l, vertical -C
+##               across -x, commas -m, horizontal -x, long -l, single-column  -1,
+##               verbose -l, vertical -C
 ## 
 ##        --full-time
 ##               like -l --time-style=full-iso
@@ -437,7 +445,8 @@ $ man ls
 ##        --group-directories-first
 ##               group directories before files;
 ## 
-##               can be augmented with a --sort option, but any use of --sort=none (-U) disables grouping
+##               can   be  augmented  with  a  --sort  option,  but  any  use  of
+##               --sort=none (-U) disables grouping
 ## 
 ##        -G, --no-group
 ##               in a long listing, don't print group names
@@ -456,13 +465,16 @@ $ man ls
 ##               that points to a directory
 ## 
 ##        --hide=PATTERN
-##               do not list implied entries matching shell PATTERN (overridden by -a or -A)
+##               do not list implied entries matching shell  PATTERN  (overridden
+##               by -a or -A)
 ## 
 ##        --hyperlink[=WHEN]
-##               hyperlink file names; WHEN can be 'always' (default if omitted), 'auto', or 'never'
+##               hyperlink file names; WHEN can be 'always' (default if omitted),
+##               'auto', or 'never'
 ## 
 ##        --indicator-style=WORD
-##               append indicator with style WORD to entry names: none (default), slash (-p), file-type (--file-type), classify (-F)
+##               append indicator with style WORD to entry names: none (default),
+##               slash (-p), file-type (--file-type), classify (-F)
 ## 
 ##        -i, --inode
 ##               print the index number of each file
@@ -471,12 +483,15 @@ $ man ls
 ##               do not list implied entries matching shell PATTERN
 ## 
 ##        -k, --kibibytes
-##               default to 1024-byte blocks for disk usage; used only with -s and per directory totals
+##               default  to  1024-byte  blocks for disk usage; used only with -s
+##               and per directory totals
 ## 
 ##        -l     use a long listing format
 ## 
 ##        -L, --dereference
-##               when showing file information for a symbolic link, show information for the file the link references rather than for the link itself
+##               when showing file information for a symbolic link, show informa‐
+##               tion  for  the file the link references rather than for the link
+##               itself
 ## 
 ##        -m     fill width with a comma separated list of entries
 ## 
@@ -495,13 +510,16 @@ $ man ls
 ##               print ? instead of nongraphic characters
 ## 
 ##        --show-control-chars
-##               show nongraphic characters as-is (the default, unless program is 'ls' and output is a terminal)
+##               show nongraphic characters as-is (the default, unless program is
+##               'ls' and output is a terminal)
 ## 
 ##        -Q, --quote-name
 ##               enclose entry names in double quotes
 ## 
 ##        --quoting-style=WORD
-##               use quoting style WORD for entry names: literal, locale, shell, shell-always, shell-escape, shell-escape-always, c, escape (overrides QUOTING_STYLE environment variable)
+##               use  quoting style WORD for entry names: literal, locale, shell,
+##               shell-always,  shell-escape,  shell-escape-always,   c,   escape
+##               (overrides QUOTING_STYLE environment variable)
 ## 
 ##        -r, --reverse
 ##               reverse order while sorting
@@ -515,10 +533,13 @@ $ man ls
 ##        -S     sort by file size, largest first
 ## 
 ##        --sort=WORD
-##               sort by WORD instead of name: none (-U), size (-S), time (-t), version (-v), extension (-X)
+##               sort  by  WORD instead of name: none (-U), size (-S), time (-t),
+##               version (-v), extension (-X)
 ## 
 ##        --time=WORD
-##               with -l, show time as WORD instead of default modification time: atime or access or use (-u); ctime or status (-c); also use specified time as sort key if --sort=time (newest first)
+##               with -l, show time as WORD instead of default modification time:
+##               atime  or  access  or  use  (-u); ctime or status (-c); also use
+##               specified time as sort key if --sort=time (newest first)
 ## 
 ##        --time-style=TIME_STYLE
 ##               time/date format with -l; see TIME_STYLE below
@@ -528,7 +549,9 @@ $ man ls
 ##        -T, --tabsize=COLS
 ##               assume tab stops at each COLS instead of 8
 ## 
-##        -u     with -lt: sort by, and show, access time; with -l: show access time and sort by name; otherwise: sort by access time, newest first
+##        -u     with -lt: sort by, and show, access time; with -l:  show  access
+##               time  and  sort  by name; otherwise: sort by access time, newest
+##               first
 ## 
 ##        -U     do not sort; list entries in directory order
 ## 
@@ -551,13 +574,21 @@ $ man ls
 ##        --version
 ##               output version information and exit
 ## 
-##        The SIZE argument is an integer and optional unit (example: 10K is 10*1024).  Units are K,M,G,T,P,E,Z,Y (powers of 1024) or KB,MB,... (powers of 1000).
+##        The SIZE argument is an integer and  optional  unit  (example:  10K  is
+##        10*1024).   Units  are  K,M,G,T,P,E,Z,Y  (powers  of 1024) or KB,MB,...
+##        (powers of 1000).
 ## 
-##        The  TIME_STYLE  argument  can be full-iso, long-iso, iso, locale, or +FORMAT.  FORMAT is interpreted like in date(1).  If FORMAT is FORMAT1&lt;newline&gt;FORMAT2, then FORMAT1 applies to non-recent files and FORMAT2 to recent files.
-##        TIME_STYLE prefixed with 'posix-' takes effect only outside the POSIX locale.  Also the TIME_STYLE environment variable sets the default style to use.
+##        The TIME_STYLE argument can be  full-iso,  long-iso,  iso,  locale,  or
+##        +FORMAT.   FORMAT  is  interpreted  like in date(1).  If FORMAT is FOR‐
+##        MAT1&lt;newline&gt;FORMAT2, then FORMAT1 applies to non-recent files and FOR‐
+##        MAT2  to  recent files.  TIME_STYLE prefixed with 'posix-' takes effect
+##        only outside the POSIX locale.  Also the TIME_STYLE  environment  vari‐
+##        able sets the default style to use.
 ## 
-##        Using color to distinguish file types is disabled both by default and with --color=never.  With --color=auto, ls emits color codes only when standard output is connected to a terminal.  The LS_COLORS  environment  variable  can
-##        change the settings.  Use the dircolors command to set it.
+##        Using  color  to distinguish file types is disabled both by default and
+##        with --color=never.  With --color=auto, ls emits color codes only  when
+##        standard  output is connected to a terminal.  The LS_COLORS environment
+##        variable can change the settings.  Use the dircolors command to set it.
 ## 
 ##    Exit status:
 ##        0      if OK,
@@ -574,14 +605,16 @@ $ man ls
 ##        Report ls translation bugs to &lt;https://translationproject.org/team/&gt;
 ## 
 ## COPYRIGHT
-##        Copyright © 2018 Free Software Foundation, Inc.  License GPLv3+: GNU GPL version 3 or later &lt;https://gnu.org/licenses/gpl.html&gt;.
-##        This is free software: you are free to change and redistribute it.  There is NO WARRANTY, to the extent permitted by law.
+##        Copyright © 2018 Free Software Foundation, Inc.   License  GPLv3+:  GNU
+##        GPL version 3 or later &lt;https://gnu.org/licenses/gpl.html&gt;.
+##        This  is  free  software:  you  are free to change and redistribute it.
+##        There is NO WARRANTY, to the extent permitted by law.
 ## 
 ## SEE ALSO
 ##        Full documentation at: &lt;https://www.gnu.org/software/coreutils/ls&gt;
 ##        or available locally via: info '(coreutils) ls invocation'
 ## 
-## GNU coreutils 8.30                                                                                              August 2018                                                                                                          LS(1)
+## GNU coreutils 8.30                August 2018                            LS(1)
 ```
 
 ---
@@ -691,13 +724,12 @@ $ ls -lh examples
 ```
 
 ```
-## total 148K
+## total 144K
 ## drwxr-xr-x 2 grant users 4.0K Jan 12 22:12 ABC
 ## drwxr-xr-x 2 grant users 4.0K Jan 12 22:12 Bad folder name
-## drwxr-xr-x 2 grant users 4.0K Jan 15 10:59 extra-copies
 ## -rwxr-xr-x 1 grant users   37 Jan 14 22:36 hello.sh
 ## drwxr-xr-x 2 grant users 4.0K Jan 13 20:34 meals
-## -rw-r--r-- 1 grant users   32 Jan 15 10:59 nursery.txt
+## -rw-r--r-- 1 grant users   32 Jan 16 09:54 nursery.txt
 ## -rwxrwxrwx 1 grant users  153 Jan 12 21:20 reps.txt
 ## -rw-r--r-- 1 grant users 120K Jan 12 14:58 sonnets.txt
 ```
@@ -887,15 +919,12 @@ The syntax for copying is `$ cp objectname (copyname)`
 
 
 ```bash
-$ ## Show that the "extra-copies" sub-directory is empty
-$ ls examples/extra-copies
-```
-
-
-```bash
+$ ## Create new "copies" sub-directory
+$ mkdir examples/copies
 $ ## Now copy across a file (with a new name)
-$ cp examples/reps.txt examples/extra-copies/reps-copy.txt
-$ ls examples/extra-copies
+$ cp examples/reps.txt examples/copies/reps-copy.txt
+$ ## Show that we were successful
+$ ls examples/copies
 ```
 
 ```
@@ -905,7 +934,7 @@ $ ls examples/extra-copies
 --
 
 You can use `cp` to copy directories, although you'll need the `-r` (or `-R`) flag if you want to recursively copy over everything inside of it to. 
-- Try this by copying over the `meals/` directory to `extra-copies/`.
+- Try this by copying over the `meals/` sub-directory to `copies/`.
 
 ---
 
@@ -917,8 +946,8 @@ The syntax for moving is `$ mv object (newobjectname)`
 
 ```bash
 $  ## Rename reps-copy to reps2 by moving it with a new name
-$ mv examples/extra-copies/reps-copy.txt examples/extra-copies/reps2.txt
-$ ls examples/extra-copies
+$ mv examples/copies/reps-copy.txt examples/copies/reps2.txt
+$ ls examples/copies
 ```
 
 ```
@@ -939,8 +968,8 @@ $ ls examples/extra-copies
  - Convenient when you want to copy, move, or delete a whole class of files.
   
   ```bash
-  $ cp examples/*.sh examples/extra-copies ## Copy any file with an .sh extension to "extra-copies"
-  $ rm examples/extra-copies/* ## Delete everything in the "extra-copies" directory
+  $ cp examples/*.sh examples/copies ## Copy any file with an .sh extension to "copies"
+  $ rm examples/copies/* ## Delete everything in the "copies" directory
   ```
 
 2. Replace a single character with `?`
@@ -956,6 +985,9 @@ $ ls examples/extra-copies
   ## examples/meals/sunday.csv
   ## examples/meals/monday.csv
   ```
+
+
+
 
 ???
 
@@ -7096,7 +7128,7 @@ $ grep -n "Shall I compare thee" examples/sonnets.txt
 
 --
 
-By default, `grep` returns all matching patters. 
+By default, `grep` returns all matching patterns. 
 - What happens if you run `$ grep -n "summer" examples/sonnets.txt`?
 - Or, for that matter, `$ grep -n "the" examples/sonnets.txt`?
 
@@ -7414,10 +7446,6 @@ $ # bash examples/hello.sh ## Also works
 ## Hello World!
 ```
 
---
-
-(Surprise!)
-
 ---
 
 # Editing and writing with nano
@@ -7425,8 +7453,8 @@ $ # bash examples/hello.sh ## Also works
 Say you want to edit my (amazing) script. 
 - Maybe you want to add some additional lines of text, or maybe you're bothered by the fact that there should be a comma after "Hello". (It's a salutation, dammit!) 
 
-We already seen how to append text lines to a file, but when it comes to larger jobs or more complicated editing work, you're better off using [nano](https://www.nano-editor.org/).
-- In-built shell text editor.
+We already seen how to append text lines to a file, but when it comes to larger jobs or more complicated editing work, you're better off using [nano](https://www.nano-editor.org/). 
+- In-built Unix shell text editor. (**Windows users**, see [here](https://stackoverflow.com/questions/36802996/bash-nano-command-not-found-at-windows-git-bash).)
 
 Open up the script in nano by typing `$ nano examples/hello.sh`. 
 - Note that the functionality is more limited than a normal text editor.
@@ -7435,7 +7463,7 @@ Open up the script in nano by typing `$ nano examples/hello.sh`.
 
 --
 
-PS — If you've been having trouble executing this script (or want to limit who else can execute it), then you need to alter its permissions. Which takes us neatly on to our final section...
+If you've been having trouble executing this script (or want to limit who else can execute it), then you need to alter its permissions. Which takes us neatly on to our final section...
 
 ---
 class: inverse, center, middle
@@ -7447,7 +7475,9 @@ class: inverse, center, middle
 
 # Disclaimer
 
-*This next section is tailored towards Unix-based operating systems, like Linux or MacOS, which I have saved it for the end. However, what we learn here will become relevant to everyone (even Windows users) once we start interacting with Linux servers, spinning up Docker containers, etc. later in the course.*
+*This next section is tailored towards Unix-based operating systems, like Linux or MacOS, which is why I have saved it for the end. &lt;b&gt;Windows users:&lt;/b&gt; Don't be suprised if some commands don't work for you.* 
+
+*Regardless, the things we learn here will become relevant to everyone (even Windows users) once we start interacting with Linux servers, spinning up Docker containers, etc. later in the course.*
 
 ---
 
@@ -7517,6 +7547,14 @@ drwxr-xr-x 2 grant users 4.0K Jan 12 22:12  ABC
 We can change the permissions and ownership of this folder with the `chmod` and `chown` commands, respectively. We'll now review these in turn.
 - Note that I'm going to use the "recursive" option (i.e. `-R`) in the examples that follow, but only because `ABC/` is a directory. You can drop that when modifying individual files.
 
+--
+
+PS — I'm going to skip writing out the full path for this next section to save on typing. Now is a a good time to move into the `examples/` directory if you want to follow along with my commands literally.
+
+
+```bash
+$ cd examples
+```
 
 ---
 
@@ -7572,7 +7610,7 @@ Here's a quick comparison table with some common permission levels.
 | Octal value | Symbolic value    | Permission level |
 |:-----------:|:-----------------:|:----------------:|
 | 777         | a+rwx             | rwxrwxrwx        |
-| 770         | u+rwx,g+rwx,o-rwx | rwx------        |
+| 770         | u+rwx,g+rwx,o-rwx | rwxrwx---        |
 | 755         | a+rwx,g=rw,o=rw   | rwxrwxrwx        |
 | 700         | u+rwx,g-rwx,o-rwx | rwx------        |
 | 644         | u=rw,g=r,o=r      | rw-r--r--        |
@@ -7609,7 +7647,7 @@ class: inverse, center, middle
 # Things we didn't cover today
 
 I know we covered a lot of ground today and I hope that I've given you a sense of how Bash works and how useful it can be.
-- My main goal is to help "demistify" it, so that you aren't intimidated when you need to use shell commands later on.
+- My main goal is to help "demystify" it, so that you aren't intimidated when you need to use shell commands later on.
 
 At the same time, there's a lot that we didn't cover today.
 - For loops, variables and functions, SSH, memory management (e.g. [top](https://ss64.com/bash/top.html) and [htop](https://hisham.hm/htop/)), etc.

@@ -641,21 +641,19 @@ The syntax for copying is `$ cp objectname (copyname)`
 - If you don't provide a name for the copied object, it will just take the old name.
 - However, if there is already an object with the same name in the target destination, then you'll have to use `-f` to force an overwrite.
 
-```{bash cp1}
-## Show that the "extra-copies" sub-directory is empty
-ls examples/extra-copies
-```
-
-```{bash cp2}
+```{bash cp}
+## Create new "copies" sub-directory
+mkdir examples/copies
 ## Now copy across a file (with a new name)
-cp examples/reps.txt examples/extra-copies/reps-copy.txt
-ls examples/extra-copies
+cp examples/reps.txt examples/copies/reps-copy.txt
+## Show that we were successful
+ls examples/copies
 ```
 
 --
 
 You can use `cp` to copy directories, although you'll need the `-r` (or `-R`) flag if you want to recursively copy over everything inside of it to. 
-- Try this by copying over the `meals/` directory to `extra-copies/`.
+- Try this by copying over the `meals/` sub-directory to `copies/`.
 
 ---
 
@@ -666,8 +664,8 @@ The syntax for moving is `$ mv object (newobjectname)`
 
 ```{bash mv}
  ## Rename reps-copy to reps2 by moving it with a new name
-mv examples/extra-copies/reps-copy.txt examples/extra-copies/reps2.txt
-ls examples/extra-copies
+mv examples/copies/reps-copy.txt examples/copies/reps2.txt
+ls examples/copies
 ```
 
 .footnote[
@@ -683,8 +681,8 @@ ls examples/extra-copies
 1. Replace any number of characters with `*`. 
  - Convenient when you want to copy, move, or delete a whole class of files.
   ```{bash asterisk}
-  cp examples/*.sh examples/extra-copies ## Copy any file with an .sh extension to "extra-copies"
-  rm examples/extra-copies/* ## Delete everything in the "extra-copies" directory
+  cp examples/*.sh examples/copies ## Copy any file with an .sh extension to "copies"
+  rm examples/copies/* ## Delete everything in the "copies" directory
   ```
 
 2. Replace a single character with `?`
@@ -693,6 +691,12 @@ ls examples/extra-copies
   ls examples/meals/??nday.csv
   ls examples/meals/?onday.csv
   ```  
+
+```{bash, echo = F}
+## Remove "copies" sub-dir to avoid "file alredy exists" problem when re-knitting this doc
+rm -rf examples/copies
+```
+
 
 ???
 
@@ -804,7 +808,7 @@ grep -n "Shall I compare thee" examples/sonnets.txt
 
 --
 
-By default, `grep` returns all matching patters. 
+By default, `grep` returns all matching patterns. 
 - What happens if you run `$ grep -n "summer" examples/sonnets.txt`?
 - Or, for that matter, `$ grep -n "the" examples/sonnets.txt`?
 
@@ -1025,10 +1029,6 @@ examples/hello.sh
 
 ```
 
---
-
-(Surprise!)
-
 ---
 
 # Editing and writing with nano
@@ -1036,8 +1036,8 @@ examples/hello.sh
 Say you want to edit my (amazing) script. 
 - Maybe you want to add some additional lines of text, or maybe you're bothered by the fact that there should be a comma after "Hello". (It's a salutation, dammit!) 
 
-We already seen how to append text lines to a file, but when it comes to larger jobs or more complicated editing work, you're better off using [nano](https://www.nano-editor.org/).
-- In-built shell text editor.
+We already seen how to append text lines to a file, but when it comes to larger jobs or more complicated editing work, you're better off using [nano](https://www.nano-editor.org/). 
+- In-built Unix shell text editor. (**Windows users**, see [here](https://stackoverflow.com/questions/36802996/bash-nano-command-not-found-at-windows-git-bash).)
 
 Open up the script in nano by typing `$ nano examples/hello.sh`. 
 - Note that the functionality is more limited than a normal text editor.
@@ -1046,7 +1046,7 @@ Open up the script in nano by typing `$ nano examples/hello.sh`.
 
 --
 
-PS — If you've been having trouble executing this script (or want to limit who else can execute it), then you need to alter its permissions. Which takes us neatly on to our final section...
+If you've been having trouble executing this script (or want to limit who else can execute it), then you need to alter its permissions. Which takes us neatly on to our final section...
 
 ---
 class: inverse, center, middle
@@ -1058,7 +1058,9 @@ class: inverse, center, middle
 
 # Disclaimer
 
-*This next section is tailored towards Unix-based operating systems, like Linux or MacOS, which I have saved it for the end. However, what we learn here will become relevant to everyone (even Windows users) once we start interacting with Linux servers, spinning up Docker containers, etc. later in the course.*
+*This next section is tailored towards Unix-based operating systems, like Linux or MacOS, which is why I have saved it for the end. <b>Windows users:</b> Don't be suprised if some commands don't work for you.* 
+
+*Regardless, the things we learn here will become relevant to everyone (even Windows users) once we start interacting with Linux servers, spinning up Docker containers, etc. later in the course.*
 
 ---
 
@@ -1128,6 +1130,13 @@ drwxr-xr-x 2 grant users 4.0K Jan 12 22:12  ABC
 We can change the permissions and ownership of this folder with the `chmod` and `chown` commands, respectively. We'll now review these in turn.
 - Note that I'm going to use the "recursive" option (i.e. `-R`) in the examples that follow, but only because `ABC/` is a directory. You can drop that when modifying individual files.
 
+--
+
+PS — I'm going to skip writing out the full path for this next section to save on typing. Now is a a good time to move into the `examples/` directory if you want to follow along with my commands literally.
+
+```{bash, eval = F}
+cd examples
+```
 
 ---
 
@@ -1183,7 +1192,7 @@ Here's a quick comparison table with some common permission levels.
 | Octal value | Symbolic value    | Permission level |
 |:-----------:|:-----------------:|:----------------:|
 | 777         | a+rwx             | rwxrwxrwx        |
-| 770         | u+rwx,g+rwx,o-rwx | rwx------        |
+| 770         | u+rwx,g+rwx,o-rwx | rwxrwx---        |
 | 755         | a+rwx,g=rw,o=rw   | rwxrwxrwx        |
 | 700         | u+rwx,g-rwx,o-rwx | rwx------        |
 | 644         | u=rw,g=r,o=r      | rw-r--r--        |
@@ -1220,7 +1229,7 @@ class: inverse, center, middle
 # Things we didn't cover today
 
 I know we covered a lot of ground today and I hope that I've given you a sense of how Bash works and how useful it can be.
-- My main goal is to help "demistify" it, so that you aren't intimidated when you need to use shell commands later on.
+- My main goal is to help "demystify" it, so that you aren't intimidated when you need to use shell commands later on.
 
 At the same time, there's a lot that we didn't cover today.
 - For loops, variables and functions, SSH, memory management (e.g. [top](https://ss64.com/bash/top.html) and [htop](https://hisham.hm/htop/)), etc.
