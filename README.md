@@ -8,7 +8,7 @@ Please read the [syllabus](https://github.com/uo-ec607/syllabus/blob/master/syll
 
 Please note that this is a work in progress, with new material being added every week. 
 
-If you just want to read the lecture slides or HTML notebooks in your browser, then you should simply scroll down to the [Lecture outline and quicklinks](https://github.com/uo-ec607/lectures#lecture-outline-and-quicklinks) section below. Completed lectures will be hyperlinked (in blue) as soon as they have been added. Remember to check back in regularly to get any updates.
+If you just want to read the lecture slides or HTML notebooks in your browser, then you should simply scroll down to the [Lecture outline and quicklinks](https://github.com/uo-ec607/lectures#lecture-outline-and-quicklinks) section at the bottom of this page. Completed lectures will be hyperlinked as soon as they have been added. Remember to check back in regularly to get any updates.
 
 If you actually want to run the analysis and code on your own system (highly recommended), then you will need to download the material to your local machine. The best way to do this is to clone the repo via Git and then pull regularly to get updates. Please take a look at [these slides](https://raw.githack.com/uo-ec607/lectures/master/02-git/02-Git.html) if you are unfamiliar with Git or are unsure how to do any of that. Once that's done, you will find each lecture contained in a numbered folder (e.g. `01-intro`). The lectures themselves are written in R Markdown and then exported to HMTL format. Click on the HTML files if you just want to view the slides or notebooks.
 
@@ -18,7 +18,7 @@ Please [open a new issue](https://help.github.com/articles/creating-an-issue/). 
 
 ## Are you willing to teach a version of this course at my university?
 
-Possibly. Please contact me if you would like to discuss.
+Possibly. Please [contact me](mailto:grantmcd@uoregon.edu) if you would like to discuss further.
 
 ## Lecture outline and quicklinks
 
