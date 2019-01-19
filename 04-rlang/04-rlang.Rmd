@@ -241,46 +241,219 @@ Or, more simply, just use "?":
 
 ---
 
-# Object class, type and structure
+# Help (cont.)
 
-To understand more about a particular object in R — including whether it is a function — use the `class`, `typeof` and `str` (i.e. "structure") commands.
-
-```{r}
-df <- data.frame(x = 1:2, y = 3:4)
-class(df)
-typeof(df)
-str(df)
-```
+For many packages, you can also try the `vignette()` function, which will provide an introduction to a package and it's purpose through a series of helpful examples.
+- Try running `vignette("dplyr")` in your console now.
 
 --
 
-Of course, you can always just inspect/print an object directly in the console (e.g. type `df` and hit Enter). The `View()` function is also very helpful (e.g. `View(df)`).
+I highly encourage reading package vignettes if they are available. 
+- They are often the best way to learn how to use a package.
+
+--
+
+One complication is that you need to know the exact name of the package vignette(s).
+- E.g. The `dplyr` package actually has several vignettes associated with it: "dplyr", "window-functions", "programming", etc.
+- You can run `vignette()` (i.e. without any arguments) to list the available vignettes of every *installed* package installed on your system. 
+- Or, run `vignette(all = FALSE)` if you only want to see the vignettes of any *loaded* packages.
 
 ---
 
 class: inverse, center, middle
 
-# "Everything is an object and everything has a name"
+# Object-oriented programming in R
 
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
 
 ---
 
-# Motivation for this section
+# Motivation
 
-These next few slides are aimed at preempting some things that might trip you up if you new to R, or the [object-oriented programming](https://en.wikipedia.org/wiki/Object-oriented_programming) (OOP) approach that we talked about in Lecture 1.
-- The ability to have, say, multiple data frames in memory at the same is a huge advantage for effective data work. 
-- But it does mean you have to pay attention to the names of those data frames (avoid duplication) and be specific about which objects you are referring to.
+In our very first lecture, I mentioned R's approach to [object-oriented programming](https://en.wikipedia.org/wiki/Object-oriented_programming) (OOP), which is often summarised as:
+
+> **"Everything is an object and everything has a name."**
+
+--
+
+In the next two sections, I want to dive into this idea a little more. I also want to preempt some issues that might trip you up if you new to R or OOP in general.
+- At least, they were things that tripped me up at the beginning.
+
+--
 
 The good news, as well see, is that avoiding and solving these issues is pretty straightforward.
 - Not to mention: A very small price to pay for the freedom and control that R offers us.
 
 ---
 
+class: inverse, center, middle
+
+# "Everything is an object"
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+
+# What are objects? 
+
+It's important to emphasise that there are many different *types* (or *classes*) of objects. 
+
+We'll revisit the issue of "type" vs "class" in a slide or two. For the moment, it is helpful simply to name some objects that we'll be working with regularly:
+- vectors
+- matrices
+- data frames
+- lists
+- functions
+- etc.
+
+--
+
+Most likely, you already have a good idea of what distinguishes these objects and how to use them.
+- However, bear in mind that there subtleties that may confuse while you're still getting used to R. 
+- E.g. There are different kinds of data frames; you'll soon encounter "[tibbles](https://tibble.tidyverse.org/)", which are an enhanced data frame provided by the tidyverse.
+
+---
+
+# What are objects? (cont.)
+
+Each object class has its own set of rules governing how that object can be used in R.
+- For example, you can perform many of the same operations on matrices and data frames. But there are some operations that only work on a matrix, and vice versa.
+- At the same time, you can (often) convert an object from one type to another.
+
+```{r df}
+## Create a small data frame called "df".
+df <- data.frame(x = 1:2, y = 3:4) 
+df
+```
+
+```{r, m}
+## Convert it to (i.e. create) a matrix call "m".
+m <- as.matrix(df)
+m
+```
+
+---
+
+# Object class, type and, structure
+
+Use the `class`, `typeof`, and `str` commands if you want understand more about a particular object.
+
+```{r}
+# df <- data.frame(x = 1:2, y = 3:4) ## Create a small data frame called "df".
+class(df) ## Evaluate its class.
+typeof(df) ## Evaluate its type.
+str(df) ## Show its structure.
+```
+
+--
+
+PS — Confused by the fact that `typeof(df)` returns "list"? See [here](https://stackoverflow.com/questions/45396538/typeofdata-frame-shows-list-in-r).
+
+---
+
+# Object class, type, and structure (cont.)
+
+Of course, you can always just inspect/print an object directly in the console.
+- E.g. Type `df` and hit Enter.
+
+
+The `View()` function is also very helpful.
+- E.g. `View(df)`.
+
+---
+
+# Global environment
+
+Let's go back to the simple data frame that we created a few slides earlier.
+```{r}
+df
+```
+
+--
+
+Now, let's try to run a regression<sup>1</sup> on these "x" and "y" variables:
+
+.footnote[
+<sup>1</sup> Yes, this is a dumb regression with perfectly co-linear variables. Just go with it. 
+]
+
+```{r, error=T}
+lm(y ~ x) ## The "lm" stands for linear model(s)
+```
+
+--
+
+Uh-oh. What went wrong here? (Answer on next slide.)
+
+---
+
+# Global environment (cont.)
+
+The error message provides the answer to our question:
+
+```
+*## Error in eval(predvars, data, env): object 'y' not found
+```
+
+--
+
+R can't find the variables that we've supplied in our [Global Environment](https://www.datamentor.io/r-programming/environment-scope/):
+
+![No "x" or "y" here...](pics/environment.png)
+
+--
+
+Put differently: Because the variables "x" and "y" live as separate objects in the global environment, we have to tell R that they belong to the object `df`.
+- Think about how you might do this before clicking through to the next slide.
+
+---
+
+# Global environment (cont.)
+
+There are a various ways to solve this problem. One is to simply specify the datasource:
+
+```{r}
+lm(y ~ x, data = df) ## Works when we add "data = df"!
+```
+
+--
+
+I wanted to emphasize this global environment issue, because it is something that Stata users (i.e. most economists) struggle with when they first come to R.
+- In Stata, the entire workspace essentially consists of one (and only one) data frame. So there can be no ambiguity where variables are coming from.
+- However, that "convenience" comes at a really high price IMO. You can never read more than two separate datasets (let alone object types) into memory at the same time, have to resort all sorts of hacks to add summary variables to your dataset, etc. 
+- Speaking of which...
+
+
+---
+
+# Working with multiple objects
+
+As I keep saying, R's ability to keep multiple objects in memory at the same time is a huge plus when it comes to effective data work. 
+- E.g. We can create a new data frame that exists happily with our existing objects in the global environment.
+
+```{r df2}
+df2 <- data.frame(x = rnorm(10), y = runif(10))
+```
+
+![Now with df2 added](pics/environment2.png)
+
+--
+
+Again, however, it does mean that you have to pay attention to the names of those distinct data frames and be specific about which objects you are referring to.
+
+---
+
+class: inverse, center, middle
+
+# "Everything has a name"
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+
 # Reserved words
 
-There are a number of special words that are "reserved" in R.
-- These are are fundamental commands, operators and relations in base R that you cannot reassign, even if you wanted to.
+We've seen that we can assign objects to different names. However, there are a number of special words that are "reserved" in R.
+- These are are fundamental commands, operators and relations in base R that you cannot (re)assign, even if you wanted to.
 - We already encountered examples with the logical operators.
 
 See [here](http://stat.ethz.ch/R-manual/R-devel/library/base/html/Reserved.html) for a full list, including (but not limited to):
@@ -363,7 +536,7 @@ The messages that you see about some object being *masked from 'package:X'* are 
 
 # Namespace conflicts (cont.)
 
-The potential for namespace conflicts are a result of the OOP approach that we spoke about earlier.<sup>1</sup>
+The potential for namespace conflicts is a result of the OOP approach.<sup>1</sup>
 - Also reflects the fundamental open-source nature of R and the use of external packages. People are free to call their functions whatever they want, so some overlap is only to be expected.
 
 .footnote[
@@ -564,6 +737,17 @@ starwars$name[1]
 
 However, note some key differences between the output from this example and that of our previous `starwars[1, 1]` example. What are they?
 - Hint: Apart from the visual cues, try wrapping each command in `str()`.
+
+---
+
+# Option 2: $ (cont.)
+
+The last thing that I want to say about `$` is that it provides another way to avoid the "object not found" problem that we ran into with our earlier regression example.
+
+```{r, error=T}
+lm(y ~ x) ## Doesn't work
+lm(df$y ~ df$x) ## Works!
+```
 
 ---
 
