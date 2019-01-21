@@ -91,7 +91,7 @@ class: inverse, center, middle
 
 ### GitHub
 
-- It's important to realise the Git and Github are distinct things.
+- It's important to realise that Git and Github are distinct things.
 - GitHub is an online hosting platform that provides an array of services built on top of the Git system. (Similar platforms include Bitbucket and GitLab.)
 - Just like we don't *need* Rstudio to run R code, we don't *need* GitHub to use Git... But it will make our lives so much easier.
 
@@ -362,7 +362,7 @@ Turn to the person next to you. You are now partners. (Congratulations.)
 
 - P1: Invite P2 to join you as a collaborator on the "test" GitHub repo that you created earlier. (See the *Settings* tab of your repo.)
 
-- P2: Clone P1's repo to your local machine.<sup>1</sup> Make some edits to the README. Stage, commit and push these changes.
+- P2: Clone P1's repo to your local machine.<sup>1</sup> Make some edits to the README (e.g. delete lines of text). Stage, commit and push these changes.
 
 - P1: Now make changes to the README on your machine too. Stage, commit and then try to push them (*after* pulling from the GitHub repo first).
 
