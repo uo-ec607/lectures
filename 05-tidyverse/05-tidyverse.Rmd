@@ -20,7 +20,7 @@ opts_chunk$set(
   fig.align="center", #fig.width=6, fig.height=4.5, 
   # out.width="748px", #out.length="520.75px",
   dpi=300, #fig.path='Figs/',
-  cache=F#, echo=F, warning=F, message=F
+  cache=T#, echo=F, warning=F, message=F
   )
 ```
 
@@ -114,7 +114,7 @@ If you call up the above examples, you'll see that the tidyverse alternative typ
 # Tidyverse packages
 
 Let's load the tidyverse meta-package and check the output.
-```{r}
+```{r tverse}
 library(tidyverse)
 ```
 
@@ -128,7 +128,7 @@ We see that we have actually loaded a number of packages (which could also be lo
 # Tidyverse packages (cont.)
 
 The tidyverse actually comes with a lot more packages than those that are just loaded automatically.<sup>1</sup>
-```{r}
+```{r tverse_pkgs}
 tidyverse_packages()
 ```
 
@@ -181,7 +181,7 @@ The second line totally inverts this logical order (the final operation comes fi
 
 The piped version of the code is even more readable if we write it over several lines. Here it is again and, this time, I'll run it for good measure so you can see the output:
 
-```{r}
+```{r pipe}
 mpg %>% 
   filter(manufacturer=="audi") %>% 
   group_by(model) %>% 
@@ -233,7 +233,7 @@ Let's practice these commands together using the starwars data frame that comes 
 # 1) dplyr::filter()
 
 We can chain multiple filter commands with the pipe (`%>%`), or just separate them within a single filter command using commas.
-```{r}
+```{r filter1}
 starwars %>% 
   filter( 
     species == "Human", 
@@ -246,7 +246,7 @@ starwars %>%
 # 1) dplyr::filter() *cont.*
 
 Regular expressions work well too.
-```{r}
+```{r filter2}
 starwars %>% 
   filter(grepl("Skywalker", name))
 ```
@@ -255,8 +255,8 @@ starwars %>%
 
 # 1) dplyr::filter() *cont.*
 
-A very common use case is identifying (or removing) missing data cases. 
-```{r}
+A very common `filter()` use case is identifying (or removing) missing data cases. 
+```{r filter3}
 starwars %>% 
   filter(is.na(height))
 ```
@@ -265,13 +265,13 @@ starwars %>%
 
 </br>
 
-To remove missing observations, simply use negation: `filter(!is.na(height))`.
+To remove missing observations, simply use negation: `filter(!is.na(height))`. Try this yourself.
 
 ---
 
 # 2) dplyr::arrange()
 
-```{r}
+```{r arrange1}
 starwars %>% 
   arrange(birth_year)
 ```
@@ -285,7 +285,7 @@ starwars %>%
 # 2) dplyr::arrange() *cont.*
 
 We can also arrange items in descending order using `arrange(desc())`.
-```{r}
+```{r arrange2}
 starwars %>% 
   arrange(desc(birth_year))
 ```
@@ -295,7 +295,7 @@ starwars %>%
 # 3) dplyr::select()
 
 Use commas to select multiple columns out of a data frame. (You can also use "first:last" for consecutive columns). Deselect a column with "-".
-```{r}
+```{r select1}
 starwars %>% 
   select(name:skin_color, species, -height)
 ```
@@ -305,7 +305,7 @@ starwars %>%
 # 3) dplyr::select() *cont.*
 
 You can also rename some (or all) of your selected variables in place.
-```{r}
+```{r select2}
 starwars %>%
   select(alias=name, crib=homeworld, sex=gender) 
 ```
@@ -315,7 +315,7 @@ starwars %>%
 # 3) dplyr::select() *cont.*
 
 The `select(contains(PATTERN))` option provides a nice shortcut in relevant cases.
-```{r}
+```{r select3}
 starwars %>% 
   select(name, contains("color"))
 ```
@@ -326,7 +326,7 @@ starwars %>%
 
 The `select(..., everything())` option is another useful shortcut if you only want to bring some variable(s) to the "front" of a data frame.
 
-```{r}
+```{r select4}
 starwars %>% 
   select(species, homeworld, everything())
 ```
@@ -336,10 +336,26 @@ starwars %>%
 # 4) dplyr::mutate()
 
 You can create new columns from scratch, or (more commonly) as transformations of existing columns.
-```{r}
+```{r mutate1}
 starwars %>% 
   select(name, birth_year) %>%
-  mutate(dog_years = birth_year * 7)
+  mutate(dog_years = birth_year * 7) %>%
+  mutate(comment = paste0(name, " is ", dog_years, " in dog years."))
+```
+
+---
+
+
+# 4) dplyr::mutate() *cont*
+
+*Note:* `mutate()` is order aware. So you can chain multiple mutates in a single call.
+```{r mutate2}
+starwars %>% 
+  select(name, birth_year) %>%
+  mutate(
+    dog_years = birth_year * 7, ## Separate with a comma
+    comment = paste0(name, " is ", dog_years, " in dog years.")
+    )
 ```
 
 ---
@@ -347,20 +363,40 @@ starwars %>%
 # 4) dplyr::mutate() *cont.*
 
 Boolean, logical and conditional operators all work well with `mutate()` too.
-```{r}
+```{r mutate3}
 starwars %>% 
   select(name, height) %>%
   filter(name %in% c("Luke Skywalker", "Anakin Skywalker")) %>% 
   mutate(tall1 = height > 180) %>%
   mutate(tall2 = ifelse(height > 180, "Tall", "Short")) ## Same effect, but can choose labels
+
 ```
+
+---
+
+# 4) dplyr::mutate() *cont.*
+
+Lastly, there are "scoped" variants of `mutate()` that work on a subset of variables.
+- `mutate_all()` affects every variable
+- `mutate_at()` affects named or selected variables
+- `mutate_if()` affects variables that meet some criteria (e.g. are numeric)
+
+A silly example using the latter:
+
+```{r, mutate4}
+starwars %>% select(name:eye_color) %>% mutate_if(is.character, toupper) %>% head(5)
+```
+
+--
+
+See `?mutate_all` for more details and examples.
 
 ---
 
 # 5) dplyr::summarise()
 
 Particularly useful in combination with the `group_by()` command.
-```{r}
+```{r summ1}
 starwars %>% 
   group_by(species, gender) %>% 
   summarise(mean_height = mean(height, na.rm = T))
@@ -371,7 +407,7 @@ starwars %>%
 # 5) dplyr::summarise() *cont.*
 
 Note that including "na.rm = T" is usually a good idea with summarise functions. Otherwise, any missing value will propogate to the summarised value too.
-```{r}
+```{r summ2}
 ## Probably not what we want
 starwars %>% 
   summarise(mean_height = mean(height))
@@ -382,16 +418,41 @@ starwars %>%
 
 ---
 
+# 4) dplyr::summarise() *cont.*
+
+The "scoped" variants that we saw earlier also work with `summarise()`
+- `summarise_all()` affects every variable
+- `summarise_at()` affects named or selected variables
+- `summarise_if()` affects variables that meet some criteria (e.g. are numeric)
+
+An example using the latter:
+
+```{r, summ4}
+starwars %>% group_by(species, gender) %>% summarise_if(is.numeric, funs(avg=mean), na.rm=T) %>% head(5)
+```
+
+--
+
+Again, see `?summarise_at` for more details and examples.
+
+---
+
 # Other dplyr goodies
 
 `group_by()` and `ungroup()`: For (un)grouping.
 - Particularly useful with the `summarise()` and `mutate()` commands, as we've already seen.
 
+--
+
 `slice()`: Subset rows by position rather than filtering by values.
 - E.g. `starwars %>% slice(c(1, 5))`
 
+--
+
 `pull()`: Extract a column from as a data frame as a vector or scalar.
 - E.g. `starwars %>% filter(gender=="female") %>% pull()`
+
+--
 
 `count()` and `distinct()`: Number and isolate unique observations.
 - E.g. `starwars %>% count(species)`, or `starwars %>% distinct(species)`
@@ -401,12 +462,20 @@ starwars %>%
 
 # Joining operations
 
-One of the mainstays of the dplyr package is merging data with the [join family](https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html) of commands. 
+One of the mainstays of the dplyr package is merging data with the [join family](https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html) of commands.
+- `inner_join(df1, df2)`
+- `left_join(df1, df2)`
+- `right_join(df1, df2)`
+- `full_join(df1, df2)`
+- `semi_join(df1, df2)`
+- `anti_join(df1, df2)`
+
+--
 
 For the simple examples that I'm going to show here, we'll need some data sets that come bundled with the [nycflights13 package](http://github.com/hadley/nycflights13). 
 - Load it now and then inspect these data frames in your own console.
 
-```{r, echo = F}
+```{r flights, echo = F}
 library(nycflights13)
 ```
 ```{r, eval = F}
@@ -419,8 +488,12 @@ planes
 
 # Joining operations (cont.)
 
-Let's before a [left join](https://stat545.com/bit001_dplyr-cheatsheet.html#left_joinsuperheroes-publishers) on the flights and planes datasets. (*Note*: I'm going subset columns after the join, but only to help readability on this slide.)
-```{r}
+Let's perform a [left join](https://stat545.com/bit001_dplyr-cheatsheet.html#left_joinsuperheroes-publishers) on the flights and planes datasets. 
+- *Note*: I'm going subset columns after the join, but only to keep text on the slide.
+
+--
+
+```{r join1}
 left_join(flights, planes) %>%
   select(year, month, day, dep_time, arr_time, carrier, flight, tailnum, type, model)
 ```
@@ -437,17 +510,53 @@ Note that `dplyr` made a reasonable guess about which columns to join on (i.e. c
 *## Joining, by = c("year", "tailnum")
 ```
 
-However, there's an obvious problem here: the variable "year" does not have a consistent meaning across our joining datasets.
+However, there's an obvious problem here: the variable "year" does not have a consistent meaning across our joining datasets!
 - In one it refers to the *year of flight*, in the other it refers to *year of construction*.
 
-Luckily, it's easy to fix this problem simply by being explicit. You can also rename any ambiguous columns to avoid confusion. Try the following in your console:
-```{r, eval = F}
+--
+
+Luckily, there's an easy way to avoid this problem. 
+- See if you can figure it out before turning to the next slide.
+- Try `?dplyr::join`.
+
+---
+
+# Joining operations (cont.)
+
+(*continued from previous slide*)
+
+You just need to be more explicit in your join call by using the `by = ` argument.
+- You can also rename any ambiguous columns to avoid confusion. 
+```{r join2}
 left_join(
-  flights
-  planes %>% rename(year_built = year), 
-  by = c("tailnum"="tailnum") ## Be specific which columns we are joining on.
-  ) 
+  flights,
+  planes %>% rename(year_built = year), ## Not necessary w/ below line, but helpful
+  by = "tailnum" ## Be specific about the joining column
+  ) %>%
+  select(year, month, day, dep_time, arr_time, carrier, flight, tailnum, year_built, type, model) %>%
+  head(3) ## Just to save vertical space on the slide
 ```
+
+---
+
+# Joining operations (cont.)
+
+(*continued from previous slide*)
+
+Last thing I'll mention for now; note what happens if we again specify the join column... but don't rename the ambiguous "year" column in at least one of the given data frames.
+```{r join3}
+left_join(
+  flights,
+  planes, ## Not renaming "year" to "year_built" this time
+  by = "tailnum"
+  ) %>%
+  select(contains("year"), month, day, dep_time, arr_time, carrier, flight, tailnum, type, model) %>%
+  head(3)
+```
+
+--
+
+Make sure you know what "year.x" and "year.y" are. Again, it pays to be specific.
 
 ---
 class: inverse, center, middle
@@ -470,84 +579,153 @@ class: inverse, center, middle
 
 --
 
+</br>
+
 Let's practice these verbs together in class.
 - Side question: Which of `gather()` vs `spread()` produces "tidy" data?
   
 ---
 
-# 1) `tidyr::gather()`
+# 1) tidyr::gather()
 
-```{r}
-stocks <- data.frame(
+```{r gather1}
+stocks <- data.frame( ## Could use "tibble" instead of "data.frame" if you prefer
   time = as.Date('2009-01-01') + 0:1,
   X = rnorm(2, 0, 1),
   Y = rnorm(2, 0, 2),
   Z = rnorm(2, 0, 4)
-)
+  )
 stocks
-tidy_stocks <- stocks %>% gather(stock, price, -time) #<<
+tidy_stocks <- stocks %>% gather(stock, price, -time)
 tidy_stocks
 ```
 
 ---
 
-# 2) `tidyr::spread()`
+# 1) tidyr::gather() *cont.*
 
-```{r}
-tidy_stocks %>% spread(stock, price) #<<
-tidy_stocks %>% spread(time, price) #<<
+### Aside: Remembering the gather() syntax 
+
+There's a long-running joke about no-one being able to remember Stata's "reshape" command. ([Exhibit A](https://twitter.com/scottimberman/status/1036801308785864704).)
+
+It's easy to see this happening with `gather()` too. However, I find that I never forget the command as long as I remember the argument order is *"key"* then *"value"*.
+
+```{r gather2}
+## Write out the argument names this time: i.e. "key=" and "value="
+stocks %>% gather(key=stock, value=price, -time)
 ```
 
 ---
 
-# 3) `tidyr::separate()`
+# 2) tidyr::spread()
 
-```{r}
-economists <- data.frame(Name = c("Adam.Smith", "Paul.Samuelson", "Milton.Friedman"))
+```{r spread1}
+tidy_stocks %>% spread(stock, price)
+tidy_stocks %>% spread(time, price)
+```
+
+---
+
+# 3) tidyr::separate()
+
+```{r sep1}
+economists <- data.frame(name = c("Adam.Smith", "Paul.Samuelson", "Milton.Friedman"))
 economists
-economists %>% separate(Name, c("First", "Last")) #<<
+economists %>% separate(name, c("first_name", "last_name")) 
 ```
+
+--
+
+</br>
+
+This command is pretty smart, but you can also specify the separator with `separate(..., sep=".")`.
 
 ---
 
-# 4) `tidyr::unite()` 
+# 3) tidyr::separate() *cont.*
 
-```{r}
+A related function is `separate_rows()`, for splitting up cells that contain multiple fields or observations (a frustratingly common occurence with survey data).
+```{r sep2}
+a <- data.frame(
+  name = c("Jack", "Jill"),
+  occupation = c("Homemaker", "Philosopher, Philanthropist, Troublemaker") 
+  ) 
+a
+## Now split out Jill's various occupations into different rows
+a %>% separate_rows(occupation)
+```
+---
+
+# 4) tidyr::unite()
+
+```{r unite1}
 gdp <- data.frame(
   yr = rep(2016, times = 4),
   qtr = 1:4,
   gdp = rnorm(4, mean = 100, sd = 2)
-)
+  )
 gdp 
-gdp %>% unite(yr_qtr, c("yr", "qtr"), sep = "q") #<<
+## Combine yr and qtr into one column
+gdp %>% unite(yr_qtr, c("yr", "qtr"), sep = "q")
 ```
 
 ---
 
-# Other `tidyr` goodies
+# Other tidyr goodies
 
-- Use `separate_rows()` to split up cells that contain multiple fields or observations (a frustringly common occurence with survey data).
-```{r}
-data_frame(
-  Person = c("Jack", "Jill"),
-  Occupation = c("Homemaker", "Philosopher, Philanthropist, Troublemaker") ## The second row of our y column contains multiple observations.
-  ) %>% 
-  separate_rows(Occupation) #<<
+Use `crossing()` to get the full combination of a group of variables.<sup>1</sup>
+
+```{r cross1}
+crossing(side=c("left", "right"), height=c("top", "bottom"))
 ```
-
----
-
-# Other `tidyr` goodies (cont.)
-
-- Use `crossing()` to get the full combination of a group of variables.<sup>1</sup>
-
-```{r}
-crossing(side=c("left", "right"), position=c("top", "bottom"))
-```
-
-- See `?expand()` and `?complete()` for more specialised functions that allow you to fill in (implicit) missing data or variable combinations in existing data frames.
 
 .footnote[
-[1] Base R alternative: `expand.grid()`.
+<sup>1</sup> Base R alternative: `expand.grid()`.
 ]  
-  
+
+--
+
+See `?expand()` and `?complete()` for more specialised functions that allow you to fill in (implicit) missing data or variable combinations in existing data frames.
+- You'll encounter this during your next assignment.
+
+---
+class: inverse, center, middle
+
+# Summary
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+
+# Key verbs
+
+### dplyr
+1. `filter()`
+2. `arrange()`
+3. `select()`
+4. `mutate()`
+5. `summarise()`
+
+### tidyr
+1. `gather()`
+2. `spread()`
+3. `separate()`
+4. `unite()`
+
+--
+
+Other useful items include: pipes (`%>%`), grouping (`group_by()`), joining functions (`left_join()`, `inner_join`, etc.).
+
+---
+
+# Assignment 2
+
+Assignment 2 is up on GitHub Classroom.
+- Hone your data wrangling and cleaning skills on a dataset culled from the wild.
+- This one will take some of you a while to get through, so please get started early.
+- Deadline: One week from today.
+
+---
+class: inverse, center, middle
+
+# Next lecture: Webscraping I
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>

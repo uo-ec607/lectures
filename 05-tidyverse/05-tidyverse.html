@@ -322,7 +322,7 @@ starwars %&gt;%
 
 # 1) dplyr::filter() *cont.*
 
-A very common use case is identifying (or removing) missing data cases. 
+A very common `filter()` use case is identifying (or removing) missing data cases. 
 
 ```r
 starwars %&gt;% 
@@ -347,7 +347,7 @@ starwars %&gt;%
 
 &lt;/br&gt;
 
-To remove missing observations, simply use negation: `filter(!is.na(height))`.
+To remove missing observations, simply use negation: `filter(!is.na(height))`. Try this yourself.
 
 ---
 
@@ -533,23 +533,57 @@ You can create new columns from scratch, or (more commonly) as transformations o
 ```r
 starwars %&gt;% 
   select(name, birth_year) %&gt;%
-  mutate(dog_years = birth_year * 7)
+  mutate(dog_years = birth_year * 7) %&gt;%
+  mutate(comment = paste0(name, " is ", dog_years, " in dog years."))
 ```
 
 ```
-## # A tibble: 87 x 3
-##    name               birth_year dog_years
-##    &lt;chr&gt;                   &lt;dbl&gt;     &lt;dbl&gt;
-##  1 Luke Skywalker           19        133 
-##  2 C-3PO                   112        784 
-##  3 R2-D2                    33        231 
-##  4 Darth Vader              41.9      293.
-##  5 Leia Organa              19        133 
-##  6 Owen Lars                52        364 
-##  7 Beru Whitesun lars       47        329 
-##  8 R5-D4                    NA         NA 
-##  9 Biggs Darklighter        24        168 
-## 10 Obi-Wan Kenobi           57        399 
+## # A tibble: 87 x 4
+##    name             birth_year dog_years comment                           
+##    &lt;chr&gt;                 &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;                             
+##  1 Luke Skywalker         19        133  Luke Skywalker is 133 in dog year…
+##  2 C-3PO                 112        784  C-3PO is 784 in dog years.        
+##  3 R2-D2                  33        231  R2-D2 is 231 in dog years.        
+##  4 Darth Vader            41.9      293. Darth Vader is 293.3 in dog years.
+##  5 Leia Organa            19        133  Leia Organa is 133 in dog years.  
+##  6 Owen Lars              52        364  Owen Lars is 364 in dog years.    
+##  7 Beru Whitesun l…       47        329  Beru Whitesun lars is 329 in dog …
+##  8 R5-D4                  NA         NA  R5-D4 is NA in dog years.         
+##  9 Biggs Darklight…       24        168  Biggs Darklighter is 168 in dog y…
+## 10 Obi-Wan Kenobi         57        399  Obi-Wan Kenobi is 399 in dog year…
+## # … with 77 more rows
+```
+
+---
+
+
+# 4) dplyr::mutate() *cont*
+
+*Note:* `mutate()` is order aware. So you can chain multiple mutates in a single call.
+
+```r
+starwars %&gt;% 
+  select(name, birth_year) %&gt;%
+  mutate(
+    dog_years = birth_year * 7, ## Separate with a comma
+    comment = paste0(name, " is ", dog_years, " in dog years.")
+    )
+```
+
+```
+## # A tibble: 87 x 4
+##    name             birth_year dog_years comment                           
+##    &lt;chr&gt;                 &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;                             
+##  1 Luke Skywalker         19        133  Luke Skywalker is 133 in dog year…
+##  2 C-3PO                 112        784  C-3PO is 784 in dog years.        
+##  3 R2-D2                  33        231  R2-D2 is 231 in dog years.        
+##  4 Darth Vader            41.9      293. Darth Vader is 293.3 in dog years.
+##  5 Leia Organa            19        133  Leia Organa is 133 in dog years.  
+##  6 Owen Lars              52        364  Owen Lars is 364 in dog years.    
+##  7 Beru Whitesun l…       47        329  Beru Whitesun lars is 329 in dog …
+##  8 R5-D4                  NA         NA  R5-D4 is NA in dog years.         
+##  9 Biggs Darklight…       24        168  Biggs Darklighter is 168 in dog y…
+## 10 Obi-Wan Kenobi         57        399  Obi-Wan Kenobi is 399 in dog year…
 ## # … with 77 more rows
 ```
 
@@ -574,6 +608,37 @@ starwars %&gt;%
 ## 1 Luke Skywalker      172 FALSE Short
 ## 2 Anakin Skywalker    188 TRUE  Tall
 ```
+
+---
+
+# 4) dplyr::mutate() *cont.*
+
+Lastly, there are "scoped" variants of `mutate()` that work on a subset of variables.
+- `mutate_all()` affects every variable
+- `mutate_at()` affects named or selected variables
+- `mutate_if()` affects variables that meet some criteria (e.g. are numeric)
+
+A silly example using the latter:
+
+
+```r
+starwars %&gt;% select(name:eye_color) %&gt;% mutate_if(is.character, toupper) %&gt;% head(5)
+```
+
+```
+## # A tibble: 5 x 6
+##   name           height  mass hair_color skin_color  eye_color
+##   &lt;chr&gt;           &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;       &lt;chr&gt;    
+## 1 LUKE SKYWALKER    172    77 BLOND      FAIR        BLUE     
+## 2 C-3PO             167    75 &lt;NA&gt;       GOLD        YELLOW   
+## 3 R2-D2              96    32 &lt;NA&gt;       WHITE, BLUE RED      
+## 4 DARTH VADER       202   136 NONE       WHITE       YELLOW   
+## 5 LEIA ORGANA       150    49 BROWN      LIGHT       BROWN
+```
+
+--
+
+See `?mutate_all` for more details and examples.
 
 ---
 
@@ -639,16 +704,54 @@ starwars %&gt;%
 
 ---
 
+# 4) dplyr::summarise() *cont.*
+
+The "scoped" variants that we saw earlier also work with `summarise()`
+- `summarise_all()` affects every variable
+- `summarise_at()` affects named or selected variables
+- `summarise_if()` affects variables that meet some criteria (e.g. are numeric)
+
+An example using the latter:
+
+
+```r
+starwars %&gt;% group_by(species, gender) %&gt;% summarise_if(is.numeric, funs(avg=mean), na.rm=T) %&gt;% head(5)
+```
+
+```
+## # A tibble: 5 x 5
+## # Groups:   species [5]
+##   species  gender height_avg mass_avg birth_year_avg
+##   &lt;chr&gt;    &lt;chr&gt;       &lt;dbl&gt;    &lt;dbl&gt;          &lt;dbl&gt;
+## 1 Aleena   male           79       15            NaN
+## 2 Besalisk male          198      102            NaN
+## 3 Cerean   male          198       82             92
+## 4 Chagrian male          196      NaN            NaN
+## 5 Clawdite female        168       55            NaN
+```
+
+--
+
+Again, see `?summarise_at` for more details and examples.
+
+---
+
 # Other dplyr goodies
 
 `group_by()` and `ungroup()`: For (un)grouping.
 - Particularly useful with the `summarise()` and `mutate()` commands, as we've already seen.
 
+--
+
 `slice()`: Subset rows by position rather than filtering by values.
 - E.g. `starwars %&gt;% slice(c(1, 5))`
 
+--
+
 `pull()`: Extract a column from as a data frame as a vector or scalar.
 - E.g. `starwars %&gt;% filter(gender=="female") %&gt;% pull()`
+
+--
 
 `count()` and `distinct()`: Number and isolate unique observations.
 - E.g. `starwars %&gt;% count(species)`, or `starwars %&gt;% distinct(species)`
@@ -658,7 +761,15 @@ starwars %&gt;%
 
 # Joining operations
 
-One of the mainstays of the dplyr package is merging data with the [join family](https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html) of commands. 
+One of the mainstays of the dplyr package is merging data with the [join family](https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html) of commands.
+- `inner_join(df1, df2)`
+- `left_join(df1, df2)`
+- `right_join(df1, df2)`
+- `full_join(df1, df2)`
+- `semi_join(df1, df2)`
+- `anti_join(df1, df2)`
+
+--
 
 For the simple examples that I'm going to show here, we'll need some data sets that come bundled with the [nycflights13 package](http://github.com/hadley/nycflights13). 
 - Load it now and then inspect these data frames in your own console.
@@ -675,7 +786,11 @@ planes
 
 # Joining operations (cont.)
 
-Let's before a [left join](https://stat545.com/bit001_dplyr-cheatsheet.html#left_joinsuperheroes-publishers) on the flights and planes datasets. (*Note*: I'm going subset columns after the join, but only to help readability on this slide.)
+Let's perform a [left join](https://stat545.com/bit001_dplyr-cheatsheet.html#left_joinsuperheroes-publishers) on the flights and planes datasets. 
+- *Note*: I'm going subset columns after the join, but only to keep text on the slide.
+
+--
+
 
 ```r
 left_join(flights, planes) %&gt;%
@@ -715,18 +830,75 @@ Note that `dplyr` made a reasonable guess about which columns to join on (i.e. c
 *## Joining, by = c("year", "tailnum")
 ```
 
-However, there's an obvious problem here: the variable "year" does not have a consistent meaning across our joining datasets.
+However, there's an obvious problem here: the variable "year" does not have a consistent meaning across our joining datasets!
 - In one it refers to the *year of flight*, in the other it refers to *year of construction*.
 
-Luckily, it's easy to fix this problem simply by being explicit. You can also rename any ambiguous columns to avoid confusion. Try the following in your console:
+--
+
+Luckily, there's an easy way to avoid this problem. 
+- See if you can figure it out before turning to the next slide.
+- Try `?dplyr::join`.
+
+---
+
+# Joining operations (cont.)
+
+(*continued from previous slide*)
+
+You just need to be more explicit in your join call by using the `by = ` argument.
+- You can also rename any ambiguous columns to avoid confusion. 
 
 ```r
 left_join(
-  flights
-  planes %&gt;% rename(year_built = year), 
-  by = c("tailnum"="tailnum") ## Be specific which columns we are joining on.
-  ) 
+  flights,
+  planes %&gt;% rename(year_built = year), ## Not necessary w/ below line, but helpful
+  by = "tailnum" ## Be specific about the joining column
+  ) %&gt;%
+  select(year, month, day, dep_time, arr_time, carrier, flight, tailnum, year_built, type, model) %&gt;%
+  head(3) ## Just to save vertical space on the slide
 ```
+
+```
+## # A tibble: 3 x 11
+##    year month   day dep_time arr_time carrier flight tailnum year_built
+##   &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;    &lt;int&gt; &lt;chr&gt;    &lt;int&gt; &lt;chr&gt;        &lt;int&gt;
+## 1  2013     1     1      517      830 UA        1545 N14228        1999
+## 2  2013     1     1      533      850 UA        1714 N24211        1998
+## 3  2013     1     1      542      923 AA        1141 N619AA        1990
+## # … with 2 more variables: type &lt;chr&gt;, model &lt;chr&gt;
+```
+
+---
+
+# Joining operations (cont.)
+
+(*continued from previous slide*)
+
+Last thing I'll mention for now; note what happens if we again specify the join column... but don't rename the ambiguous "year" column in at least one of the given data frames.
+
+```r
+left_join(
+  flights,
+  planes, ## Not renaming "year" to "year_built" this time
+  by = "tailnum"
+  ) %&gt;%
+  select(contains("year"), month, day, dep_time, arr_time, carrier, flight, tailnum, type, model) %&gt;%
+  head(3)
+```
+
+```
+## # A tibble: 3 x 11
+##   year.x year.y month   day dep_time arr_time carrier flight tailnum type 
+##    &lt;int&gt;  &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;    &lt;int&gt; &lt;chr&gt;    &lt;int&gt; &lt;chr&gt;   &lt;chr&gt;
+## 1   2013   1999     1     1      517      830 UA        1545 N14228  Fixe…
+## 2   2013   1998     1     1      533      850 UA        1714 N24211  Fixe…
+## 3   2013   1990     1     1      542      923 AA        1141 N619AA  Fixe…
+## # … with 1 more variable: model &lt;chr&gt;
+```
+
+--
+
+Make sure you know what "year.x" and "year.y" are. Again, it pays to be specific.
 
 ---
 class: inverse, center, middle
@@ -749,102 +921,168 @@ class: inverse, center, middle
 
 --
 
+&lt;/br&gt;
+
 Let's practice these verbs together in class.
 - Side question: Which of `gather()` vs `spread()` produces "tidy" data?
   
 ---
 
-# 1) `tidyr::gather()`
+# 1) tidyr::gather()
 
 
 ```r
-stocks &lt;- data.frame(
+stocks &lt;- data.frame( ## Could use "tibble" instead of "data.frame" if you prefer
   time = as.Date('2009-01-01') + 0:1,
   X = rnorm(2, 0, 1),
   Y = rnorm(2, 0, 2),
   Z = rnorm(2, 0, 4)
-)
+  )
 stocks
 ```
 
 ```
-##         time          X          Y         Z
-## 1 2009-01-01 -0.2943445 -0.2019324  1.147010
-## 2 2009-01-02 -0.4103958  0.6261197 -7.137281
+##         time           X          Y        Z
+## 1 2009-01-01 -1.34777502 -0.7847447 2.051529
+## 2 2009-01-02 -0.05228657  1.6026408 3.063534
 ```
 
 ```r
-*tidy_stocks &lt;- stocks %&gt;% gather(stock, price, -time)
+tidy_stocks &lt;- stocks %&gt;% gather(stock, price, -time)
 tidy_stocks
 ```
 
 ```
-##         time stock      price
-## 1 2009-01-01     X -0.2943445
-## 2 2009-01-02     X -0.4103958
-## 3 2009-01-01     Y -0.2019324
-## 4 2009-01-02     Y  0.6261197
-## 5 2009-01-01     Z  1.1470104
-## 6 2009-01-02     Z -7.1372806
+##         time stock       price
+## 1 2009-01-01     X -1.34777502
+## 2 2009-01-02     X -0.05228657
+## 3 2009-01-01     Y -0.78474465
+## 4 2009-01-02     Y  1.60264082
+## 5 2009-01-01     Z  2.05152928
+## 6 2009-01-02     Z  3.06353440
 ```
 
 ---
 
-# 2) `tidyr::spread()`
+# 1) tidyr::gather() *cont.*
+
+### Aside: Remembering the gather() syntax 
+
+There's a long-running joke about no-one being able to remember Stata's "reshape" command. ([Exhibit A](https://twitter.com/scottimberman/status/1036801308785864704).)
+
+It's easy to see this happening with `gather()` too. However, I find that I never forget the command as long as I remember the argument order is *"key"* then *"value"*.
 
 
 ```r
-*tidy_stocks %&gt;% spread(stock, price)
+## Write out the argument names this time: i.e. "key=" and "value="
+stocks %&gt;% gather(key=stock, value=price, -time)
 ```
 
 ```
-##         time          X          Y         Z
-## 1 2009-01-01 -0.2943445 -0.2019324  1.147010
-## 2 2009-01-02 -0.4103958  0.6261197 -7.137281
-```
-
-```r
-*tidy_stocks %&gt;% spread(time, price)
-```
-
-```
-##   stock 2009-01-01 2009-01-02
-## 1     X -0.2943445 -0.4103958
-## 2     Y -0.2019324  0.6261197
-## 3     Z  1.1470104 -7.1372806
+##         time stock       price
+## 1 2009-01-01     X -1.34777502
+## 2 2009-01-02     X -0.05228657
+## 3 2009-01-01     Y -0.78474465
+## 4 2009-01-02     Y  1.60264082
+## 5 2009-01-01     Z  2.05152928
+## 6 2009-01-02     Z  3.06353440
 ```
 
 ---
 
-# 3) `tidyr::separate()`
+# 2) tidyr::spread()
 
 
 ```r
-economists &lt;- data.frame(Name = c("Adam.Smith", "Paul.Samuelson", "Milton.Friedman"))
+tidy_stocks %&gt;% spread(stock, price)
+```
+
+```
+##         time           X          Y        Z
+## 1 2009-01-01 -1.34777502 -0.7847447 2.051529
+## 2 2009-01-02 -0.05228657  1.6026408 3.063534
+```
+
+```r
+tidy_stocks %&gt;% spread(time, price)
+```
+
+```
+##   stock 2009-01-01  2009-01-02
+## 1     X -1.3477750 -0.05228657
+## 2     Y -0.7847447  1.60264082
+## 3     Z  2.0515293  3.06353440
+```
+
+---
+
+# 3) tidyr::separate()
+
+
+```r
+economists &lt;- data.frame(name = c("Adam.Smith", "Paul.Samuelson", "Milton.Friedman"))
 economists
 ```
 
 ```
-##              Name
+##              name
 ## 1      Adam.Smith
 ## 2  Paul.Samuelson
 ## 3 Milton.Friedman
 ```
 
 ```r
-*economists %&gt;% separate(Name, c("First", "Last"))
+economists %&gt;% separate(name, c("first_name", "last_name")) 
 ```
 
 ```
-##    First      Last
-## 1   Adam     Smith
-## 2   Paul Samuelson
-## 3 Milton  Friedman
+##   first_name last_name
+## 1       Adam     Smith
+## 2       Paul Samuelson
+## 3     Milton  Friedman
 ```
+
+--
+
+&lt;/br&gt;
+
+This command is pretty smart, but you can also specify the separator with `separate(..., sep=".")`.
 
 ---
 
-# 4) `tidyr::unite()` 
+# 3) tidyr::separate() *cont.*
+
+A related function is `separate_rows()`, for splitting up cells that contain multiple fields or observations (a frustratingly common occurence with survey data).
+
+```r
+a &lt;- data.frame(
+  name = c("Jack", "Jill"),
+  occupation = c("Homemaker", "Philosopher, Philanthropist, Troublemaker") 
+  ) 
+a
+```
+
+```
+##   name                                occupation
+## 1 Jack                                 Homemaker
+## 2 Jill Philosopher, Philanthropist, Troublemaker
+```
+
+```r
+## Now split out Jill's various occupations into different rows
+a %&gt;% separate_rows(occupation)
+```
+
+```
+##   name     occupation
+## 1 Jack      Homemaker
+## 2 Jill    Philosopher
+## 3 Jill Philanthropist
+## 4 Jill   Troublemaker
+```
+---
+
+# 4) tidyr::unite()
 
 
 ```r
@@ -852,85 +1090,102 @@ gdp &lt;- data.frame(
   yr = rep(2016, times = 4),
   qtr = 1:4,
   gdp = rnorm(4, mean = 100, sd = 2)
-)
+  )
 gdp 
 ```
 
 ```
-##     yr qtr       gdp
-## 1 2016   1  96.43689
-## 2 2016   2 100.04949
-## 3 2016   3 101.69664
-## 4 2016   4  97.51464
+##     yr qtr      gdp
+## 1 2016   1 100.0749
+## 2 2016   2  97.7829
+## 3 2016   3 102.0789
+## 4 2016   4 101.0906
 ```
 
 ```r
-*gdp %&gt;% unite(yr_qtr, c("yr", "qtr"), sep = "q")
+## Combine yr and qtr into one column
+gdp %&gt;% unite(yr_qtr, c("yr", "qtr"), sep = "q")
 ```
 
 ```
-##   yr_qtr       gdp
-## 1 2016q1  96.43689
-## 2 2016q2 100.04949
-## 3 2016q3 101.69664
-## 4 2016q4  97.51464
+##   yr_qtr      gdp
+## 1 2016q1 100.0749
+## 2 2016q2  97.7829
+## 3 2016q3 102.0789
+## 4 2016q4 101.0906
 ```
 
 ---
 
-# Other `tidyr` goodies
+# Other tidyr goodies
 
-- Use `separate_rows()` to split up cells that contain multiple fields or observations (a frustringly common occurence with survey data).
+Use `crossing()` to get the full combination of a group of variables.&lt;sup&gt;1&lt;/sup&gt;
+
 
 ```r
-data_frame(
-  Person = c("Jack", "Jill"),
-  Occupation = c("Homemaker", "Philosopher, Philanthropist, Troublemaker") ## The second row of our y column contains multiple observations.
-  ) %&gt;% 
-* separate_rows(Occupation)
-```
-
-```
-## Warning: `data_frame()` is deprecated, use `tibble()`.
-## This warning is displayed once per session.
+crossing(side=c("left", "right"), height=c("top", "bottom"))
 ```
 
 ```
 ## # A tibble: 4 x 2
-##   Person Occupation    
-##   &lt;chr&gt;  &lt;chr&gt;         
-## 1 Jack   Homemaker     
-## 2 Jill   Philosopher   
-## 3 Jill   Philanthropist
-## 4 Jill   Troublemaker
-```
-
----
-
-# Other `tidyr` goodies (cont.)
-
-- Use `crossing()` to get the full combination of a group of variables.&lt;sup&gt;1&lt;/sup&gt;
-
-
-```r
-crossing(side=c("left", "right"), position=c("top", "bottom"))
-```
-
-```
-## # A tibble: 4 x 2
-##   side  position
-##   &lt;chr&gt; &lt;chr&gt;   
-## 1 left  bottom  
-## 2 left  top     
-## 3 right bottom  
+##   side  height
+##   &lt;chr&gt; &lt;chr&gt; 
+## 1 left  bottom
+## 2 left  top   
+## 3 right bottom
 ## 4 right top
 ```
 
-- See `?expand()` and `?complete()` for more specialised functions that allow you to fill in (implicit) missing data or variable combinations in existing data frames.
-
 .footnote[
-[1] Base R alternative: `expand.grid()`.
-]
+&lt;sup&gt;1&lt;/sup&gt; Base R alternative: `expand.grid()`.
+]  
+
+--
+
+See `?expand()` and `?complete()` for more specialised functions that allow you to fill in (implicit) missing data or variable combinations in existing data frames.
+- You'll encounter this during your next assignment.
+
+---
+class: inverse, center, middle
+
+# Summary
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+
+# Key verbs
+
+### dplyr
+1. `filter()`
+2. `arrange()`
+3. `select()`
+4. `mutate()`
+5. `summarise()`
+
+### tidyr
+1. `gather()`
+2. `spread()`
+3. `separate()`
+4. `unite()`
+
+--
+
+Other useful items include: pipes (`%&gt;%`), grouping (`group_by()`), joining functions (`left_join()`, `inner_join`, etc.).
+
+---
+
+# Assignment 2
+
+Assignment 2 is up on GitHub Classroom.
+- Hone your data wrangling and cleaning skills on a dataset culled from the wild.
+- This one will take some of you a while to get through, so please get started early.
+- Deadline: One week from today.
+
+---
+class: inverse, center, middle
+
+# Next lecture: Webscraping I
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
     </textarea>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({
