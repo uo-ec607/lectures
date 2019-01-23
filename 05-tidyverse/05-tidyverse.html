@@ -757,11 +757,27 @@ Again, see `?summarise_at` for more details and examples.
 - E.g. `starwars %&gt;% count(species)`, or `starwars %&gt;% distinct(species)`
 - You could also use a combination of `mutate()`, `group_by()`, and `n()`, e.g. `starwars %&gt;% group_by(species) %&gt;% mutate(num = n())`.
 
+
+---
+
+# Other dplyr goodies (cont.)
+
+There are also a whole class of [window functions](https://cran.r-project.org/web/packages/dplyr/vignettes/window-functions.html) for getting leads and lags, ranking, creating cumulative aggregates, etc.
+- See `vignette("window-functions")`.
+
+--
+
+&lt;/br&gt;
+
+The final set of dplyr "goodies" are the family of join operations. However, these are important enough that I want to go over some concepts in a bit more depth...
+- We encounter and practice these many more times as the course progresses.
+
+
 ---
 
 # Joining operations
 
-One of the mainstays of the dplyr package is merging data with the [join family](https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html) of commands.
+One of the mainstays of the dplyr package is merging data with the family [join operations](https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html).
 - `inner_join(df1, df2)`
 - `left_join(df1, df2)`
 - `right_join(df1, df2)`
