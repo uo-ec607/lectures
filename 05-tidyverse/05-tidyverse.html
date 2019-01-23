@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Lecture 5: Tidyverse</title>
+    <title>Lecture 5: Data wrangling with the “Tidyverse”</title>
     <meta charset="utf-8">
     <meta name="author" content="Grant McDermott | University of Oregon" />
     <link href="libs/remark-css/default.css" rel="stylesheet" />
@@ -12,7 +12,7 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# Lecture 5: Tidyverse
+# Lecture 5: Data wrangling with the “Tidyverse”
 ## <html>
 <div style="float:left">
 
@@ -64,7 +64,8 @@ Key points:
 &lt;/br&gt;
 
 Today is the last lecture where I'll be using slides (i.e. "forcing" you to type out commands by hand).
-- From next lecture on we'll be switching to HMTL notebooks, but I still encourage you to avoid copy+paste as much as possible.
+- I've also included an HTML document version of these slides, since I think these will be easier to use a reference going forward (scrolling and so forth). Look inside the `html_document/` sub-directory.  
+- From next lecture on we'll be switching to HMTL documents entirely, but I still encourage you to avoid copy+paste as much as possible.
 
 ---
 class: inverse, center, middle
@@ -1062,7 +1063,7 @@ economists %&gt;% separate(name, c("first_name", "last_name"))
 
 &lt;/br&gt;
 
-This command is pretty smart, but you can also specify the separator with `separate(..., sep=".")`.
+This command is pretty smart. But to avoid ambiguity, you can also specify the separation character with `separate(..., sep=".")`.
 
 ---
 
@@ -1071,11 +1072,11 @@ This command is pretty smart, but you can also specify the separator with `separ
 A related function is `separate_rows()`, for splitting up cells that contain multiple fields or observations (a frustratingly common occurence with survey data).
 
 ```r
-a &lt;- data.frame(
+jobs &lt;- data.frame(
   name = c("Jack", "Jill"),
   occupation = c("Homemaker", "Philosopher, Philanthropist, Troublemaker") 
   ) 
-a
+jobs
 ```
 
 ```
@@ -1086,7 +1087,7 @@ a
 
 ```r
 ## Now split out Jill's various occupations into different rows
-a %&gt;% separate_rows(occupation)
+jobs %&gt;% separate_rows(occupation)
 ```
 
 ```
@@ -1104,31 +1105,79 @@ a %&gt;% separate_rows(occupation)
 ```r
 gdp &lt;- data.frame(
   yr = rep(2016, times = 4),
-  qtr = 1:4,
+  mnth = rep(1, times = 4),
+  dy = 1:4,
   gdp = rnorm(4, mean = 100, sd = 2)
   )
 gdp 
 ```
 
 ```
-##     yr qtr      gdp
-## 1 2016   1 100.0749
-## 2 2016   2  97.7829
-## 3 2016   3 102.0789
-## 4 2016   4 101.0906
+##     yr mnth dy      gdp
+## 1 2016    1  1 100.0749
+## 2 2016    1  2  97.7829
+## 3 2016    1  3 102.0789
+## 4 2016    1  4 101.0906
 ```
 
 ```r
-## Combine yr and qtr into one column
-gdp %&gt;% unite(yr_qtr, c("yr", "qtr"), sep = "q")
+## Combine "yr", "mnth", and "dy" into one "date" column
+gdp %&gt;% unite(date, c("yr", "mnth", "dy"), sep = "-")
 ```
 
 ```
-##   yr_qtr      gdp
-## 1 2016q1 100.0749
-## 2 2016q2  97.7829
-## 3 2016q3 102.0789
-## 4 2016q4 101.0906
+##       date      gdp
+## 1 2016-1-1 100.0749
+## 2 2016-1-2  97.7829
+## 3 2016-1-3 102.0789
+## 4 2016-1-4 101.0906
+```
+
+---
+
+# 4) tidyr::unite() *cont.*
+
+Note that `unite()` will automatically create a character variable. You can see this better if we convert it to a tibble. 
+
+```r
+gdp_u &lt;- gdp %&gt;% unite(date, c("yr", "mnth", "dy"), sep = "-") %&gt;% as_tibble()
+gdp_u
+```
+
+```
+## # A tibble: 4 x 2
+##   date       gdp
+##   &lt;chr&gt;    &lt;dbl&gt;
+## 1 2016-1-1 100. 
+## 2 2016-1-2  97.8
+## 3 2016-1-3 102. 
+## 4 2016-1-4 101.
+```
+
+--
+
+If you want to convert it to something else (e.g. date or numeric) then you will need to modify it using `mutate()`. See the next slide for an example, using the [lubridate](https://lubridate.tidyverse.org/) package's super helpful date conversion functions.
+
+---
+
+# 4) tidyr::unite() *cont.*
+
+*(continued from previous slide)*
+
+
+```r
+library(lubridate)
+gdp_u %&gt;% mutate(date = ymd(date))
+```
+
+```
+## # A tibble: 4 x 2
+##   date         gdp
+##   &lt;date&gt;     &lt;dbl&gt;
+## 1 2016-01-01 100. 
+## 2 2016-01-02  97.8
+## 3 2016-01-03 102. 
+## 4 2016-01-04 101.
 ```
 
 ---
@@ -1200,7 +1249,7 @@ Assignment 2 is up on GitHub Classroom.
 ---
 class: inverse, center, middle
 
-# Next lecture: Webscraping I
+# Next lecture: Webscraping (1)
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
     </textarea>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
