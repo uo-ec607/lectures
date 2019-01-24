@@ -27,7 +27,25 @@ class: center, middle, inverse, title-slide
 
 
 
+# Table of contents
+
+1. [Prologue](#prologue)
+
+2. [Introduction](#intro)
+
+3. [Object-oriented programming in R](#oop)
+
+4. ["Everything is an object"](#eobject)
+
+5. ["Everything has a name"](#ename)
+
+6. [Indexing](#indexing)
+
+7. [Cleaning up](#cleaning)
+
+---
 class: inverse, center, middle
+name: prologue
 
 # Prologue
 
@@ -65,10 +83,10 @@ This is deliberate.
 - Slightly more painful in the beginning, but much better payoff in the long-run.
 
 ---
-
 class: inverse, center, middle
+name: intro
 
-# Intro
+# Introduction
 
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
 
@@ -388,8 +406,8 @@ One complication is that you need to know the exact name of the package vignette
 - Or, run `vignette(all = FALSE)` if you only want to see the vignettes of any *loaded* packages.
 
 ---
-
 class: inverse, center, middle
+name: oop
 
 # Object-oriented programming in R
 
@@ -414,8 +432,8 @@ The good news, as well see, is that avoiding and solving these issues is pretty 
 - Not to mention: A very small price to pay for the freedom and control that R offers us.
 
 ---
-
 class: inverse, center, middle
+name: eobject
 
 # "Everything is an object"
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
@@ -629,8 +647,8 @@ df2 &lt;- data.frame(x = rnorm(10), y = runif(10))
 Again, however, it does mean that you have to pay attention to the names of those distinct data frames and be specific about which objects you are referring to.
 
 ---
-
 class: inverse, center, middle
+name: ename
 
 # "Everything has a name"
 
@@ -833,8 +851,8 @@ Other than that, simply pay attention to any warnings when loading a new package
 - In truth, problematic namespace conflicts are rare. But it's good to be aware of them. 
   
 ---
-
 class: inverse, center, middle
+name: indexing
 
 # Indexing
 
@@ -1081,8 +1099,8 @@ lm(df$y ~ df$x) ## Works!
 ```
 
 ---
-
 class: inverse, center, middle
+name: cleaning
 
 # Cleaning up
 

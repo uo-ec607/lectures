@@ -34,9 +34,33 @@ knit_hooks$set(
 })
 ```
 
+# Table of contents
+
+1. [Prologue](#prologue)
+
+2. [Introduction](#intro)
+
+3. [Bash shell basics](#basics)
+
+4. [Files and directories](#files)
+
+5. [Working with text files](#text)
+
+6. [Redirecting and pipes](#pipes)
+
+7. [Scripting](#scripting)
+
+8. [User roles and file permissions](#permissions)
+
+9. [Next steps](#steps)
+
+
+---
 class: inverse, center, middle
+name: prologue
 
 # Prologue
+
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
 
 ---
@@ -60,10 +84,10 @@ Today's lecture is the last detour before we get back to data analyis with R and
 - Laying proper foundations with Git and the shell will put us in a strong positon for advanced data science work as the course develops.
 
 ---
-
 class: inverse, center, middle
+name: intro
 
-# Intro
+# Introduction
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
 
 ---
@@ -124,6 +148,7 @@ We're going to focus on 1, 2 and 3 in this course. That's not to say that 4 is u
 
 ---
 class: inverse, center, middle
+name: basics
 
 # Bash shell basics
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
@@ -409,6 +434,7 @@ $ cheat ls
 
 ---
 class: inverse, center, middle
+name: files
 
 # Files and directories
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
@@ -703,8 +729,8 @@ rm -rf examples/copies
 We've already seen one wildcard in the form of the backlash (`\`) that was used to escape spaces in file and folder names, e.g. `$ cd My\ Documents`.
 
 ---
-
 class: inverse, center, middle
+name: text
 
 # Working with text files
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
@@ -870,8 +896,8 @@ sort -ur examples/reps.txt
 ```
 
 ---
-
 class: inverse, center, middle
+name: pipes
 
 # Redirecting and pipes
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
@@ -956,6 +982,7 @@ tail -n +336 examples/sonnets.txt | head -n14
 
 ---
 class: inverse, center, middle
+name: scripting
 
 # Scripting
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
@@ -1050,6 +1077,7 @@ If you've been having trouble executing this script (or want to limit who else c
 
 ---
 class: inverse, center, middle
+name: permissions
 
 # User roles and file permissions
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
@@ -1218,8 +1246,8 @@ Things get a little more interesting when we want to add new users and groups, o
 - I'll save that for a later lecture on cloud servers, though.
 
 ---
-
 class: inverse, center, middle
+name: steps
 
 # Next steps
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>

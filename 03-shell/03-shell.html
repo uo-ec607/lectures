@@ -27,9 +27,33 @@ class: center, middle, inverse, title-slide
 
 
 
+# Table of contents
+
+1. [Prologue](#prologue)
+
+2. [Introduction](#intro)
+
+3. [Bash shell basics](#basics)
+
+4. [Files and directories](#files)
+
+5. [Working with text files](#text)
+
+6. [Redirecting and pipes](#pipes)
+
+7. [Scripting](#scripting)
+
+8. [User roles and file permissions](#permissions)
+
+9. [Next steps](#steps)
+
+
+---
 class: inverse, center, middle
+name: prologue
 
 # Prologue
+
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
 
 ---
@@ -53,10 +77,10 @@ Today's lecture is the last detour before we get back to data analyis with R and
 - Laying proper foundations with Git and the shell will put us in a strong positon for advanced data science work as the course develops.
 
 ---
-
 class: inverse, center, middle
+name: intro
 
-# Intro
+# Introduction
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
 
 ---
@@ -117,6 +141,7 @@ We're going to focus on 1, 2 and 3 in this course. That's not to say that 4 is u
 
 ---
 class: inverse, center, middle
+name: basics
 
 # Bash shell basics
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
@@ -647,6 +672,7 @@ $ cheat ls
 
 ---
 class: inverse, center, middle
+name: files
 
 # Files and directories
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
@@ -729,7 +755,7 @@ $ ls -lh examples
 ## drwxr-xr-x 2 grant users 4.0K Jan 12 22:12 Bad folder name
 ## -rwxr-xr-x 1 grant users   37 Jan 14 22:36 hello.sh
 ## drwxr-xr-x 2 grant users 4.0K Jan 13 20:34 meals
-## -rw-r--r-- 1 grant users   32 Jan 16 10:02 nursery.txt
+## -rw-r--r-- 1 grant users   32 Jan 24 15:08 nursery.txt
 ## -rwxrwxrwx 1 grant users  153 Jan 12 21:20 reps.txt
 ## -rw-r--r-- 1 grant users 120K Jan 12 14:58 sonnets.txt
 ```
@@ -994,8 +1020,8 @@ $ ls examples/copies
 We've already seen one wildcard in the form of the backlash (`\`) that was used to escape spaces in file and folder names, e.g. `$ cd My\ Documents`.
 
 ---
-
 class: inverse, center, middle
+name: text
 
 # Working with text files
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
@@ -4266,8 +4292,8 @@ $ sort -ur examples/reps.txt
 ```
 
 ---
-
 class: inverse, center, middle
+name: pipes
 
 # Redirecting and pipes
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
@@ -4397,6 +4423,7 @@ $ tail -n +336 examples/sonnets.txt | head -n14
 
 ---
 class: inverse, center, middle
+name: scripting
 
 # Scripting
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
@@ -4503,6 +4530,7 @@ If you've been having trouble executing this script (or want to limit who else c
 
 ---
 class: inverse, center, middle
+name: permissions
 
 # User roles and file permissions
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
@@ -4672,8 +4700,8 @@ Things get a little more interesting when we want to add new users and groups, o
 - I'll save that for a later lecture on cloud servers, though.
 
 ---
-
 class: inverse, center, middle
+name: steps
 
 # Next steps
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
