@@ -1,10 +1,10 @@
 ---
-title: 'Lecture 5: Data wrangling with the "Tidyverse"'
+title: 'Lecture 5: Data work in the "tidyverse"'
 author:
   name: Grant R. McDermott | University of Oregon
   # affiliation: EC 607
   # email: grantmcd@uoregon.edu
-date: EC 607 #"23 January 2019"
+date: EC 607 #"24 January 2019"
 output: 
   html_document:
     theme: flatly
@@ -45,11 +45,13 @@ We've revisit these features later in the lecture, but it should immediately be 
 ### Tidyverse vs. base R
 
 Much digital ink has been spilled over the "tidyverse vs. base R" debate. I won't delve into this debate here, because I think the answer is [obvious](http://varianceexplained.org/r/teach-tidyverse/): We should teach (and learn) the tidyverse first.
+
 - The documentation and community support are outstanding.
 - Having a consistent philosophy and syntax makes it much easier to learn.
 - For data cleaning, wrangling and plotting... the tidyverse is really a no-brainer.^[I should say that I'm also a fan of the [data.table](https://github.com/Rdatatable/data.table/wiki) package for data work. I may come back to this package once we reach the big data section of the course.]
 
 But this certainly shouldn't put you off learning base R alternatives.
+
 - Base R is extremely flexible and powerful (esp. when combined with other libraries).
 - There are some things that you'll have to venture outside of the tidyverse for.
 - A combination of tidyverse and base R is often the best solution to a problem.
@@ -674,7 +676,7 @@ starwars %>% group_by(species, gender) %>% summarise_if(is.numeric, funs(avg=mea
 
 `pull()`: Extract a column from as a data frame as a vector or scalar.
 
-- E.g. `starwars %>% filter(gender=="female") %>% pull()`
+- E.g. `starwars %>% filter(gender=="female") %>% pull(height)`
 
 `count()` and `distinct()`: Number and isolate unique observations.
 

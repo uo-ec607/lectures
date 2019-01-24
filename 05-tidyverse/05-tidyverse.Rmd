@@ -1,5 +1,5 @@
 ---
-title: 'Lecture 5: Data wrangling with the "Tidyverse"'
+title: 'Lecture 5: Data work in the "tidyverse"'
 subtitle: "<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
 author: Grant McDermott | University of Oregon
 date: EC 607 #"`r format(Sys.time(), '%d %B %Y')`"
@@ -451,7 +451,7 @@ Again, see `?summarise_at` for more details and examples.
 --
 
 `pull()`: Extract a column from as a data frame as a vector or scalar.
-- E.g. `starwars %>% filter(gender=="female") %>% pull()`
+- E.g. `starwars %>% filter(gender=="female") %>% pull(height)`
 
 --
 
