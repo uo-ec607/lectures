@@ -22,11 +22,11 @@ Possibly. Please [contact me](mailto:grantmcd@uoregon.edu) if you would like to 
 
 ## Lecture outline and quicklinks
 
-1. [Introduction: Motivation, software installation, and data visualization](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.html)
-2. [Version control with Git(Hub)](https://raw.githack.com/uo-ec607/lectures/master/02-git/02-Git.html)
-3. [Learning to love the shell](https://raw.githack.com/uo-ec607/lectures/master/03-shell/03-shell.html)
-4. [R language basics](https://raw.githack.com/uo-ec607/lectures/master/04-rlang/04-rlang.html)
-5. Data cleaning and wrangling with the “Tidyverse”
+1. Introduction: Motivation, software installation, and data visualization \[[Slides](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.html).\]
+2. Version control with Git(Hub) \[[Slides](https://raw.githack.com/uo-ec607/lectures/master/02-git/02-Git.html).\]
+3. Learning to love the shell \[[Slides](https://raw.githack.com/uo-ec607/lectures/master/03-shell/03-shell.html).\]
+4. R language basics \[[Slides](https://raw.githack.com/uo-ec607/lectures/master/04-rlang/04-rlang.html).\]
+5. Data wrangling and tidying with the “Tidyverse” \[[Slides](https://raw.githack.com/uo-ec607/lectures/master/05-tidyverse/05-tidyverse.html). [Notebook](https://raw.githack.com/uo-ec607/lectures/master/05-tidyverse/html_document/05-tidyverse.html).\]
 6. Webscraping: (1) Server-side and CSS
 7. Webscraping: (2) Client-side and APIs
 8. Regression analysis in R
