@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Lecture 4: R language basics</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Grant McDermott | University of Oregon" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Lecture 4: R language basics
+## <html>
+<div style="float:left">
+
+</div>
+<hr color='#EB811B' size=1px width=796px>
+</html>
+### Grant McDermott | University of Oregon
+### EC 607
+
+---
+
+
+
+
+class: inverse, center, middle
+
+# Prologue
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+
+# Checklist
+
+☑ Pull from the lecture repo to get the latest slides.
+
+☑ Did everyone submit Assignment 1?
+
+☑ Did everyone (anyone?) manage take a look at some of the simple shell exercises that I mentioned at the end of the last lecture?
+
+--
+
+### New package(s) you will need for today.
+
+We're going to focus specifically on the [tidyverse](https://www.tidyverse.org/) next class. However, I'll use some functions (and datasets) from it today to illustrate a few general principles.
+- Install it now from your R console: `install.packages("tidyverse")` 
+- (It may take a while.)
+
+---
+
+# Agenda
+
+Today and the next lecture are going to be very hands on. 
+
+- I'll have slides as per usual, but we're going to spent a lot of time live coding together.
+
+This is deliberate. 
+
+- I want you to get comfortable typing R commands yourself — and navigating the RStudio IDE — without resorting to copy+paste.
+- Slightly more painful in the beginning, but much better payoff in the long-run.
+
+---
+
+class: inverse, center, middle
+
+# Intro
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+(Some important R concepts)
+
+---
+
+# Basic arithmetic
+
+R is a powerful calculator and recognizes all of the standard arithmetic operators:
+
+
+```r
+1+2 ## Addition
+```
+
+```
+## [1] 3
+```
+
+```r
+6-7 ## Subtraction
+```
+
+```
+## [1] -1
+```
+
+```r
+5/2 ## Division
+```
+
+```
+## [1] 2.5
+```
+
+```r
+2^3 ## Exponentiation
+```
+
+```
+## [1] 8
+```
+
+---
+
+# Basic arithmetic (cont.)
+
+We can also invoke modulo operators (integer division &amp; remainder). 
+- Very useful when dealing with time, for example.
+
+
+```r
+100 %/% 60 ## How many whole hours in 100 minutes?
+```
+
+```
+## [1] 1
+```
+
+```r
+100 %% 60 ## How many minutes are left over?
+```
+
+```
+## [1] 40
+```
+
+---
+
+# Logical operators
+
+R also comes equipped with a full set of logical operators (and Boolean functions), which follow standard programming protocol. For example:
+
+
+```r
+1 &gt; 2
+```
+
+```
+## [1] FALSE
+```
+
+```r
+1 &gt; 2 | 0.5 ## The "|" stands for "or" (not a pipe a la the shell)
+```
+
+```
+## [1] TRUE
+```
+
+```r
+1 &gt; 2 &amp; 0.5 ## The "&amp;" stands for "and"
+```
+
+```
+## [1] FALSE
+```
+
+```r
+isTRUE (1 &lt; 2)
+```
+
+```
+## [1] TRUE
+```
+Etc.
+
+---
+
+# Logical operators (cont.)
+
+You can read more about these logical operators &lt;a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/logical.html" target="_blank"&gt;here&lt;/a&gt; and &lt;a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/Logic.html" target="_blank"&gt;here&lt;/a&gt;. For the moment, I'll just emphasise a select few of them...
+
+### Negation: `!`
+
+We use `!` as a short hand for negation. This will come in very handy when we start filtering data objects based on non-missing (i.e. non-NA) observations.
+
+
+```r
+is.na(1:10)
+```
+
+```
+##  [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+```
+
+```r
+!is.na(1:10)
+```
+
+```
+##  [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+```
+
+```r
+# Negate(is.na)(1:10) ## This also works. Try it yourself.
+```
+
+---
+
+# Logical operators (cont.)
+
+### Value matching: `%in%`
+
+To see whether an object is contained within (i.e. matches one of) a list of items, use `%in%`.
+
+```r
+4 %in% 1:10
+```
+
+```
+## [1] TRUE
+```
+
+```r
+4 %in% 5:10
+```
+
+```
+## [1] FALSE
+```
+
+--
+
+There's no equivalent "not in" command, but how might we go about creating one?
+- Hint: Think about negation...
+
+--
+
+
+```r
+`%ni%` &lt;- Negate(`%in%`) ## The backticks (`) help to specify functions.
+4 %ni% 5:10
+```
+
+```
+## [1] TRUE
+```
+
+---
+
+# Logical operators (cont.)
+
+### Evaluation
+
+We'll get to assignment next. However, to preempt it somewhat, we always use two equal signs for logical evaluation.
+
+
+```r
+1 = 1 ## This doesn't work
+```
+
+```
+## Error in 1 = 1: invalid (do_set) left-hand side to assignment
+```
+
+```r
+1 == 1 ## This does.
+```
+
+```
+## [1] TRUE
+```
+
+```r
+1 != 2 ## Note the single equal sign when combined with a negation.
+```
+
+```
+## [1] TRUE
+```
+
+---
+
+# Assignment
+
+In R, we can use either `=` or `&lt;-` to handle assignment.&lt;sup&gt;1&lt;/sup&gt;
+
+.footnote[
+&lt;sup&gt;1&lt;/sup&gt; The `&lt;-` is really a `&lt;` followed by a `-`. It just looks like one thing here b/c of the [font I'm using](https://github.com/tonsky/FiraCode).
+]
+
+--
+
+### Assignment with `&lt;-`
+
+`&lt;-` is normally read aloud as "gets". You can think of it as a (left-facing) arrow saying *assign in this direction*.
+
+
+```r
+a &lt;- 10 + 5
+a
+```
+
+```
+## [1] 15
+```
+
+--
+
+Of course, an arrow can point in the other direction too (i.e. `-&gt;`). So, the following code chunk is equivalent to the previous one, although used much less frequently.
+
+```r
+10 + 5 -&gt; a
+```
+
+---
+
+# Assignment (cont.)
+
+### Assignment with `=`
+
+You can also use `=` for assignment.
+
+
+```r
+b = 10 + 10 ## Note that the assigned object *must* be on the left with "=".
+b
+```
+
+```
+## [1] 20
+```
+
+--
+
+### Which assignment operator to use?
+
+Most R users (purists?) seem to prefer `&lt;-` for assignment, since `=` also has specific role for evaluation *within* functions. 
+- We'll see lots of examples of this later.
+- However, I don't think it matters. E.g. `=` is quicker to type and makes more sense if you're coming from another programming language. (More discussion [here](https://github.com/Robinlovelace/geocompr/issues/319#issuecomment-427376764).)
+
+**Bottom line:** Use whichever you prefer. Just be consistent.
+
+---
+
+# Help
+
+If you are struggling with a (named) function or object in R, simply type "help", e.g.
+
+```R
+help(solve)
+```
+
+Or, more simply, just use "?":
+  
+```R
+# This is what most people use.
+?solve 
+```
+
+--
+
+&lt;/br&gt;
+
+**Aside:** Comments in R are demarcated by `#`. 
+- Hit `Ctrl+Shift+c` in RStudio to (un)comment whole sections of highlighted code.
+
+---
+
+# Help (cont.)
+
+For many packages, you can also try the `vignette()` function, which will provide an introduction to a package and it's purpose through a series of helpful examples.
+- Try running `vignette("dplyr")` in your console now.
+
+--
+
+I highly encourage reading package vignettes if they are available. 
+- They are often the best way to learn how to use a package.
+
+--
+
+One complication is that you need to know the exact name of the package vignette(s).
+- E.g. The `dplyr` package actually has several vignettes associated with it: "dplyr", "window-functions", "programming", etc.
+- You can run `vignette()` (i.e. without any arguments) to list the available vignettes of every *installed* package installed on your system. 
+- Or, run `vignette(all = FALSE)` if you only want to see the vignettes of any *loaded* packages.
+
+---
+
+class: inverse, center, middle
+
+# Object-oriented programming in R
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+
+# Motivation
+
+In our very first lecture, I mentioned R's approach to [object-oriented programming](https://en.wikipedia.org/wiki/Object-oriented_programming) (OOP), which is often summarised as:
+
+&gt; **"Everything is an object and everything has a name."**
+
+--
+
+In the next two sections, I want to dive into this idea a little more. I also want to preempt some issues that might trip you up if you new to R or OOP in general.
+- At least, they were things that tripped me up at the beginning.
+
+--
+
+The good news, as well see, is that avoiding and solving these issues is pretty straightforward.
+- Not to mention: A very small price to pay for the freedom and control that R offers us.
+
+---
+
+class: inverse, center, middle
+
+# "Everything is an object"
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+
+# What are objects? 
+
+It's important to emphasise that there are many different *types* (or *classes*) of objects. 
+
+We'll revisit the issue of "type" vs "class" in a slide or two. For the moment, it is helpful simply to name some objects that we'll be working with regularly:
+- vectors
+- matrices
+- data frames
+- lists
+- functions
+- etc.
+
+--
+
+Most likely, you already have a good idea of what distinguishes these objects and how to use them.
+- However, bear in mind that there subtleties that may confuse while you're still getting used to R. 
+- E.g. There are different kinds of data frames; you'll soon encounter "[tibbles](https://tibble.tidyverse.org/)", which are an enhanced data frame provided by the tidyverse.
+
+---
+
+# What are objects? (cont.)
+
+Each object class has its own set of rules governing how that object can be used in R.
+- For example, you can perform many of the same operations on matrices and data frames. But there are some operations that only work on a matrix, and vice versa.
+- At the same time, you can (often) convert an object from one type to another.
+
+
+```r
+## Create a small data frame called "df".
+df &lt;- data.frame(x = 1:2, y = 3:4) 
+df
+```
+
+```
+##   x y
+## 1 1 3
+## 2 2 4
+```
+
+
+```r
+## Convert it to (i.e. create) a matrix call "m".
+m &lt;- as.matrix(df)
+m
+```
+
+```
+##      x y
+## [1,] 1 3
+## [2,] 2 4
+```
+
+---
+
+# Object class, type and, structure
+
+Use the `class`, `typeof`, and `str` commands if you want understand more about a particular object.
+
+
+```r
+# df &lt;- data.frame(x = 1:2, y = 3:4) ## Create a small data frame called "df".
+class(df) ## Evaluate its class.
+```
+
+```
+## [1] "data.frame"
+```
+
+```r
+typeof(df) ## Evaluate its type.
+```
+
+```
+## [1] "list"
+```
+
+```r
+str(df) ## Show its structure.
+```
+
+```
+## 'data.frame':	2 obs. of  2 variables:
+##  $ x: int  1 2
+##  $ y: int  3 4
+```
+
+--
+
+PS — Confused by the fact that `typeof(df)` returns "list"? See [here](https://stackoverflow.com/questions/45396538/typeofdata-frame-shows-list-in-r).
+
+---
+
+# Object class, type, and structure (cont.)
+
+Of course, you can always just inspect/print an object directly in the console.
+- E.g. Type `df` and hit Enter.
+
+
+The `View()` function is also very helpful.
+- E.g. `View(df)`.
+
+---
+
+# Global environment
+
+Let's go back to the simple data frame that we created a few slides earlier.
+
+```r
+df
+```
+
+```
+##   x y
+## 1 1 3
+## 2 2 4
+```
+
+--
+
+Now, let's try to run a regression&lt;sup&gt;1&lt;/sup&gt; on these "x" and "y" variables:
+
+.footnote[
+&lt;sup&gt;1&lt;/sup&gt; Yes, this is a dumb regression with perfectly co-linear variables. Just go with it. 
+]
+
+
+```r
+lm(y ~ x) ## The "lm" stands for linear model(s)
+```
+
+```
+## Error in eval(predvars, data, env): object 'y' not found
+```
+
+--
+
+Uh-oh. What went wrong here? (Answer on next slide.)
+
+---
+
+# Global environment (cont.)
+
+The error message provides the answer to our question:
+
+```
+*## Error in eval(predvars, data, env): object 'y' not found
+```
+
+--
+
+R can't find the variables that we've supplied in our [Global Environment](https://www.datamentor.io/r-programming/environment-scope/):
+
+![No "x" or "y" here...](pics/environment.png)
+
+--
+
+Put differently: Because the variables "x" and "y" live as separate objects in the global environment, we have to tell R that they belong to the object `df`.
+- Think about how you might do this before clicking through to the next slide.
+
+---
+
+# Global environment (cont.)
+
+There are a various ways to solve this problem. One is to simply specify the datasource:
+
+
+```r
+lm(y ~ x, data = df) ## Works when we add "data = df"!
+```
+
+```
+## 
+## Call:
+## lm(formula = y ~ x, data = df)
+## 
+## Coefficients:
+## (Intercept)            x  
+##           2            1
+```
+
+--
+
+I wanted to emphasize this global environment issue, because it is something that Stata users (i.e. most economists) struggle with when they first come to R.
+- In Stata, the entire workspace essentially consists of one (and only one) data frame. So there can be no ambiguity where variables are coming from.
+- However, that "convenience" comes at a really high price IMO. You can never read more than two separate datasets (let alone object types) into memory at the same time, have to resort all sorts of hacks to add summary variables to your dataset, etc. 
+- Speaking of which...
+
+
+---
+
+# Working with multiple objects
+
+As I keep saying, R's ability to keep multiple objects in memory at the same time is a huge plus when it comes to effective data work. 
+- E.g. We can create a new data frame that exists happily with our existing objects in the global environment.
+
+
+```r
+df2 &lt;- data.frame(x = rnorm(10), y = runif(10))
+```
+
+![Now with df2 added](pics/environment2.png)
+
+--
+
+Again, however, it does mean that you have to pay attention to the names of those distinct data frames and be specific about which objects you are referring to.
+
+---
+
+class: inverse, center, middle
+
+# "Everything has a name"
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+
+# Reserved words
+
+We've seen that we can assign objects to different names. However, there are a number of special words that are "reserved" in R.
+- These are are fundamental commands, operators and relations in base R that you cannot (re)assign, even if you wanted to.
+- We already encountered examples with the logical operators.
+
+See [here](http://stat.ethz.ch/R-manual/R-devel/library/base/html/Reserved.html) for a full list, including (but not limited to):
+
+```R
+if 
+else 
+while 
+function 
+for
+TRUE 
+FALSE 
+NULL 
+Inf 
+NaN 
+NA 
+```
+
+---
+
+# Semi-reserved words
+
+In addition to the list of strictly reserved words, there is a class of words and strings that I am going to call "semi-reserved".
+- These are named functions or constants (e.g. `pi`) that you can re-assign if you really wanted to... but already come with important meanings from base R.
+
+Arguably the most important semi-reserved character is `c()`, which we use for concatenation; i.e. creating vectors and binding different objects together.
+
+
+```r
+my_vector &lt;- c(1, 2, 5)
+my_vector
+```
+
+```
+## [1] 1 2 5
+```
+
+--
+
+What happens if you type the following? (Try it in your console.)
+
+```R
+c &lt;- 4
+c(1, 2 ,5)
+```
+
+???
+
+Vectors are very important in R, because the language has been optimised for them. Don't worry about this now; later you'll learn what I mean by "vectorising" a function.
+
+
+---
+
+# Semi-reserved words (cont.)
+
+*(Continued from previous slide.)*
+
+In this case, thankfully nothing. R is "smart" enough to distinguish between the variable `c &lt;- 4` that we created and the built-in function `c()` that calls for concatenation.
+
+However, this is still *extremely* sloppy coding. R won't always be able to distinguish between conflicting definitions. And neither will you. For example:
+
+```r
+pi
+```
+
+```
+## [1] 3.141593
+```
+
+```r
+pi &lt;- 2
+pi
+```
+
+```
+## [1] 2
+```
+--
+
+**Bottom line:** Don't use (semi-)reserved characters!
+
+---
+
+# Namespace conflicts
+
+A similar issue crops up when we load two packages, which have functions that share the same name. E.g. Look what happens we load the `dplyr` package.
+
+```r
+library(dplyr)
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+```
+
+```
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+--
+
+The messages that you see about some object being *masked from 'package:X'* are warning you about a namespace conflict.
+- E.g. Both `dplyr` and the `stats` package (which gets loaded automatically when you start R) have functions named "filter" and "lag".
+
+---
+
+# Namespace conflicts (cont.)
+
+The potential for namespace conflicts is a result of the OOP approach.&lt;sup&gt;1&lt;/sup&gt;
+- Also reflects the fundamental open-source nature of R and the use of external packages. People are free to call their functions whatever they want, so some overlap is only to be expected.
+
+.footnote[
+&lt;sup&gt;1&lt;/sup&gt; Similar problems arise in virtually every other programming language (Python, C, etc.)
+]
+
+--
+
+Whenever a namespace conflict arises, the most recently loaded package will gain preference. So the `filter()` function now refers specifically to the `dplyr` variant.
+
+But what if we want the `stats` variant? Well, we have two options:
+1. Temporarily use `stats::filter()`
+2. Permanently assign `filter &lt;- stats::filter`
+
+---
+
+# Solving namespace conflicts
+
+### 1. Use `package::function()`
+
+We can explicitly call a conflicted function from a particular package using the `package::function()` syntax. For example:
+
+```r
+stats::filter(1:10, rep(1, 2))
+```
+
+```
+## Time Series:
+## Start = 1 
+## End = 10 
+## Frequency = 1 
+##  [1]  3  5  7  9 11 13 15 17 19 NA
+```
+
+--
+
+We can also use `::` for more than just conflicted cases. 
+- E.g. Being explicit about where a function (or dataset) comes from can help add clarity to our code. Try these lines of code in your R console.
+
+```R
+dplyr::starwars ## Print the starwars data frame from the dplyr package
+scales::comma(c(1000, 1000000)) ## Use the comma function, which comes from the scales package
+```
+
+???
+
+The `::` syntax also means that we can call functions without loading package first. E.g. As long as `dplyr` is installed on our system, then `dplyr::filter(iris, Species=="virginica")` will work.
+  
+---
+
+# Solving namespace conflicts (cont.)
+
+### 2. Assign `function &lt;- package::function`
+  
+A more permanent solution is to assign a conflicted function name to a particular package. This will hold for the remainder of your current R session, or until you change it back. E.g.
+
+```r
+filter &lt;- stats::filter ## Note the lack of parentheses.
+filter &lt;- dplyr::filter ## Change it back again.
+```
+
+--
+
+### General advice
+
+I would generally advocate for the temporary `package::function()` solution. 
+
+Another good rule of thumb is that you want to load your most important packages last. (E.g. Load the tidyverse after you've already loaded any other packages.)
+  
+Other than that, simply pay attention to any warnings when loading a new package and `?` is your friend if you're ever unsure. (E.g. `?filter` will tell you which variant is being used.)
+- In truth, problematic namespace conflicts are rare. But it's good to be aware of them. 
+  
+---
+
+class: inverse, center, middle
+
+# Indexing
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+  
+---
+
+# Option 1: []
+
+We've already seen an example of indexing in the form of R console output. For example:
+
+```r
+1+2
+```
+
+```
+## [1] 3
+```
+
+The `[1]` above denotes the first (and, in this case, only) element of our output.&lt;sup&gt;1&lt;/sup&gt; In this case, a vector of length one equal to the value "3".
+
+--
+
+Try the following in your console to see a more explicit example of indexed output:
+
+```r
+rnorm(n = 100, mean = 0, sd = 1)
+# rnorm(100) ## Would work just as well. (Why? Hint: see ?rnorm)
+```
+
+.footnote[
+[1] Indexing in R begins at 1. Not 0 like some languages (e.g. Python and JavaScript).
+]
+
+---
+
+# Option 1: [] (cont.)
+
+
+More importantly, we can also use `[]` to index objects that we create in R.
+
+```r
+a &lt;- 1:10
+a[4] ## Get the 4th element of object "a"
+```
+
+```
+## [1] 4
+```
+
+```r
+a[c(4, 6)] ## Get the 4th and 6th elements
+```
+
+```
+## [1] 4 6
+```
+
+It also works on larger arrays (vectors, matrices, data frames, and lists). For example:
+
+```r
+starwars[1, 1] ## Show the cell corresponding to the 1st row &amp; 1st column of the data frame.
+```
+
+```
+## # A tibble: 1 x 1
+##   name          
+##   &lt;chr&gt;         
+## 1 Luke Skywalker
+```
+
+--
+
+What does `starwars[1:3, 1]` give you?
+
+---
+
+# Option 1: [] (cont.)
+
+We haven't covered them properly yet (patience), but **lists** are a more complex type of array object in R.
+- They can contain a random assortment of objects that don't share the same class, or have the same shape (e.g. rank) or common structure.
+- E.g. A list can contain a scalar, a string, and a data frame. Or you can have a list of data frames, or even lists of lists.
+
+--
+
+The relevance to indexing is that lists require two square brackets `[[]]` to index the parent list item and then the standard `[]` within that parent item. An example might help to illustrate:
+
+```r
+my_list &lt;- list(a = "hello", b = c(1,2,3), c = data.frame(x = 1:5, y = 6:10))
+my_list[[1]] ## Return the 1st list object
+```
+
+```
+## [1] "hello"
+```
+
+```r
+my_list[[2]][3] ## Return the 3rd element of the 2nd list object
+```
+
+```
+## [1] 3
+```
+
+---
+
+# Option 2: $
+
+
+Lists provide a nice segue to our other indexing operator: `$`.
+- Let's continue with our `my_list` example from the previous slide.
+
+
+```r
+my_list
+```
+
+```
+## $a
+## [1] "hello"
+## 
+## $b
+## [1] 1 2 3
+## 
+## $c
+##   x  y
+## 1 1  6
+## 2 2  7
+## 3 3  8
+## 4 4  9
+## 5 5 10
+```
+
+---
+count: false
+
+# Option 2: $
+
+
+Lists provide a nice segue to our other indexing operator: `$`.
+- Let's continue with our `my_list` example from the previous slide.
+
+
+```r
+my_list
+```
+
+```
+*## $a
+## [1] "hello"
+## 
+*## $b
+## [1] 1 2 3
+## 
+*## $c
+##   x  y
+## 1 1  6
+## 2 2  7
+## 3 3  8
+## 4 4  9
+## 5 5 10
+```
+
+Notice how our (named) parent list objects are demarcated: "$a", "$b" and "$c".
+
+---
+
+# Option 2: $ (cont.)
+
+We can call these objects directly by name using the dollar sign, e.g.
+
+```r
+my_list$a ## Return list object "a"
+```
+
+```
+## [1] "hello"
+```
+
+```r
+my_list$b[3] ## Return the 3rd element of list object "b" 
+```
+
+```
+## [1] 3
+```
+
+```r
+my_list$c$x ## Return column "x" of list object "c"
+```
+
+```
+## [1] 1 2 3 4 5
+```
+
+---
+
+# Option 2: $ (cont.)
+
+The `$` form of indexing also works (and in the manner that you probably expect) for other object types in R. 
+
+In some cases, you can also combine the two index options.
+- E.g. Get the 1st element of the "name" column from the starwars data frame.
+
+```r
+starwars$name[1]
+```
+
+```
+## [1] "Luke Skywalker"
+```
+--
+
+However, note some key differences between the output from this example and that of our previous `starwars[1, 1]` example. What are they?
+- Hint: Apart from the visual cues, try wrapping each command in `str()`.
+
+---
+
+# Option 2: $ (cont.)
+
+The last thing that I want to say about `$` is that it provides another way to avoid the "object not found" problem that we ran into with our earlier regression example.
+
+
+```r
+lm(y ~ x) ## Doesn't work
+```
+
+```
+## Error in eval(predvars, data, env): object 'y' not found
+```
+
+```r
+lm(df$y ~ df$x) ## Works!
+```
+
+```
+## 
+## Call:
+## lm(formula = df$y ~ df$x)
+## 
+## Coefficients:
+## (Intercept)         df$x  
+##           2            1
+```
+
+---
+
+class: inverse, center, middle
+
+# Cleaning up
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+
+# Removing objects (and packages)
+
+Use `rm()` to remove an object or objects from your working environment.
+
+```r
+a &lt;- "hello"
+b &lt;- "world"
+rm(a, b)
+```
+
+You can also use `rm(list = ls())` to remove all objects in your working environment (except packages), but this is [frowned upon](https://www.tidyverse.org/articles/2017/12/workflow-vs-script/). 
+- Better just to start a new R session.
+
+--
+
+Detaching packages is more complicated, because there are so many cross-dependencies (i.e. one package depends on, and might even automatically load, another.) However, you can try, e.g. `detach(package:dplyr)`
+- Again, better just to restart your R session.
+  
+---
+
+# Removing plots
+
+You can use `dev.off()` to removing any (i.e. all) plots that have been generated during your session. For example, try this in your R console:
+
+```r
+plot(1:10)
+dev.off()
+```
+
+--
+
+You may also have noticed that RStudio has convenient buttons for clearing your workspace environment and removing (individual) plots. Just look for these icons in the relevant window panels:
+
+![](pics/broom.png?display=inline-block)
+
+---
+
+class: inverse, center, middle
+
+# Next class: Data wrangling and cleaning with the Tidyverse
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
