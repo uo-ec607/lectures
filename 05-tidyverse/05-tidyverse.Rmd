@@ -62,6 +62,12 @@ Key points:
 2. Each observation forms a row.
 3. Each type of observational unit forms a table.
 
+--
+
+</br>
+
+Basically, tidy data is more likely to be [long (i.e. narrow) format](https://en.wikipedia.org/wiki/Wide_and_narrow_data) than wide format.
+
 ---
 
 # Checklist

@@ -41,7 +41,7 @@ If you're reading this after the fact, I recommend going through the original pa
 2. Each observation forms a row.
 3. Each type of observational unit forms a table.
 
-We've revisit these features later in the lecture, but it should immediately be apparent to you that tidy data is more likely to be [long (i.e. narrow) format than wide format](https://en.wikipedia.org/wiki/Wide_and_narrow_data). We'll also see that there are some tradeoffs for data that is optimised for human reading vs data that is optimised for machine reading. 
+We've revisit these features later in the lecture, but it should immediately be apparent to you that tidy data is more likely to be [long (i.e. narrow) format](https://en.wikipedia.org/wiki/Wide_and_narrow_data) than wide format. We'll also see that there are some tradeoffs for data that is optimised for human reading vs data that is optimised for machine reading. 
 
 ### Tidyverse vs. base R
 
