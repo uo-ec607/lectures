@@ -309,7 +309,7 @@ programming languages and APIs.
 </br>
 
 Points 1. and 2. can be summarised as an [object-orientated programming](https://en.wikipedia.org/wiki/Object-oriented_programming) (OOP) approach.
-  - This may sound super abstract now, but in the coming weeks we'll see *lots* of examples will make things clear.
+  - This may sound super abstract now, but we'll see *lots* of examples over the coming weeks that will make things clear.
 
 ---
 
@@ -418,13 +418,15 @@ There's a lot to say about ggplot2's implementation of this "grammar of graphics
 
 1. Your plot ("the visualization") is linked to your variables ("the data") through various **aesthetic mappings**.
 
-2. Once those those aesthetic mappings are defined, you can choose to represent your data in many different ways by choosing different **geoms** (i.e. "geometric objects" like points, lines or bars).
+2. Once the aesthetic mappings are defined, you can represent your data in different ways by choosing different **geoms** (i.e. "geometric objects" like points, lines or bars).
 
 3. You build your plot in **layers**.
 
 --
 
-That's kind of abstract. Let's original each element in turn using our original plot call.
+</br>
+
+That's kind of abstract. Let's review each element in turn using our original plot call.
 
 ---
 
@@ -439,11 +441,7 @@ ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp)) +
 
 Focus on the top line, which contains the initialising `ggplot()` function call. This function accepts various arguments, including:
 - Where the data come from (i.e. `data = gapminder`).
-- What the aesthetic mappings are (i.e. `mapping = aes(x = gdpPercap, y = lifeExp)`).<sup>1</sup>
-
-.footnote[
-<sup>1</sup> Most people don't bother writing out the "mapping =" part of the ggplot call and just start with "aes(...)". Same for "data =". (Confirm for yourself that this still works.)
-]
+- What the aesthetic mappings are (i.e. `mapping = aes(x = gdpPercap, y = lifeExp)`).
 
 --
 
@@ -459,6 +457,10 @@ ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp, size = pop, col = conti
   geom_point(alpha = 0.3) ## "alpha" controls transparency. Takes a value between 0 and 1.
 ```
 
+--
+
+Note that I've dropped the "mapping =" part of the ggplot call. Most people just start with "aes(...)", since `ggplot2` knows the order of the arguments.
+
 ---
 
 # 1. Aesthetic mappings (cont.)
@@ -468,7 +470,6 @@ Note that we can assign the aesthetic mappings in the geom layer too.
 ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) + ## Applicable to all geoms
   geom_point(aes(size = pop, col = continent), alpha = 0.3) ## Applicable to this geom only
 ```
-
 
 ---
 
@@ -491,7 +492,6 @@ ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) +
 At this point, instead of repeating the same ggplot2 call every time, it will prove convenient to define an intermediate plot object that we can re-use.
 
 ```{r p, dev='svg'}
-## Note: I'm dropping the "mapping =" part to save horizontal space.
 p = ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp))
 p
 ```
