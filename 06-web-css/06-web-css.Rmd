@@ -1,0 +1,327 @@
+---
+title: "Lecture 6: Webscraping: (1) Server-side and CSS"
+author:
+  name: Grant R. McDermott | University of Oregon
+  # affiliation: EC 607
+  # email: grantmcd@uoregon.edu
+date: EC 607 #"`r format(Sys.time(), '%d %B %Y')`"
+output: 
+  html_document:
+    theme: flatly
+    highlight: haddock 
+    # code_folding: show
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
+```
+
+## Requirements
+
+### R packages 
+
+- **New:** `rvest`, `janitor`
+- **Already used:** `tidyverse`, `lubridate`, `hrbrthemes`
+
+Recall that `rvest` was automatically installed with the rest of the tidyverse. So you only need to install the small `janitor` package:
+
+```{r, eval = F}
+## Not run. (Run this manually yourself if you haven't installed the package yet.)
+install.packages("janitor")
+```
+
+
+## Webscraping basics: Server-side Vs. Client-side
+
+Today and our next lecture are concerned with getting data, or "content", off the web and onto our computers. We're all used to seeing this content in our browers (Chrome, Firefox, etc.), so we know that must exist somewhere. However, it's important ot realise the there are two ways that web content gets rendered in a browser: 
+
+1. Server-side
+2. Client side
+
+You can read [here](https://www.codeconquest.com/website/client-side-vs-server-side/) for more details (including example scripts), but for our purposes the essential features are as follows: 
+
+### 1. Server-side website
+- The scripts that "build" the website are run not on our computer, but rather on the server which hosts the website and sends down the HTML code.
+- In other words, the information that we see in our browser has already been processed by the host server. 
+  - For example, a table on Wikipedia is already populated with all of the information --- numbers, strings, etc. --- that we see in our browser.
+  - You can think of this information being embeded directly in the page's HTML.
+- **Webscraping challenges:** Finding the correct CSS (or Xpath) "selectors". Iterating through dynamic webpages (for example, "Next page" and "Show More" tabs)
+- **Key concepts:** CSS, Xpath, HTML
+  
+### 2. Client-side website
+- The website that we want to visit contains an empty template of HTML and CSS. For example, it might be a "skeleton" table without any values.
+- However, when we actually visit the page URL, our browser sends a *request* to the host server.
+  - The server then decides whether our request is valid among other things (e.g. no "404"). 
+- If everything is okay, the server sends a *response* script, which our browser executes and thereby populates the HTML template with the specific information that we want.
+- **Webscraping challenges:** Finding the API "endpoints" can be tricky, since these are normally hidden from view.
+- **Key concepts:** APIs, API endpoints
+
+Over the next week, we'll use these lecture notes --- plus some student presentations --- to go over the main differences between the two approaches and cover the implications for any webscraping activity. I want to forewarn you that *webscraping involves as much art as it does science*. You will often have to do some detective work before you can scrape the data you want and adjust your steps according to different wesbites. However, the good news is that both server-side and client-side websites allow for webscraping.[^1] If you can see it in your browser, you can scrape it. 
+
+### Caveat: Ethical and legal limitations
+
+The previous sentence elides some important ethical and legal considerations. Just because you *can* scrape it, doesn't mean you *should*. It is ultimately your responsibility to determine whether a website maintains legal restrictions on the content that it provides. Similarly, the tools that we'll be using are very powerful. It's fairly easy to write up a function or program that can overwhelm a host server or application through the sheer weight of requests. After all, a computer can process commands much, much faster than we can ever type them up manually. We'll come back to the "be nice" motif in the next lecture. 
+
+## Server-side scraping with `rvest`, CSS and SelectorGadget
+
+Time for some student presentation(s) on CSS and [SelectorGadget](http://selectorgadget.com/). If you're reading this after the fact, see [this vignette](https://cran.r-project.org/web/packages/rvest/vignettes/selectorgadget.html) from Hadley.
+
+## Application: Mens 100 meters world record progression (Wikipedia)
+
+Say that we want to scrape the Wikipedia page on the [Men's 100 metres world record progression](http://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression). Open up this page first and have a look at its structure. What type of objects does it contain? How many tables does it have?
+
+### Table 1: Pre-IAAF (1881--1912)
+
+Okay, let's try to read in the first table on [Unofficial progression before the IAAF](https://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression#Unofficial_progression_before_the_IAAF). 
+
+```{r, message=F}
+library(rvest)
+
+wp <- "http://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression"
+pre_iaaf <- 
+  wp %>%
+  read_html()  
+```
+
+Next, we can use [SelectorGadget](http://selectorgadget.com/) to choose the CSS selector. In this case, I get "div+ .wikitable :nth-child(1)".
+
+```{r, error=TRUE}
+pre_iaaf %>%
+  html_nodes("div+ .wikitable :nth-child(1)") %>%
+  html_table(fill=TRUE) 
+```
+
+Uh oh! We (or, at least, I) run into an error. I won't go into details here, but we have to careful with SelectorGadget sometimes. What looks like the right selection (i.e. the highlighted stuff in yellow) might not be exactly what we're looking for. Fortunately, there's a more precise way of determing the right selectors using the "inspect web element" feature that [should be available in any modern browser](https://www.lifewire.com/get-inspect-element-tool-for-browser-756549). In this case, I'm going to use Google Chrome (either right click and then "Inspect", or **Ctrl+Shift+I**). I proceed by scrolling over the source elements until Chrome highlights the table of interest. Then right click and **Copy -> Copy selector**. 
+
+```{r}
+pre_iaaf %>%
+  html_nodes("#mw-content-text > div > table:nth-child(8)")
+```
+
+Great, it worked. Now let's (re)assign it to our `pre_iaaf` object and convert to a data frame using the `rvest::html_table()` function. We'll also use the `fill=TRUE` option to overcome some missing column problems.
+
+```{r}
+pre_iaaf <-
+  pre_iaaf %>%
+  html_nodes("#mw-content-text > div > table:nth-child(8)") %>%
+  html_table(fill=TRUE) 
+class(pre_iaaf)
+```
+
+It turns out this is actually a list, so let's convert to a data frame. I'll load the tidyverse to use dplyr's `bind_rows()` function, which is ideal for coercing (multiple) lists into a data frame.^[We'll see more examples of this once we get to the programming section of the course.]
+
+```{r}
+## Convert list to data_frame
+# pre_iaaf <- pre_iaaf[[1]] ## Would also work
+library(tidyverse)
+
+pre_iaaf <- 
+  pre_iaaf %>%
+  bind_rows() %>%
+  as_tibble()
+pre_iaaf
+```
+
+Let' fix the column names to get rid of spaces, etc. I'm going to use the janitor package's `clean_names()`, which is expressly built for the purpose of cleaning object names. (How else could we have done this?)
+
+```{r}
+library(janitor)
+
+pre_iaaf <-
+  pre_iaaf %>%
+  clean_names()
+pre_iaaf
+```
+
+Hmmm. There are some potential problems for a duplicate (i.e. repeated) record for Isaac Westergren in Gävle, Sweden. One way to ID and fix these cases is to see if we can convert "athlete" into a numeric and, if so, replace these cases with the previous value.
+
+```{r}
+pre_iaaf <-
+  pre_iaaf %>%
+  mutate(athlete = ifelse(is.na(as.numeric(athlete)), athlete, lag(athlete)))
+```
+
+Lastly, let's fix the date column so that R recognises that the character string for what it actually is.
+
+```{r, message=F}
+library(lubridate)
+
+pre_iaaf <-
+  pre_iaaf %>%
+  mutate(date = mdy(date))
+pre_iaaf
+```
+
+Finally, we have our cleaned data frame. We can now easily plot the data if we wanted. I'm going to use (and set) the `theme_ipsum()` plotting theme from the hrbrthemes package because I like it, but this certainly isn't necessary.
+
+```{r pre_plot}
+library(hrbrthemes) ## Just for the theme_ipsum() plot theme that I like
+theme_set(theme_ipsum()) ## Set the theme for the rest of this R session
+
+ggplot(pre_iaaf, aes(date, time)) + geom_point()
+```
+
+### Challenge
+
+Your turn: Download the next two tables from the same WR100m page. Combine these two new tables with the one above into a single data frame and then plot the record progression. Answer below. (No peeking until you have tried yourself first.)
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+### Table 2: Pre-automatic timing (1912--1976)
+
+Let's start with the second table.
+```{r}
+iaaf_76 <-
+  wp %>%
+  read_html() %>%
+  html_nodes("#mw-content-text > div > table:nth-child(14)") %>%
+  html_table(fill=TRUE) 
+
+## Convert list to data_frame and clean the column names
+iaaf_76 <- 
+  iaaf_76 %>%
+  bind_rows() %>%
+  as_tibble() %>%
+  clean_names()
+```
+
+Fill in any missing athlete data (note that we need slightly different procedure than last time --- Why?) and correct the date. 
+
+```{r}
+iaaf_76 <-
+  iaaf_76 %>%
+  mutate(athlete = ifelse(athlete=="", lag(athlete), athlete)) %>%
+  mutate(date = mdy(date)) 
+```
+
+It looks like some dates failed to parse because a record was broken (equaled) on the same day. E.g.
+
+```{r}
+iaaf_76 %>% tail(20)
+```
+
+We can try to fix these cases by using the previous value. Let's test it first:
+
+```{r}
+iaaf_76 %>%
+  mutate(date = ifelse(is.na(date), lag(date), date))
+```
+
+Whoops! Looks like all of our dates are getting converted to numbers. The reason (if you did a bit of Googling) actually has to do with the base `ifelse()` function. In this case, it's better to use the tidyverse equivalent, i.e. `if_else()`.
+
+```{r}
+iaaf_76 <-
+  iaaf_76 %>%
+  mutate(date = if_else(is.na(date), lag(date), date))
+iaaf_76
+```
+
+
+### Table 3: Modern Era (1977 onwards)
+
+The final table also has its share of unique complications due to row spans, etc. You can inspect the code to see what I'm doing, but I'm just going to run through it here in a single chunk.
+
+```{r}
+iaaf <-
+  wp %>%
+  read_html() %>%
+  html_nodes("#mw-content-text > div > table:nth-child(19)") %>%
+  html_table(fill=TRUE) 
+
+## Convert list to data_frame and clean the column names
+iaaf <- 
+  iaaf %>%
+  bind_rows() %>%
+  as_tibble() %>%
+  clean_names()
+
+## Correct the date. 
+iaaf <-
+  iaaf %>%
+  mutate(date = mdy(date))
+
+## Usain Bolt's records basically all get attributed you to Asafa Powell because
+## of Wikipedia row spans (same country, etc.). E.g.
+iaaf %>% tail(8)
+## Let's fix this issue
+iaaf <-
+  iaaf %>%
+  mutate(
+    athlete = ifelse(athlete==nationality, NA, athlete),
+    athlete = ifelse(!is.na(as.numeric(nationality)), NA, athlete),
+    athlete = ifelse(nationality=="Usain Bolt", nationality, athlete),
+    nationality = ifelse(is.na(athlete), NA, nationality),
+    nationality = ifelse(athlete==nationality, NA, nationality)
+    ) %>%
+  fill(athlete, nationality)
+```
+
+### Combine and plot
+
+Let's join all of our data frames.
+
+```{r}
+wr100 <- 
+  bind_rows(
+    pre_iaaf %>% select(time, athlete, nationality:date),
+    iaaf_76 %>% select(time, athlete, nationality:date),
+    iaaf %>% select(time, athlete, nationality:date)
+  )
+```
+
+Now, plot the results.
+
+```{r full_plot}
+wr100 %>%
+  ggplot(aes(date, time)) + 
+  geom_point(alpha = 0.7)
+```
+
+
+Or, if we can just plot the modern IAFF era. 
+```{r iaaf_plot}
+iaaf %>%
+  ggplot(aes(date, time)) + 
+  geom_point(alpha = 0.7)
+```
+
+### Extra: Modeling and prediction
+
+How would you model the progression of the Men's 100 meter record over time? For example, imagine that you had to predict today's WR in 2005. How do your predictions stack up against the actual record (i.e. Usain Bolt's 9.58 time set in 2009)? How do you intepret this?
+
+*Hint: See the `?broom::tidy()` help function for extracting refression coefients in a convenient data frame. We've already seen the `geom_smooth()` function, but for some nice tips on (visualizing) model predictions, see [Chap. 23](http://r4ds.had.co.nz/model-basics.html#visualising-models) of the R4DS book, or [Chap. 6.4](http://socviz.co/modeling.html#generate-predictions-to-graph) of the SocViz book. The generic `base::predict()` function has you covered, although the tidyverse's `modelr` package has some nice wrapper functions that you will probably find useful for this example. While it is perhaps less relevant here, the [`margins` package](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html) is very helpful if you ever want to extract marginal effects from nonlinear models (interaction terms, etc.).*
+
+
+[^1]: As we'll see during the next lecture, scraping a website or application that is built on a client-side framework is often easier; particularly when it comes to downloading information *en masse*.
