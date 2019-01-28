@@ -1,10 +1,10 @@
 ---
-title: "Webscraping: (1) Server-side and CSS"
+title: "Lecture 6: Webscraping: (1) Server-side and CSS"
 author:
   name: Grant R. McDermott | University of Oregon
   # affiliation: EC 607
   # email: grantmcd@uoregon.edu
-date: EC 607 | Lecture 6  #"`r format(Sys.time(), '%d %B %Y')`"
+date: EC 607  #"`r format(Sys.time(), '%d %B %Y')`"
 output: 
   html_document:
     theme: flatly
@@ -38,7 +38,7 @@ Recall that `rvest` was automatically installed with the rest of the tidyverse. 
 install.packages("janitor")
 ```
 
-## Server-side Vs. Client-side
+## Server-side vs. Client-side
 
 The next two lectures are about getting data, or "content", off the web and onto our computers. We're all used to seeing this content in our browers (Chrome, Firefox, etc.). So we know that it must exist somewhere. However, it's important to realise that there are actually two ways that web content gets rendered in a browser: 
 
@@ -48,19 +48,19 @@ The next two lectures are about getting data, or "content", off the web and onto
 You can read [here](https://www.codeconquest.com/website/client-side-vs-server-side/) for more details (including example scripts), but for our purposes the essential features are as follows: 
 
 ### 1. Server-side
-- The scripts that "build" the website are run not on our computer, but rather on a host server that sends down all of the HTML code.
+- The scripts that "build" the website are not run on our computer, but rather on a host server that sends down all of the HTML code.
+  - E.g. Wikipedia tables are already populated with all of the information --- numbers, dates, etc. --- that we see in our browser.
 - In other words, the information that we see in our browser has already been processed by the host server. 
-  - E.g. A table on Wikipedia is already populated with all of the information --- numbers, strings, etc. --- that we see in our browser.
 - You can think of this information being embeded directly in the webpage's HTML.
 - **Webscraping challenges:** Finding the correct CSS (or Xpath) "selectors". Iterating through dynamic webpages (e.g. "Next page" and "Show More" tabs).
 - **Key concepts:** CSS, Xpath, HTML
   
 ### 2. Client-side
-- The website contains an empty template of HTML and CSS. E.g. It might be a "skeleton" table without any values.
+- The website contains an empty template of HTML and CSS. 
+  - E.g. It might contain a "skeleton" table without any values.
 - However, when we actually visit the page URL, our browser sends a *request* to the host server.
-  - The server then decides whether our request is valid among other things (e.g. no "404"). 
-- If everything is okay, then the server sends a *response* script, which our browser executes and uses to populate the HTML template with the specific information that we want.
-- **Webscraping challenges:** Finding the API "endpoints" can be tricky, since these are sometimes hidden from view.
+- If everything is okay (e.g. our request is valid), then the server sends a *response* script, which our browser executes and uses to populate the HTML template with the specific information that we want.
+- **Webscraping challenges:** Finding the "API endpoints" can be tricky, since these are sometimes hidden from view.
 - **Key concepts:** APIs, API endpoints
 
 Over the next week, we'll use these lecture notes --- plus some student presentations --- to go over the main differences between the two approaches and cover the implications for any webscraping activity. I want to forewarn you that webscraping typically involves a fair bit of detective work. You will often have to adjust your steps according to the type of data you want, and the steps that worked on one website may not work on another. (Or even work on the same website a few months later). All this is to say that *webscraping involves as much art as it does science*.
@@ -71,7 +71,7 @@ The good news is that both server-side and client-side websites allow for webscr
 
 The previous sentence elides some important ethical and legal considerations. Just because you *can* scrape it, doesn't mean you *should*. It is ultimately your responsibility to determine whether a website maintains legal restrictions on the content that it provides. Similarly, the tools that we'll be using are very powerful. It's fairly easy to write up a function or program that can overwhelm a host server or application through the sheer weight of requests. A computer can process commands much, much faster than we can ever type them up manually. We'll come back to the "be nice" motif in the next lecture. 
 
-I won't cover it here, but the [polite package](https://github.com/dmi3kno/polite) provides some helpful tools to maintain web etiquette. It also plays very nicely with the packages that we're going to cover today, so please take a look after you've worked through this lecture.
+There's also new package called [polite](https://github.com/dmi3kno/polite), which aims to improve web etiquette. I'll come back to it again briefly in the [Further resources and exercises] section at the bottom of this document.
 
 ## Webscraping with `rvest` (server-side)
 
@@ -94,9 +94,11 @@ The key point is that if you can identify the CSS selector(s) of the content you
 
 ### Application: Mens 100 meters world record progression (Wikipedia)
 
-Okay, let's get to an application. Say that we want to scrape the Wikipedia page on the [Men's 100 metres world record progression](http://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression). Open up this page in your browser first. Take a look at its structure: What type of objects does it contain? How many tables does it have? Etc.
+Okay, let's get to an application. Say that we want to scrape the Wikipedia page on the [**Men's 100 metres world record progression**](http://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression). 
 
-Once you've familised yourself with the structure, read in the whole webpage into R using the `rvest::read_html()` function.
+First, open up this page in your browser. Take a look at its structure: What type of objects does it contain? How many tables does it have? Etc.
+
+Once you've familised yourself with the structure, read the whole page into R using the `rvest::read_html()` function.
 
 ```{r}
 wp <- "http://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression"
@@ -110,9 +112,9 @@ As you can see, this is an [XML](https://en.wikipedia.org/wiki/XML) document^[XM
 
 #### Table 1: Pre-IAAF (1881--1912)
 
-Now, let's try to isolate the first table on [Unofficial progression before the IAAF](https://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression#Unofficial_progression_before_the_IAAF). 
+Let's try to isolate the first table on the page, which documents the [unofficial progression before the IAAF](https://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression#Unofficial_progression_before_the_IAAF). As per the rvest vignette, we can use `rvest::html_nodes()` to isolate and extract this table from the rest of the HTML document by providing the relevant CSS selector. We should then be able to convert it into a data frame using the `rvest::html_table()` function.
 
-Next, we can use [SelectorGadget](http://selectorgadget.com/) to choose the CSS selector. In this case, I get "div+ .wikitable :nth-child(1)".
+I'll use [SelectorGadget](http://selectorgadget.com/) to identify the CSS selector. In this case, I get "div+ .wikitable :nth-child(1)", so let's check if that works.
 
 ```{r, error=TRUE}
 m100 %>%
@@ -120,7 +122,9 @@ m100 %>%
   html_table(fill=TRUE) 
 ```
 
-Uh oh! We (or, at least, I) run into an error. I won't go into details here, but we have to careful with SelectorGadget sometimes. What looks like the right selection (i.e. the highlighted stuff in yellow) might not be exactly what we're looking for. Fortunately, there's a more precise way of determing the right selectors using the "inspect web element" feature that [should be available in any modern browser](https://www.lifewire.com/get-inspect-element-tool-for-browser-756549). In this case, I'm going to use Google Chrome (either right click and then "Inspect", or **Ctrl+Shift+I**). I proceed by scrolling over the source elements until Chrome highlights the table of interest. Then right click and **Copy -> Copy selector**. 
+Uh-oh! It seems that we immediately run into an error. I won't go into details here, but I deliberately chose this example because I wanted to showcase that it pays to be cautious with SelectorGadget. It's a great tool and usually works perfectly. However, sometimes what looks like the right selection (i.e. the highlighted stuff in yellow) is not exactly what we're looking for. Again: Webscraping is as much art as it is science.
+
+Fortunately, there's a more precise way of determing the right selectors using the "inspect web element" feature that [available in all modern browsers](https://www.lifewire.com/get-inspect-element-tool-for-browser-756549). In this case, I'm going to use Google Chrome (either right click and then "Inspect", or **Ctrl+Shift+I**). I proceed by scrolling over the source elements until Chrome highlights the table of interest. Then right click and **Copy -> Copy selector**. 
 
 ```{r}
 m100 %>%
@@ -181,7 +185,7 @@ pre_iaaf <-
 pre_iaaf
 ```
 
-Finally, we have our cleaned data frame. We can now easily plot the data if we wanted. I'm going to use (and set) the `theme_ipsum()` plotting theme from the hrbrthemes package because I like it, but this certainly isn't necessary.
+Finally, we have our cleaned data frame. We can now easily plot the data if we wanted. I'm going to use (and set) the `theme_ipsum()` plotting theme from the [hrbrthemes package](https://github.com/hrbrmstr/hrbrthemes) because I like it, but this certainly isn't necessary.
 
 ```{r pre_plot}
 library(hrbrthemes) ## Just for the theme_ipsum() plot theme that I like
@@ -334,7 +338,7 @@ wr100 %>%
   labs(
     title = "Men's 100m world record progression",
     x = "Date", y = "Time",
-    caption = "Source: http://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression"
+    caption = "Source: Wikipedia"
     )
 ```
 
@@ -349,12 +353,20 @@ wr100 %>%
     title = "Men's 100m world record progression",
     subtitle = "Modern era only",
     x = "Date", y = "Time",
-    caption = "Source: http://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression"
+    caption = "Source: Wikipedia"
     )
 ```
 
-#### Extra: Modeling and prediction
+## Further resources and exercises
 
-How would you model the progression of the Men's 100 meter record over time? For example, imagine that you had to predict today's WR in 2005. How do your predictions stack up against the actual record (i.e. Usain Bolt's 9.58 time set in 2009)? How do you intepret this?
+Next lecture, we going to focus on client-side web content and interacting with APIs. For the moment, you can practice your `rvest`-based scraping skills by following along with any of the many (many) tutorials available online. I want to make two particular suggestions, though:
 
-*Hint: See the `?broom::tidy()` help function for extracting refression coefients in a convenient data frame. We've already seen the `geom_smooth()` function, but for some nice tips on (visualizing) model predictions, see [Chap. 23](http://r4ds.had.co.nz/model-basics.html#visualising-models) of the R4DS book, or [Chap. 6.4](http://socviz.co/modeling.html#generate-predictions-to-graph) of the SocViz book. The generic `base::predict()` function has you covered, although the tidyverse's `modelr` package has some nice wrapper functions that you will probably find useful for this example. While it is perhaps less relevant here, the [`margins` package](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html) is very helpful if you ever want to extract marginal effects from nonlinear models (interaction terms, etc.).*
+### Polite
+
+I mentioned the [polite package](https://github.com/dmi3kno/polite) earlier in this lecture. It provides some helpful tools to maintain web etiquette, such as checking for permission and not hammering the host website with requests. It also plays very nicely with the `rvest` workflow that we covered today, so please take a look.
+
+### Modeling and prediction
+
+We'll get to analysis section of the course (regression, etc.) next week. However, today's dataset provides a good platform to start thinking about these issues. How would you model the progression of the Men's 100 meter record over time? For example, imagine that you had to predict today's WR in 2005. How do your predictions stack up against the actual record (i.e. Usain Bolt's 9.58 time set in 2009)? How do you handle rescinded times? How do you intepret all of this?
+
+*Hint: See the `?broom::tidy()` help function for extracting refression coefients in a convenient data frame. We've already seen the `geom_smooth()` function, but for some nice tips on (visualizing) model predictions, see [Chap. 23](http://r4ds.had.co.nz/model-basics.html#visualising-models) of the R4DS book, or [Chap. 6.4](http://socviz.co/modeling.html#generate-predictions-to-graph) of the SocViz book. The generic `base::predict()` function has you covered, although the tidyverse's `modelr` package has some nice wrapper functions that you will probably find useful for this suggested exercise.*
