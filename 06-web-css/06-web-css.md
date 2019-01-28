@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott | University of Oregon
   # affiliation: EC 607
   # email: grantmcd@uoregon.edu
-date: EC 607  #"27 January 2019"
+date: EC 607  #"28 January 2019"
 output: 
   html_document:
     theme: flatly
@@ -120,7 +120,7 @@ As you can see, this is an [XML](https://en.wikipedia.org/wiki/XML) document^[XM
 
 #### Table 1: Pre-IAAF (1881--1912)
 
-Let's try to isolate the first table on the page, which documents the [unofficial progression before the IAAF](https://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression#Unofficial_progression_before_the_IAAF). As per the rvest vignette, we can use `rvest::html_nodes()` to isolate and extract this table from the rest of the HTML document by providing the relevant CSS selector. We should then be able to convert it into a data frame using the `rvest::html_table()` function.
+Let's try to isolate the first table on the page, which documents the [unofficial progression before the IAAF](https://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression#Unofficial_progression_before_the_IAAF). As per the rvest vignette, we can use `rvest::html_nodes()` to isolate and extract this table from the rest of the HTML document by providing the relevant CSS selector. We should then be able to convert it into a data frame using `rvest::html_table()`. I also recommend using the `fill=TRUE` option here, because otherwise we'll run into formatting problems because of row spans in the Wiki table.
 
 I'll use [SelectorGadget](http://selectorgadget.com/) to identify the CSS selector. In this case, I get "div+ .wikitable :nth-child(1)", so let's check if that works.
 
@@ -135,22 +135,70 @@ m100 %>%
 ## Error in html_table.xml_node(X[[i]], ...): html_name(x) == "table" is not TRUE
 ```
 
-Uh-oh! It seems that we immediately run into an error. I won't go into details here, but I deliberately chose this example because I wanted to showcase that it pays to be cautious with SelectorGadget. It's a great tool and usually works perfectly. However, sometimes what looks like the right selection (i.e. the highlighted stuff in yellow) is not exactly what we're looking for. Again: Webscraping is as much art as it is science.
+Uh-oh! It seems that we immediately run into an error. I won't go into details here, but we have to be cautious with SelectorGadget sometimes. It's a great tool and usually works perfectly. However, occasionally what looks like the right selection (i.e. the highlighted stuff in yellow) is not exactly what we're looking for. I deliberately chose this Wikipedia 100m example because I wanted to showcase this potential pitfall.  Again: Webscraping is as much art as it is science.
 
-Fortunately, there's a more precise way of determing the right selectors using the "inspect web element" feature that [available in all modern browsers](https://www.lifewire.com/get-inspect-element-tool-for-browser-756549). In this case, I'm going to use Google Chrome (either right click and then "Inspect", or **Ctrl+Shift+I**). I proceed by scrolling over the source elements until Chrome highlights the table of interest. Then right click and **Copy -> Copy selector**. 
+Fortunately, there's a more precise way of determing the right selectors using the "inspect web element" feature that [available in all modern browsers](https://www.lifewire.com/get-inspect-element-tool-for-browser-756549). In this case, I'm going to use Google Chrome (either right click and then "Inspect", or **Ctrl+Shift+I**). I proceed by scrolling over the source elements until Chrome highlights the table of interest. Then right click and **Copy -> Copy selector**. Here's a GIF animation of these steps:
+
+![](pics/inspect100m1.gif)
+
+Using this method, I got "#mw-content-text > div > table:nth-child(8)". Let's see whether it works this time. Again, I'll be using the `rvest::html_table(fill=TRUE)` function to coerce the resulting table into a data frame.
 
 
 ```r
 m100 %>%
-  html_nodes("#mw-content-text > div > table:nth-child(8)")
+  html_nodes("#mw-content-text > div > table:nth-child(8)") %>%
+  html_table(fill=TRUE) 
 ```
 
 ```
-## {xml_nodeset (1)}
-## [1] <table class="wikitable"><tbody>\n<tr>\n<th>Time\n</th>\n<th>Athlete ...
+## [[1]]
+##    Time               Athlete    Nationality           Location of races
+## 1  10.8           Luther Cary  United States               Paris, France
+## 2  10.8             Cecil Lee United Kingdom           Brussels, Belgium
+## 3  10.8         Etienne De Re        Belgium           Brussels, Belgium
+## 4  10.8          L. Atcherley United Kingdom     Frankfurt/Main, Germany
+## 5  10.8          Harry Beaton United Kingdom      Rotterdam, Netherlands
+## 6  10.8 Harald Anderson-Arbin         Sweden         Helsingborg, Sweden
+## 7  10.8      Isaac Westergren         Sweden               Gävle, Sweden
+## 8  10.8                  10.8         Sweden               Gävle, Sweden
+## 9  10.8          Frank Jarvis  United States               Paris, France
+## 10 10.8      Walter Tewksbury  United States               Paris, France
+## 11 10.8            Carl Ljung         Sweden           Stockholm, Sweden
+## 12 10.8      Walter Tewksbury  United States Philadelphia, United States
+## 13 10.8          André Passat         France            Bordeaux, France
+## 14 10.8            Louis Kuhn    Switzerland            Bordeaux, France
+## 15 10.8      Harald Grønfeldt        Denmark             Aarhus, Denmark
+## 16 10.8            Eric Frick         Sweden           Jönköping, Sweden
+## 17 10.6         Knut Lindberg         Sweden          Gothenburg, Sweden
+## 18 10.5         Emil Ketterer        Germany          Karlsruhe, Germany
+## 19 10.5           Richard Rau        Germany       Braunschweig, Germany
+## 20 10.5           Richard Rau        Germany             Munich, Germany
+## 21 10.5            Erwin Kern        Germany             Munich, Germany
+##                  Date
+## 1        July 4, 1891
+## 2  September 25, 1892
+## 3      August 4, 1893
+## 4      April 13, 1895
+## 5     August 28, 1895
+## 6      August 9, 1896
+## 7  September 11, 1898
+## 8  September 10, 1899
+## 9       July 14, 1900
+## 10      July 14, 1900
+## 11 September 23, 1900
+## 12    October 6, 1900
+## 13      June 14, 1903
+## 14      June 14, 1903
+## 15       July 5, 1903
+## 16     August 9, 1903
+## 17    August 26, 1906
+## 18       July 9, 1911
+## 19    August 13, 1911
+## 20       May 12, 1912
+## 21       May 26, 1912
 ```
 
-Great, it worked. Now let's assign it to an object that we'll call `pre_iaaf`. We can also convert it to a data frame using the `rvest::html_table()` function. We'll also use the `fill=TRUE` option to overcome some missing column problems.
+Great, it worked! Let's assign it to an object that we'll call `pre_iaaf` and then check its class.
 
 
 ```r
@@ -165,7 +213,7 @@ class(pre_iaaf)
 ## [1] "list"
 ```
 
-Hmmm... It turns out this is actually still a list, so let's *really* convert it to a data frame. One way to do this is by using dplyr's `bind_rows()` function, which is great for coercing (multiple) lists into a data frame.^[We'll see more examples of this once we get to the programming section of the course.] I also want to make some ggplot figures further below, so I'll just go ahead and load the whole tidyverse.
+Hmmm... It turns out this is actually a list, so let's *really* convert it to a data frame. You can do this in multiple ways. I'm going to use dplyr's `bind_rows()` function, which is great for coercing (multiple) lists into a data frame.^[We'll see more examples of this once we get to the programming section of the course.] I also want to make some ggplot figures further below, so I'll just go ahead and load the whole tidyverse.
 
 
 ```r
