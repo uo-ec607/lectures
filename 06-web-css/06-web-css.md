@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott | University of Oregon
   # affiliation: EC 607
   # email: grantmcd@uoregon.edu
-date: EC 607  #"28 January 2019"
+date: EC 607  #"29 January 2019"
 output: 
   html_document:
     theme: flatly
@@ -102,10 +102,7 @@ Once you've familised yourself with the structure, read the whole page into R us
 
 
 ```r
-wp <- "http://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression"
-m100 <- 
-  wp %>%
-  read_html() 
+m100 <- read_html("http://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression") 
 m100
 ```
 
@@ -139,7 +136,7 @@ Uh-oh! It seems that we immediately run into an error. I won't go into details h
 
 Fortunately, there's a more precise way of determing the right selectors using the "inspect web element" feature that [available in all modern browsers](https://www.lifewire.com/get-inspect-element-tool-for-browser-756549). In this case, I'm going to use Google Chrome (either right click and then "Inspect", or **Ctrl+Shift+I**). I proceed by scrolling over the source elements until Chrome highlights the table of interest. Then right click and **Copy -> Copy selector**. Here's a GIF animation of these steps:
 
-![](pics/inspect100m1.gif)
+![](pics/inspect100m.gif)
 
 Using this method, I got "#mw-content-text > div > table:nth-child(8)". Let's see whether it works this time. Again, I'll be using the `rvest::html_table(fill=TRUE)` function to coerce the resulting table into a data frame.
 
@@ -608,6 +605,19 @@ wr100 %>%
 ```
 
 ![](06-web-css_files/figure-html/modern_plot-1.png)<!-- -->
+
+## Summary
+
+- Web content can be rendered either 1) server-side or 2) client-side.
+- To scrape web content that is rendered server-side, we need to know the relevant CSS selectors.
+- We can find these CSS selectors using SelectorGadget or, more precisely, by inspecting the element in our browser.
+- We use the `rvest` package to read into the HTML document into R and then parse the relevant nodes. 
+  - A typical workflow is: `read_html(URL) %>% html_nodes(CSS_SELECTORS) %>% html_table()`.
+  - You might need other functions depending on the content type (e.g. see `?html_text`).
+- Just because you *can* scrape something doesn't mean you *should* (i.e. ethical and legal restrictions).
+- Webscraping involves as much as it does science. Be prepared to do a lot of experimenting and data cleaning.
+- Next lecture: Webscraping: (2) Client-side and APIs.
+
 
 ## Further resources and exercises
 
