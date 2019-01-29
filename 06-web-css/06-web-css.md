@@ -96,7 +96,7 @@ The key point is that if you can identify the CSS selector(s) of the content you
 
 Okay, let's get to an application. Say that we want to scrape the Wikipedia page on the [**Men's 100 metres world record progression**](http://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression). 
 
-First, open up this page in your browser. Take a look at its structure: What type of objects does it contain? How many tables does it have? Etc.
+First, open up this page in your browser. Take a look at its structure: What type of objects does it contain? How many tables does it have? Do these tables all share the same columns? What row- and columns-spans? Etc.
 
 Once you've familised yourself with the structure, read the whole page into R using the `rvest::read_html()` function.
 
@@ -621,7 +621,7 @@ wr100 %>%
 
 ## Further resources and exercises
 
-Next lecture, we going to focus on client-side web content and interacting with APIs. For the moment, you can practice your `rvest`-based scraping skills by following along with any of the many (many) tutorials available online. I want to make two particular suggestions, though:
+In the next lecture, we're going to focus on client-side web content and interacting with APIs. For the moment, you can practice your `rvest`-based scraping skills by following along with any of the many (many) tutorials available online. I want to make two particular suggestions, though:
 
 ### Polite
 
