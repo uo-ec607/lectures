@@ -27,7 +27,7 @@ Possibly. Please [contact me](mailto:grantmcd@uoregon.edu) if you would like to 
 3. Learning to love the shell \[[Slides](https://raw.githack.com/uo-ec607/lectures/master/03-shell/03-shell.html).\]
 4. R language basics \[[Slides](https://raw.githack.com/uo-ec607/lectures/master/04-rlang/04-rlang.html).\]
 5. Data wrangling and tidying with the “Tidyverse” \[[Slides](https://raw.githack.com/uo-ec607/lectures/master/05-tidyverse/05-tidyverse.html). [Notebook](https://raw.githack.com/uo-ec607/lectures/master/05-tidyverse/html_document/05-tidyverse.html).\]
-6. Webscraping: (1) Server-side and CSS
+6. Webscraping: (1) Server-side and CSS \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/06-web-css/06-web-css.html).\]
 7. Webscraping: (2) Client-side and APIs
 8. Regression analysis in R
 9. Spatial analysis in R
