@@ -18,7 +18,11 @@ output:
 
 
 
-## Software requirements
+## Sign-up and software requirements
+
+### Sign-up
+
+We're going to be downloading economic data from the FRED API. This will require that you first [create a user account](https://research.stlouisfed.org/useraccount/apikey) and then [register a personal API key](https://research.stlouisfed.org/useraccount/apikey).
 
 ### External software
 
@@ -26,10 +30,10 @@ Today I'll be using [JSONView](https://jsonview.com/), a browser extension that 
 
 ### R packages 
 
-- **New:** `jsonlite`, `listviewer`
+- **New:** `jsonlite`, `httr`, `listviewer`
 - **Already used:** `tidyverse`, `lubridate`, `hrbrthemes`
 
-Install these new packages now:
+The [httr package](https://httr.r-lib.org/index.html) already comes bundled with the tidyverse. So you only need to install the following:
 
 
 ```r
@@ -37,13 +41,14 @@ Install these new packages now:
 install.packages(c("jsonlite", "listviewer"))
 ```
 
-We might as well load the tidyverse now, since we'll be using that a fair bit anyway. I'll also set my preferred ggplot2 theme for the rest of this document.
+We might as well load the tidyverse now, since we'll be using that a fair bit anyway. It's not necessary, but 'll also set my preferred ggplot2 theme for the rest of this document.
 
 
 ```r
 library(tidyverse)
 theme_set(hrbrthemes::theme_ipsum())
 ```
+
 
 
 ## Recap from last time
@@ -164,9 +169,65 @@ nyc_trees %>%
 
 Not too bad. This would probably be more fun / impressive with an actual map of New York behind it. We'll save that for the spatial lecture that's coming up later in the course, though.
 
-## Application 2: World rugby rankings
+## Application 2: FRED data
 
-Our second application will involve a more challenging case where the API endpoint is hidden from view. In particular, let's try to scrape data on [**World Rugby rankings**](https://www.world.rugby/rankings/mru).^[Because what's more important than teaching Americans about rugby?] Start by taking a look at the complicated structure of the website in a [live session](http://www.worldrugby.org/rankings).
+Our first application didn't require prior registration on the Open Data NYC website, or creation of an API key. This is atypical. Most API interfaces will only let you access and download data after you have registered an API key.
+
+### Do it yourself
+
+
+```r
+library(httr)
+
+endpoint = "series/observations"
+params = list(
+  api_key=fred_key, 
+  file_type="json", 
+  series_id="GNPCA"
+)
+
+fred = httr::GET(url = "https://api.stlouisfed.org/", 
+          path = paste0("fred/", endpoint), 
+          query = params)
+
+fred %>% 
+  httr::content("text") %>%
+  fromJSON() %>%
+  listviewer::jsonedit()
+
+fred <-
+  fred %>% 
+  httr::content("text") %>%
+  jsonlite::fromJSON() %>%
+  # .$observations %>% ## Also works
+  # magrittr::extract("observations") %>% ## This too
+  pluck("observations") %>%
+  as_tibble()
+
+library(lubridate)
+fred <-
+  fred %>%
+  mutate_at(vars(realtime_start:date), ymd) %>%
+  mutate(value = as.numeric(value)) 
+
+fred %>%
+  ggplot(aes(date, value)) +
+  geom_line() +
+  hrbrthemes::theme_ipsum()
+```
+
+
+### Use a package
+
+One of the great features about the R (and data science community in general) is that someone has probably written a package that does all the heavy API lifting for you. We'll come across many examples during the remainder of this course, but for the moment I want you to check out the [fredr package](http://sboysel.github.io/fredr/index.html). How would you access the same GDP data as above using this package?
+
+## Application 3: World rugby rankings
+
+Our final application will involve a more challenging case where the API endpoint is *hidden from view*. In particular, we want to access and then plot data on [**World Rugby rankings**](https://www.world.rugby/rankings/mru).^[Because what's more important than teaching Americans about rugby?] 
+
+*Disclaimer: World Rugby's [Terms & Conditions](https://www.world.rugby/terms-and-conditions) permits data downloading for own non-commerical use. It seems reasonable to me that these lecture notes fall under this use category. None of the methods presented below should be construed as an endorsement of data aquisition and use that violates these terms. Again: Just because you can scrape something, doesn't mean you should.*
+
+Start by taking a look at the complicated structure of the website in a [live session](http://www.worldrugby.org/rankings).
 
 *<b>Challenge:</b> Try to scrape the full country rankings using the `rvest` + CSS selectors approach that we practiced last time.*
 
