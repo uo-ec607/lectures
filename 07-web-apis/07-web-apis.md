@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott | University of Oregon
   # affiliation: EC 607
   # email: grantmcd@uoregon.edu
-date: EC 607  #"30 January 2019"
+date: EC 607  #"31 January 2019"
 output: 
   html_document:
     theme: flatly
@@ -171,7 +171,7 @@ Not too bad. This would probably be more fun / impressive with an actual map of 
 
 ## Application 2: FRED data
 
-Our first application didn't require prior registration on the Open Data NYC website, or creation of an API key. This is atypical. Most API interfaces will only let you access and download data after you have registered an API key.
+Our first application didn't require prior registration on the Open Data NYC website, or creation of an API key. This is atypical. Most API interfaces will only let you access and download data after you have registered an API key. (Particularly any API linked to a federal agency or institution.)
 
 ### Do it yourself
 
@@ -223,51 +223,43 @@ One of the great features about the R (and data science community in general) is
 
 ## Application 3: World rugby rankings
 
-Our final application will involve a more challenging case where the API endpoint is *hidden from view*. In particular, we want to access and then plot data on [**World Rugby rankings**](https://www.world.rugby/rankings/mru).^[Because what's more important than teaching Americans about rugby?] 
+Our final application will involve a more challenging case where the API endpoint is *hidden from view*. In particular, we want to access and then plot data on [**World Rugby rankings**](https://www.world.rugby/rankings/mru). Because what's more important than teaching Americans about rugby?
 
-*Disclaimer: World Rugby's [Terms & Conditions](https://www.world.rugby/terms-and-conditions) permits data downloading for own non-commerical use. It seems reasonable to me that these lecture notes fall under this use category. None of the methods presented below should be construed as an endorsement of data aquisition and use that violates these terms. Again: Just because you can scrape something, doesn't mean you should.*
+*<b>Disclaimer:</b> World Rugby's [Terms & Conditions](https://www.world.rugby/terms-and-conditions) permits data downloading for own non-commerical use. It seems reasonable to me that these lecture notes fall under this use category.^[If you're reading this from World Rugby and disagree, please [contact me](mailto:grantmcd@uoregon.edu)]. In my defence, I am still awaiting a reply to my initial email confirming my interpretation of your T&Cs...] None of the methods presented below should be construed as an endorsement of data aquisition and use that violates these terms. Again: Just because you can scrape something, doesn't mean you should.*
 
-Start by taking a look at the complicated structure of the website in a [live session](http://www.worldrugby.org/rankings).
+Start by taking a look at the complicated structure of the website in a [live session](http://www.worldrugby.org/rankings). Pay attention to the various tables and other interactive elements like calendars.
 
-*<b>Challenge:</b> Try to scrape the full country rankings using the `rvest` + CSS selectors approach that we practiced last time.*
+Now take a minute of two for a quick challenge: Try to scrape the full country rankings using the `rvest` + CSS selectors approach that we practiced last time...
+
+.
+.
+.
+.
+.
 
 If you're anything like me, you would have struggled to scrape the desired information using the `rvest` + CSS selectors approach. Even if you managed to extract some kind of information, you're likely only getting a subset of what you wanted. (For example, just the column names, or the first ten rows before the "VIEW MORE RANKINGS" button). And we haven't even considered trying to get information from a different date.^[Note that the URL doesn't change even when we select a different date on the calendar.]
 
 ### Locating the hidden API endpoint
 
-Fortunately, there's a better way: Access the full database of rankings through the API. First we have to find the endpoint, though. Start by inspecting the page like we practised last lecture. (**Ctr+Shift+I** in Chrome. **Ctrl+Shift+Q** in Firefox.) This time, however, rather than mousing over individual objects on the page, head to the **Network** tab at the top of the inspect element panel. Then click on **XHR**.^[XHR stands for **X**ML**H**ttp**R**equest and is the type of request used to fetch XML or JSON data.]
+Fortunately, there's a better way: Access the full database of rankings through the API. First we have to find the endpoint, though. Here's a step-by-step guide of how to that that. It's fairly tedious, but pretty intuitive once you get the hang of it. You can just skip to the GIF below if you would rather see what I did instead of reading through all the steps. 
 
-</br>
-![](pics/rugby1.png)
-</br></br>
+- Start by inspecting the page. (**Ctr+Shift+I** in Chrome. **Ctrl+Shift+Q** in Firefox.) 
+- Head to the **Network** tab at the top of the inspect element panel. 
+- Click on the **XHR** button.^[XHR stands for **X**ML**H**ttp**R**equest and is the type of request used to fetch XML or JSON data.]
+- Refresh the page (**Ctrl+R**). This will allow us to see all the web traffic coming to and from the page in our inspect panel. 
+- Our task now is to scroll these different traffic links and see which one contains the information that we're after.
+- The top traffic link item references a URL called [https://cms<b>api</b>.pulselive.com/rugby/<b>rankings</b>/mru?language=en&client=pulse](https://cmsapi.pulselive.com/rugby/rankings/mru?language=en&client=pulse). *Hmmm. "API" you say? "Rankings" you say? Sounds promising...* 
+- Click on this item and open up the **Preview** tab.
+- In this case, we can see what looks to be the first row of the rankings table ("New Zealand", etc.) 
+- To make sure, you can grab that [https://cmsapi.pulselive.com/rugby/rankings/mru?language=en&client=pulse](URL), and paste it into our browser (using the [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc?hl=en) plugin) from before.
 
-Refresh the page (**Ctrl+R**). You should see something like the below, which captures all traffic coming to and from the page. Our task now is to scroll these different links and see which one contains the information that we're after. In this case, that's the rugby rankings, but we could also look for other information on the page like upcoming matches.
+Awesome. Looks like we've located our API endpoint. As promised, here's GIF of me executing these steps in my browser:
 
-</br>
-![](pics/rugby2.png)
-</br></br>
-
-The item that I've highlighted brings up a URL called [https://cms<mark>api</mark>.pulselive.com/rugby/<mark>rankings</mark>/mru?language=en&client=pulse](https://cmsapi.pulselive.com/rugby/rankings/mru?language=en&client=pulse). 
-
-*Hmmm... "API" you say? "Rankings" you say? Sounds promising.* 
-
-Let's click on this item and then open up the **Preview** tab.
-
-</br>
-![](pics/rugby3.png)
-</br></br>
-
-Again, this looks good. We can see what looks the first row of the rankings table ("New Zealand", etc.) To make sure, go back to the **Headers** tab, grab that [https://cmsapi.pulselive.com/rugby/rankings/mru?language=en&client=pulse](URL), and paste it into our browser. Note that I'm using the [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc?hl=en) browser plugin for nicely rendered JSON output, so don't be alarmed if your screen looks different to mine.
-
-</br>
-![](pics/rugby4.png)
-</br></br>
-
-Boom. We've located our API endpoint. Let's pull the data into R.
+![](pics/inspect-rugby.gif)
 
 ### Pulling the data into R
 
-There are several packages for reading web-based (and web API) data into R. The `httr` package that comes bundled with the tidyverse is a good example, while the `curl` package is another (very powerful) option. However, for the below I'm just going to use the `jsonlite` package's `fromJSON()` function, which is perfect for reading in JSON objects like our API endpoint. 
+Let's pull the data from the API endpoint into R. Again, I'll be using `jsonlite::readJSON()` function. 
 
 
 ```r
@@ -297,9 +289,7 @@ str(rugby)
 ##   ..$ label    : chr "2019-01-07"
 ```
 
-So we have a nested list, where what looks to be the main element of interest, `$entries`, is itself a list.^[I know that R says `$entries` is a data.frame, but we can tell from the `str()` call that it follows a list structure. In particular, the `$entries$team` sub-element is a itself data frame. Remember: R is very flexible and allows data frames within certain data frames (and lists).] Nested lists are the law of the land when it comes to JSON data. Don't worry too much about this now, but R ideally suited to handling this type of nested information. We'll see more examples later in the course when we start working with spatial data (e.g. geoJSON) and you'll even find that the nested structure can prove very powerful once you start doing more advanced programming and analysis in R. 
-
-Okay, let's extract the `$entries` element and have a look at its structure. We could use the `str()` base function, but for complicated list elements the interactive widget provided by `listviewer::jsonedit()` is hard to beat. For completeness, I'll then also preview the `$entries$team` sub-element.
+We have a nested list, where what looks to be the main element of interest, `$entries`, is itself a list.^[I know that R says `rugby$entries` is a data.frame, but we can tell from the `str()` call that it follows a list structure. In particular, the `rugby$entries$team` sub-element is a itself data frame. Remember: R is very flexible and allows data frames within certain data frames (and lists).] Let's extract the `$entries` element and have a look at its structure. We could use the `str()` base function again, but the interactivity of `listviewer::jsonedit()` is hard to beat for complicated list structures. 
 
 
 ```r
@@ -309,6 +299,9 @@ listviewer::jsonedit(rugby, mode = "view")
 
 <!--html_preserve--><div id="htmlwidget-94d07a80778fcca198fc" style="width:100%;height:10%;" class="jsonedit html-widget"></div>
 <script type="application/json" data-for="htmlwidget-94d07a80778fcca198fc">{"x":{"data":{"label":"Mens Rugby Union","entries":{"team":{"id":[37,36,33,34,39,38,35,46,42,40,49,51,720,47,41,45,68,52,756,50,43,58,64,725,699,721,44,703,708,736,770,735,753,738,777,711,714,751,1030,57,775,776,766,681,769,745,741,713,1247,774,740,707,2537,712,759,743,737,723,760,734,781,729,710,732,739,726,784,761,722,3223,1031,702,700,701,692,772,752,696,2476,715,698,727,771,697,750,2340,709,768,2382,2861,704,2397,2857,749,2387,2585,1029,748,705,762,744,2576,2529,780,3674],"altId":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"name":["New Zealand","Ireland","Wales","England","South Africa","Australia","Scotland","Fiji","France","Argentina","Japan","USA","Georgia","Tonga","Italy","Samoa","Uruguay","Romania","Russia","Canada","Spain","Namibia","Netherlands","Hong Kong","Belgium","Germany","Portugal","Brazil","Chile","Korea","Switzerland","Kenya","Poland","Lithuania","Ukraine","Colombia","Czechia","Paraguay","Malta","Zimbabwe","Tunisia","Uganda","Sri Lanka","Cote D'Ivoire","Sweden","Morocco","Malaysia","Croatia","Mexico","Trinidad & Tobago","Madagascar","Cayman Islands","Philippines","Cook Islands","Senegal","Moldova","Latvia","Guyana","Singapore","Kazakhstan","Venezuela","Israel","Chinese Taipei","Jamaica","Luxembourg","Hungary","Zambia","Slovenia","Guam","United Arab Emirates","Nigeria","Botswana","Bermuda","Bosnia & Herzegovina","Andorra","Thailand","Peru","Austria","St Vincent and Grenadines","Denmark","Barbados","India","Tahiti","Bahamas","Papua New Guinea","Serbia","China","Swaziland","Ghana","Uzbekistan","Bulgaria","Pakistan","Mauritius","Norway","Rwanda","Costa Rica","Finland","Niue Island","Cameroon","Solomon Islands","Monaco","Indonesia","Greece","Vanuatu","American Samoa"],"abbreviation":["NZL","IRE","WAL","ENG","RSA","AUS","SCO","FJI","FRA","ARG","JPN","USA","GEO","TGA","ITA","SAM","URU","ROM","RUS","CAN","ESP","NAM","NED","HKG","BEL","GER","POR","BRA","CHL","KOR","SUI","KEN","POL","LTU","UKR","COL","CZE","PAR","MLT","ZIM","TUN","UGA","SRI","CIV","SWE","MAR","MAS","CRO","MEX","TTO","MAD","CAY","PHP","COK","SEN","MDA","LAT","GUY","SIN","KAZ","VEN","ISR","TPE","JAM","LUX","HUN","ZAM","SVN","GUM","UAE","NGA","BWA","BER","BIH","AND","THA","PER","AUT","SVG","DEN","BRB","IND","PYF","BHS","PNG","SRB","CHN","SWZ","GHA","UZB","BUL","PAK","MUS","NOR","RWA","CTR","FIN","NIU","CAM","SOL","MON","IDO","HEL","VAN","ASM"],"annotations":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},"matches":[209,182,196,189,200,217,177,111,187,182,165,119,151,99,179,111,128,153,138,129,116,102,85,102,90,102,131,92,83,67,69,94,82,72,86,56,87,59,75,72,58,75,54,47,78,50,47,74,30,36,48,34,31,27,47,79,71,37,46,55,49,67,46,27,66,70,42,68,22,26,23,38,37,55,65,47,49,70,14,74,38,35,19,27,31,63,36,18,12,5,56,13,22,66,13,11,55,19,25,21,12,3,17,16,13],"pts":[92.53533,91.16688,87.24036,86.22275,84.580025,82.39823,81.84417,77.94977,77.32973,77.04916,75.24273,73.65862,73.422676,73.01502,72.74671,68.77505,66.82086,65.45316,65.20222,62.954357,62.23807,60.338173,58.45077,58.114353,58.0919,57.827908,57.08341,56.814743,54.364967,53.586235,53.242306,52.789814,52.2899,51.528393,50.25155,49.842087,49.600685,49.59372,49.478283,49.2803,48.532963,48.34342,48.2654,46.588947,46.442528,46.333847,46.264854,45.861683,45.662365,45.509857,45.341393,45.195084,45.163864,45.106884,44.817486,43.625633,43.43337,43.14622,42.542458,42.1372,41.871857,41.788982,41.329926,40.522484,40.341747,40.12316,39.724476,39.07184,38.71173,37.92662,37.70883,37.639103,37.391884,37.349506,37.202675,37.089455,36.13399,35.299862,34.914616,34.901814,34.724777,34.362324,33.78896,33.756924,33.267494,33.074486,32.718918,32.041035,31.90417,31.290405,31.101856,30.73589,30.559095,30.456757,29.78472,29.570444,29.069761,28.446674,26.32657,24.404186,23.171558,22.733171,22.546452,21.453693,19.532106],"pos":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105],"previousPts":[92.53533,91.16688,87.24036,86.22275,84.580025,82.39823,81.84417,77.94977,77.32973,77.04916,75.24273,73.65862,73.422676,73.01502,72.74671,68.77505,66.82086,65.45316,65.20222,62.954357,62.23807,60.338173,58.45077,58.114353,58.0919,57.827908,57.08341,56.814743,54.364967,53.586235,53.242306,52.789814,52.2899,51.528393,50.25155,49.842087,49.600685,49.59372,49.478283,49.2803,48.532963,48.34342,48.2654,46.588947,46.442528,46.333847,46.264854,45.861683,45.662365,45.509857,45.341393,45.195084,45.163864,45.106884,44.817486,43.625633,43.43337,43.14622,42.542458,42.1372,41.871857,41.788982,41.329926,40.522484,40.341747,40.12316,39.724476,39.07184,38.71173,37.92662,37.70883,37.639103,37.391884,37.349506,37.202675,37.089455,36.13399,35.299862,34.914616,34.901814,34.724777,34.362324,33.78896,33.756924,39.267494,33.074486,32.718918,32.041035,31.90417,31.290405,31.101856,30.73589,30.559095,30.456757,29.78472,29.570444,29.069761,28.446674,26.32657,24.404186,23.171558,28.733171,22.546452,21.453693,19.532106],"previousPos":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,68,86,87,88,89,90,91,92,93,94,95,96,97,99,100,101,102,98,103,104,105]},"effective":{"millis":1546819200000,"gmtOffset":0,"label":"2019-01-07"}},"options":{"mode":"view","modes":["code","form","text","tree","view"]}},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
+
+For completeness, let's take peak at the `rugby$entries$team` data frame to confirm that it has information that is useful to us. 
+
 
 ```r
 head(rugby$entries$team)
@@ -324,7 +317,7 @@ head(rugby$entries$team)
 ## 6 38    NA    Australia          AUS          NA
 ```
 
-It looks like like we can just bind the `$entires$team` data frame directly to the other elements of the parent `$team` "data frame" (actually: "list"). Let's do that and then clean things up a bit. I'm going to call the resulting data frame `rankings`.
+Okay, clearer picture is starting to emerge. It looks like we can just bind the columns of the `rugby$entries$team` data frame directly to the other elements of the parent `$team` "data frame" (actually: "list"). Let's do that using `dplyr::bind_cols()` and then clean things up a bit. I'm going to call the resulting data frame `rankings`.
 
 
 ```r
@@ -363,9 +356,9 @@ rankings
 
 The above looks great, except for the fact that its just a single snapshot of the most recent rankings. We are probably more interested in looking back at changes in the ratings over time. For example, back to an era when South Africa wasn't so [*kak*](https://www.urbandictionary.com/define.php?term=kak).
 
-How do we do this? Well, in the spirit of art-vs-science, let's open up the Inspect window of the rankings page again and start exploring. What happens if we click on the calendar element, say, change the month to "April"?
+How do we do this? Well, in the spirit of art-vs-science, let's open up the Inspect window of the rankings page again and start exploring. What happens if we click on the calendar element, say, change the year to "2018" and month to "April"?
 
-This looks promising! Essentially, the same API endpoint that we saw previously, but now appended with a date, https://cmsapi.pulselive.com/rugby/rankings/mru?date=2018-05-01&client=pulse. If you were to continue along in this manner -- clicking on the website calendar and looking for XHR traffic -- you would soon realise that these date suffixes follow a predictable pattern: They are spaced out a week apart and always fall on a Monday. In other words, the World Rugby updates its rankings table weekly and publishes the results on Mondays.
+This looks promising! Essentially, the same API endpoint that we saw previously, but now appended with a date, https://cmsapi.pulselive.com/rugby/rankings/mru?date=2018-05-01&client=pulse. If you were to continue along in this manner --- clicking on the website calendar and looking for XHR traffic --- you would soon realise that these date suffixes follow a predictable pattern: They are spaced out a week apart and always fall on a Monday. In other words, the World Rugby updates its rankings table weekly and publishes the results on Mondays.
 
 We now have enough information to write a function that will loop over a set of dates and pull data from the relevant API endpoint. **NB:** I know we haven't gotten to the programming section of the course, so don't worry about the specifics of the next few code chunks. I'll try to comment my code quite explicitly, but I mostly want you to focus on the big picture.
 
