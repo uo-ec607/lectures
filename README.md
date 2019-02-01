@@ -28,7 +28,7 @@ Possibly. Please [contact me](mailto:grantmcd@uoregon.edu) if you would like to 
 4. R language basics \[[Slides](https://raw.githack.com/uo-ec607/lectures/master/04-rlang/04-rlang.html).\]
 5. Data wrangling and tidying with the “Tidyverse” \[[Slides](https://raw.githack.com/uo-ec607/lectures/master/05-tidyverse/05-tidyverse.html). [Notebook](https://raw.githack.com/uo-ec607/lectures/master/05-tidyverse/html_document/05-tidyverse.html).\]
 6. Webscraping: (1) Server-side and CSS \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/06-web-css/06-web-css.html).\]
-7. Webscraping: (2) Client-side and APIs
+7. Webscraping: (2) Client-side and APIs \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/07-web-apis/07-web-apis.html).\]
 8. Regression analysis in R
 9. Spatial analysis in R
 10. Functions in R: (1) Introductory concepts
