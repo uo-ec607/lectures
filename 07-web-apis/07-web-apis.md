@@ -44,12 +44,22 @@ install.packages(c("jsonlite", "listviewer", "fredr"))
 We might as well load the tidyverse now, since we'll be using that a fair bit anyway. It's not necessary, but 'll also set my preferred ggplot2 theme for the rest of this document.
 
 
-```r
-library(tidyverse)
-theme_set(hrbrthemes::theme_ipsum())
+```
+## ── Attaching packages ───────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──
 ```
 
+```
+## ✔ ggplot2 3.1.0     ✔ purrr   0.2.5
+## ✔ tibble  2.0.1     ✔ dplyr   0.7.8
+## ✔ tidyr   0.8.2     ✔ stringr 1.3.1
+## ✔ readr   1.3.1     ✔ forcats 0.3.0
+```
 
+```
+## ── Conflicts ──────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()
+```
 
 ## Recap from last time
 
@@ -300,7 +310,7 @@ fred %>%
   scale_y_continuous(labels = scales::comma) +
   labs(
     x="Date", y="2012 USD (Billions)",
-    Title="US Real Gross National Product", caption="Source: FRED"
+    title="US Real Gross National Product", caption="Source: FRED"
     )
 ```
 

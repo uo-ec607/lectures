@@ -44,14 +44,9 @@ install.packages(c("jsonlite", "listviewer", "fredr"))
 
 We might as well load the tidyverse now, since we'll be using that a fair bit anyway. It's not necessary, but 'll also set my preferred ggplot2 theme for the rest of this document.
 
-```{r tverse, message=F}
+```{r tverse, cache=F, echo=F}
 library(tidyverse)
 theme_set(hrbrthemes::theme_ipsum())
-```
-
-```{r, echo=FALSE}
-library(tidyverse)
-ggplot2::theme_set(hrbrthemes::theme_ipsum())
 ```
 
 ## Recap from last time
@@ -254,7 +249,7 @@ fred %>%
   scale_y_continuous(labels = scales::comma) +
   labs(
     x="Date", y="2012 USD (Billions)",
-    Title="US Real Gross National Product", caption="Source: FRED"
+    title="US Real Gross National Product", caption="Source: FRED"
     )
 ```
 
