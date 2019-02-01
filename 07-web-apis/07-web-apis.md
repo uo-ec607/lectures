@@ -30,7 +30,7 @@ Today I'll be using [JSONView](https://jsonview.com/), a browser extension that 
 
 ### R packages 
 
-- **New:** `jsonlite`, `httr`, `listviewer`
+- **New:** `jsonlite`, `httr`, `listviewer`, `fredr`
 - **Already used:** `tidyverse`, `lubridate`, `hrbrthemes`
 
 The [httr package](https://httr.r-lib.org/index.html) already comes bundled with the tidyverse. So you only need to install the following:
@@ -38,7 +38,7 @@ The [httr package](https://httr.r-lib.org/index.html) already comes bundled with
 
 ```r
 ## Not run. (Run this manually yourself if you haven't installed these packages yet.)
-install.packages(c("jsonlite", "listviewer"))
+install.packages(c("jsonlite", "listviewer", "fredr"))
 ```
 
 We might as well load the tidyverse now, since we'll be using that a fair bit anyway. It's not necessary, but 'll also set my preferred ggplot2 theme for the rest of this document.
@@ -59,23 +59,26 @@ Today we focus on the second category: Scraping web data that is rendered **clie
 
 ## Client-side, APIs, and API endpoints
 
-Recall that websites or applications that are built using a client-side framework typically involve something like the following steps:
+Recall that websites or applications that are built using a **client-side** framework typically involve something like the following steps:
 
 - You visit a URL that contains a template of static content (HTML tables, CSS, etc.). This template itself doesn't contain any data.
-
 - However, in the process of opening the URL, your browser sends a *request* to the host server.
-
 - If your request if valid, then the server issues a *response* that fetches the necessary data for you and renders the page dynamically in your browser.
-
 - The page that you actually see in your browser is thus a mix of static content and dynamic information that is rendered by your browser (i.e. the "client").
 
-All of this requesting, responding and rendering takes places through the host application's **API** (or **A**pplication **P**rogram **I**nterface). Time for a student presentation to go  over APIs in more depth...
+All of this requesting, responding and rendering takes places through the host application's **API** (or **A**pplication **P**rogram **I**nterface). Time for a student presentation to go over APIs in more depth...
 
 ### Student presentation: APIs
 
-If you're new to APIs or reading this after the fact, then I recommend this excellent resource from Zapier: [An Introduction to APIs](https://zapier.com/learn/apis/). It's short, but you don't need to work through the whole thing to get the gist. 
+If you're new to APIs or reading this after the fact, then I recommend this excellent resource from Zapier: [An Introduction to APIs](https://zapier.com/learn/apis/). It's fairly in-depth, but you don't need to work through the whole thing to get the gist. The summary version is that an API is really just a collection of rules and methods that allow different software applications to interact and share information. This includes not only website servers and browsers, but also software packages like the R libraries we've been using.^[Fun fact: A number of R packages that we'll be using later in this course (e.g. `leaflet`, `plotly`, etc.) are really just a set of wrapper functions that interact with the underlying APIs and convert your R code into some other language (e.g. JavaScript).] Key concepts include:
 
-The summary version is that an API is really just a collection of rules and methods that allow different software applications to interact and share information. This includes not just websites and browsers, but also software packages like the R libraries we've been using.^[Fun fact: A number of R packages that we'll be using later in this course (e.g. `leaflet`, `plotly`, etc.) are really just a set of wrapper functions that interact with the underlying APIs and convert your R code into some other language (e.g. JavaScript).]
+- **Server:** A powerful computer that runs an API.
+- **Client:** A program that exchanges data with a server through an API.
+- **Protocol:** The "etiquette" underlying how computers talk to each other (e.g. HTTP).
+- **Methods:** The "verbs" that clients use to talk with a server. The main one that we'll be using is `GET` (i.e. ask a server to retrieve information), but other common methods are `POST`, `PUT` and `DELETE`.
+- **Requests:** What the client asks of the server (see Methods above).
+- **Response:** The server's response. This includes a *Status Code* (e.g. "404" if not found, or "200" if successful), a *Header* (i.e. meta-information about the reponse), and a *Body* (i.e the actual content that we're interested in).
+- Etc.
 
 ### A bit more about API endpoints
 
@@ -169,61 +172,148 @@ nyc_trees %>%
 
 Not too bad. This would probably be more fun / impressive with an actual map of New York behind it. We'll save that for the spatial lecture that's coming up later in the course, though.
 
+Again, I want to remind you that our  first application didn't require prior registration on the Open Data NYC website, or creation of an API key. This is atypical. Most API interfaces will only let you access and download data after you have registered an API key with them. This is especially true if you want to access an API linked to a federal agency or institution (Census, BEA, etc.). So let's work through an application where an API key is required...
+
 ## Application 2: FRED data
 
-Our first application didn't require prior registration on the Open Data NYC website, or creation of an API key. This is atypical. Most API interfaces will only let you access and download data after you have registered an API key. (Particularly any API linked to a federal agency or institution.)
+Our second application with involve downloading data from the [**FRED API**](https://research.stlouisfed.org/docs/api/fred/). You will need to [register an API key](https://research.stlouisfed.org/useraccount/apikey) if you would like to follow along with my steps, so please do so first before continuing. 
+
+As every economist probably recognizes, [FRED](https://fred.stlouisfed.org/) is a database maintained by the Federal Reserve Bank of St Louis. You know, the one that let's you plot cool interactive charts [like this](https://fred.stlouisfed.org/series/GNPCA#0) of US GNP since 1929.
+
+<iframe src="https://fred.stlouisfed.org/graph/graph-landing.php?g=mPCo&width=670&height=475" scrolling="no" frameborder="0"style="overflow:hidden; width:670px; height:525px;" allowTransparency="true"></iframe>
+
+For this application, I'm going to show you how to download the data underlying the above chart using the FRED API. In fact, I'll go one better. First I'll show you how to download it yourself. Then I'll direct you to a package that does all the API work for you.
 
 ### Do it yourself
+
+As always with APIs, a good place to start is the [developer docs](https://research.stlouisfed.org/docs/api/fred/). If you read through these, you'd see that the endpoint root that we're interested in is [**series/observations**](https://research.stlouisfed.org/docs/api/fred/series_observations.html), which "gets the observations or data values for an economic data series". The endpoint documentation gives a more in-depth discussion, including the various parameters that it accepts.^[Think of API *parameters* the same way that you think about function *arguments*. They are valid inputs (instructions) that modify the response to an API request.] The parameters that we'll be focused on here are:
+
+- **file_type:** "json" (Not required, but our preferred type of output.)
+- **series_id:** "GNPCA" (Required. The series data that we want.)
+- **api_key:** "YOUR_API_KEY" (Required. Go and fetch/copy your key now.)
+
+Let's combine these parameters with the endpoint root to view the data directly in our browser. Head over to [https://api.stlouisfed.org/fred/series/observations?series_id=GNPCA&api_key=<mark>YOUR_API_KEY</mark>&file_type=json](https://api.stlouisfed.org/fred/series/observations?series_id=GNPCA&api_key=YOUR_API_KEY&file_type=json), replacing "YOUR_API_KEY" with your actual key. You should see something like the following:
+
+![](pics/fred-redacted.png)
+
+At this point you probably want to read the JSON object directly into our R environment using the `jsonlite::readJSON()` function. And this will work. However, that's not what we're going to here. Rather, we're going to go through the [**httr package**](https://httr.r-lib.org/).
+
+Why? Well, `httr` provides an extra layer of security that allows me to use my API key without accidentally sharing it with you through this R Markdown file. More generally, it comes with a variety of features that allow us to interact more flexibly and securely with web APIs. Let's start by defining some convenience objects where we define the endpoint root, as well as the parameters (which we'll store in a list).
+
+
+
+```r
+endpoint = "series/observations"
+params = list(
+  api_key= "YOUR_FRED_KEY", ## Change to your own key
+  file_type="json", 
+  series_id="GNPCA"
+  )
+```
+
+Now, we'll use the `httr::GET()` function to request (i.e. download) the data. I'll assign this to an object called `fred`.
 
 
 ```r
 library(httr)
 
-endpoint = "series/observations"
-params = list(
-  api_key=fred_key, 
-  file_type="json", 
-  series_id="GNPCA"
-)
+fred <- 
+  httr::GET(
+    url = "https://api.stlouisfed.org/", ## Base URL
+    path = paste0("fred/", endpoint), ## The API endpoint
+    query = params ## Our parameter list
+    )
+```
 
-fred = httr::GET(url = "https://api.stlouisfed.org/", 
-          path = paste0("fred/", endpoint), 
-          query = params)
+Take a second to view the `fred` object in your console. What you'll see is pretty cool; its the actual API response, including the *Status Code* and *Content*. Something like:
 
+```
+## Response [https://api.stlouisfed.org/fred/series/observations?api_key=YOUR_API_KEY&file_type=json&series_id=GNPCA]
+##   Date: 2019-02-01 00:06
+##   Status: 200
+##   Content-Type: application/json; charset=UTF-8
+##   Size: 9.09 kB
+```
+
+To extract the content (i.e. data) from of this response, I'll use the `httr::content()` function. Moreover, we know that this content is a JSON array, so we can convert it to an R object using `jsonlite::fromJSON()` as we did above. However, we don't yet know what format it will be in. SPOILER: It's going to be a list. I could use the base `str()` function to delve into the structure of this list. However, I want to introduce you to the `listviewer::jsonedit()` function, which allows for interactive inspection of list objects.^[Nested lists are the law of the land when it comes to JSON data. Don't worry too much about this now, but R ideally suited to handling this type of nested information. We'll see more examples later in the course when we start working with spatial data (e.g. geoJSON) and you'll even find that the nested structure can prove very powerful once you start doing more advanced programming and analysis in R.]
+
+
+```r
 fred %>% 
   httr::content("text") %>%
-  fromJSON() %>%
+  jsonlite::fromJSON() %>%
   listviewer::jsonedit()
+```
 
+<!--html_preserve--><div id="htmlwidget-1e64bec83b3e59ca9423" style="width:100%;height:10%;" class="jsonedit html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1e64bec83b3e59ca9423">{"x":{"data":{"realtime_start":"2019-01-31","realtime_end":"2019-01-31","observation_start":"1600-01-01","observation_end":"9999-12-31","units":"lin","output_type":1,"file_type":"json","order_by":"observation_date","sort_order":"asc","count":89,"offset":0,"limit":100000,"observations":{"realtime_start":["2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31"],"realtime_end":["2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31","2019-01-31"],"date":["1929-01-01","1930-01-01","1931-01-01","1932-01-01","1933-01-01","1934-01-01","1935-01-01","1936-01-01","1937-01-01","1938-01-01","1939-01-01","1940-01-01","1941-01-01","1942-01-01","1943-01-01","1944-01-01","1945-01-01","1946-01-01","1947-01-01","1948-01-01","1949-01-01","1950-01-01","1951-01-01","1952-01-01","1953-01-01","1954-01-01","1955-01-01","1956-01-01","1957-01-01","1958-01-01","1959-01-01","1960-01-01","1961-01-01","1962-01-01","1963-01-01","1964-01-01","1965-01-01","1966-01-01","1967-01-01","1968-01-01","1969-01-01","1970-01-01","1971-01-01","1972-01-01","1973-01-01","1974-01-01","1975-01-01","1976-01-01","1977-01-01","1978-01-01","1979-01-01","1980-01-01","1981-01-01","1982-01-01","1983-01-01","1984-01-01","1985-01-01","1986-01-01","1987-01-01","1988-01-01","1989-01-01","1990-01-01","1991-01-01","1992-01-01","1993-01-01","1994-01-01","1995-01-01","1996-01-01","1997-01-01","1998-01-01","1999-01-01","2000-01-01","2001-01-01","2002-01-01","2003-01-01","2004-01-01","2005-01-01","2006-01-01","2007-01-01","2008-01-01","2009-01-01","2010-01-01","2011-01-01","2012-01-01","2013-01-01","2014-01-01","2015-01-01","2016-01-01","2017-01-01"],"value":["1120.076","1025.091","958.378","834.291","823.156","911.019","992.537","1118.944","1177.572","1138.989","1230.22","1337.075","1574.74","1870.911","2187.818","2361.622","2337.63","2068.966","2048.293","2134.291","2121.201","2305.668","2493.148","2594.934","2715.067","2700.542","2893.97","2957.097","3020.083","2994.683","3201.683","3285.454","3371.35","3579.446","3736.061","3951.902","4208.08","4481.593","4604.613","4831.761","4980.667","4989.534","5156.41","5428.368","5746.389","5723.068","5697.677","6011.215","6293.525","6637.838","6868.092","6849.819","7011.223","6889.371","7199.441","7711.063","8007.532","8266.358","8549.125","8912.281","9239.186","9425.052","9406.669","9734.705","10000.831","10389.663","10672.832","11076.879","11556.745","12064.59","12647.632","13179.965","13327.458","13553.208","13953.961","14503.006","15006.043","15398.622","15748.3","15771.553","15359.37","15803.886","16081.66","16429.308","16722.335","17135.107","17608.271","17867.773","18284.031"]}},"options":{"mode":"tree","modes":["code","form","text","tree","view"]}},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
+
+Luckily, this particular list object isn't too complicated. We can see that we're really interested in the `fred$observations` sub-element. I'll re-run most of the above code and then extract this element. I could do this in several ways, but will use the `purrr::pluck()` function here.
+
+
+```r
 fred <-
   fred %>% 
   httr::content("text") %>%
   jsonlite::fromJSON() %>%
   # .$observations %>% ## Also works
   # magrittr::extract("observations") %>% ## This too
-  pluck("observations") %>%
-  as_tibble()
+  purrr::pluck("observations") %>%
+  as_tibble() ## Just for nice formatting
+fred
+```
 
-library(lubridate)
+```
+## # A tibble: 89 x 4
+##    realtime_start realtime_end date       value   
+##    <chr>          <chr>        <chr>      <chr>   
+##  1 2019-01-31     2019-01-31   1929-01-01 1120.076
+##  2 2019-01-31     2019-01-31   1930-01-01 1025.091
+##  3 2019-01-31     2019-01-31   1931-01-01 958.378 
+##  4 2019-01-31     2019-01-31   1932-01-01 834.291 
+##  5 2019-01-31     2019-01-31   1933-01-01 823.156 
+##  6 2019-01-31     2019-01-31   1934-01-01 911.019 
+##  7 2019-01-31     2019-01-31   1935-01-01 992.537 
+##  8 2019-01-31     2019-01-31   1936-01-01 1118.944
+##  9 2019-01-31     2019-01-31   1937-01-01 1177.572
+## 10 2019-01-31     2019-01-31   1938-01-01 1138.989
+## # … with 79 more rows
+```
+
+Okay! We've finally got our data and are nearly ready for some plotting. However, recall that `fromJSON()` automatically converts everything to characters so I'll quickly change some variables to numeric and dates (using `lubridate::ymd()`).
+
+
+```r
 fred <-
   fred %>%
   mutate_at(vars(realtime_start:date), ymd) %>%
   mutate(value = as.numeric(value)) 
+```
 
+Let's plot this sucker.
+
+
+```r
 fred %>%
   ggplot(aes(date, value)) +
   geom_line() +
-  hrbrthemes::theme_ipsum()
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    x="Date", y="2012 USD (Billions)",
+    Title="US Real Gross National Product", caption="Source: FRED"
+    )
 ```
+
+![](07-web-apis_files/figure-html/fred6-1.png)<!-- -->
 
 
 ### Use a package
 
-One of the great features about the R (and data science community in general) is that someone has probably written a package that does all the heavy API lifting for you. We'll come across many examples during the remainder of this course, but for the moment I want you to check out the [fredr package](http://sboysel.github.io/fredr/index.html). How would you access the same GDP data as above using this package?
+One of the great features about the R (and data science community in general) is that someone has probably written a package that does all the heavy API lifting for you. We'll come across many examples during the remainder of this course, but for the moment I want you to check out the [fredr package](http://sboysel.github.io/fredr/index.html). How would you access the same GDP data as above using this package? (Hint: See [here](https://cran.r-project.org/web/packages/fredr/vignettes/fredr.html).)
 
 ## Application 3: World rugby rankings
 
-Our final application will involve a more challenging case where the API endpoint is *hidden from view*. In particular, we want to access and then plot data on [**World Rugby rankings**](https://www.world.rugby/rankings/mru). Because what's more important than teaching Americans about rugby?
+Our final application will involve a more challenging case where the API endpoint is *hidden from view*. In particular, I'm going to show you how to access data on [**World Rugby rankings**](https://www.world.rugby/rankings/mru). Because --- real talk --- what's more important than teaching Americans about rugby?
 
 *<b>Disclaimer:</b> World Rugby's [Terms & Conditions](https://www.world.rugby/terms-and-conditions) permits data downloading for own non-commerical use. It seems reasonable to me that these lecture notes fall under this use category.^[If you're reading this from World Rugby and disagree, please [contact me](mailto:grantmcd@uoregon.edu). In my defence, I am still awaiting a reply to my initial email confirming my interpretation of your T&Cs...] None of the methods presented below should be construed as an endorsement of data aquisition and use that violates these terms. Again: Just because you can scrape something, doesn't mean you should.*
 
