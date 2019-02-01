@@ -435,6 +435,17 @@ rankings_history %>%
   theme(legend.title = element_blank())
 ```
 
+
+## Summary
+
+- An API is a set of rules and methods that allow one computer or program (e.g. host server) to talk to another (e.g. client or browser).
+- We can access information through an API directly by specifying a valid API endpoint.
+  - The API endpoint for most web-based applications will be a URL with content that is formatted as either JSON or XML.
+- Some APIs don't require an access key or token, but most do. You can add this key as a parameter to the API endpoint.
+- Downloading content from an API endpoint to our local computer (i.e. R environment) can be done in a variety of ways.
+   - E.g. `jsonlite::readJSON()` to read the the JSON array directly, or `httr::GET()` to download the entire response, or installing a package that does the job for us.
+
+
 ## Further resources and exercises
 
 - [Tyler Clavelle](https://twitter.com/tclavl) has written several cool [blog posts](https://tclavelle.github.io/blog/) on interacting with APIs through R. I especially recommend going over --- and replicating --- his excellent [tutorial on the GitHub API](https://tclavelle.github.io/blog/r_and_apis/). 
