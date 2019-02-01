@@ -42,7 +42,7 @@ The [httr package](https://httr.r-lib.org/index.html) already comes bundled with
 install.packages(c("jsonlite", "listviewer", "fredr"))
 ```
 
-We might as well load the tidyverse now, since we'll be using that a fair bit anyway. It's not necessary, but 'll also set my preferred ggplot2 theme for the rest of this document.
+We might as well load the tidyverse now, since we'll be using it a fair bit today. It's not necessary, but I'll also set my preferred ggplot2 theme for the rest of this document.
 
 ```{r tverse, cache=F, message=F}
 library(tidyverse)
