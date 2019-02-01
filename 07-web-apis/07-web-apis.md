@@ -173,17 +173,19 @@ Again, I want to remind you that our  first application didn't require prior reg
 
 ## Application 2: FRED data
 
-Our second application with involve downloading data from the [**FRED API**](https://research.stlouisfed.org/docs/api/fred/). You will need to [register an API key](https://research.stlouisfed.org/useraccount/apikey) if you want to follow along with my steps, so please do so first before continuing. 
+Our second application will involve downloading data from the [**FRED API**](https://research.stlouisfed.org/docs/api/fred/). You will need to [register an API key](https://research.stlouisfed.org/useraccount/apikey) if you want to follow along with my steps, so please do so first before continuing. 
 
-As every economist probably recognizes, [FRED](https://fred.stlouisfed.org/) is a database maintained by the Federal Reserve Bank of St Louis. You know, the one that let's you plot cool interactive charts [like this](https://fred.stlouisfed.org/series/GNPCA#0) of US GNP since 1929.
+As nearly every economist could tell you, [FRED](https://fred.stlouisfed.org/) is a database maintained by the Federal Reserve Bank of St Louis. You know, the one that let's you plot cool interactive charts [like this one](https://fred.stlouisfed.org/series/GNPCA#0) of US GNP since 1929.
 
 <iframe src="https://fred.stlouisfed.org/graph/graph-landing.php?g=mPCo&width=670&height=475" scrolling="no" frameborder="0"style="overflow:hidden; width:670px; height:525px;" allowTransparency="true"></iframe>
 
-For this application, I'm going to show you how to download the data underlying the above chart using the FRED API. In fact, I'll go one better. First I'll show you how to download it yourself. Then I'll direct you to a package that does all the API work for you.
+</br>
+
+For this second example application, I'm going to show you how to download the data underlying the above chart using the FRED API. In fact, I'll go one better. First I'll show you how to download it yourself, so that you get an understanding of what's happening underneath the hood. Then I'll direct you to a package that does all of the API work for you.
 
 ### Do it yourself
 
-As always with APIs, a good place to start is the [developer docs](https://research.stlouisfed.org/docs/api/fred/). If you read through these, you'd see that the endpoint path that we're interested in is [**series/observations**](https://research.stlouisfed.org/docs/api/fred/series_observations.html), which "gets the observations or data values for an economic data series". The endpoint documentation gives a more in-depth discussion, including the various parameters that it accepts.^[Think of API *parameters* the same way that you think about function *arguments*. They are valid inputs (instructions) that modify the response to an API request.] The parameters that we'll be focused on here are:
+As with all APIs, a good place to start is the [FRED API developer docs](https://research.stlouisfed.org/docs/api/fred/). If you read through these, you'd see that the endpoint path we're interested in is [**series/observations**](https://research.stlouisfed.org/docs/api/fred/series_observations.html). This endpoint "gets the observations or data values for an economic data series". The endpoint documentation gives a more in-depth discussion, including the various parameters that it accepts.^[Think of API *parameters* the same way that you think about function *arguments*. They are valid inputs (instructions) that modify the response to an API request.] However, the parameters that we'll be focused on here are simply:
 
 - **file_type:** "json" (Not required, but our preferred type of output.)
 - **series_id:** "GNPCA" (Required. The series data that we want.)
@@ -193,9 +195,9 @@ Let's combine these parameters with the endpoint path to view the data directly 
 
 ![](pics/fred-redacted.png)
 
-At this point you probably want to read the JSON object directly into our R environment using the `jsonlite::readJSON()` function. And this will work. However, that's not what we're going to here. Rather, we're going to go through the [**httr package**](https://httr.r-lib.org/). Why? Well, basically because `httr` comes with a variety of features that allow us to interact more flexibly and securely with web APIs. 
+At this point you're probably tempted to read the JSON object directly into your R environment using the `jsonlite::readJSON()` function. And this will work. However, that's not what we're going to here. Rather, we're going to go through the [**httr package**](https://httr.r-lib.org/). Why? Well, basically because `httr` comes with a variety of features that allow us to interact more flexibly and securely with web APIs. 
 
-Let's start by defining some convenience objects such as the endpoint path and the parameters (which we'll store in a list).
+Let's start by defining some convenience variables such as the endpoint path and the parameters (which we'll store in a list).
 
 
 
@@ -208,16 +210,16 @@ params = list(
   )
 ```
 
-**Protip:** If you want to safely use sensitive information like API keys or passwords --- even when sharing content (like these lecture notes) with others --- then save it as an R environment variable. You can read more [here](https://github.com/STAT545-UBC/Discussion/issues/81) and [here](https://happygitwithr.com/github-pat.html#a-note-about-security), but something like the below should work. Run this in your console, *never* in an R Markdown file or other shared document.
+> **Protip:** If you want to safely use sensitive information like API keys or passwords --- even when sharing content (like these lecture notes) with others --- then save it as an R environment variable. You can read more [here](https://github.com/STAT545-UBC/Discussion/issues/81) and [here](https://happygitwithr.com/github-pat.html#a-note-about-security), but something like the below should work. Run this in your console, *never* in an R Markdown file or other shared document.
 
+  
+  ```r
+  Sys.setenv(MY_API_KEY="abcdefghijklmnopqrstuvwxyz0123456789") ## Add your key as an environment variable. (Current session only.)
+  # usethis::edit_r_environ() ## Open your .Renviron file and add the key. (Persists over sessions.)
+  readRenviron("~/.Renviron") ## Refresh your .Renviron file
+  ```
 
-```r
-Sys.setenv(MY_API_KEY="abcdefghijklmnopqrstuvwxyz0123456789") ## Add your key as an environment variable. (Current session only.)
-# usethis::edit_r_environ() ## Open your .Renviron file and add the key. (Persists over sessions.)
-readRenviron("~/.Renviron") ## Refresh your .Renviron file
-```
-
-Once that's done, you can safely assign your key to an object (including within a R Markdown file that you're going to share) using, say, `my_api_key <- Sys.getenv("MY_API_KEY")`. 
+> Once that's done, you can safely assign your key to an object (including within a R Markdown file that you're going to share) using, say, `api_key <- Sys.getenv("MY_API_KEY")`. 
 
 Okay, back to our FRED example. We'll use the `httr::GET()` function to request (i.e. download) the data. I'll assign this to an object called `fred`.
 
@@ -233,7 +235,7 @@ fred <-
     )
 ```
 
-Take a second to view the `fred` object in your console. What you'll see is pretty cool; i.e. the actual API response, including the *Status Code* and *Content*. Something like:
+Take a second to print the `fred` object in your console. What you'll see is pretty cool; i.e. it's the actual API response, including the *Status Code* and *Content*. Something like:
 
 ```
 ## Response [https://api.stlouisfed.org/fred/series/observations?api_key=YOUR_API_KEY&file_type=json&series_id=GNPCA]
@@ -243,18 +245,18 @@ Take a second to view the `fred` object in your console. What you'll see is pret
 ##   Size: 9.09 kB
 ```
 
-To extract the content (i.e. data) from of this response, I'll use the `httr::content()` function. Moreover, we know that this content is a JSON array, so we can convert it to an R object using `jsonlite::fromJSON()` as we did above. However, we don't yet know what format it will be in. SPOILER: It's going to be a list. I could use the base `str()` function to delve into the structure of this list. However, I want to introduce you to the `listviewer::jsonedit()` function, which allows for interactive inspection of list objects.^[Nested lists are the law of the land when it comes to JSON data. Don't worry too much about this now, but R ideally suited to handling this type of nested information. We'll see more examples later in the course when we start working with spatial data (e.g. geoJSON) and you'll even find that the nested structure can prove very powerful once you start doing more advanced programming and analysis in R.]
+To extract the content (i.e. data) from of this response, I'll use the `httr::content()` function. Moreover, we know that this content is a JSON array, so we can convert it to an R object using `jsonlite::fromJSON()` as we did above. However, we don't yet know what format it will be in. Okay --- SPOILER --- it's going to be a list. I could use the base `str()` function to delve into the structure of this list. However, I want to introduce you to the `listviewer::jsonedit()` function, which allows for interactive inspection of list objects.^[Complex nested lists are the law of the land when it comes to JSON data. Don't worry too much about this now, but the good news is that R ideally suited to parse and handle these nested lists. We'll see more examples later in the course when we start working with programming and spatial data (e.g. geoJSON).]
 
 
 ```r
 fred %>% 
   httr::content("text") %>%
   jsonlite::fromJSON() %>%
-  listviewer::jsonedit()
+  listviewer::jsonedit(mode = "view")
 ```
 
 <!--html_preserve--><div id="htmlwidget-1e64bec83b3e59ca9423" style="width:100%;height:10%;" class="jsonedit html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1e64bec83b3e59ca9423">{"x":{"data":{"error_code":400,"error_message":"Bad Request.  The value for variable api_key is not a 32 character alpha-numeric lower-case string.  Read https://research.stlouisfed.org/docs/api/api_key.html for more information."},"options":{"mode":"tree","modes":["code","form","text","tree","view"]}},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
+<script type="application/json" data-for="htmlwidget-1e64bec83b3e59ca9423">{"x":{"data":{"realtime_start":"2019-02-01","realtime_end":"2019-02-01","observation_start":"1600-01-01","observation_end":"9999-12-31","units":"lin","output_type":1,"file_type":"json","order_by":"observation_date","sort_order":"asc","count":89,"offset":0,"limit":100000,"observations":{"realtime_start":["2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01"],"realtime_end":["2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01","2019-02-01"],"date":["1929-01-01","1930-01-01","1931-01-01","1932-01-01","1933-01-01","1934-01-01","1935-01-01","1936-01-01","1937-01-01","1938-01-01","1939-01-01","1940-01-01","1941-01-01","1942-01-01","1943-01-01","1944-01-01","1945-01-01","1946-01-01","1947-01-01","1948-01-01","1949-01-01","1950-01-01","1951-01-01","1952-01-01","1953-01-01","1954-01-01","1955-01-01","1956-01-01","1957-01-01","1958-01-01","1959-01-01","1960-01-01","1961-01-01","1962-01-01","1963-01-01","1964-01-01","1965-01-01","1966-01-01","1967-01-01","1968-01-01","1969-01-01","1970-01-01","1971-01-01","1972-01-01","1973-01-01","1974-01-01","1975-01-01","1976-01-01","1977-01-01","1978-01-01","1979-01-01","1980-01-01","1981-01-01","1982-01-01","1983-01-01","1984-01-01","1985-01-01","1986-01-01","1987-01-01","1988-01-01","1989-01-01","1990-01-01","1991-01-01","1992-01-01","1993-01-01","1994-01-01","1995-01-01","1996-01-01","1997-01-01","1998-01-01","1999-01-01","2000-01-01","2001-01-01","2002-01-01","2003-01-01","2004-01-01","2005-01-01","2006-01-01","2007-01-01","2008-01-01","2009-01-01","2010-01-01","2011-01-01","2012-01-01","2013-01-01","2014-01-01","2015-01-01","2016-01-01","2017-01-01"],"value":["1120.076","1025.091","958.378","834.291","823.156","911.019","992.537","1118.944","1177.572","1138.989","1230.22","1337.075","1574.74","1870.911","2187.818","2361.622","2337.63","2068.966","2048.293","2134.291","2121.201","2305.668","2493.148","2594.934","2715.067","2700.542","2893.97","2957.097","3020.083","2994.683","3201.683","3285.454","3371.35","3579.446","3736.061","3951.902","4208.08","4481.593","4604.613","4831.761","4980.667","4989.534","5156.41","5428.368","5746.389","5723.068","5697.677","6011.215","6293.525","6637.838","6868.092","6849.819","7011.223","6889.371","7199.441","7711.063","8007.532","8266.358","8549.125","8912.281","9239.186","9425.052","9406.669","9734.705","10000.831","10389.663","10672.832","11076.879","11556.745","12064.59","12647.632","13179.965","13327.458","13553.208","13953.961","14503.006","15006.043","15398.622","15748.3","15771.553","15359.37","15803.886","16081.66","16429.308","16722.335","17135.107","17608.271","17867.773","18284.031"]}},"options":{"mode":"view","modes":["code","form","text","tree","view"]}},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
 
 Luckily, this particular list object isn't too complicated. We can see that we're really interested in the `fred$observations` sub-element. I'll re-run most of the above code and then extract this element. I could do this in several ways, but will use the `purrr::pluck()` function here.
 
@@ -264,21 +266,36 @@ fred <-
   fred %>% 
   httr::content("text") %>%
   jsonlite::fromJSON() %>%
-  # .$observations %>% ## Also works
-  # magrittr::extract("observations") %>% ## This too
-  purrr::pluck("observations") %>%
+  purrr::pluck("observations") %>% ## Extract the "$observations" list element
+  # .$observations %>% ## I could also have used this
+  # magrittr::extract("observations") %>% ## Or this
   as_tibble() ## Just for nice formatting
 fred
 ```
 
 ```
-## # A tibble: 0 x 0
+## # A tibble: 89 x 4
+##    realtime_start realtime_end date       value   
+##    <chr>          <chr>        <chr>      <chr>   
+##  1 2019-02-01     2019-02-01   1929-01-01 1120.076
+##  2 2019-02-01     2019-02-01   1930-01-01 1025.091
+##  3 2019-02-01     2019-02-01   1931-01-01 958.378 
+##  4 2019-02-01     2019-02-01   1932-01-01 834.291 
+##  5 2019-02-01     2019-02-01   1933-01-01 823.156 
+##  6 2019-02-01     2019-02-01   1934-01-01 911.019 
+##  7 2019-02-01     2019-02-01   1935-01-01 992.537 
+##  8 2019-02-01     2019-02-01   1936-01-01 1118.944
+##  9 2019-02-01     2019-02-01   1937-01-01 1177.572
+## 10 2019-02-01     2019-02-01   1938-01-01 1138.989
+## # … with 79 more rows
 ```
 
-Okay! We've finally got our data and are nearly ready for some plotting. However, recall that `fromJSON()` automatically converts everything to characters so I'll quickly change some variables to numeric and dates (using `lubridate::ymd()`).
+Okay! We've finally got our data and are nearly ready for some plotting. However, recall that `fromJSON()` automatically converts everything to characters so I'll quickly change some variables to dates (using `lubridate::ymd()`) and numeric.
 
 
 ```r
+library(lubridate)
+
 fred <-
   fred %>%
   mutate_at(vars(realtime_start:date), ymd) %>%
@@ -340,7 +357,7 @@ Fortunately, there's a better way: Access the full database of rankings through 
 - In this case, we can see what looks to be the first row of the rankings table ("New Zealand", etc.) 
 - To make sure, you can grab that [https://cmsapi.pulselive.com/rugby/rankings/mru?language=en&client=pulse](URL), and paste it into our browser (using the [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc?hl=en) plugin) from before.
 
-Awesome. Looks like we've located our API endpoint. As promised, here's GIF of me executing these steps in my browser:
+Sweet. Looks like we've located our API endpoint. As promised, here's GIF of me walking through these steps in my browser:
 
 ![](pics/inspect-rugby.gif)
 
@@ -376,7 +393,7 @@ str(rugby)
 ##   ..$ label    : chr "2019-01-07"
 ```
 
-We have a nested list, where what looks to be the main element of interest, `$entries`, is itself a list.^[I know that R says `rugby$entries` is a data.frame, but we can tell from the `str()` call that it follows a list structure. In particular, the `rugby$entries$team` sub-element is a itself data frame. Remember: R is very flexible and allows data frames within certain data frames (and lists).] Let's extract the `$entries` element and have a look at its structure. We could use the `str()` base function again, but the interactivity of `listviewer::jsonedit()` is hard to beat for complicated list structures. 
+We have a nested list, where what looks to be the main element of interest, `$entries`, is itself a list.^[I know that R says `rugby$entries` is a data.frame, but we can tell from the `str()` call that it follows a list structure. In particular, the `rugby$entries$team` sub-element is a itself data frame. Remember: R is very flexible and allows data frames within certain data frames (and lists).] Let's extract the `$entries` element and have a look at its structure. We could use the `str()` base function, but again the interactivity of `listviewer::jsonedit()` is hard to beat for complicated list structures. 
 
 
 ```r
@@ -404,7 +421,7 @@ head(rugby$entries$team)
 ## 6 38    NA    Australia          AUS          NA
 ```
 
-Okay, clearer picture is starting to emerge. It looks like we can just bind the columns of the `rugby$entries$team` data frame directly to the other elements of the parent `$team` "data frame" (actually: "list"). Let's do that using `dplyr::bind_cols()` and then clean things up a bit. I'm going to call the resulting data frame `rankings`.
+Okay, a clearer picture is starting to emerge. It looks like we can just bind the columns of the `rugby$entries$team` data frame directly to the other elements of the parent `$team` "data frame" (actually: "list"). Let's do that using `dplyr::bind_cols()` and then clean things up a bit. I'm going to call the resulting data frame `rankings`.
 
 
 ```r
@@ -441,31 +458,16 @@ rankings
 
 ### BONUS: Get and plot the rankings history
 
-The above looks great, except for the fact that its just a single snapshot of the most recent rankings. We are probably more interested in looking back at changes in the ratings over time. For example, back to an era when South Africa wasn't so [*kak*](https://www.urbandictionary.com/define.php?term=kak).
+The above looks great, except for the fact that it's just a single snapshot of the most recent rankings. We are probably more interested in looking back at changes in the ratings over time. For example, back to an era when South Africa wasn't so [*kak*](https://www.urbandictionary.com/define.php?term=kak)...
 
-How do we do this? Well, in the spirit of art-vs-science, let's open up the Inspect window of the rankings page again and start exploring. What happens if we click on the calendar element, say, change the year to "2018" and month to "April"?
+How do we do this? Well, in the spirit of art-vs-science, let's open up the Inspect window of the rankings page again and start exploring. What happens if we click on the calendar element, say, change the year to "2018" and month to "April"? (Do this yourself.)
 
-This looks promising! Essentially, the same API endpoint that we saw previously, but now appended with a date, https://cmsapi.pulselive.com/rugby/rankings/mru?date=2018-05-01&client=pulse. If you were to continue along in this manner --- clicking on the website calendar and looking for XHR traffic --- you would soon realise that these date suffixes follow a predictable pattern: They are spaced out a week apart and always fall on a Monday. In other words, the World Rugby updates its rankings table weekly and publishes the results on Mondays.
+This looks promising! Essentially, we get the same API endpoint that we saw previously, but now appended with a date, https://cmsapi.pulselive.com/rugby/rankings/mru?date=2018-05-01&client=pulse. If you were to continue along in this manner --- clicking on the website calendar and looking for XHR traffic --- you would soon realise that these date suffixes follow a predictable pattern: They are spaced out a week apart and always fall on a Monday. In other words, World Rugby updates its internatinoal rankings table weekly and publishes the results on Mondays.
 
 We now have enough information to write a function that will loop over a set of dates and pull data from the relevant API endpoint. **NB:** I know we haven't gotten to the programming section of the course, so don't worry about the specifics of the next few code chunks. I'll try to comment my code quite explicitly, but I mostly want you to focus on the big picture.
 
 To start, we need a vector of valid dates to loop over. I'm going to use various functions from the `lubridate` package to help with this. Note that I'm only to extract a few data points --- one observation a year for the last decade or so --- since I just want to demonstrate the principle. No need to hammer the host server. (More on that below.)
 
-
-```r
-library(lubridate)
-```
-
-```
-## 
-## Attaching package: 'lubridate'
-```
-
-```
-## The following object is masked from 'package:base':
-## 
-##     date
-```
 
 ```r
 ## We'll look at rankings around Jan 1st each year. I'll use 2004 as an
@@ -491,7 +493,7 @@ Next, I'll write out a function that I'll call `rugby_scrape`. This function wil
 ```r
 ## First remove our existing variables. This is not really necessary, since R is smart enough
 ## to distinguish named objects in functions from named objects in our global environment.
-## But I want to emphasise the we're creating new data here and avoid any confusion.
+## But I want to emphasise that we're creating new data here and avoid any confusion.
 rm(rugby, rankings, endpoint)
 
 ## Now, create the function. I'll call it "rugby_scrape".
@@ -573,15 +575,17 @@ rankings_history %>%
 
 ![](07-web-apis_files/figure-html/rugby7-1.png)<!-- -->
 
+It was a good time to be a South African rugby supporter around 2007--2009. These days? Not so much. OTOH, New Zealand's extended dominance in the global game is extraordinary. (Especially given its tiny population size.) They truly do have a legimate claim to being the [greatest international team](https://www.dailytelegraph.com.au/sport/rugby/are-the-all-blacks-the-greatest-international-team-in-the-history-of-sport/news-story/f61ad2d65623a9586929bbfba386b157) in the history of professional sport. Which is a good reason to link to the [best ever haka](https://www.youtube.com/watch?v=BFNCpzGnTTs).
 
 ## Summary
 
 - An API is a set of rules and methods that allow one computer or program (e.g. host server) to talk to another (e.g. client or browser).
 - We can access information through an API directly by specifying a valid API endpoint.
-  - The API endpoint for most web-based applications will be a URL with content that is formatted as either JSON or XML.
+  - The API endpoint for most web-based applications will be a URL with either JSON or XML content.
 - Some APIs don't require an access key or token, but most do. You can add this key as a parameter to the API endpoint.
 - Downloading content from an API endpoint to our local computer (i.e. R environment) can be done in a variety of ways.
    - E.g. `jsonlite::readJSON()` to read the the JSON array directly, or `httr::GET()` to download the entire response, or installing a package that does the job for us.
+- Next lecture: Regression analysis in R. (The start of the analysis and programming section of the course.)
 
 
 ## Further resources and exercises
