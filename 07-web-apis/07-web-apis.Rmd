@@ -184,7 +184,17 @@ params = list(
   )
 ```
 
-Now, we'll use the `httr::GET()` function to request (i.e. download) the data. I'll assign this to an object called `fred`.
+**Protip:** If you want to safely use sensitive information like API keys or passwords --- even when sharing content (like these lecture notes) with others --- then save it as an R environment variable. You can read more [here](https://github.com/STAT545-UBC/Discussion/issues/81) and [here](https://happygitwithr.com/github-pat.html#a-note-about-security), but something like the below should work. Run this in your console, *never* in an R Markdown file or other shared document.
+
+```{r protip, eval = F}
+Sys.setenv(MY_API_KEY="abcdefghijklmnopqrstuvwxyz0123456789") ## Add your key as an environment variable. (Current session only.)
+# usethis::edit_r_environ() ## Open your .Renviron file and add the key. (Persists over sessions.)
+readRenviron("~/.Renviron") ## Refresh your .Renviron file
+```
+
+Once that's done, you can safely assign your key to an object (including within a R Markdown file that you're going to share) using, say, `my_api_key <- Sys.getenv("MY_API_KEY")`. 
+
+Okay, back to our FRED example. We'll use the `httr::GET()` function to request (i.e. download) the data. I'll assign this to an object called `fred`.
 
 ```{r fred2, cache=F}
 library(httr)
