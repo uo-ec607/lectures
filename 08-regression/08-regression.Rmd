@@ -1,0 +1,304 @@
+---
+title: "Lecture 8: Regression analysis"
+author:
+  name: Grant R. McDermott | University of Oregon
+  # affiliation: EC 607
+  # email: grantmcd@uoregon.edu
+date: EC 607  #"`r format(Sys.time(), '%d %B %Y')`"
+output: 
+  html_document:
+    theme: flatly
+    highlight: haddock 
+    # code_folding: show
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
+```
+
+## Software requirements
+
+### R packages 
+
+"Base" R already provides all of the tools we need for basic regression analysis. However, we'll be using several external packages today, because they will make our lives easier and offer increased power for some more sophisticated analyses.
+
+- **New:** `broom`, `estimatr`, `sandwich`, `lfe`, `huxtable`, `margins`
+- **Already used:** `tidyverse`, `hrbrthemes`
+
+The `broom` package was bundled with the rest of tidyverse, so we just need to install the following:
+
+```{r, eval = F}
+## Not run. (Run this manually yourself if you haven't installed these packages yet.)
+install.packages(c("estimatr", "sandwich", "lfe", "huxtable", "margins"))
+```
+
+We might as well load the `tidyverse` and `broom` packages now, since we'll be using it a fair bit today. It's not necessary, but I'll also set my preferred ggplot2 theme for the rest of this document.
+
+```{r tverse, cache=F, message=F}
+library(tidyverse)
+library(broom)
+theme_set(hrbrthemes::theme_ipsum())
+```
+
+## Regression basics: The `lm()` function
+
+To run an OLS regression in R, we use the `lm()` function that gets automatically loaded with the base `stats` package. The "lm" stands for "**l**inear **m**odels" and running a regression follows a pretty intuitive syntax.^[Indeed, all other regression packages in R that I'm aware of --- including those that allow for much more advanced and flexible models --- closely follow the `lm` syntax.] 
+
+```r
+lm(y ~ x1 + x2 + x3 + ....)
+```
+
+Let's run a simple bivariate regression of starwars characters' mass on their height.
+
+```{r ols1}
+ols1 <- lm(mass ~ height, data = starwars)
+# ols1 <- lm(starwars$mass ~ starwars$height) ## Also works
+ols1
+```
+
+The resulting object is pretty terse, but that's only because it buries most of its valuable information --- of which there is a lot --- within its internal list structure. You can use the `str()` function to view this structure.
+
+```{r ols1_str}
+str(ols1)
+```
+
+So we see that this `ols1` object has a bunch of important slots, containing everything from the regression coefficients, to vectors of the residuals and fitted (i.e. predicted) values, to the design matric rank, to the input data, etc. etc. To summarise the key pieces of information, we can use the --- wait for it --- generic `summary` function. This will look pretty similar to the default regression output from Stata that many of you will be used to.
+
+```{r ols1_summ}
+summary(ols1)
+```
+
+We can then dig down further by extracting a summary of the regression coefficients:
+
+```{r ols1_coefs}
+summary(ols1)$coefficients
+```
+
+## Get "tidy" regression coefficients with the `broom` package
+
+While I've just shown you how to extract regression coefficients via the `summary` function, in practice I always use the `broom` package to do so. This package has a bunch of neat features to convert regression (and other statistical) objects into "tidy" data frames. This is especially useful because regression output is so often used as an input to something else, e.g. a plot of coefficients / marginal effects. Here I use the `broom::tidy()` function.
+
+```{r ols1_tidy}
+library(broom)
+
+tidy(ols1, conf.int = T)
+```
+
+Another useful function is `broom::glance()`, which summarises the model "meta" data (R<sup>2</sup>, AIC, etc.) in a data frame.
+
+```{r ols1_glance}
+glance(ols1)
+```
+
+
+## Wrangling and plotting our data
+
+Our simple model isn't particularly good; our R<sup>2</sup> is only `r I(round(glance(ols1)$r.squared, 3))`. Different species and homeworlds aside, we may have an extreme outlier in our midst...
+
+```{r}
+starwars %>%
+  ggplot(aes(x=height, y=mass)) +
+  geom_point(alpha=0.5) +
+  geom_point(
+    data = starwars %>% filter(mass==max(mass, na.rm=T)), 
+    col="red"
+    ) +
+  geom_text(
+    aes(label=name),
+    data = starwars %>% filter(mass==max(mass, na.rm=T)), 
+    col="red", vjust = 0, nudge_y = 25
+    ) +
+  labs(title = "Spot the outlier...")
+```
+
+Maybe we should exclude Jabba from our regression? Remember that we can also keep multiple objects in memory in R, so we can just create a new data frame that excludes him using `dplyr::filter()`.
+
+```{r ols2}
+starwars2 <-
+  starwars %>% 
+  filter(name != "Jabba Desilijic Tiure")
+  # filter(!(grepl("Jabba", name))) ## Regular expressions also work
+
+ols2 <- lm(mass ~ height, data = starwars2)
+summary(ols2)
+```
+
+Running a regression directly on a subsetted data frame is equally easy.
+
+```{r ols2a}
+ols2a <- lm(mass ~ height, data = starwars %>% filter(!(grepl("Jabba", name))))
+summary(ols2a)
+```
+
+The overall model fit is much improved by the exclusion of this outlier, with R<sup>2</sup> increasing to `r I(round(glance(ols2)$r.squared, 3))`.
+
+## Robust and clustered standard errors
+
+What about robust or clustered standard errors? Well, there are *lots* of ways to get these in R. However, my prefered way these days is to use the [`estimatr` package](https://declaredesign.org/r/estimatr/articles/getting-started.html). Let's illustrate with the `ols1` object that we created earlier (which still includes the crazy Jabba outlier). 
+
+```{r ols1_robust}
+library(estimatr)
+
+ols1_robust <- lm_robust(mass ~ height, data = starwars)
+tidy(ols1_robust, conf.int = T)
+```
+
+The `estimatr` package also supports clustered standard errors. I'll return to the issue of (multiway) clustering in the section on panel regression [further below](#high-dimensional_fixed_effects_and_(multiway)_clustering), but here's a quick example just to illustrate:
+
+```{r ols1_robust_clustered}
+ols1_robust_clustered <- lm_robust(mass ~ height, data = starwars, clusters = homeworld)
+tidy(ols1_robust_clustered, conf.int = T)
+```
+
+Finally, you can even be explicit about using Stata robust standard errors if you want to replicate code from that language. See [here](https://declaredesign.org/r/estimatr/articles/stata-wls-hat.html) for more details on why this isn't the default and why Stata's robust standard errors differ from those in R and Python.
+
+```{r ols1_robust_stata}
+ols1_robust_stata <- lm_robust(mass ~ height, data = starwars, se_type = "stata")
+tidy(ols1_robust_stata, conf.int = T)
+```
+
+## Fixed effects (and dummy variables)
+
+Manually excluding outliers is often a risky strategy (overfitting, etc.). Maybe we should use some fixed effects instead? Again, a manual inspection of the plotted data suggests this could be useful... although the lack of observations per individual species doesn't make this a very robust model.
+
+```{r}
+starwars %>%
+  filter(!(grepl("Jabba", name))) %>%
+  ggplot(aes(x=height, y=mass, col=species)) +
+  geom_point(alpha=0.5) +
+  scale_colour_viridis_d()
+```
+
+### Dummy variables as *factors*
+
+The simplest (and least efficient) way to include fixed effects in a regression model is, of course, to use dummy variables. Compared to other statistical lanaguages, however, R has a very convenient framework for evaluating dummy variables in a regression: You simply specify the variable of interest as a [factor](https://r4ds.had.co.nz/factors.html). R will take care of everything else for you.^[No need to tabulate/append a whole new matrix of binary variables.]
+ 
+```{r ols3}
+starwars$species <- as.factor(starwars$species)
+
+ols3 <- lm(mass ~ height + species, data = starwars)
+coefs3 <- tidy(ols3, conf.int = T)
+summary(ols3)
+```
+
+Ignoring the modelling problems that I mentioned above (that insane R<sup>2</sup> is a clear sign we're overfitting because of small within-group samples), this approach works well enough. However, it isn't very efficient or scaleable. What's the point learning all that stuff about the Frisch-Waugh-Lovell theorem, within-group transformations, etcetera, etcetera if we can't use them in our software routines?
+
+## Fixed effects with the `lfe` package
+
+One of my favourite packages in the entire R catalogue is `lfe` ("linear fixed effects"). This package has a boatload of functionality built in to it (instrumental variables, multi-level clustering, etc.) It can also be used to run simple linear regressions *a la* `lm`. The main functionality, however, is for running fixed effects regressions via the `lfe::felm()` function.^[There are other packages for running panel regressions in R, in particular the `plm` package. However, I think that `lfe` supersedes these in virtually all aspects.]
+
+```{r ols4, message=FALSE}
+library(lfe)
+
+ols4 <- felm(mass ~ height | species, data = starwars) ## Fixed effect(s) go after the "|"
+coefs4 <- tidy(ols4, conf.int = T)
+summary(ols4)
+```
+
+Note that the resulting `felm` object drops all of the species intercepts, since it has abstracted them away as fixed effects. Let's confirm that our main coefficient on "height" is the same across this and the previous model. (Note the different indexing. Why is that?)
+
+```{r fes_equal1}
+all.equal(coefs3$estimate[2], coefs4$estimate[1])
+```
+
+We could also have used some `dlpyr` syntax, which is more verbose but easier to read (and less prone to indexing errors).
+
+```{r fes_equal2}
+all.equal(
+  coefs3 %>% filter(term == "height") %>% pull(estimate),
+  coefs4 %>% filter(term == "height") %>% pull(estimate)
+  )
+```
+
+### High-dimensional fixed effects and (multiway) clustering
+
+One reason that I prefer the `lfe` package to other options --- e.g. the panel data-focused `plm` package --- is because it supports high dimensional fixed effects *and* (multiway) clustering.^[It is very similar to the excellent [reghdfe](http://scorreia.com/software/reghdfe/) package in Stata.] In the below example, I'm going to add "homeworld" as an additional fixed effect to the model and also cluster according to this model. I'm not claiming that this is a particularly good or sensible model, but just go with it. (Maybe the scales of different homeworlds are similarly biased??) Note that, since we specify "homeworld" in the fixed effects slot below, `felm()` automatically converts it to a factor even though we didn't explicitly tell it to.
+
+```{r ols5}
+ols5 <- 
+  felm(
+    mass ~ height |
+      species + homeworld | ## Two fixed effects go here after the first "|"
+      0 | ## This is where your IV equation goes, but we put 0 since we aren't instrumenting.
+      homeworld, ## The final slot is where we specify our cluster variables
+    data = starwars)
+coefs5 <- tidy(ols5, conf.int = T)
+coefs5
+```
+
+Visually, we can easily compare changes in the coefficients across models thanks to the fact that we saved the output in data frames with `broom::tidy()` above.
+
+```{r fe_mods_compared}
+bind_rows(
+  coefs4 %>% mutate(reg = "Model 4 (LDFE and no clustering"),
+  coefs5 %>% mutate(reg = "Model 5 (HDFE and clustering")
+  ) %>%
+  ggplot(aes(x=reg, y=estimate, ymin=conf.low, ymax=conf.high)) +
+  geom_pointrange() +
+  labs(Title = "Marginal effect of height on mass") +
+  theme(axis.title.x = element_blank())
+```
+
+Normally we expect our standard errors to blow up with clustering, but here that effect appears to be outweighted by the increased precision brought on by additional fixed effects. (As suggested earlier, our level of clustering probably doesn't make much sense either.)
+
+## Other topics
+
+### Interaction terms
+
+Like dummy variables, R provides a convenient syntax for specifying interaction terms directly in the regression model without having to create them manually beforehand.^[Although there are very good reasons that you might want to modify your parent variables before doing so (e.g. centering them). As it happens, I'm [on record](https://twitter.com/grant_mcdermott/status/903691491414917122) as stating that interaction effects are most widely misunderstood and misapplied concept in econometrics. However, that's a topic for another day. (Read the paper in the link!)] You van just use `x1:x2` (to include only the interaction term) or `x1*x2` (to include the parent terms and interaction terms). Generally speaking, you are best advised to include the parent terms alongside an interaction term. This makes the `*` option a good default.
+
+```{r ols6}
+humans <- starwars %>% filter(species=="Human")
+
+ols6 <- lm(mass ~ gender*height, data = humans)
+summary(ols6)
+```
+
+### Marginal effects
+
+Caculating marginal effect in a regression is utterly straightforward in cases where there are no non-linearities; just look at the coefficient values! However, that quickly goes out the window when have interaction effects, probit or logit models, etc. Luckily, the `margins` package (which is modeled on its namesake in Stata) goes a long way towards automating the process. You can read more in the [package vignette](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html), but here's a very simple example to illustrate:
+
+```{r margins1}
+library(margins)
+
+# ols6 %>% margins() %>% summary() ## Piping also works
+summary(margins(ols6))
+```
+If we want to compare marginal effects at specific values --- e.g. how the ME of height on mass differs across genders --- then that's easily done too.
+
+```{r margins2}
+summary(margins(ols6, at = list(gender = c("male", "female"))))
+```
+
+You can also plot it using `margins::cplot()`:
+
+```{r margins3}
+cplot(ols6, x="gender", dx="height")
+```
+
+In this case,it doesn't make much sense to read a lot into the larger standard errors on the female group; that's being driven by a very small sub-sample size.
+
+One downside that I want to highlight briefly is that the `margins` package does [not yet work](https://github.com/leeper/margins/issues/73) with `lfe::felm` objects. There are [potential ways](https://stackoverflow.com/questions/30491545/predict-method-for-felm-from-lfe-package) around this, or you can just calculate the marginal effects manually, but it's admittedly a pain.
+
+### Probit, logit and other generalized linear models
+
+See `?stats::glm`.
+
+### Exporting regression results and descriptive tables (LaTeX, etc.)
+
+There are a loads of different options here. I've historically favoured the `stargazer` package (see [here](https://www.jakeruss.com/cheatsheets/stargazer/)), but I also like `pixiedust` (which [parallels](https://cran.r-project.org/web/packages/pixiedust/) the `broom` package) and `huxtable` is a newer package that looks very promising too (see [here](https://hughjonesd.github.io/huxtable/design-principles.html) for a handy comparison of different table "engines" in R). Here's a bare-bones example using the latter, since it works well with Rmarkdown documents.
+
+```{r hux, message=F}
+library(huxtable)
+
+huxreg(ols4, ols5, ols6)
+```
+
+
+## Further reading
+
+- Ed Rubin has outstanding notes for a [PhD-level econometrics course](http://edrub.in/ARE212/notes.html) on his website. I believe that he is turning these notes into a book with some coauthors, so stay tuned for that too.
