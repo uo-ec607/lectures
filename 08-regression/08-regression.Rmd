@@ -20,39 +20,49 @@ output:
 knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
 ```
 
+Today's lecture is about the bread-and-butter tool of applied econometrics and data science: regression analysis. My goal is to simply give you a whirlwind tour of the key functions and commands. I'm going to assume that you already know all of the necessary theoretical background (causal inference, asymptotics, etc.). This lecture will *not* cover any of theoretical concepts or seek to justify a particular statistical model. Indeed, most of the models that we're going to run today are pretty silly. That disclaimer aside, let's proceeed...
+
 ## Software requirements
 
 ### R packages 
 
-"Base" R already provides all of the tools we need for basic regression analysis. However, we'll be using several external packages today, because they will make our lives easier and offer increased power for some more sophisticated analyses.
+It's important to note that "base" R already provides all of the tools we need for basic regression analysis. However, we'll be using several external packages today, because they will make our lives easier and offer increased power for some more sophisticated analyses.
 
-- **New:** `broom`, `estimatr`, `sandwich`, `lfe`, `huxtable`, `margins`
-- **Already used:** `tidyverse`, `hrbrthemes`
+- **New:** `broom`, `estimatr`, `sandwich`, `lmtest`, `AER`, `lfe`, `huxtable`, `margins`
+- **Already used:** `tidyverse`, `hrbrthemes`, `listviewer`
 
-The `broom` package was bundled with the rest of tidyverse, so we just need to install the following:
+The `broom` package was bundled with the rest of tidyverse and `sandwich` should get installed as a dependency of several of the above packages. Still, a convenient way to install (if necessary) and load everything is by running the below code chunk. I'll also go ahead and set my preferred ggplot2 theme for the rest of this document.
 
-```{r, eval = F}
-## Not run. (Run this manually yourself if you haven't installed these packages yet.)
-install.packages(c("estimatr", "sandwich", "lfe", "huxtable", "margins"))
-```
-
-We might as well load the `tidyverse` and `broom` packages now, since we'll be using it a fair bit today. It's not necessary, but I'll also set my preferred ggplot2 theme for the rest of this document.
-
-```{r tverse, cache=F, message=F}
-library(tidyverse)
-library(broom)
+```{r, cache = F, message = F}
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, broom, hrbrthemes, estimatr, sandwich, lmtest, AER, lfe, huxtable, margins)
 theme_set(hrbrthemes::theme_ipsum())
 ```
 
-## Regression basics: The `lm()` function
+While we've already loaded all of the required packages for today, I'll try to be as explicit about where a particular function is coming from, whenever I use it below. 
 
-To run an OLS regression in R, we use the `lm()` function that gets automatically loaded with the base `stats` package. The "lm" stands for "**l**inear **m**odels" and running a regression follows a pretty intuitive syntax.^[Indeed, all other regression packages in R that I'm aware of --- including those that allow for much more advanced and flexible models --- closely follow the `lm` syntax.] 
+Something else that I want to mention up front is that we'll mostly be working with the `starwars` data frame that we've already seen from previous lectures. Here's a quick reminder of what it looks like to refresh your memory.
 
-```r
-lm(y ~ x1 + x2 + x3 + ....)
+```{r starwars}
+starwars
 ```
 
-Let's run a simple bivariate regression of starwars characters' mass on their height.
+
+## Regression basics: The `lm()` function
+
+To run an OLS regression in R, we use the in-built `lm()` function. The "**lm**" stands for "**l**inear **m**odels" and running a regression follows a pretty intuitive syntax.^[Indeed, all other regression packages in R that I'm aware of --- including those that allow for much more advanced and flexible models --- closely follow the `lm` syntax.] 
+
+```r
+lm(y ~ x1 + x2 + x3 + ..., data = df)
+```
+
+You'll note that the `lm()` call includes a reference to the data source (in this case, a hyopthetical data frame called `df`). We covered this in our earlier lecture on R language basics and object-orientated programming, but the reason is that many objects (e.g. data frames) can exist in your R environment at the same time. So we need to be specific about where our regression variables are coming from --- even if `df` is the only data frame in our global environment at the time. Another option would be to use indexing, but I find it a bit verbose:
+
+```r
+lm(df$y ~ df$x1 + df$x2 + df$x3 + ...)
+```
+
+Let's run a simple bivariate regression of starwars characters' mass on height.
 
 ```{r ols1}
 ols1 <- lm(mass ~ height, data = starwars)
@@ -60,13 +70,14 @@ ols1 <- lm(mass ~ height, data = starwars)
 ols1
 ```
 
-The resulting object is pretty terse, but that's only because it buries most of its valuable information --- of which there is a lot --- within its internal list structure. You can use the `str()` function to view this structure.
+The resulting object is pretty terse, but that's only because it buries most of its valuable information --- of which there is a lot --- within its internal list structure. You can use the `str()` function to view this structure. Or, if you want to be fancy, the interactive `listviewer::jsonedit()` function that we saw in the previous lecture is nice option.
 
-```{r ols1_str}
-str(ols1)
+```{r ols1_str, message=F, out.width="100%", out.height="10%"}
+# str(ols1) ## Static option
+listviewer::jsonedit(ols1, mode="view") ## Interactive option
 ```
 
-So we see that this `ols1` object has a bunch of important slots, containing everything from the regression coefficients, to vectors of the residuals and fitted (i.e. predicted) values, to the design matric rank, to the input data, etc. etc. To summarise the key pieces of information, we can use the --- wait for it --- generic `summary` function. This will look pretty similar to the default regression output from Stata that many of you will be used to.
+As we can see, this `ols1` object has a bunch of important slots... containing everything from the regression coefficients, to vectors of the residuals and fitted (i.e. predicted) values, to the rank of the design matrix, to the input data, etc. etc. To summarise the key pieces of information, we can use the --- *wait for it* --- generic `summary()` function. This will look pretty similar to the default regression output from Stata that many of you will be used to.
 
 ```{r ols1_summ}
 summary(ols1)
@@ -80,7 +91,7 @@ summary(ols1)$coefficients
 
 ## Get "tidy" regression coefficients with the `broom` package
 
-While I've just shown you how to extract regression coefficients via the `summary` function, in practice I always use the `broom` package to do so. This package has a bunch of neat features to convert regression (and other statistical) objects into "tidy" data frames. This is especially useful because regression output is so often used as an input to something else, e.g. a plot of coefficients / marginal effects. Here I use the `broom::tidy()` function.
+While it's easy to extract regression coefficients via the `summary()` function, in practice I always use the [broom package](https://broom.tidyverse.org/) to do so. This package has a bunch of neat features to convert regression (and other statistical) objects into "tidy" data frames. This is especially useful because regression output is so often used as an input to something else, e.g. a plot of coefficients or marginal effects. Here, I'll use `broom::tidy(..., conf.int=T)` to coerce the `ols1` regression object into a tidy data frame of coefficient values and key statistics.
 
 ```{r ols1_tidy}
 library(broom)
@@ -88,18 +99,21 @@ library(broom)
 tidy(ols1, conf.int = T)
 ```
 
-Another useful function is `broom::glance()`, which summarises the model "meta" data (R<sup>2</sup>, AIC, etc.) in a data frame.
+Again, I could now pipe this tidied coeffients data frame to a ggplot2 call, using saying `geom_pointrange()` to plot the error bars. Feel free to practice doing this yourself now, but we'll get to some explicit examples further below.
+
+A related and also useful function is `broom::glance()`, which summarises the model "meta" data (R<sup>2</sup>, AIC, etc.) in a data frame.
 
 ```{r ols1_glance}
 glance(ols1)
 ```
 
+(BTW, If you're wondering how to export regression results to other formats (e.g. LaTeX tables), don't worry: We'll get to that at the very end of the lecture.)
 
-## Wrangling and plotting our data
+## Regressing on subsetted / different data
 
 Our simple model isn't particularly good; our R<sup>2</sup> is only `r I(round(glance(ols1)$r.squared, 3))`. Different species and homeworlds aside, we may have an extreme outlier in our midst...
 
-```{r}
+```{r jabba, message=F}
 starwars %>%
   ggplot(aes(x=height, y=mass)) +
   geom_point(alpha=0.5) +
@@ -112,10 +126,17 @@ starwars %>%
     data = starwars %>% filter(mass==max(mass, na.rm=T)), 
     col="red", vjust = 0, nudge_y = 25
     ) +
-  labs(title = "Spot the outlier...")
+  labs(
+    title = "Spot the outlier...",
+    caption = "Aside: Always plot your data!"
+    )
 ```
 
-Maybe we should exclude Jabba from our regression? Remember that we can also keep multiple objects in memory in R, so we can just create a new data frame that excludes him using `dplyr::filter()`.
+Maybe we should exclude Jabba from our regression? You can do this in two ways: 1) Create a new data and then regress, or 2) Subset the original data frame directly in the `lm()` call.
+
+### Create a new data frame
+
+Recall that we can keep multiple objects in memory in R. So we can easily create a new data frame that excludes Jabba using `dplyr::filter()`.
 
 ```{r ols2}
 starwars2 <-
@@ -127,6 +148,8 @@ ols2 <- lm(mass ~ height, data = starwars2)
 summary(ols2)
 ```
 
+### Subset directly in the `lm()` call
+
 Running a regression directly on a subsetted data frame is equally easy.
 
 ```{r ols2a}
@@ -134,32 +157,57 @@ ols2a <- lm(mass ~ height, data = starwars %>% filter(!(grepl("Jabba", name))))
 summary(ols2a)
 ```
 
-The overall model fit is much improved by the exclusion of this outlier, with R<sup>2</sup> increasing to `r I(round(glance(ols2)$r.squared, 3))`.
+The overall model fit is much improved by the exclusion of this outlier, with R<sup>2</sup> increasing to `r I(round(glance(ols2)$r.squared, 3))`. Still, we should be cautious about throwing out data. Another approach is to handle or account for outliers with statistical methods. WHich provides a nice segue to robust and clustered standard errors.
 
 ## Robust and clustered standard errors
 
-What about robust or clustered standard errors? Well, there are *lots* of ways to get these in R. However, my prefered way these days is to use the [`estimatr` package](https://declaredesign.org/r/estimatr/articles/getting-started.html). Let's illustrate with the `ols1` object that we created earlier (which still includes the crazy Jabba outlier). 
+Dealing with statistical irregularities (heteroskedasticity, clustering, etc.) is a fact of life for empirical researchers. However, it says something about the economics profession that a random stranger could walk uninvited into a live seminar and ask, "How did you cluster your standard errors?", and it would likely draw approving nods from audience members. 
+
+The good news is that there are *lots* of ways to get robust and clustered standard errors in R. For many years, these have been based on the excellent [sandwich package](https://cran.r-project.org/web/packages/sandwich/index.html). However, my prefered way these days is to use the [`estimatr` package](https://declaredesign.org/r/estimatr/articles/getting-started.html), which is both fast and provides convenient aliases for the standard regression functions. For example, you can obtain robust standard errors using `estimatr::lm_robust()`. Let's illustrate by running a robust version of the `ols1` regression that ran earlier.
 
 ```{r ols1_robust}
-library(estimatr)
-
+# library(estimatr) ## Already loaded
 ols1_robust <- lm_robust(mass ~ height, data = starwars)
 tidy(ols1_robust, conf.int = T)
 ```
 
-The `estimatr` package also supports clustered standard errors. I'll return to the issue of (multiway) clustering in the section on panel regression [further below](#high-dimensional_fixed_effects_and_(multiway)_clustering), but here's a quick example just to illustrate:
+The package defaults to using Eicker-Huber-White robust standard errors, commonly referred to as "HC2" standard errors. You can easily specify alternate methods using the `se_tpe = ` argument.^[See the [package documentation](https://declaredesign.org/r/estimatr/articles/mathematical-notes.html#lm_robust-notes) for a full list of options.] For example, you can specify Stata robust standard errors if you want to replicate code or results from that language. (See [here](https://declaredesign.org/r/estimatr/articles/stata-wls-hat.html) for more details on why this isn't the default and why Stata's robust standard errors differ from those in R and Python.)
+
+```{r ols1_robust_stata}
+ols1_robust_stata <- lm_robust(mass ~ height, data = starwars, se_type = "stata")
+tidy(ols1_robust_stata, conf.int = T)
+```
+
+The `estimatr` package also supports (robust) instrumental variable regression and clustered standard errors. I'll return to these issues in the relevant sections below, but here's a quick example of the latter just to illustrate:
 
 ```{r ols1_robust_clustered}
 ols1_robust_clustered <- lm_robust(mass ~ height, data = starwars, clusters = homeworld)
 tidy(ols1_robust_clustered, conf.int = T)
 ```
 
-Finally, you can even be explicit about using Stata robust standard errors if you want to replicate code from that language. See [here](https://declaredesign.org/r/estimatr/articles/stata-wls-hat.html) for more details on why this isn't the default and why Stata's robust standard errors differ from those in R and Python.
+### Aside on HAC (Newey-West) standard errors
 
-```{r ols1_robust_stata}
-ols1_robust_stata <- lm_robust(mass ~ height, data = starwars, se_type = "stata")
-tidy(ols1_robust_stata, conf.int = T)
+On thing I want to flag is that the `estimator` package does not yet offer support for HAC (i.e. heteroskedasticity and autocorrelation consistent) standard errors *a la* [Newey-West](https://en.wikipedia.org/wiki/Newey%E2%80%93West_estimator). I've submitted a feature request on GitHub --- vote up if you would like to see it added sooner! --- but you can still obtain these pretty easily using the aforementioned-mentioned `sandwich` package. For example, we can use `sandwich::NeweyWest()` on our existing `ols1` object to obtain HAC SEs for it.
+
+```{r ols1_hac}
+# library(sandwich) ## Already loaded
+NeweyWest(ols1) ## Print the HAC VCOV
+sqrt(diag(NeweyWest(ols1))) ## Print the HAC SEs
 ```
+
+If you wanted to convert it to a tidy data frame of coefficient values, then, I would recommend first piping it to `lmtest::coeftest(..., vcov=NeweyWest)`, which is a convenient way to do hypothesis testing using alternate variance-covariance matrices. Note that in the below, I'm going to manually create my own upper and lower 95% confidence intervals, since `broom::tidy(conf.int=T)` doesn't work with coeftest objects.
+
+```{r ols1_hac_tidy}
+# library(lmtest) ## Already loaded
+ols1 %>% 
+  lmtest::coeftest(vcov=NeweyWest) %>%
+  tidy() %>% ## "conf.int" doesn't work with coeftest object, so calculate manually...
+  mutate(
+    conf.low = estimate - qt(0.975, df=ols1$df.residual)*std.error,
+    conf.high = estimate + qt(0.975, df=ols1$df.residual)*std.error
+    )
+```
+
 
 ## Fixed effects (and dummy variables)
 
