@@ -33,10 +33,15 @@ It's important to note that "base" R already provides all of the tools we need f
 
 The `broom` package was bundled with the rest of tidyverse and `sandwich` should get installed as a dependency of several of the above packages. Still, a convenient way to install (if necessary) and load everything is by running the below code chunk. I'll also go ahead and set my preferred ggplot2 theme for the rest of this document.
 
-```{r, cache = F, message = F}
+```{r, cache = F}
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(tidyverse, broom, hrbrthemes, estimatr, sandwich, lmtest, AER, lfe, huxtable, margins)
 theme_set(hrbrthemes::theme_ipsum())
+```
+```{r, include=F}
+## Switch off automatic "pretty printing" of DFs
+## See: https://hughjonesd.github.io/huxtable/huxtable.html#automatic-pretty-printing-of-data-frames
+options(huxtable.knit_print_df = FALSE)
 ```
 
 While we've already loaded all of the required packages for today, I'll try to be as explicit about where a particular function is coming from, whenever I use it below. 
@@ -209,81 +214,86 @@ ols1 %>%
 ```
 
 
-## Fixed effects (and dummy variables)
-
-Manually excluding outliers is often a risky strategy (overfitting, etc.). Maybe we should use some fixed effects instead? Again, a manual inspection of the plotted data suggests this could be useful... although the lack of observations per individual species doesn't make this a very robust model.
-
-```{r}
-starwars %>%
-  filter(!(grepl("Jabba", name))) %>%
-  ggplot(aes(x=height, y=mass, col=species)) +
-  geom_point(alpha=0.5) +
-  scale_colour_viridis_d()
-```
+## Dummy variables and interaction terms
 
 ### Dummy variables as *factors*
 
-The simplest (and least efficient) way to include fixed effects in a regression model is, of course, to use dummy variables. Compared to other statistical lanaguages, however, R has a very convenient framework for evaluating dummy variables in a regression: You simply specify the variable of interest as a [factor](https://r4ds.had.co.nz/factors.html). R will take care of everything else for you.^[No need to tabulate/append a whole new matrix of binary variables.]
+Dummy variables are a core component of many regression models. However, these can be a pain to create in many statistical languages, since you first have to tabulate a whole new matrix of binary variables and then append it to the original data frame. In contrast, R has a much more convenient framework for creating and evaluating dummy variables in a regression. You simply specify the variable of interest as a [factor](https://r4ds.had.co.nz/factors.html).^[Factors are variables that have distinct qualitative levels, e.g. "male", "female", "hermaphrodite", etc.]
+
+For this next section, it will be convenient to demonstrate using a subsample of the data that comprises only humans. I'll first create this `humans` data frame and then demonstrate the dummy-variables-as-factors approach.
  
 ```{r ols3}
-starwars$species <- as.factor(starwars$species)
+humans <- 
+  starwars %>% 
+  filter(species=="Human") %>%
+  mutate(gender_factored = as.factor(gender)) %>% ## create factored version of "gender"
+  select(contains("gender"), everything())
+humans
 
-ols3 <- lm(mass ~ height + species, data = starwars)
-coefs3 <- tidy(ols3, conf.int = T)
+ols3 <- lm(mass ~ height + gender_factored, data = humans)
 summary(ols3)
 ```
 
-Ignoring the modelling problems that I mentioned above (that insane R<sup>2</sup> is a clear sign we're overfitting because of small within-group samples), this approach works well enough. However, it isn't very efficient or scaleable. What's the point learning all that stuff about the Frisch-Waugh-Lovell theorem, within-group transformations, etcetera, etcetera if we can't use them in our software routines?
 
-## Fixed effects with the `lfe` package
+In fact, I'm even making things more complicated than they need to be. R is "friendly" and tries to help whenever it thinks you have misspecified a function or variable. While this is something to be [aware of](https://rawgit.com/grantmcdermott/R-intro/master/rIntro.html#r_tries_to_guess_what_you_meant), it normally just works<sup>TM</sup>. A case in point is that we don't actually *need* to specify a qualitative or character variable as a factor in a regression. R will automatically do this for you regardless, since that's the only sensible way to include string variables in a regression.
 
-One of my favourite packages in the entire R catalogue is `lfe` ("linear fixed effects"). This package has a boatload of functionality built in to it (instrumental variables, multi-level clustering, etc.) It can also be used to run simple linear regressions *a la* `lm`. The main functionality, however, is for running fixed effects regressions via the `lfe::felm()` function.^[There are other packages for running panel regressions in R, in particular the `plm` package. However, I think that `lfe` supersedes these in virtually all aspects.]
+```{r ols3a}
+## Use the non-factored "gender" variable instead
+ols3a <- lm(mass ~ height + gender, data = humans)
+summary(ols3a)
+```
 
-```{r ols4, message=FALSE}
-library(lfe)
 
-ols4 <- felm(mass ~ height | species, data = starwars) ## Fixed effect(s) go after the "|"
-coefs4 <- tidy(ols4, conf.int = T)
+### Interaction terms
+
+Like dummy variables, R provides a convenient syntax for specifying interaction terms directly in the regression model without having to create them manually beforehand.^[Although there are very good reasons that you might want to modify your parent variables before doing so (e.g. centering them). As it happens, I'm [on record](https://twitter.com/grant_mcdermott/status/903691491414917122) as stating that interaction effects are most widely misunderstood and misapplied concept in econometrics. However, that's a topic for another day. (Read the paper in the link!)] You van just use `x1:x2` (to include only the interaction term) or `x1*x2` (to include the parent terms and interaction terms). Generally speaking, you are best advised to include the parent terms alongside an interaction term. This makes the `*` option a good default.
+
+```{r ols4}
+ols4 <- lm(mass ~ gender*height, data = humans)
 summary(ols4)
 ```
 
-Note that the resulting `felm` object drops all of the species intercepts, since it has abstracted them away as fixed effects. Let's confirm that our main coefficient on "height" is the same across this and the previous model. (Note the different indexing. Why is that?)
 
-```{r fes_equal1}
-all.equal(coefs3$estimate[2], coefs4$estimate[1])
+## Panel models
+
+High dimensional fixed effects with the `lfe` package
+
+The simplest (and least efficient) way to include fixed effects in a regression model is, of course, to use dummy variables. However, it isn't very efficient or scaleable. What's the point learning all that stuff about the Frisch-Waugh-Lovell theorem, within-group transformations, etcetera, etcetera if we can't use them in our software routines?
+
+One of my favourite external libraries in the entire R catalogue is the lfe package (i.e. "**l**inear **f**ixed **e**ffects"). The lfe package has a boatload of functionality built in to it (instrumental variables, multi-level clustering, etc.) It can also be used to run simple linear regressions *a la* `lm`. The main functionality, however, is for running fixed effects regressions via the `lfe::felm()` function.^[There are other packages for running panel regressions in R, in particular the `plm` package. However, I think that `lfe` supersedes these in virtually all aspects.]
+
+```{r ols5, message=FALSE}
+library(lfe)
+
+ols5 <- felm(mass ~ height | species, data = starwars) ## Fixed effect(s) go after the "|"
+coefs5 <- tidy(ols5, conf.int = T)
+summary(ols5)
 ```
 
-We could also have used some `dlpyr` syntax, which is more verbose but easier to read (and less prone to indexing errors).
-
-```{r fes_equal2}
-all.equal(
-  coefs3 %>% filter(term == "height") %>% pull(estimate),
-  coefs4 %>% filter(term == "height") %>% pull(estimate)
-  )
-```
+Note that the resulting `felm` object drops all of the species intercepts, since it has abstracted them away as fixed effects. 
 
 ### High-dimensional fixed effects and (multiway) clustering
 
 One reason that I prefer the `lfe` package to other options --- e.g. the panel data-focused `plm` package --- is because it supports high dimensional fixed effects *and* (multiway) clustering.^[It is very similar to the excellent [reghdfe](http://scorreia.com/software/reghdfe/) package in Stata.] In the below example, I'm going to add "homeworld" as an additional fixed effect to the model and also cluster according to this model. I'm not claiming that this is a particularly good or sensible model, but just go with it. (Maybe the scales of different homeworlds are similarly biased??) Note that, since we specify "homeworld" in the fixed effects slot below, `felm()` automatically converts it to a factor even though we didn't explicitly tell it to.
 
-```{r ols5}
-ols5 <- 
+```{r ols6}
+ols6 <- 
   felm(
     mass ~ height |
       species + homeworld | ## Two fixed effects go here after the first "|"
       0 | ## This is where your IV equation goes, but we put 0 since we aren't instrumenting.
       homeworld, ## The final slot is where we specify our cluster variables
     data = starwars)
-coefs5 <- tidy(ols5, conf.int = T)
-coefs5
+coefs6 <- tidy(ols6, conf.int = T)
+coefs6
 ```
 
 Visually, we can easily compare changes in the coefficients across models thanks to the fact that we saved the output in data frames with `broom::tidy()` above.
 
 ```{r fe_mods_compared}
 bind_rows(
-  coefs4 %>% mutate(reg = "Model 4 (LDFE and no clustering"),
-  coefs5 %>% mutate(reg = "Model 5 (HDFE and clustering")
+  coefs5 %>% mutate(reg = "Model 4 (FE and no clustering"),
+  coefs6 %>% mutate(reg = "Model 5 (HDFE and clustering")
   ) %>%
   ggplot(aes(x=reg, y=estimate, ymin=conf.low, ymax=conf.high)) +
   geom_pointrange() +
@@ -295,17 +305,6 @@ Normally we expect our standard errors to blow up with clustering, but here that
 
 ## Other topics
 
-### Interaction terms
-
-Like dummy variables, R provides a convenient syntax for specifying interaction terms directly in the regression model without having to create them manually beforehand.^[Although there are very good reasons that you might want to modify your parent variables before doing so (e.g. centering them). As it happens, I'm [on record](https://twitter.com/grant_mcdermott/status/903691491414917122) as stating that interaction effects are most widely misunderstood and misapplied concept in econometrics. However, that's a topic for another day. (Read the paper in the link!)] You van just use `x1:x2` (to include only the interaction term) or `x1*x2` (to include the parent terms and interaction terms). Generally speaking, you are best advised to include the parent terms alongside an interaction term. This makes the `*` option a good default.
-
-```{r ols6}
-humans <- starwars %>% filter(species=="Human")
-
-ols6 <- lm(mass ~ gender*height, data = humans)
-summary(ols6)
-```
-
 ### Marginal effects
 
 Caculating marginal effect in a regression is utterly straightforward in cases where there are no non-linearities; just look at the coefficient values! However, that quickly goes out the window when have interaction effects, probit or logit models, etc. Luckily, the `margins` package (which is modeled on its namesake in Stata) goes a long way towards automating the process. You can read more in the [package vignette](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html), but here's a very simple example to illustrate:
@@ -313,19 +312,19 @@ Caculating marginal effect in a regression is utterly straightforward in cases w
 ```{r margins1}
 library(margins)
 
-# ols6 %>% margins() %>% summary() ## Piping also works
-summary(margins(ols6))
+# ols4 %>% margins() %>% summary() ## Piping also works
+summary(margins(ols4))
 ```
 If we want to compare marginal effects at specific values --- e.g. how the ME of height on mass differs across genders --- then that's easily done too.
 
 ```{r margins2}
-summary(margins(ols6, at = list(gender = c("male", "female"))))
+summary(margins(ols4, at = list(gender = c("male", "female"))))
 ```
 
 You can also plot it using `margins::cplot()`:
 
 ```{r margins3}
-cplot(ols6, x="gender", dx="height")
+cplot(ols4, x="gender", dx="height")
 ```
 
 In this case,it doesn't make much sense to read a lot into the larger standard errors on the female group; that's being driven by a very small sub-sample size.
