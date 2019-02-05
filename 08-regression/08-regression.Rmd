@@ -300,12 +300,18 @@ Visually, we can easily compare changes in the coefficients across models thanks
 
 ```{r fe_mods_compared}
 bind_rows(
-  coefs_fe %>% mutate(reg = "Model 4 (FE and no clustering"),
-  coefs_hdfe %>% mutate(reg = "Model 5 (HDFE and clustering")
+  coefs_fe %>% mutate(reg = "Model 4 (FE and no clustering)"),
+  coefs_hdfe %>% mutate(reg = "Model 5 (HDFE and clustering)")
   ) %>%
   ggplot(aes(x=reg, y=estimate, ymin=conf.low, ymax=conf.high)) +
   geom_pointrange() +
   labs(Title = "Marginal effect of height on mass") +
+  geom_hline(yintercept = 0, col = "orange") +
+  ylim(-0.5, NA) +
+  labs(
+    Title = "'Effect' of height on mass",
+    caption = "Data: Characters from the Star Wars universe"
+    ) +
   theme(axis.title.x = element_blank())
 ```
 
@@ -399,6 +405,23 @@ tidy(bayes_reg)
 ```
 
 
+### Visualizing regression output and models
+
+We've already worked through several visualization examples today and you should all be familiar with ggplot2's `geom_smooth()` from our earlier lectures. For instance:
+
+```{r}
+theme_set(theme_ipsum())
+```
+```{r smooth}
+humans %>%
+  ggplot(aes(x=mass, y=height, col=gender)) + 
+  geom_point(alpha=0.7) +
+  geom_smooth(method="lm", se=F) + ## See ?geom_smooth for other methods
+  scale_color_brewer(palette = "Set1")
+```
+
+For further reference, I highly encourage you to look over Chapter 6 of Kieran Healy's [*Data Visualization: A Practical Guide*](https://socviz.co/modeling.html#plot-marginal-effects). You will not only learn how to produce beautiful and effective model visualizations, but also pick up a variety of technical tips. You may want to pay particular attention attention to the section on [generating and plotting predictions](https://socviz.co/modeling.html#generate-predictions-to-graph), since that will form part of your next assignment.
+
 ### Exporting regression results and descriptive tables (LaTeX, etc.)
 
 There are a loads of different options here. I've historically favoured the [stargazer package](https://www.jakeruss.com/cheatsheets/stargazer/), but I also like the [huxtable package](https://hughjonesd.github.io/huxtable). Then there's the new [gt package](https://gt.rstudio.com/index.html) from the RStudio team, which is drawing lots of attention. And this is just a small sample of the available options; see [here](https://hughjonesd.github.io/huxtable/design-principles.html) for a handy comparison of different table "engines" in R.
@@ -412,6 +435,6 @@ huxreg(ols_dv, ols_ie, ols_hdfe)
 ```
 
 
-## Further reading
+## Further resources
 
-- Ed Rubin has outstanding notes for a [PhD-level econometrics course](http://edrub.in/ARE212/notes.html) on his website. I believe that he is turning these notes into a book with some coauthors, so stay tuned for that too.
+- [Ed Rubin](https://twitter.com/edrubin) has outstanding [teaching notes](http://edrub.in/teaching.html) for econometrics with R on his website. This includes both [undergrad-](https://github.com/edrubin/EC421W19) and [graduate-](http://edrub.in/ARE212/notes.html)level courses. I believe that he is turning these notes into a book with some coauthors, so stay tuned.
