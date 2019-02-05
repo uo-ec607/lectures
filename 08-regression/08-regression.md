@@ -1,5 +1,5 @@
 ---
-title: "Lecture 8: Regression analysis"
+title: "Lecture 8: Regression analysis in R"
 author:
   name: Grant R. McDermott | University of Oregon
   # affiliation: EC 607
