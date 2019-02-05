@@ -224,7 +224,7 @@ Dummy variables are a core component of many regression models. However, these c
 
 For this next section, it will be convenient to demonstrate using a subsample of the data that comprises only humans. I'll first create this `humans` data frame and then demonstrate the dummy-variables-as-factors approach.
  
-```{r ols3}
+```{r ols_dv}
 humans <- 
   starwars %>% 
   filter(species=="Human") %>%
@@ -232,27 +232,27 @@ humans <-
   select(contains("gender"), everything())
 humans
 
-ols3 <- lm(mass ~ height + gender_factored, data = humans)
-summary(ols3)
+ols_dv <- lm(mass ~ height + gender_factored, data = humans)
+summary(ols_dv)
 ```
 
 
 In fact, I'm even making things more complicated than they need to be. R is "friendly" and tries to help whenever it thinks you have misspecified a function or variable. While this is something to be [aware of](https://rawgit.com/grantmcdermott/R-intro/master/rIntro.html#r_tries_to_guess_what_you_meant), it normally just works<sup>TM</sup>. A case in point is that we don't actually *need* to specify a qualitative or character variable as a factor in a regression. R will automatically do this for you regardless, since that's the only sensible way to include string variables in a regression.
 
-```{r ols3a}
+```{r ols_dv2}
 ## Use the non-factored "gender" variable instead
-ols3a <- lm(mass ~ height + gender, data = humans)
-summary(ols3a)
+ols_dv2 <- lm(mass ~ height + gender, data = humans)
+summary(ols_dv2)
 ```
 
 
-### Interaction terms
+### Interaction effects
 
 Like dummy variables, R provides a convenient syntax for specifying interaction terms directly in the regression model without having to create them manually beforehand.^[Although there are very good reasons that you might want to modify your parent variables before doing so (e.g. centering them). As it happens, I'm [on record](https://twitter.com/grant_mcdermott/status/903691491414917122) as stating that interaction effects are most widely misunderstood and misapplied concept in econometrics. However, that's a topic for another day. (Read the paper in the link!)] You van just use `x1:x2` (to include only the interaction term) or `x1*x2` (to include the parent terms and interaction terms). Generally speaking, you are best advised to include the parent terms alongside an interaction term. This makes the `*` option a good default.
 
-```{r ols4}
-ols4 <- lm(mass ~ gender*height, data = humans)
-summary(ols4)
+```{r ols_ie}
+ols_ie <- lm(mass ~ gender*height, data = humans)
+summary(ols_ie)
 ```
 
 
@@ -260,9 +260,9 @@ summary(ols4)
 
 ### Fixed effects with the `lfe` package
 
-The simplest (and least efficient) way to include fixed effects in a regression model is, of course, to use dummy variables. However, it isn't very efficient or scaleable. What's the point learning all that stuff about the Frisch-Waugh-Lovell theorem, within-group transformations, etcetera, etcetera if we can't use them in our software routines? Again, there are several options to choose from here. However, I am going to strongly advocate for the [lfe package](https://cran.r-project.org/web/packages/lfe/index.html).
+The simplest (and least efficient) way to include fixed effects in a regression model is, of course, to use dummy variables. However, it isn't very efficient or scaleable. What's the point learning all that stuff about the Frisch-Waugh-Lovell theorem, within-group transformations, etcetera, etcetera if we can't use them in our software routines? Again, there are several options to choose from here. For example, the venerable [plm package](https://cran.r-project.org/web//packages/plm/vignettes/plmPackage.html), which also handles random effects and pooling models. However, I am going to strongly advocate for the [lfe package](https://cran.r-project.org/web/packages/lfe/index.html).
 
-`lfe` (i.e. "**l**inear **f**ixed **e**ffects") is one of my packages packages in the entire R catalogue. It has a boatload of functionality built in to it (instrumental variables, multi-level clustering, etc.) It is also *fast* because it automatically uses all the available processing power on your machine. We'll return to the idea of multicore implementation when we get to the lecture on parallel processing. For the moment, simply enjoy the fact that `lfe` is optimised to solve big regression problems as quickly as possible.
+`lfe` (i.e. "**l**inear **f**ixed **e**ffects") is one of my packages packages in the entire R catalogue. It has a boatload of functionality built in to it (instrumental variables support, multilevel clustering, etc.) It is also *fast* because it automatically uses all the available processing power on your machine. We'll return to the idea of multicore implementation when we get to the lecture on parallel processing. For the moment, simply enjoy the fact that `lfe` is optimised to solve big regression problems as quickly as possible.
 
 Let's take a look, starting off with a simple example and then moving on to something more demanding.
 
@@ -270,38 +270,38 @@ Let's take a look, starting off with a simple example and then moving on to some
 
 The package's main function is `lfe::felm()`, which is used for estimating fixed effects linear models. The syntax is such that you first specify the regression model as per normal, and then list the fixed effect(s) after a `|`. An example may help to illustrate. Let's say that we again want to run our simple regression of mass on heigt, but this time control for species-level fixed effects.
 
-```{r ols5, message=FALSE}
+```{r ols_fe, message=FALSE}
 library(lfe)
 
-ols5 <- felm(mass ~ height | species, data = starwars) ## Fixed effect(s) go after the "|"
-coefs5 <- tidy(ols5, conf.int = T)
-summary(ols5)
+ols_fe <- felm(mass ~ height | species, data = starwars) ## Fixed effect(s) go after the "|"
+coefs_fe <- tidy(ols_fe, conf.int = T)
+summary(ols_fe)
 ```
 
 Note that the resulting `felm` object drops all of the species intercepts, since it has abstracted them away as fixed effects. 
 
 #### High dimensional FEs and (multiway) clustering
 
-One reason that I prefer the `lfe` package to other options --- e.g. the panel-focused `plm` package (see further below) --- is because it supports high dimensional fixed effects *and* (multiway) clustering.^[It is very similar to the excellent [reghdfe](http://scorreia.com/software/reghdfe/) package in Stata.] In the below example, I'm going to add "homeworld" as an additional fixed effect to the model and also cluster according to this model. I'm not claiming that this is a particularly good or sensible model, but just go with it. (Maybe the scales of different homeworlds are similarly biased??) Note that, since we specify "homeworld" in the fixed effects slot below, `felm()` automatically converts it to a factor even though we didn't explicitly tell it to.
+One reason that I prefer the `lfe` package to other options --- e.g. the panel-focused `plm` package (see further below) --- is because it supports high dimensional fixed effects *and* (multiway) clustering.^[It is very similar to the excellent [reghdfe](http://scorreia.com/software/reghdfe/) package in Stata.] In the below example, I'm going to add "homeworld" as an additional fixed effect to the model and also cluster according to this model. I'm not claiming that this is a particularly good or sensible model, but just go with it. Note that, since we specify "homeworld" in the fixed effects slot below, `felm()` automatically converts it to a factor even though we didn't explicitly tell it to.
 
-```{r ols6}
-ols6 <- 
+```{r ols_hdfe}
+ols_hdfe <- 
   felm(
     mass ~ height |
       species + homeworld | ## Two fixed effects go here after the first "|"
       0 | ## This is where your IV equation goes, but we put 0 since we aren't instrumenting.
       homeworld, ## The final slot is where we specify our cluster variables
     data = starwars)
-coefs6 <- tidy(ols6, conf.int = T)
-coefs6
+coefs_hdfe <- tidy(ols_hdfe, conf.int = T)
+coefs_hdfe
 ```
 
 Visually, we can easily compare changes in the coefficients across models thanks to the fact that we saved the output in data frames with `broom::tidy()` above.
 
 ```{r fe_mods_compared}
 bind_rows(
-  coefs5 %>% mutate(reg = "Model 4 (FE and no clustering"),
-  coefs6 %>% mutate(reg = "Model 5 (HDFE and clustering")
+  coefs_fe %>% mutate(reg = "Model 4 (FE and no clustering"),
+  coefs_hdfe %>% mutate(reg = "Model 5 (HDFE and clustering")
   ) %>%
   ggplot(aes(x=reg, y=estimate, ymin=conf.low, ymax=conf.high)) +
   geom_pointrange() +
@@ -311,21 +311,41 @@ bind_rows(
 
 Normally we expect our standard errors to blow up with clustering, but here that effect appears to be outweighted by the increased precision brought on by additional fixed effects. (As suggested earlier, our level of clustering probably doesn't make much sense either.)
 
+#### Instrumental variables
+
+(See further below.)
+
 ### Random effects
 
-Fixed effects models are more common than random effects models in economics (in my experience, anyway). I'd also advocate for [Bayesian hierachical models](http://www.stat.columbia.edu/~gelman/arm/) if we're going down the whole random effects path. However, it's still good to know that R has you covered for random effects models through the [plm package](https://cran.r-project.org/web/packages/plm/).^[As I mentioned above, `plm` also handles fixed effects models (as well as pooling models). However, I prefer `lfe` for the reasons already discussed.]
+Fixed effects models are more common than random effects models in economics (in my experience, anyway). I'd also advocate for [Bayesian hierachical models](http://www.stat.columbia.edu/~gelman/arm/) if we're going down the whole random effects path. However, it's still good to know that R has you covered for random effects models through the the [plm](https://cran.r-project.org/web/packages/plm/) and [nlme](https://cran.r-project.org/web/packages/nlme/index.html) packages.^[As I mentioned above, `plm` also handles fixed effects (and pooling) models. However, I prefer `lfe` for the reasons already discussed.] I won't go into detail , but click on those links (especially the first one) if you would like to see some examples.
 
-```{r ols6a_re, error=T}
-ols6_re <- 
-  plm(
-    mass ~ height, 
-    data = starwars %>% filter(!is.na(species)), 
-    index=c("species"), 
-    model="random"
+## Instrumental variables
+
+Again, lots of options here. See: `?AER::ivreg`, `?lfe::felm`, and `?estimatr::ivreg_robust`. They all follow a similar syntax, where the IV first-stage regression is specified after a `|` following the main regression. Here's an example taken from the [AER package](https://cran.r-project.org/web/packages/AER/vignettes/AER.pdf), just because we haven't used it in this lecture yet. I'll follow their lead in using one of the package's own datasets on cigarette consumption.
+
+```{r, iv_reg}
+## Get the data
+data("CigarettesSW", package = "AER")
+## Create a new data frame with some modified variables
+cigs <-
+  CigarettesSW %>%
+  mutate(
+    rprice = price/cpi,
+    rincome = income/population/cpi,
+    tdiff = (taxs - tax)/cpi
     )
-summary(ols6_re)
+
+## Run the model 
+iv_reg <- 
+  ivreg(
+    log(packs) ~ log(rprice) + log(rincome) | log(rincome) + tdiff + I(tax/cpi),
+    data = cigs %>% filter(year == "1995")
+    )
+summary(iv_reg, diagnostics = TRUE)
 ```
 
+
+**Challenge:** Try run an IV regression using `lfe:felm()`, but this time on the whole `cigs` data frame (i.e. not subsetting to 1995). Use year fixed effects too.
 
 ## Other topics
 
@@ -336,19 +356,19 @@ Caculating marginal effect in a regression is utterly straightforward in cases w
 ```{r margins1}
 library(margins)
 
-# ols4 %>% margins() %>% summary() ## Piping also works
-summary(margins(ols4))
+# ols_ie %>% margins() %>% summary() ## Piping also works
+summary(margins(ols_ie))
 ```
 If we want to compare marginal effects at specific values --- e.g. how the ME of height on mass differs across genders --- then that's easily done too.
 
 ```{r margins2}
-summary(margins(ols4, at = list(gender = c("male", "female"))))
+summary(margins(ols_ie, at = list(gender = c("male", "female"))))
 ```
 
 You can also plot it using `margins::cplot()`:
 
 ```{r margins3}
-cplot(ols4, x="gender", dx="height")
+cplot(ols_ie, x="gender", dx="height")
 ```
 
 In this case,it doesn't make much sense to read a lot into the larger standard errors on the female group; that's being driven by a very small sub-sample size.
@@ -363,7 +383,7 @@ See `?stats::glm`.
 
 We could spend a whole course on Bayesian models. The very, very short version is that R offers outstanding support for Bayesian models and data analysis. You will find convenient interfaces to all of the major MCMC and Bayesian software engines: [Stan](https://mc-stan.org/users/interfaces/rstan), [JAGS](http://mcmc-jags.sourceforge.net/), TensorFlow (via [Greta](https://greta-stats.org/)), etc. Here follows a *super* simple example using the [rstanarm package](http://mc-stan.org/rstanarm/). Note that we did not install this package with the others above, as it can take fairly long and involve some minor troubleshooting.^[FWIW, on my Linux machine (running Arch/Antergos) I had to install `stan` (and thus `rstanarm`) by running R through the shell. For some reason, RStudio kept closing midway through the installation process.]
 
-```{r bayes_reg, error=T, warning=F, results="hide"}
+```{r bayes_reg, error=T, message=F, warning=F, results="hide"}
 # install.packages("rstanarm") ## Run this first if you want to try yourself
 library(rstanarm)
 bayes_reg <- 
@@ -388,7 +408,7 @@ Here follows a bare-bones example using huxtable, since it works well with R Mar
 ```{r hux, message=F}
 library(huxtable)
 
-huxreg(ols4, ols5, ols6)
+huxreg(ols_dv, ols_ie, ols_hdfe)
 ```
 
 
