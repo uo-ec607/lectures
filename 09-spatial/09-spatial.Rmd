@@ -17,7 +17,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
 ```
 
 *Note: This lecture will focus only on **vector-based** spatial analysis. We will not cover **raster-based** spatial analysis, although this is an equally important subject. I'll provide some links to further resources at the bottom of this document for those of you who want to explore further on your own.*
@@ -43,7 +43,7 @@ Okay, let's install (if necessary) and load everything. As per usual, I'll also 
 
 ```{r, cache=F, message=F}
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(sf, tidyverse, hrbrthemes, lwgeom, maps, mapdata, spData, tigris, tidycensus, leaflet, tmap, tmaptools)
+pacman::p_load(sf, tidyverse, hrbrthemes, lwgeom, rnaturalearth, maps, mapdata, spData, tigris, tidycensus, leaflet, tmap, tmaptools)
 theme_set(hrbrthemes::theme_ipsum())
 ```
 
@@ -68,9 +68,7 @@ Similarly, whenever we try to plot (some part of) the earth on a map, we're effe
 
 ![](pics/mercator-distortion.gif)
 
-You can also "orient" your projection to a specific latitude and longitude using the PROJ.4 syntax. We'll see some examples below, but first I'm obliged to share this [XKCD](https://xkcd.com/977/) summary...
-
-[ ![] ](https://imgs.xkcd.com/comics/map_projections.png)
+You can also "orient" your projection to a specific latitude and longitude using the PROJ.4 syntax. We'll see some examples below, but first I'm obliged to share this [XKCD summary](https://xkcd.com/977/). (Do yourself a favour and click on the link.)
 
 ## Simple Features and the `sf` package
 
@@ -325,6 +323,22 @@ world3 %>%
     grid = F
     ) 
 ```
+
+
+### And another digression on the Equal Earth projection
+
+The latest and greatest projection, however, is the "Equal Earth" projection. Matt Strimas-McKay has a nice [blog post](http://strimas.com/gis/equal-earth/) on it, which you should read. In the interest of brevity, though here's a barebones version.
+
+```{r equal_earth}
+library(rnaturalearth)
+countries <- ne_countries(returnclass = "sf")
+
+countries %>% 
+  ggplot() +
+  geom_sf(fill = "grey80", col = "grey40", lwd = 0.3) +
+  coord_sf(crs = "+proj=eqearth +wktext")
+```
+
 
 
 ### Example 2: A single country (i.e. Norway)
