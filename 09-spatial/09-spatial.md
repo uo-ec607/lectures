@@ -408,10 +408,11 @@ As our first North Carolina examples demonstrate, you can easily import external
 
 ```r
 # library(maps) ## Already loaded
-world1 <- st_as_sf(map('world', plot = FALSE, fill = TRUE))
+world1 <- st_as_sf(map("world", plot = FALSE, fill = TRUE))
 world1 %>%
   ggplot() + 
-  geom_sf(fill = "black", col = "white")
+  geom_sf(fill = "grey80", col = "grey40", lwd = 0.3) +
+  labs(title = "The world", subtitle = "Mercator projection")
 ```
 
 ![](09-spatial_files/figure-html/world1-1.png)<!-- -->
@@ -428,8 +429,8 @@ world2 <-
 
 world2 %>%
   ggplot() + 
-  geom_sf(fill = "black", col = "white") + 
-  theme_ipsum()
+  geom_sf(fill = "grey80", col = "grey40", lwd = 0.3) +
+  labs(title = "The world", subtitle = "Lambert Azimuthal Equal Area projection")
 ```
 
 ![](09-spatial_files/figure-html/world2-1.png)<!-- -->
@@ -451,11 +452,10 @@ gr <-
 world3 %>%
   ggplot() + 
   geom_sf(data = gr, color = "#cccccc", size = 0.15) + ## Manual graticule
-  geom_sf(fill = "black", col = "white") + 
+  geom_sf(fill = "grey80", col = "grey40", lwd = 0.3) +
   coord_sf(datum = NA) +
-  theme_ipsum(
-    grid = F
-    ) 
+  theme_ipsum(grid = F) +
+  labs(title = "The world", subtitle = "Winkel tripel projection")
 ```
 
 ![](09-spatial_files/figure-html/wintri-1.png)<!-- -->
@@ -463,21 +463,33 @@ world3 %>%
 
 ### And another digression on the Equal Earth projection
 
-The latest and greatest projection, however, is the "Equal Earth" projection. Matt Strimas-McKay has a nice [blog post](http://strimas.com/gis/equal-earth/) on it, which you should read. In the interest of brevity, though here's a barebones version.
+The latest and greatest projection, however, is the "Equal Earth" projection. Matt Strimas-McKay has a nice [blog post](http://strimas.com/gis/equal-earth/) on it, which you should read. In the interest of brevity, though here's a bare-bones example. (**NB:** Note that you will need to [upgrade your PROJ4](https://proj4.org/install.html#install) library to version 5.2.0 before trying the below code chunk.)
 
 
 ```r
-library(rnaturalearth)
-countries <- ne_countries(returnclass = "sf")
+# library(rnaturalearth) ## Already loaded
+countries <- 
+  ne_countries(returnclass = "sf") %>%
+  st_transform("+proj=eqearth +wktext")
 
+gr <- 
+  st_graticule(lat = c(-89.9,seq(-80,80,20),89.9)) %>%
+  st_transform(crs = "+proj=eqearth +wktext")
+
+## NB: You will need to upgrade to PROJ4 version 5.2.0 for this plot to work
+## See: https://proj4.org/install.html#install
 countries %>% 
   ggplot() +
+  geom_sf(data = gr, color = "#cccccc", size = 0.15) + ## Manual graticule
   geom_sf(fill = "grey80", col = "grey40", lwd = 0.3) +
-  coord_sf(crs = "+proj=eqearth +wktext")
+  coord_sf(datum = NA) +
+  theme_ipsum(grid = F) +
+  labs(title = "The world", subtitle = "Equal Earth projection")
 ```
 
 ![](09-spatial_files/figure-html/equal_earth-1.png)<!-- -->
 
+Looks great. Note that we used the [rnaturalearth package](https://github.com/ropensci/rnaturalearth) to extract the `countries` spatial data frame. This looks very similar to our `world1` data frame, but avoids some of the weird polygon mappings that can happen under certain projections; particularly when polygons extend over the Greenwich prime meridian.^[To see for yourself, try running the above chunk with the `world1` object that we created earlier iinstead of `countries`. Remember to transform its CRS to the Equal Earth projection first.]
 
 
 ### Example 2: A single country (i.e. Norway)
@@ -848,5 +860,6 @@ tm_shape(land_eck4) +
 You could easily spend a whole semester (or degree!) on spatial analysis and, more broadly, geocomputation. I've simply tried to give you as much useful information as can reasonably be contained in one lecture. Here are some resources for further reading and study:
 
 - The package websites that I've linked to throughout this tutorial are an obvious next port of call for delving deeper into their functionality: [`sf`](https://github.com/r-spatial/sf), [leaflet](https://rstudio.github.io/leaflet/), etc.
-- The best overall resource may be [*Geocomputation with R*](https://geocompr.robinlovelace.net/index.html), a superb new text by Robin Lovelace, Jakub Nowosad, and Jannes Muenchow. This is a "living", open-source document, which is constantly updated by its authors and features a very modern approach to working with geographic data. Highly recommended.
-- If you're in the market for shorter guides, I did promise you some links to **raster-based** tutorials. My friend and former UCSB colleague, Jamie Afflerbach, has a great introduction to rasters [here](https://rawgit.com/jafflerbach/spatial-analysis-R/gh-pages/intro_spatial_data_R.html). At a slightly more advanced level, our very own Ed Rubin has typically excellent tutorial [here](http://edrub.in/ARE212/section13.html). Finally, the rockstar team behind `sf` is busy developing a [new package](https://github.com/r-spatial/stars) called `stars`, which will provide equivalent functionality (among other things) for raster data.
+- The best overall resource right now may be [*Geocomputation with R*](https://geocompr.robinlovelace.net/index.html), a superb new text by Robin Lovelace, Jakub Nowosad, and Jannes Muenchow. This is a "living", open-source document, which is constantly updated by its authors and features a very modern approach to working with geographic data. Highly recommended.
+- Similarly, the rockstar team behind `sf`, Edzer Pebesma and Roger Bivand, are busy writing their own book, [*Spatial Data Science*](https://www.r-spatial.org/book/). This project is currently less developed, but I expect it to become the key reference point in years to come. Imporantly, both of the above books cover **raster-based** spatial data.
+- On the subject of raster data... If you're in the market for shorter guides, Jamie Afflerbach has a great introduction to rasters [here](https://rawgit.com/jafflerbach/spatial-analysis-R/gh-pages/intro_spatial_data_R.html). At a slightly more advanced level, UO's very own Ed Rubin has typically excellent tutorial [here](http://edrub.in/ARE212/section13.html). Finally, the `sf` team is busy developing a [new package](https://github.com/r-spatial/stars) called `stars`, which will provide equivalent functionality (among other things) for raster data.
