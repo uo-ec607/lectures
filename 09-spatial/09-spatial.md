@@ -593,7 +593,10 @@ rent %>%
   coord_sf(crs = 26910) + 
   scale_fill_viridis_c(name = "Rent ($)", labels = scales::comma) + 
   scale_color_viridis_c(name = "Rent ($)", labels = scales::comma) +
-  labs(title = "Rental rates across Oregon and Washington") 
+  labs(
+    title = "Rental rates across Oregon and Washington", 
+    caption = "Data: US Census Bureau"
+    ) 
 ```
 
 ![](09-spatial_files/figure-html/rent_plot-1.png)<!-- -->

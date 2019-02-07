@@ -430,7 +430,10 @@ rent %>%
   coord_sf(crs = 26910) + 
   scale_fill_viridis_c(name = "Rent ($)", labels = scales::comma) + 
   scale_color_viridis_c(name = "Rent ($)", labels = scales::comma) +
-  labs(title = "Rental rates across Oregon and Washington") 
+  labs(
+    title = "Rental rates across Oregon and Washington", 
+    caption = "Data: US Census Bureau"
+    ) 
 ```
 
 This returns an `sf` object, which we can plot directly. Hmmm, looks like you want to avoid renting in Seattle if possible... 
