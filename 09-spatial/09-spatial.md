@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott | University of Oregon
   # affiliation: EC 607
   # email: grantmcd@uoregon.edu
-date: EC 607  #"06 February 2019"
+date: EC 607  #"07 February 2019"
 output: 
   html_document:
     theme: flatly
@@ -133,7 +133,7 @@ Now we can see the explicit data frame structure that was I talking about earlie
 
 ### Plotting and projection with `ggplot2`
 
-Plotting `sf` objects is incredibly easy thanks to the package's integration with `ggplot2`.[Plotting `sf` maps using the base R `plot` function is also easy (and often faster). However, I feel that you give up a lot of control and intuition by moving away from the layered, "graphics of grammar" approach of `ggplot2`.] The key ggplot geom to remember is **`geom_sf()`**. I'm going to go ahead and load the whole tidyverse (i.e. not just `ggplot2`), because we'll soon be using it for some data wrangling too. 
+Plotting `sf` objects is incredibly easy thanks to the package's integration with `ggplot2`.^[Plotting `sf` maps using the base R `plot` function is also easy (and often faster). However, I feel that you give up a lot of control and intuition by moving away from the layered, "graphics of grammar" approach of `ggplot2`.] The key geom to remember is **`geom_sf()`**. For example:
 
 
 ```r
@@ -286,7 +286,7 @@ ggplot(nc) +
 
 ![](09-spatial_files/figure-html/nc_centroid-1.png)<!-- -->
 
-Another set of so-called `binary` operations can be applied to multiple objects. So, we can get things like the distance between two `sf` objects using **`st_distance()`**.
+Another set of so-called `binary` operations can be applied to multiple objects. So, we can get things like the distance between two `sf` objects using **`st_distance()`**. In the below example, I'm going to get the distance from Ashe county to Brunswich county, as well as itself. (The latter is just a silly addition to show that we can easily make multiple pairwise comparisons, even when the distance from one element to another is zero.)
 
 
 ```r
@@ -315,7 +315,7 @@ ggplot(nc) +
 
 ![](09-spatial_files/figure-html/nc_distance-1.png)<!-- -->
 
-Or, we can calculate the intersection of different spatial objects using **`st_intersection()`**. For this next example, I'm going to use two new spatial objects: 1) A regional map of France from the `maps` package and 2) the part of the Seine river network (including its Marne and Yonne tributaries) from the `spData` package. Don't worry too much about the process used for loading these datasets; I'll cover that in more depth shortly. For the moment, just focus on the idea that we want to see which adminstrative regions are intersected by the river network. Start by plotting all of the data to get a visual sense of the overlap:
+Or, we can calculate the intersection of different spatial objects using **`st_intersection()`**. For this next example, I'm going to use two new spatial objects: 1) A regional map of France from the `maps` package and 2) part of the Seine river network (including its Marne and Yonne tributaries) from the `spData` package. Don't worry too much about the process used for loading these datasets; I'll cover that in more depth shortly. For the moment, just focus on the idea that we want to see which adminstrative regions are intersected by the river network. Start by plotting all of the data to get a visual sense of the overlap:
 
 
 ```r
@@ -397,7 +397,7 @@ st_join(france, seine) %>%
 
 ![](09-spatial_files/figure-html/france_join-1.png)<!-- -->
 
-That's about as much `sf` functionality as I can show you right now. The remaining part of this lecture will cover some additional mapping considerations and some bonus spatial R "swag". However, I'll try to slip in a few more `sf`-specific operations along the way.
+That's about as much `sf` functionality as I can show you for today. The remaining part of this lecture will cover some additional mapping considerations and some bonus spatial R "swag". However, I'll try to slip in a few more `sf`-specific operations along the way.
 
 ## Where to get map data
 
@@ -463,7 +463,7 @@ world3 %>%
 
 ### And another digression on the Equal Earth projection
 
-The latest and greatest projection, however, is the "Equal Earth" projection. Matt Strimas-McKay has a nice [blog post](http://strimas.com/gis/equal-earth/) on it, which you should read. In the interest of brevity, though here's a bare-bones example. (**NB:** Note that you will need to [upgrade your PROJ4](https://proj4.org/install.html#install) library to version 5.2.0 before trying the below code chunk.)
+The latest and greatest projection, however, is the "Equal Earth" projection. Matt Strimas-McKay has a nice [blog post](http://strimas.com/gis/equal-earth/) on it, which you should read. In the interest of brevity, though here's a bare-bones example. (**NB:** Note that you will need to [upgrade your PROJ.4](https://proj4.org/install.html#install) library to version 5.2.0 before trying the below code chunk.)
 
 
 ```r
@@ -585,6 +585,8 @@ rent
 ## # … with 2,282 more rows
 ```
 
+This returns an `sf` object, which we can plot directly.
+
 
 ```r
 rent %>%
@@ -601,9 +603,9 @@ rent %>%
 
 ![](09-spatial_files/figure-html/rent_plot-1.png)<!-- -->
 
-This returns an `sf` object, which we can plot directly. Hmmm, looks like you want to avoid renting in Seattle if possible... 
+Hmmm, looks like you want to avoid renting in Seattle if possible... 
 
-The above map is very detailed. However, perhaps we're not interested in the entire set of tract level data, but would rather get a sense of rents within some well-defined metropolitan areas? The **`tigris`** package has you covered here. For example, let's say we want to compare average rents across three Oregon/Washington metros: Portland (and surrounds), Corvallis and Eugene.
+The above map is very detailed. Perhaps we're not interested in the entire set of tract level data, but would rather get a sense of rents within some well-defined metropolitan areas? The **`tigris`** package has you covered here. For example, let's say we want to compare average rents across three Oregon/Washington metros: Portland (and surrounds), Corvallis and Eugene.
 
 
 ```r
@@ -866,3 +868,4 @@ You could easily spend a whole semester (or degree!) on spatial analysis and, mo
 - The best overall resource right now may be [*Geocomputation with R*](https://geocompr.robinlovelace.net/index.html), a superb new text by Robin Lovelace, Jakub Nowosad, and Jannes Muenchow. This is a "living", open-source document, which is constantly updated by its authors and features a very modern approach to working with geographic data. Highly recommended.
 - Similarly, the rockstar team behind `sf`, Edzer Pebesma and Roger Bivand, are busy writing their own book, [*Spatial Data Science*](https://www.r-spatial.org/book/). This project is currently less developed, but I expect it to become the key reference point in years to come. Imporantly, both of the above books cover **raster-based** spatial data.
 - On the subject of raster data... If you're in the market for shorter guides, Jamie Afflerbach has a great introduction to rasters [here](https://rawgit.com/jafflerbach/spatial-analysis-R/gh-pages/intro_spatial_data_R.html). At a slightly more advanced level, UO's very own Ed Rubin has typically excellent tutorial [here](http://edrub.in/ARE212/section13.html). Finally, the `sf` team is busy developing a [new package](https://github.com/r-spatial/stars) called `stars`, which will provide equivalent functionality (among other things) for raster data.
+- If you want more advice on drawing maps, including a bunch that we didn't cover today (choropleths, state-bins, etc.), Kieran Healy's [*Data Vizualisation*](https://socviz.co/maps.html#maps) book has you covered.
