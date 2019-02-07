@@ -20,7 +20,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
 ```
 
-Today's lecture is about the bread-and-butter tool of applied econometrics and data science: regression analysis. My goal is to simply give you a whirlwind tour of the key functions and commands. I'm going to assume that you already know all of the necessary theoretical background (causal inference, asymptotics, etc.). This lecture will *not* cover any of theoretical concepts or seek to justify a particular statistical model. Indeed, most of the models that we're going to run today are pretty silly. That disclaimer aside, let's proceeed...
+Today's lecture is about the bread-and-butter tool of applied econometrics and data science: regression analysis. My goal is to simply give you a whirlwind tour of the key functions and commands. I'm going to assume that you already know all of the necessary theoretical background on  causal inference, asymptotics, etc. This lecture will *not* cover any of theoretical concepts or seek to justify a particular statistical model. Indeed, most of the models that we're going to run today are pretty silly. We also won't be able to cover some important topics. I'll only provide the briefest example of a Bayesian regression model and I won't touch times series analysis at. (Although, I will provide links for further reading at the bottom of this document.) These disclaimers aside, let's proceeed...
 
 ## Software requirements
 
@@ -33,7 +33,7 @@ It's important to note that "base" R already provides all of the tools we need f
 
 The `broom` package was bundled with the rest of tidyverse and `sandwich` should get installed as a dependency of several of the above packages. Still, a convenient way to install (if necessary) and load everything is by running the below code chunk. I'll also go ahead and set my preferred ggplot2 theme for the rest of this document.
 
-```{r, cache = F}
+```{r, cache=F, message=F}
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(tidyverse, broom, hrbrthemes, plm, estimatr, sandwich, lmtest, AER, lfe, huxtable, margins)
 theme_set(hrbrthemes::theme_ipsum())
@@ -194,7 +194,7 @@ tidy(ols1_robust_clustered, conf.int = T)
 
 ### Aside on HAC (Newey-West) standard errors
 
-On thing I want to flag is that the `estimator` package does not yet offer support for HAC (i.e. heteroskedasticity and autocorrelation consistent) standard errors *a la* [Newey-West](https://en.wikipedia.org/wiki/Newey%E2%80%93West_estimator). I've submitted a [feature request](https://github.com/DeclareDesign/estimatr/issues/272) on GitHub --- vote up if you would like to see it added sooner! --- but you can still obtain these pretty easily using the aforementioned-mentioned `sandwich` package. For example, we can use `sandwich::NeweyWest()` on our existing `ols1` object to obtain HAC SEs for it.
+On thing I want to flag is that the `estimatr` package does not yet offer support for HAC (i.e. heteroskedasticity and autocorrelation consistent) standard errors *a la* [Newey-West](https://en.wikipedia.org/wiki/Newey%E2%80%93West_estimator). I've submitted a [feature request](https://github.com/DeclareDesign/estimatr/issues/272) on GitHub --- vote up if you would like to see it added sooner! --- but you can still obtain these pretty easily using the aforementioned-mentioned `sandwich` package. For example, we can use `sandwich::NeweyWest()` on our existing `ols1` object to obtain HAC SEs for it.
 
 ```{r ols1_hac}
 # library(sandwich) ## Already loaded
@@ -248,7 +248,7 @@ summary(ols_dv2)
 
 ### Interaction effects
 
-Like dummy variables, R provides a convenient syntax for specifying interaction terms directly in the regression model without having to create them manually beforehand.^[Although there are very good reasons that you might want to modify your parent variables before doing so (e.g. centering them). As it happens, I'm [on record](https://twitter.com/grant_mcdermott/status/903691491414917122) as stating that interaction effects are most widely misunderstood and misapplied concept in econometrics. However, that's a topic for another day. (Read the paper in the link!)] You van just use `x1:x2` (to include only the interaction term) or `x1*x2` (to include the parent terms and interaction terms). Generally speaking, you are best advised to include the parent terms alongside an interaction term. This makes the `*` option a good default.
+Like dummy variables, R provides a convenient syntax for specifying interaction terms directly in the regression model without having to create them manually beforehand.^[Although there are very good reasons that you might want to modify your parent variables before doing so (e.g. centering them). As it happens, I'm [on record](https://twitter.com/grant_mcdermott/status/903691491414917122) as stating that interaction effects are most widely misunderstood and misapplied concept in econometrics. However, that's a topic for another day. (Read the paper in the link!)] You can just use `x1:x2` (to include only the interaction term) or `x1*x2` (to include the parent terms and interaction terms). Generally speaking, you are best advised to include the parent terms alongside an interaction term. This makes the `*` option a good default.
 
 ```{r ols_ie}
 ols_ie <- lm(mass ~ gender*height, data = humans)
@@ -262,13 +262,13 @@ summary(ols_ie)
 
 The simplest (and least efficient) way to include fixed effects in a regression model is, of course, to use dummy variables. However, it isn't very efficient or scaleable. What's the point learning all that stuff about the Frisch-Waugh-Lovell theorem, within-group transformations, etcetera, etcetera if we can't use them in our software routines? Again, there are several options to choose from here. For example, the venerable [plm package](https://cran.r-project.org/web//packages/plm/vignettes/plmPackage.html), which also handles random effects and pooling models. However, I am going to strongly advocate for the [lfe package](https://cran.r-project.org/web/packages/lfe/index.html).
 
-`lfe` (i.e. "**l**inear **f**ixed **e**ffects") is one of my packages packages in the entire R catalogue. It has a boatload of functionality built in to it (instrumental variables support, multilevel clustering, etc.) It is also *fast* because it automatically uses all the available processing power on your machine. We'll return to the idea of multicore implementation when we get to the lecture on parallel processing. For the moment, simply enjoy the fact that `lfe` is optimised to solve big regression problems as quickly as possible.
+`lfe` (i.e. "**l**inear **f**ixed **e**ffects") is one of my packages in the entire R catalogue. It has a boatload of functionality built in to it (instrumental variables support, multilevel clustering, etc.) It is also *fast* because it automatically uses all the available processing power on your machine. We'll return to the idea of multicore implementation when we get to the lecture on parallel processing. For the moment, simply enjoy the fact that `lfe` is optimised to solve big regression problems as quickly as possible.
 
 Let's take a look, starting off with a simple example and then moving on to something more demanding.
 
 #### Simple FE model
 
-The package's main function is `lfe::felm()`, which is used for estimating fixed effects linear models. The syntax is such that you first specify the regression model as per normal, and then list the fixed effect(s) after a `|`. An example may help to illustrate. Let's say that we again want to run our simple regression of mass on heigt, but this time control for species-level fixed effects.
+The package's main function is `lfe::felm()`, which is used for estimating fixed effects linear models. The syntax is such that you first specify the regression model as per normal, and then list the fixed effect(s) after a `|`. An example may help to illustrate. Let's say that we again want to run our simple regression of mass on height, but this time control for species-level fixed effects.
 
 ```{r ols_fe, message=FALSE}
 library(lfe)
@@ -282,7 +282,7 @@ Note that the resulting `felm` object drops all of the species intercepts, since
 
 #### High dimensional FEs and (multiway) clustering
 
-One reason that I prefer the `lfe` package to other options --- e.g. the panel-focused `plm` package (see further below) --- is because it supports high dimensional fixed effects *and* (multiway) clustering.^[It is very similar to the excellent [reghdfe](http://scorreia.com/software/reghdfe/) package in Stata.] In the below example, I'm going to add "homeworld" as an additional fixed effect to the model and also cluster according to this model. I'm not claiming that this is a particularly good or sensible model, but just go with it. Note that, since we specify "homeworld" in the fixed effects slot below, `felm()` automatically converts it to a factor even though we didn't explicitly tell it to.
+One reason that I prefer the `lfe` package to other options --- e.g. the panel-focused `plm` package (see further below) --- is because it supports high dimensional fixed effects *and* (multiway) clustering.^[It is very similar to the excellent [reghdfe](http://scorreia.com/software/reghdfe/) package in Stata.] In the below example, I'm going to add "homeworld" as an additional fixed effect to the model and also cluster according to this variable. I'm not claiming that this is a particularly good or sensible model, but just go with it. Note that, since we specify "homeworld" in the fixed effects slot below, `felm()` automatically converts it to a factor even though we didn't explicitly tell it to.
 
 ```{r ols_hdfe}
 ols_hdfe <- 
@@ -309,7 +309,7 @@ bind_rows(
   geom_hline(yintercept = 0, col = "orange") +
   ylim(-0.5, NA) +
   labs(
-    Title = "'Effect' of height on mass",
+    title = "'Effect' of height on mass",
     caption = "Data: Characters from the Star Wars universe"
     ) +
   theme(axis.title.x = element_blank())
@@ -409,10 +409,10 @@ tidy(bayes_reg)
 
 We've already worked through several visualization examples today and you should all be familiar with ggplot2's `geom_smooth()` from our earlier lectures. For instance:
 
-```{r}
+```{r, include=F, cache=F}
 theme_set(theme_ipsum())
 ```
-```{r smooth}
+```{r smooth, warning=F}
 humans %>%
   ggplot(aes(x=mass, y=height, col=gender)) + 
   geom_point(alpha=0.7) +
@@ -438,3 +438,6 @@ huxreg(ols_dv, ols_ie, ols_hdfe)
 ## Further resources
 
 - [Ed Rubin](https://twitter.com/edrubin) has outstanding [teaching notes](http://edrub.in/teaching.html) for econometrics with R on his website. This includes both [undergrad-](https://github.com/edrubin/EC421W19) and [graduate-](http://edrub.in/ARE212/notes.html)level courses. I believe that he is turning these notes into a book with some coauthors, so stay tuned.
+- Speaking of books, several introductory texts are freely available, including [*Introduction to Econometrics with R*](https://www.econometrics-with-r.org/) (Christoph Hanck *et al.*) and [*Using R for Introductory Econometrics*](http://www.urfie.net/) (Florian Heiss).
+- [Tyler Ransom](https://twitter.com/tyleransom) has a nice [cheat sheet](https://github.com/tyleransom/EconometricsLabs/blob/master/tidyRcheatsheet.pdf) for common regression tasks and specifications.
+- I promised to provide some links to time series analysis. The good news is that R's support for time series is very, very good. The [Time Series Analysis](https://cran.r-project.org/web/views/TimeSeries.html) task view on CRAN offers an excellent overview of available packages and their functionality. If you're looking for a more concise introduction, this [community tutorial](https://www.datacamp.com/community/tutorials/time-series-r) on DataCamp is a good place start.
