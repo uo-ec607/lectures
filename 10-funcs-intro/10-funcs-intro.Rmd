@@ -1,0 +1,257 @@
+---
+title: "Lecture 10: Functions in R: 1) Introductory concepts"
+author:
+  name: Grant R. McDermott | University of Oregon
+  # affiliation: EC 607
+  # email: grantmcd@uoregon.edu
+date: EC 607  #"`r format(Sys.time(), '%d %B %Y')`"
+output: 
+  html_document:
+    theme: flatly
+    highlight: haddock 
+    # code_folding: show
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
+```
+
+## Software requirements
+
+### R packages 
+
+- **New:** `pbapply`
+- **Already used:** `tidyverse`
+
+Truth be told, we're actually going to be using the [purrr package](https://purrr.tidyverse.org/), which comes bundled with the rest of the tidyverse. Let's install (if necessary) and load these packages.
+
+```{r, cache=F, message=F}
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(pbapply, tidyverse)
+```
+
+## Basic syntax
+
+We have already seen and used a multitude of functions in R. Some of these functions come pre-packaged with base R installation (e.g. `mean()`), while others are from external packages (e.g. `dplyr::filter()`). Regardless of where they come from, all functions in R adopt the same basic syntax:
+
+```r
+function_name(ARGUMENTS)
+```
+
+Much of the time, we will rely on functions that other people have written for us. However, you can -- and should! -- create your own functions too. This is easy to do with the generic **`functions()`** function.^[Yes, it's a function that let's you write functions. Very meta.], The syntax will again look familiar to you:
+
+```r
+function(ARGUMENTS) {
+  OPERATIONS
+  return(VALUE)
+}
+```
+
+While it's possible and reasonably common to write anonymous functions like the above, we typically write functions because we want to reuse code. For this typical use-case it makes sense to name our functions. Since "everything is an object in R", this is easy to do:
+
+```r
+my_func <- 
+  function(ARGUMENTS) {
+    OPERATIONS
+    return(VALUE)
+  }
+```
+
+For some short functions, you don't need to invoke the curly brackets or assign an explicit RETURN object (more on this below). In these cases, you can just write your function on a single line:
+
+```r
+my_short_func <- function(ARGUMENTS) OPERATION
+```
+
+Try to give your function a short, pithy name that will both make sense to you and make your code easier to read for others. This is harder than it sounds, but will pay off down the road.
+
+## A simple example
+
+Let's write out a simple example function, which gives the square of an input number.
+
+```{r square1}
+square <-       ## Our function name
+  function(x) { ## The argument(s) that our function takes as an input
+    x^2         ## The operation(s) that our function performs
+  }
+square(3) ## Test that it works
+```
+
+Note that `square <- function(x) x^2` would work just as well (i.e. everything on a single line). However, we're about to add some conditions and options to our function that will strongly favour the multi-line format.
+
+**Aside:** I want to stress that our new `square()` function is not a particularly exciting... or, indeed, useful. R's built-in arithmetic functions already take care of (vectorised) exponentiation and so very efficiently. (See `?Arithmetic`.) However, I want to continue with this conceptually simple example, since it will provide a clear framework for demonstrating some general principles about functions in R.
+
+### Specifying return values
+
+Notice that we didn't specify a return value for our function. This will work in many cases because R's default behaviour is to automatically return the final object that you created within the function. However, that's not always true and you should get into the habit of assigning the return object(s) explicitly. Let's modify our function to be explicit about the desired return value.
+
+```{r square2}
+square <- 
+  function(x) { 
+    x_sq <- x^2   ## Create an intermediary object (that will be returned)
+    return(x_sq)  ## The value(s) or object(s) that we want returned.
+  }
+square(5) ## Test that it works
+```
+
+Being explicit about the return object(s) is particularly valuable when we want to return more than one object. For example, say that we want to remind our user what variable they used as an argument in our function:
+
+```{r square3}
+square <- 
+  function (x) { ## The argument(s) that our function takes as an input
+    x_sq <- x^2 ## The operation(s) that our function performs
+    return(list(value=x, value_squared=x_sq)) ## The list of object(s) that we want returned.
+  }
+square(3)
+```
+
+Note that multiple return objects have to be combined in a list. I didn't have to name these separate list elements (i.e. "value" and "value_squared"), but it seems helpful to users of our function. (How would the output change if I didn't name the list elements?) Remember, however, that many objects in R contain multiple elements; vectors, data frames and lists are all good examples of this. So we can also specify one of these "array"-type objects if that provides a more convenient form of output.
+
+```{r square4}
+square <- 
+  function (x) { 
+    x_sq <- x^2 
+    df <- data.frame(value=x, value_squared=x_sq) ## Bundle up our input and output values into a convenient dataframe.
+    return(df)
+  }
+square(12)
+```
+
+### Specifying default argument values
+
+Another thing worth noting about R functions is that you can assign default argument values. You have already encountered some examples of this in action. (E.g. Type `?rnorm` and see that it provides a default mean and standard deviation of 0 and 1, respectively.) We can add a default option to our own function pretty easily.
+```{r square5}
+square <- 
+  function (x = 1) { ## Setting the default argument value 
+    x_sq <- x^2 
+    df <- data.frame(value=x, value_squared=x_sq)
+    return(df)
+  }
+square() ## Will take the default value of 1 since we didn't provide an alternative.
+square(2) ## Now takes the explicit value that we give it.
+```
+
+### Environments and lexical scoping
+
+Before continuing, I want to highlight the fact that none of the intermediate objects that we created within the above functions (`x_sq`, `df`, etc.) have made their way into our global environment. Take a moment to confirm this for yourself by looking in the "Environment" pane of your RStudio session.
+
+R has a set of so-called [*lexical scoping*](http://adv-r.had.co.nz/Functions.html#lexical-scoping) rules, which  govern where it stores and evaluates the values of different objects. Without going into too much depth, the practical implication of lexical scoping is that functions operate in a quasi-sandboxed [*environment*](http://adv-r.had.co.nz/Environments.html). They don't return or use objects in the global environment unless they are forced to (e.g. with a `return()` command). Similarly, a function can look to outside environments (e.g. a level "up") to find an object if it doesn't see the object named within itself.
+
+We'll return to this idea when we get to the functional programming section below, and will also explore further during the next lecture on debugging.
+
+## Iteration
+
+After learning the basic language syntax, arguably the most important early programming skill to master is writing (for) loops. They allow us to iterate over --- or map --- a set of inputs to a variety of functions. In so doing, loops provide the underlying power to a bewildering array of software applications and scientific analyses. 
+
+However, as we'll see, writing loops in R can require a bit more caution because of the limitations of the standard for-loop approach. Instead, I advocate that you instead adopt what is known as a "functional programming" approach to writing loops. Let's dive into the reasons why and how these approaches differ.
+
+### Vectorisation
+
+The first question you need to ask is: "Do I need to iterate at all?" You may remember from a previous lecture that I spoke about R be optimised for working with vectors. What this effectively means is that (most) functions in R can be *vectorised*, Which is to say that you apply a function to a whole vector all at once, rather than to individual elements of a vector. Let's demonstrate this property with our `square` function:
+```{r vectorisation}
+square(1:5)
+square(c(2, 4))
+```
+
+### For-loops. Easy, but limited (and sometimes dangerous)
+
+In R, standard for-loops take a pretty intuitive form. For example:
+
+```{r forloop_ex1}
+for(i in 1:10) print(LETTERS[i])
+```
+
+Or:
+
+```{r fahrenheit}
+kelvin <- 300:305
+fahrenheit <- NULL
+# fahrenheit <- vector("double", length(kelvin)) ## Better. Why?
+for(k in 1:length(kelvin)) {
+  fahrenheit[k] <- kelvin[k] * 9/5 - 459.67
+}
+fahrenheit
+```
+
+Unfortunately, basic for-loops in R also come with some downsides. Historically, they used to be much slower than alternative methods (see below). This has largely been resolved, but I've still run into cases where an inconspicuous for-loop has brought an entire analysis crashing to its knees.^[[Exhibit A](https://github.com/grantmcdermott/bycatch/commit/18dbed157f0762bf4b44dfee437d6f319561c160). Trust me: debugging these cases is not much fun.] The bigger problem with for-loops, however, is that they deviate from the norms and best practices of **functional programming**. 
+
+The concept of functional programming is arguably the most important thing you can take away from today's lecture. Thus, while it can certainly be applied to iteration, I'm going to cover now in its own section.
+
+## Functional programming (FP)
+
+### FP defined
+
+Here is [Hadley Wickham](http://adv-r.had.co.nz/Functional-programming.html) explaining the key idea:
+
+> R, at its heart, is a functional programming (FP) language. This means that it provides many tools for the creation and manipulation of functions. In particular, R has what’s known as first class functions. You can do anything with functions that you can do with vectors: you can assign them to variables, store them in lists, pass them as arguments to other functions, create them inside functions, and even return them as the result of a function. 
+
+That may be a little difficult to parse at first, so here is video of Hadley giving a much more intuitive explanation through a series of examples:
+
+<iframe width="710" height="400" src="https://www.youtube.com/embed/GyNqlOjhPCQ?rel=0&amp;start=372" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+In short: For-loops tend to emphasise the *objects* that we're working with (say, a vector of numbers) rather than the *operations* that we want to apply to them (say, get the mean or median or whatever). This is inefficient because it requires us to continually write out the for-loops by hand rather than getting an R function to create the for-loop for us. 
+
+As a corollary, for-loops also "pollute" our global environment with the variables that are used counting variables. Take a look at your *Environment* pane in RStudio. What do you see? In addition to the `kelvin` and `fahrenheit` vectors that we created, we also see two variables `i` and `k` (equal to the last value of their respective loops). Creating these auxilliary variables is almost certainly not an intended outcome when your write a for-loop.^[The best case I can think of is when you are trying to keep track of the number of loops, but even then there are much better ways of doing this.] More worringly, they can cause programming errors when we inadvertently refer to a similarly-named variable elsewhere in our script. So we best remove them manually as soon as we're finished with a loop. 
+
+```{r rm_i_k}
+rm(i,k)
+```
+
+FP allows to avoid the explicit use of loop constructs and its associated downsides. In practice, there are two ways to implement FP in R: 1) The `*apply` family of functions and 2) The `purrr` package.
+
+### The `*apply` family (`lapply` and co.)
+
+#### `lapply` basics
+
+Base R contains a very useful family of `*apply` functions. I won't go through all of these here --- see `?apply` or [this blog post](https://nsaunders.wordpress.com/2010/08/20/a-brief-introduction-to-apply-in-r/) among numerous excellent resources --- but they all follow a similar philosophy and syntax. The good news from our perspective is that this syntax very closely mimics the basic for-loop syntax. For example, consider the below code that is analgous to our first for-loop above, but now invokes an `lapply` call instead. `lapply` can take various input types as arguments --- vectors, data frames, lists --- but always returns a list. (Where each element of the returned list is the result from one iteration of the loop.) So now you know where the "l" in "**l**apply" comes from...
+
+```{r lapply_ex}
+lapply(1:10, function(i) LETTERS[i])
+```
+
+A couple of things to notice. First, check your "Environment"" pane in RStudio. Do you see an object called "i" in the Global Environment? No! Again, this is because the objects and "hyperparameters" created (and invoked by) a function are all evaluated in a sandbox environment outside of your global environment.
+
+and you would have had to pipe the above to `unlist()` if you instead wanted a vector. While this default list return behaviour may not sound ideal at first, I've found that I use `lapply` much more frequently than any of the other `apply` family members. One reason is that it works very well with data frames, especially when combined with `dplyr::bind_rows()`. The latter function allows us to concatenate a list of data frames into a single data frame. For example, here's a a slightly modified version of the function that produces a useful data frame output:
+
+```{r bind_rows_ex, warning=F}
+library(tidyverse) ## Already loaded
+
+lapply(1:10, function(i) {
+  data.frame(num = i, let = LETTERS[i])
+  }) %>%
+  bind_rows()
+```
+
+#### A quick look at `sapply`
+
+Another option that would work well in the this particular case is `sapply()`, which stands for "**s**implify apply". This is essentially a wrapper around `lapply` that tries to return simplified output that matches the input type. (If you feed the function a vector, it will try to return a vector, etc.)
+
+```{r sapply_ex}
+sapply(1:10, function(i) LETTERS[i]) 
+```
+
+#### Progress bars with the `pbapply` package!
+
+One of my go-to packages is `pbapply`, which is a lightweight wrapper around the `*apply` functions that adds a progress bar. And who doesn't like progress bars? I personally find it incredibly useful to get an idea of how a program of function is progressing and how much longer I should expect to wait before completion. `pbapply` offers versions for all of the `*apply` family, but the one that I use the most is (unsuprisingly) `pbapply::pblapply`. For example:
+
+```{r pbapply_ex, warning = F}
+# library(pbapply) ## Already loaded
+
+pblapply(1:10, function(i) {
+  df <- data.frame(num = i, let = LETTERS[i])
+  Sys.sleep(1)
+  return(df)
+  }) %>%
+  bind_rows()
+```
+
+Probably my favourite thing about the `pblapply` function, though is that it allows for easy implementation of parallel (i.e. multicore) processing that works *across operating systems*. We'll cover this next week.
+
+## Further reading
+
+- [Chapter 19 ("Functions)")](http://r4ds.had.co.nz/functions.html) and [Chapter 21 ("Iteration)")](http://r4ds.had.co.nz/iteration.html) of *R4DS* (Grolemund and Wickham) cover much of the same ground as we have here, with particular emphasis on the `purrr` package for iteration.
+- [Chapter 10 ("Functional programming)")](http://adv-r.had.co.nz/Functional-programming.html) and [Chapter 11 ("Functionals)")](http://adv-r.had.co.nz/Functionals.html) of *Advanced R* (Wickham) goes into more depth, especially on the philosophy of functional programming. It also emphasises the `*apply` family of functions, although that is at least partly (entirely?) due to the fact that `purrr` was introduced after its publication.
