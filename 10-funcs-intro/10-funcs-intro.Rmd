@@ -201,30 +201,52 @@ As a corollary, for-loops also "pollute" our global environment with the variabl
 rm(i,k)
 ```
 
-FP allows to avoid the explicit use of loop constructs and its associated downsides. In practice, there are two ways to implement FP in R: 1) The `*apply` family of functions and 2) The `purrr` package.
+FP allows to avoid the explicit use of loop constructs and its associated downsides. In practice, there are two ways to implement FP in R: 1) The base `*apply` family of functions and 2) the `purrr` package.
 
-### The `*apply` family (`lapply` and co.)
+### 1) `*apply` family (`lapply()` and co.)
 
-#### `lapply` basics
+#### `lapply()` basics
 
-Base R contains a very useful family of `*apply` functions. I won't go through all of these here --- see `?apply` or [this blog post](https://nsaunders.wordpress.com/2010/08/20/a-brief-introduction-to-apply-in-r/) among numerous excellent resources --- but they all follow a similar philosophy and syntax. The good news from our perspective is that this syntax very closely mimics the basic for-loop syntax. For example, consider the below code that is analgous to our first for-loop above, but now invokes an `lapply` call instead. `lapply` can take various input types as arguments --- vectors, data frames, lists --- but always returns a list. (Where each element of the returned list is the result from one iteration of the loop.) So now you know where the "l" in "**l**apply" comes from...
+Base R contains a very useful family of `*apply` functions. I won't go through all of these here --- see `?apply` or [this blog post](https://nsaunders.wordpress.com/2010/08/20/a-brief-introduction-to-apply-in-r/) among numerous excellent resources --- but they all follow a similar philosophy and syntax. The good news from our perspective is that this syntax very closely mimics the basic for-loop syntax. For example, consider the code below, which is analgous to our first for-loop above, but now invokes an `lapply()` call instead. 
 
 ```{r lapply_ex}
 lapply(1:10, function(i) LETTERS[i])
 ```
 
-A couple of things to notice. First, check your "Environment"" pane in RStudio. Do you see an object called "i" in the Global Environment? No! Again, this is because the objects and "hyperparameters" created (and invoked by) a function are all evaluated in a sandbox environment outside of your global environment.
+A couple of things to notice. 
 
-and you would have had to pipe the above to `unlist()` if you instead wanted a vector. While this default list return behaviour may not sound ideal at first, I've found that I use `lapply` much more frequently than any of the other `apply` family members. One reason is that it works very well with data frames, especially when combined with `dplyr::bind_rows()`. The latter function allows us to concatenate a list of data frames into a single data frame. For example, here's a a slightly modified version of the function that produces a useful data frame output:
+First, check your "Environment" pane in RStudio. Do you see an object called "i" in the Global Environment? (The answer should be"no".) Again, this is because of R's lexical scoping rules, which mean that any object created (and invoked by) a function is evaluated in a sandboxed environment outside of your global environment.
+
+Second, notice that the returned object is a *list*. The `lapply()` function can take various input types as arguments --- vectors, data frames, lists --- but always returns a list, where each element of the returned list is the result from one iteration of the loop. (So now you know where the "l" in "**l**apply" comes from...) What if you don't want the output in list form? Well, there several options here. For example, we could pipe the output to `unlist()` if you wanted a vector instead. 
+
+While the default list-return behaviour may not sound ideal at first, I've found that I use `lapply()` more frequently than any of the other `apply` family members. One reason is that it works very well with data frames, especially when combined with `dplyr::bind_rows()`.^[As we've already seen from previous lectures, the latter function allows us to bind a list of data frames into a single data frame.] For example, here's a a slightly modified version of the function that now yields a data frame:
 
 ```{r bind_rows_ex, warning=F}
-library(tidyverse) ## Already loaded
+# library(tidyverse) ## Already loaded
 
 lapply(1:10, function(i) {
-  data.frame(num = i, let = LETTERS[i])
+  df <- data.frame(num = i, let = LETTERS[i])
+  return(df)
   }) %>%
   bind_rows()
 ```
+
+### Aside: Create and iterate over named functions
+
+As you may already ahve guessed, we can split the function and the iteration (and binding) into separate steps. This is often good advice to follow in practice, since you will be creating named functions that you want to be able to reuse flexibly.
+
+```{r num_to_alpha, warning=F}
+## Create a named function
+num_to_alpha <- 
+  function(i) {
+  df <- data.frame(num = i, let = LETTERS[i])
+  return(df)
+  }
+## Now iterate over our function using different values
+lapply(1:10, num_to_alpha) %>% bind_rows()
+lapply(c(1, 5, 26, 3), num_to_alpha) %>% bind_rows()
+```
+
 
 #### A quick look at `sapply`
 
@@ -236,7 +258,7 @@ sapply(1:10, function(i) LETTERS[i])
 
 #### Progress bars with the `pbapply` package!
 
-One of my go-to packages is `pbapply`, which is a lightweight wrapper around the `*apply` functions that adds a progress bar. And who doesn't like progress bars? I personally find it incredibly useful to get an idea of how a program of function is progressing and how much longer I should expect to wait before completion. `pbapply` offers versions for all of the `*apply` family, but the one that I use the most is (unsuprisingly) `pbapply::pblapply`. For example:
+One of my go-to packages is `pbapply`, which is a lightweight wrapper around the `*apply` functions that adds a progress bar. And who doesn't like progress bars? I personally find it incredibly useful to get an idea of how a program of function is progressing and how much longer I should expect to wait before completion. `pbapply` offers versions for all of the `*apply` family, but the one that I use the most is (unsuprisingly) `pbapply::pblapply()`. You will need to run this next example interactively to see the effect properly.
 
 ```{r pbapply_ex, warning = F}
 # library(pbapply) ## Already loaded
@@ -249,7 +271,39 @@ pblapply(1:10, function(i) {
   bind_rows()
 ```
 
-Probably my favourite thing about the `pblapply` function, though is that it allows for easy implementation of parallel (i.e. multicore) processing that works *across operating systems*. We'll cover this next week.
+Another thing that I really like about the `pblapply()` function is that it allows for easy implementation of parallel (i.e. multicore) processing that works across operating systems. We'll cover this next week.
+
+### 2) `purrr` package
+
+```{r map}
+map(1:10, num_to_alpha)
+```
+
+
+```{r map_df, warning = F}
+map_df(1:10, num_to_alpha)
+```
+
+
+### Mapping (iterating) over multiple inputs
+
+Thus far we have only been working with functions that take a single input when iterating. For example, we give them a single vector (even though that vector contains many elements that drive the iteration process). But what if we want to iterate over multiple inputs? Both base R (through `mapply()`) and purrr (through `pmap`) have options for handling multiple inputs for iteration. However, in practice I prefer to feed it a data frame with a combination of variables.
+
+```{r multi_map, eval=F}
+## Create a named function
+silly_func <- 
+  function(i, m, s) {
+  df <- data.frame(num = i, let = LETTERS[i], random = rnorm(mean=m, sd=s))
+  return(df)
+  }
+
+my_inputs <- data.frame(i = 10, m = rep(c(1,0), times=5), j = rep(c(0.5, 0.25), rep=5))
+
+map_df(my_inputs, silly_func)
+
+```
+
+
 
 ## Further reading
 
