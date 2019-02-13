@@ -1,10 +1,10 @@
 ---
-title: 'Lecture 5: Data work in the "tidyverse"'
+title: 'Data work in the "tidyverse"'
 author:
-  name: Grant R. McDermott | University of Oregon
-  # affiliation: EC 607
+  name: Grant R. McDermott
+  affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: EC 607 #"24 January 2019"
+date: Lecture 5 #"12 February 2019"
 output: 
   html_document:
     theme: flatly

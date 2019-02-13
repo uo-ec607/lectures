@@ -1,10 +1,10 @@
 ---
-title: "Lecture 9: Spatial analysis in R"
+title: "Spatial analysis in R"
 author:
-  name: Grant R. McDermott | University of Oregon
-  # affiliation: EC 607
+  name: Grant R. McDermott
+  affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: EC 607  #"07 February 2019"
+date: Lecture 9  #"12 February 2019"
 output: 
   html_document:
     theme: flatly

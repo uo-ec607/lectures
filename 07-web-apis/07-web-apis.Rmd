@@ -1,10 +1,10 @@
 ---
-title: "Lecture 7: Webscraping: (2) Client-side and APIs"
+title: "Webscraping: (2) Client-side and APIs"
 author:
-  name: Grant R. McDermott | University of Oregon
-  # affiliation: EC 607
+  name: Grant R. McDermott
+  affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: EC 607  #"`r format(Sys.time(), '%d %B %Y')`"
+date: Lecture 7  #"`r format(Sys.time(), '%d %B %Y')`"
 output: 
   html_document:
     theme: flatly

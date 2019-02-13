@@ -1,10 +1,10 @@
 ---
-title: "Lecture 8: Regression analysis in R"
+title: "Regression analysis in R"
 author:
-  name: Grant R. McDermott | University of Oregon
-  # affiliation: EC 607
+  name: Grant R. McDermott
+  affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: EC 607  #"`r format(Sys.time(), '%d %B %Y')`"
+date: Lecture 8  #"`r format(Sys.time(), '%d %B %Y')`"
 output: 
   html_document:
     theme: flatly
@@ -38,7 +38,7 @@ if (!require("pacman")) install.packages("pacman")
 pacman::p_load(tidyverse, broom, hrbrthemes, plm, estimatr, sandwich, lmtest, AER, lfe, huxtable, margins)
 theme_set(hrbrthemes::theme_ipsum())
 ```
-```{r, include=F}
+```{r cache=F, include=F}
 ## Switch off automatic "pretty printing" of DFs
 ## See: https://hughjonesd.github.io/huxtable/huxtable.html#automatic-pretty-printing-of-data-frames
 options(huxtable.knit_print_df = FALSE)
@@ -384,6 +384,10 @@ One downside that I want to highlight briefly is that the `margins` package does
 ### Probit, logit and other generalized linear models
 
 See `?stats::glm`.
+
+### Synthetic control
+
+See the [gsynth package](https://yiqingxu.org/software/gsynth/gsynth_examples.html).
 
 ### Bayesian regression
 

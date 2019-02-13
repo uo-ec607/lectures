@@ -1,8 +1,8 @@
 ---
 title: "Functions in R: 1) Introductory concepts"
 author:
-  name: Grant R. McDermott | University of Oregon
-  affiliation: EC 607
+  name: Grant R. McDermott
+  affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
 date: Lecture 10  #"`r format(Sys.time(), '%d %B %Y')`"
 output: 

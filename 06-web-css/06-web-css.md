@@ -1,10 +1,10 @@
 ---
-title: "Lecture 6: Webscraping: (1) Server-side and CSS"
+title: "Webscraping: (1) Server-side and CSS"
 author:
-  name: Grant R. McDermott | University of Oregon
-  # affiliation: EC 607
+  name: Grant R. McDermott
+  affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: EC 607  #"29 January 2019"
+date: Lecture 6  #"12 February 2019"
 output: 
   html_document:
     theme: flatly

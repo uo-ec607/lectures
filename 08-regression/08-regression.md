@@ -1,10 +1,10 @@
 ---
-title: "Lecture 8: Regression analysis in R"
+title: "Regression analysis in R"
 author:
-  name: Grant R. McDermott | University of Oregon
-  # affiliation: EC 607
+  name: Grant R. McDermott
+  affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: EC 607  #"07 February 2019"
+date: Lecture 8  #"12 February 2019"
 output: 
   html_document:
     theme: flatly
@@ -758,6 +758,10 @@ One downside that I want to highlight briefly is that the `margins` package does
 ### Probit, logit and other generalized linear models
 
 See `?stats::glm`.
+
+### Synthetic control
+
+See the [gsynth package](https://yiqingxu.org/software/gsynth/gsynth_examples.html).
 
 ### Bayesian regression
 
