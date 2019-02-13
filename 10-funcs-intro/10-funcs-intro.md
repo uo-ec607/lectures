@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott | University of Oregon
   affiliation: EC 607
   # email: grantmcd@uoregon.edu
-date: Lecture 10  #"`r format(Sys.time(), '%d %B %Y')`"
+date: Lecture 10  #"12 February 2019"
 output: 
   html_document:
     theme: flatly
@@ -16,9 +16,7 @@ output:
     keep_md: true
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
-```
+
 
 ## Software requirements
 
@@ -29,7 +27,8 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
 
 We'll mostly be loading the tidyverse to access the [purrr package](https://purrr.tidyverse.org/). Let's install (if necessary) and load these packages.Lecture 10: 
 
-```{r, cache=F, message=F}
+
+```r
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(pbapply, tidyverse)
 ```
@@ -73,12 +72,17 @@ Try to give your function a short, pithy name that will both make sense to you a
 
 Let's write out a simple example function, which gives the square of an input number.
 
-```{r square1}
+
+```r
 square <-       ## Our function name
   function(x) { ## The argument(s) that our function takes as an input
     x^2         ## The operation(s) that our function performs
   }
 square(3) ## Test that it works
+```
+
+```
+## [1] 9
 ```
 
 Note that `square <- function(x) x^2` would work just as well (i.e. everything on a single line). However, we're about to add some conditions and options to our function that will strongly favour the multi-line format.
@@ -89,7 +93,8 @@ Note that `square <- function(x) x^2` would work just as well (i.e. everything o
 
 Notice that we didn't specify a return value for our function. This will work in many cases because R's default behaviour is to automatically return the final object that you created within the function. However, that's not always true and you should get into the habit of assigning the return object(s) explicitly. Let's modify our function to be explicit about the desired return value.
 
-```{r square2}
+
+```r
 square <- 
   function(x) { 
     x_sq <- x^2   ## Create an intermediary object (that will be returned)
@@ -98,9 +103,14 @@ square <-
 square(5) ## Test that it works
 ```
 
+```
+## [1] 25
+```
+
 Being explicit about the return object(s) is particularly valuable when we want to return more than one object. For example, say that we want to remind our user what variable they used as an argument in our function:
 
-```{r square3}
+
+```r
 square <- 
   function(x) { ## The argument(s) that our function takes as an input
     x_sq <- x^2 ## The operation(s) that our function performs
@@ -109,9 +119,18 @@ square <-
 square(3)
 ```
 
+```
+## $value
+## [1] 3
+## 
+## $value_squared
+## [1] 9
+```
+
 Note that multiple return objects have to be combined in a list. I didn't have to name these separate list elements (i.e. "value" and "value_squared"), but it seems helpful to users of our function. (How would the output change if I didn't name the list elements?) Remember, however, that many objects in R contain multiple elements; vectors, data frames and lists are all good examples of this. So we can also specify one of these "array"-type objects if that provides a more convenient form of output.
 
-```{r square4}
+
+```r
 square <- 
   function(x) { 
     x_sq <- x^2 
@@ -121,10 +140,18 @@ square <-
 square(12)
 ```
 
+```
+## # A tibble: 1 x 2
+##   value value_squared
+##   <dbl>         <dbl>
+## 1    12           144
+```
+
 ### Specifying default argument values
 
 Another thing worth noting about R functions is that you can assign default argument values. You have already encountered some examples of this in action. (E.g. Type `?rnorm` and see that it provides a default mean and standard deviation of 0 and 1, respectively.) We can add a default option to our own function pretty easily.
-```{r square5}
+
+```r
 square <- 
   function(x = 1) { ## Setting the default argument value 
     x_sq <- x^2 
@@ -132,7 +159,24 @@ square <-
     return(df)
   }
 square() ## Will take the default value of 1 since we didn't provide an alternative.
+```
+
+```
+## # A tibble: 1 x 2
+##   value value_squared
+##   <dbl>         <dbl>
+## 1     1             1
+```
+
+```r
 square(2) ## Now takes the explicit value that we give it.
+```
+
+```
+## # A tibble: 1 x 2
+##   value value_squared
+##   <dbl>         <dbl>
+## 1     2             4
 ```
 
 We'll return the issue of specifying default values in the next lecture on function debugging. 
@@ -154,22 +198,56 @@ However, as we'll see, writing loops in R can require a bit more caution because
 ### Vectorisation
 
 The first question you need to ask is: "Do I need to iterate at all?" You may remember from a previous lecture that I spoke about R be optimised for working with vectors. What this effectively means is that (most) functions in R can be *vectorised*, Which is to say that you apply a function to a whole vector all at once, rather than to individual elements of a vector. Let's demonstrate this property with our `square` function:
-```{r vectorisation}
+
+```r
 square(1:5)
+```
+
+```
+##   value value_squared
+## 1     1             1
+## 2     2             4
+## 3     3             9
+## 4     4            16
+## 5     5            25
+```
+
+```r
 square(c(2, 4))
+```
+
+```
+##   value value_squared
+## 1     2             4
+## 2     4            16
 ```
 
 ### For-loops. Simple, but limited (and sometimes dangerous)
 
 In R, standard for-loops take a pretty intuitive form. For example:
 
-```{r forloop_ex1}
+
+```r
 for(i in 1:10) print(LETTERS[i])
+```
+
+```
+## [1] "A"
+## [1] "B"
+## [1] "C"
+## [1] "D"
+## [1] "E"
+## [1] "F"
+## [1] "G"
+## [1] "H"
+## [1] "I"
+## [1] "J"
 ```
 
 In cases where we want to "grow" an object via a for-loop, we first have to create and empty (or NULL) object.
 
-```{r fahrenheit}
+
+```r
 kelvin <- 300:305
 fahrenheit <- NULL
 # fahrenheit <- vector("double", length(kelvin)) ## Better than the above. Why?
@@ -177,6 +255,10 @@ for(k in 1:length(kelvin)) {
   fahrenheit[k] <- kelvin[k] * 9/5 - 459.67
 }
 fahrenheit
+```
+
+```
+## [1] 80.33 82.13 83.93 85.73 87.53 89.33
 ```
 
 Unfortunately, basic for-loops in R also come with some downsides. Historically, they used to be much slower than alternative methods (see below). This has largely been resolved, but I've still run into cases where an inconspicuous for-loop has brought an entire analysis crashing to its knees.^[[Exhibit A](https://github.com/grantmcdermott/bycatch/commit/18dbed157f0762bf4b44dfee437d6f319561c160). Trust me: debugging these cases is not much fun.] The bigger problem with for-loops, however, is that they deviate from the norms and best practices of **functional programming**. 
@@ -201,7 +283,8 @@ That may seem a little abstract, so here is video of Hadley giving a much more i
 
 As a corollary, for-loops also pollute our global environment with the variables that are used counting variables. Take a look at your "Environment" pane in RStudio. What do you see? In addition to the `kelvin` and `fahrenheit` vectors that we created, we also see two variables `i` and `k` (equal to the last value of their respective loops). Creating these auxilliary variables is almost certainly not an intended outcome when your write a for-loop.^[The best case I can think of is when you are trying to keep track of the number of loops, but even then there are much better ways of doing this.] More worringly, they can cause programming errors when we inadvertently refer to a similarly-named variable elsewhere in our script. So we best remove them manually as soon as we're finished with a loop. 
 
-```{r rm_i_k}
+
+```r
 rm(i,k)
 ```
 
@@ -215,9 +298,42 @@ FP allows to avoid the explicit use of loop constructs and its associated downsi
 
 Base R contains a very useful family of `*apply` functions. I won't go through all of these here --- see `?apply` or [this blog post](https://nsaunders.wordpress.com/2010/08/20/a-brief-introduction-to-apply-in-r/) among numerous excellent resources --- but they all follow a similar philosophy and syntax. The good news from our perspective is that this syntax very closely mimics the basic for-loop syntax. For example, consider the code below, which is analgous to our first for-loop above, but now invokes a **`base::lapply()`** call instead. 
 
-```{r lapply_ex}
+
+```r
 # for(i in 1:10) print(LETTERS[i]) ## Our original for-loop (for comparison)
 lapply(1:10, function(i) LETTERS[i])
+```
+
+```
+## [[1]]
+## [1] "A"
+## 
+## [[2]]
+## [1] "B"
+## 
+## [[3]]
+## [1] "C"
+## 
+## [[4]]
+## [1] "D"
+## 
+## [[5]]
+## [1] "E"
+## 
+## [[6]]
+## [1] "F"
+## 
+## [[7]]
+## [1] "G"
+## 
+## [[8]]
+## [1] "H"
+## 
+## [[9]]
+## [1] "I"
+## 
+## [[10]]
+## [1] "J"
 ```
 
 A couple of things to notice. 
@@ -230,7 +346,8 @@ Third, notice that the returned object is a *list*. The `lapply()` function can 
 
 Okay, but what if you don't want the output in list form? Well, there several options here. For example, we could pipe the output to `unlist()` if you wanted a vector instead. Taking a step back, while the default list-return behaviour may not sound ideal at first, I've found that I use `lapply()` more frequently than any of the other `apply` family members. One reason is that it works very well with data frames, especially when combined with `dplyr::bind_rows()`.^[As we've already seen from previous lectures, the latter function allows us to bind a list of data frames into a single data frame.] For example, here's a a slightly modified version of the function that now yields a data frame:
 
-```{r bind_rows_ex}
+
+```r
 # library(tidyverse) ## Already loaded
 
 lapply(1:10, function(i) {
@@ -240,12 +357,33 @@ lapply(1:10, function(i) {
   bind_rows()
 ```
 
+```
+## # A tibble: 10 x 2
+##      num let  
+##    <int> <chr>
+##  1     1 A    
+##  2     2 B    
+##  3     3 C    
+##  4     4 D    
+##  5     5 E    
+##  6     6 F    
+##  7     7 G    
+##  8     8 H    
+##  9     9 I    
+## 10    10 J
+```
+
 #### Aside: quick look at `sapply()`
 
 Another option that would work well in the this particular case is `sapply()`, which stands for "**s**implify apply". This is essentially a wrapper around `lapply` that tries to return simplified output that matches the input type. If you feed the function a vector, it will try to return a vector, etc.
 
-```{r sapply_ex}
+
+```r
 sapply(1:10, function(i) LETTERS[i]) 
+```
+
+```
+##  [1] "A" "B" "C" "D" "E" "F" "G" "H" "I" "J"
 ```
 
 
@@ -253,7 +391,8 @@ sapply(1:10, function(i) LETTERS[i])
 
 As you may already have guessed, we can split the function and the iteration (and binding) into separate steps. This is good advice to follow, since you typically create (named) functions with the goal of reusing them.
 
-```{r num_to_alpha}
+
+```r
 ## Create a named function
 num_to_alpha <- 
   function(i) {
@@ -262,7 +401,36 @@ num_to_alpha <-
   }
 ## Now iterate over our function using different values
 lapply(1:10, num_to_alpha) %>% bind_rows()
+```
+
+```
+## # A tibble: 10 x 2
+##      num let  
+##    <int> <chr>
+##  1     1 A    
+##  2     2 B    
+##  3     3 C    
+##  4     4 D    
+##  5     5 E    
+##  6     6 F    
+##  7     7 G    
+##  8     8 H    
+##  9     9 I    
+## 10    10 J
+```
+
+```r
 lapply(c(1, 5, 26, 3), num_to_alpha) %>% bind_rows()
+```
+
+```
+## # A tibble: 4 x 2
+##     num let  
+##   <dbl> <chr>
+## 1     1 A    
+## 2     5 E    
+## 3    26 Z    
+## 4     3 C
 ```
 
 
@@ -272,7 +440,8 @@ One of my go-to packages for a long time has been [pbapply](https://github.com/p
 
 *Note: You will need to run this next example interactively to see the effect properly.*
 
-```{r pbapply_ex}
+
+```r
 # library(pbapply) ## Already loaded
 
 pblapply(1:10, function(i) {
@@ -283,22 +452,118 @@ pblapply(1:10, function(i) {
   bind_rows()
 ```
 
+```
+## # A tibble: 10 x 2
+##      num let  
+##    <int> <chr>
+##  1     1 A    
+##  2     2 B    
+##  3     3 C    
+##  4     4 D    
+##  5     5 E    
+##  6     6 F    
+##  7     7 G    
+##  8     8 H    
+##  9     9 I    
+## 10    10 J
+```
+
 Another thing that I really like about the `pblapply()` function is that it allows for easy implementation of parallel (i.e. multicore) processing that works across operating systems. We'll cover this next week.
 
 ### 2) purrr package
 
 The tidyverse offers its own enhanced implementation of the base `*apply()` functions through the [purrr package](https://purrr.tidyverse.org/).^[In their [words](https://r4ds.had.co.nz/iteration.html: "The apply family of functions in base R solve a similar problem, but purrr is more consistent and thus is easier to learn."] The key function to remember here is **`purrr::map()`**. And, indeed, the syntax and output of this command are effectively identical to `base::lapply()`:
 
-```{r map}
+
+```r
 # lapply(1:10, num_to_alpha) ## lapply version from earlier
 map(1:10, num_to_alpha)
 ```
 
+```
+## [[1]]
+## # A tibble: 1 x 2
+##     num let  
+##   <int> <chr>
+## 1     1 A    
+## 
+## [[2]]
+## # A tibble: 1 x 2
+##     num let  
+##   <int> <chr>
+## 1     2 B    
+## 
+## [[3]]
+## # A tibble: 1 x 2
+##     num let  
+##   <int> <chr>
+## 1     3 C    
+## 
+## [[4]]
+## # A tibble: 1 x 2
+##     num let  
+##   <int> <chr>
+## 1     4 D    
+## 
+## [[5]]
+## # A tibble: 1 x 2
+##     num let  
+##   <int> <chr>
+## 1     5 E    
+## 
+## [[6]]
+## # A tibble: 1 x 2
+##     num let  
+##   <int> <chr>
+## 1     6 F    
+## 
+## [[7]]
+## # A tibble: 1 x 2
+##     num let  
+##   <int> <chr>
+## 1     7 G    
+## 
+## [[8]]
+## # A tibble: 1 x 2
+##     num let  
+##   <int> <chr>
+## 1     8 H    
+## 
+## [[9]]
+## # A tibble: 1 x 2
+##     num let  
+##   <int> <chr>
+## 1     9 I    
+## 
+## [[10]]
+## # A tibble: 1 x 2
+##     num let  
+##   <int> <chr>
+## 1    10 J
+```
+
 Given these similarities, I won't spend much time on the purrr package (although I think it will be the optimal entry point for many you when it comes to iteration). You have already learned the syntax, so should be very easy to switch over. However, one thing I wanted to flag for today is that `map()` also comes with its own variants, which are useful for returning objects of a desired type. For example, we can use **`purrr::map_df()`** to return a data frame. This is more efficient (involves less typing) than the `lapply()` version since we don't have to go through the extra step at the end of of binding rows.
 
-```{r map_df}
+
+```r
 # lapply(1:10, num_to_alpha) %>% bind_rows() ## lapply version from earlier.
 map_df(1:10, num_to_alpha)
+```
+
+```
+## # A tibble: 10 x 2
+##      num let  
+##    <int> <chr>
+##  1     1 A    
+##  2     2 B    
+##  3     3 C    
+##  4     4 D    
+##  5     5 E    
+##  6     6 F    
+##  7     7 G    
+##  8     8 H    
+##  9     9 I    
+## 10    10 J
 ```
 
 
@@ -308,7 +573,8 @@ Thus far we have only been working with functions that take a single input when 
 
 *Note: Again, this is a silly example that we could easily improve upon using standard (vectorised) tidyverse tools. But the principle carries over to more complicated cases.*
 
-```{r silly_func}
+
+```r
 ## Create a named function
 silly_func <- 
   function(x, y) {
@@ -321,13 +587,21 @@ silly_func <-
 silly_func(1, 6)
 ```
 
+```
+## # A tibble: 1 x 3
+##       x     y     z
+##   <dbl> <dbl> <dbl>
+## 1     1     6     7
+```
+
 Now lets imagine that we want to iterate over various levels of both `x` (say 1:5) and `y` (say 6:10). There are two basics approaches that we can follow: 1) Use `mapply()` or `pmap()`, and 2) Using a data frame of input combinations. Let's quickly review both, using the `silly_func` function that we just created above.
 
 #### 1) Use `mapply()` or `pmap()`
 
 Both base R --- through `mapply()` --- and purrr --- through `pmap` --- can handle multiple input cases for iteration. The latter is easier to work with in my opinion, since the syntax is closer (nearly identical) to the single input case. Still, here is a demonstration using both versions:
 
-```{r multi_map1}
+
+```r
 ## base::mapply() version. 
 ## Note that the inputs are now moved to the *end* of the call. 
 ## mapply is based on sapply, so we also have to tell it not to simplify if we want to keep the list structure.
@@ -338,10 +612,34 @@ mapply(
   SIMPLIFY = F ## Tell it not to simplify to keep the list structure
   ) %>%
   bind_rows()
+```
 
+```
+## # A tibble: 5 x 3
+##       x     y     z
+##   <int> <int> <dbl>
+## 1     1     6  7   
+## 2     2     7  6.36
+## 3     3     8  6.35
+## 4     4     9  6.5 
+## 5     5    10  6.71
+```
+
+```r
 ## purrr::pmap() version. 
 ## Note that the inputs are combined in a list.
 pmap_df(list(x=1:5, y=6:10), silly_func)
+```
+
+```
+## # A tibble: 5 x 3
+##       x     y     z
+##   <int> <int> <dbl>
+## 1     1     6  7   
+## 2     2     7  6.36
+## 3     3     8  6.35
+## 4     4     9  6.5 
+## 5     5    10  6.71
 ```
 
 #### 2) Using a data frame of input combinations
@@ -358,7 +656,8 @@ Those justifications aside, let's see how this might work with an example. There
 2. This input data frame will then be passed to a second (nested) function, which will *iterate over the rows of the data frame*. 
 3. During each iteration, it will pass the `x` and `y` values for that row to our `silly_func()` function and return the resulting data frame.
 
-```{r multi_map2}
+
+```r
 parent_func <-
   ## Main function: Takes a single data frame as an input
   function(input_df) {
@@ -380,11 +679,41 @@ parent_func <-
 ## Case 1: Iterate over x=1:5 and y=6:10
 input_df1 <- tibble(x=1:5, y=6:10)
 parent_func(input_df1)
+```
 
+```
+## # A tibble: 5 x 3
+##       x     y     z
+##   <int> <int> <dbl>
+## 1     1     6  7   
+## 2     2     7  6.36
+## 3     3     8  6.35
+## 4     4     9  6.5 
+## 5     5    10  6.71
+```
+
+```r
 ## Case 2: Iterate over *all possible combinations* of x=1:5 and y=6:10
 input_df2 <- expand.grid(x=1:5, y=6:10)
 # input_df2 <- expand(input_df1, x, y) ## Also works
 parent_func(input_df2)
+```
+
+```
+## # A tibble: 25 x 3
+##        x     y     z
+##    <int> <int> <dbl>
+##  1     1     6  7   
+##  2     2     6  5.66
+##  3     3     6  5.20
+##  4     4     6  5   
+##  5     5     6  4.92
+##  6     1     7  8   
+##  7     2     7  6.36
+##  8     3     7  5.77
+##  9     4     7  5.5 
+## 10     5     7  5.37
+## # … with 15 more rows
 ```
 
 
