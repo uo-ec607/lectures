@@ -39,7 +39,7 @@ Depends on a lot things and I'm too time constrained right now... but I'm thinki
 7. Webscraping: (2) Client-side and APIs \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/07-web-apis/07-web-apis.html).\]
 8. Regression analysis in R \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/08-regression/08-regression.html).\]
 9. Spatial analysis in R \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/09-spatial/09-spatial.html).\]
-10. Functions in R: (1) Introductory concepts
+10. Functions in R: (1) Introductory concepts \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/10-funcs-intro/10-funcs-intro.html).\]
 11. Functions in R: (2) Advanced concepts
 12. Parallel programming
 13. Docker
