@@ -1620,29 +1620,29 @@ EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 <li><strong>New:</strong> <code>pbapply</code></li>
 <li><strong>Already used:</strong> <code>tidyverse</code></li>
 </ul>
-<p>We’ll mostly be loading the tidyverse to access the <a href="https://purrr.tidyverse.org/">purrr package</a>. Let’s install (if necessary) and load these packages.Lecture 10:</p>
+<p>We’ll mostly be using the tidyverse to access the <a href="https://purrr.tidyverse.org/">purrr package</a>. Let’s install (if necessary) and load everything:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="cf">if</span> (<span class="op">!</span><span class="kw">require</span>(<span class="st">&quot;pacman&quot;</span>)) <span class="kw">install.packages</span>(<span class="st">&quot;pacman&quot;</span>)</a>
 <a class="sourceLine" id="cb1-2" title="2">pacman<span class="op">::</span><span class="kw">p_load</span>(pbapply, tidyverse)</a></code></pre></div>
 </div>
 </div>
 <div id="basic-syntax" class="section level2">
 <h2>Basic syntax</h2>
-<p>We have already seen and used a multitude of functions in R. Some of these functions come pre-packaged with base R installation (e.g. <code>mean()</code>), while others are from external packages (e.g. <code>dplyr::filter()</code>). Regardless of where they come from, all functions in R adopt the same basic syntax:</p>
+<p>We have already seen and used a multitude of functions in R. Some of these functions come pre-packaged with base R (e.g. <code>mean()</code>), while others are from external packages (e.g. <code>dplyr::filter()</code>). Regardless of where they come from, functions in R all adopt the same basic syntax:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">function_name</span>(ARGUMENTS)</a></code></pre></div>
-<p>Much of the time, we will rely on functions that other people have written for us. However, you can – and should! – create your own functions too. This is easy to do with the generic <strong><code>function()</code></strong> function.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>, The syntax will again look familiar to you:</p>
+<p>For much of the time, we will rely on functions that other people have written for us. However, you can — and should! — write your own functions too. This is easy to do with the generic <strong><code>function()</code></strong> function.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>, The syntax will again look familiar to you:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1"><span class="cf">function</span>(ARGUMENTS) {</a>
 <a class="sourceLine" id="cb3-2" title="2">  OPERATIONS</a>
 <a class="sourceLine" id="cb3-3" title="3">  <span class="kw">return</span>(VALUE)</a>
 <a class="sourceLine" id="cb3-4" title="4">}</a></code></pre></div>
-<p>While it’s possible and reasonably common to write anonymous functions like the above, we typically write functions because we want to reuse code. For this typical use-case it makes sense to name our functions. Since “everything is an object in R”, this is easy to do:</p>
+<p>While it’s possible and reasonably common to write anonymous functions like the above, we typically write functions because we want to reuse code. For this typical use-case it makes sense to name our functions. (Remember: “In R, everything is an object and everything has a name.”) This is easily done:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">my_func &lt;-<span class="st"> </span></a>
 <a class="sourceLine" id="cb4-2" title="2"><span class="st">  </span><span class="cf">function</span>(ARGUMENTS) {</a>
 <a class="sourceLine" id="cb4-3" title="3">    OPERATIONS</a>
 <a class="sourceLine" id="cb4-4" title="4">    <span class="kw">return</span>(VALUE)</a>
 <a class="sourceLine" id="cb4-5" title="5">  }</a></code></pre></div>
-<p>For some short functions, you don’t need to invoke the curly brackets or assign an explicit RETURN object (more on this below). In these cases, you can just write your function on a single line:</p>
+<p>For some short functions, you don’t need to invoke the curly brackets or assign an explicit return object (more on this below). In these cases, you can just write your function on a single line:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">my_short_func &lt;-<span class="st"> </span><span class="cf">function</span>(ARGUMENTS) OPERATION</a></code></pre></div>
-<p>Try to give your function a short, pithy name that will both make sense to you and make your code easier to read for others. This is harder than it sounds, but will pay off down the road.</p>
+<p>Try to give your functions short, pithy names that are informative to both you and anyone else reading your code. This is harder than it sounds, but will pay off down the road.</p>
 </div>
 <div id="a-simple-example" class="section level2">
 <h2>A simple example</h2>
@@ -1650,41 +1650,43 @@ EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">square &lt;-<span class="st">       </span><span class="co">## Our function name</span></a>
 <a class="sourceLine" id="cb6-2" title="2"><span class="st">  </span><span class="cf">function</span>(x) { <span class="co">## The argument(s) that our function takes as an input</span></a>
 <a class="sourceLine" id="cb6-3" title="3">    x<span class="op">^</span><span class="dv">2</span>         <span class="co">## The operation(s) that our function performs</span></a>
-<a class="sourceLine" id="cb6-4" title="4">  }</a>
-<a class="sourceLine" id="cb6-5" title="5"><span class="kw">square</span>(<span class="dv">3</span>) <span class="co">## Test that it works</span></a></code></pre></div>
+<a class="sourceLine" id="cb6-4" title="4">  }</a></code></pre></div>
+<p>Test it.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1"><span class="kw">square</span>(<span class="dv">3</span>)</a></code></pre></div>
 <pre><code>## [1] 9</code></pre>
 <p>Note that <code>square &lt;- function(x) x^2</code> would work just as well (i.e. everything on a single line). However, we’re about to add some conditions and options to our function that will strongly favour the multi-line format.</p>
-<p><strong>Aside:</strong> I want to stress that our new <code>square()</code> function is not a particularly exciting… or, indeed, useful. R’s built-in arithmetic functions already take care of (vectorised) exponentiation and so very efficiently. (See <code>?Arithmetic</code>.) However, I want to continue with this conceptually simple example, since it will provide a clear framework for demonstrating some general principles about functions in R.</p>
+<p><em><b>Aside:</b> I want to stress that our new <code>square()</code> function is not particularly exciting… or, indeed, useful. R’s built-in arithmetic functions already take care of (vectorised) exponentiation and do so very efficiently. (See <code>?Arithmetic</code>.) However, I want to continue with this conceptually simple example, since it will provide a clear framework for demonstrating some general principles about functions in R.</em></p>
 <div id="specifying-return-values" class="section level3">
 <h3>Specifying return values</h3>
-<p>Notice that we didn’t specify a return value for our function. This will work in many cases because R’s default behaviour is to automatically return the final object that you created within the function. However, that’s not always true and you should get into the habit of assigning the return object(s) explicitly. Let’s modify our function to be explicit about the desired return value.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1">square &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb8-2" title="2"><span class="st">  </span><span class="cf">function</span>(x) { </a>
-<a class="sourceLine" id="cb8-3" title="3">    x_sq &lt;-<span class="st"> </span>x<span class="op">^</span><span class="dv">2</span>   <span class="co">## Create an intermediary object (that will be returned)</span></a>
-<a class="sourceLine" id="cb8-4" title="4">    <span class="kw">return</span>(x_sq)  <span class="co">## The value(s) or object(s) that we want returned.</span></a>
-<a class="sourceLine" id="cb8-5" title="5">  }</a>
-<a class="sourceLine" id="cb8-6" title="6"><span class="kw">square</span>(<span class="dv">5</span>) <span class="co">## Test that it works</span></a></code></pre></div>
+<p>Notice that we didn’t specify a return value for our function. This will work in many cases because R’s default behaviour is to automatically return the final object that you created within the function. However, this won’t always be the case. You should therefore get into the habit of assigning the return object(s) explicitly. Let’s modify our function to do exactly that.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">square &lt;-<span class="st"> </span></a>
+<a class="sourceLine" id="cb9-2" title="2"><span class="st">  </span><span class="cf">function</span>(x) { </a>
+<a class="sourceLine" id="cb9-3" title="3">    x_sq &lt;-<span class="st"> </span>x<span class="op">^</span><span class="dv">2</span>   <span class="co">## Create an intermediary object (that will be returned)</span></a>
+<a class="sourceLine" id="cb9-4" title="4">    <span class="kw">return</span>(x_sq)  <span class="co">## The value(s) or object(s) that we want returned.</span></a>
+<a class="sourceLine" id="cb9-5" title="5">  }</a></code></pre></div>
+<p>Again, test that it works.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1"><span class="kw">square</span>(<span class="dv">5</span>)</a></code></pre></div>
 <pre><code>## [1] 25</code></pre>
-<p>Being explicit about the return object(s) is particularly valuable when we want to return more than one object. For example, say that we want to remind our user what variable they used as an argument in our function:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1">square &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb10-2" title="2"><span class="st">  </span><span class="cf">function</span>(x) { <span class="co">## The argument(s) that our function takes as an input</span></a>
-<a class="sourceLine" id="cb10-3" title="3">    x_sq &lt;-<span class="st"> </span>x<span class="op">^</span><span class="dv">2</span> <span class="co">## The operation(s) that our function performs</span></a>
-<a class="sourceLine" id="cb10-4" title="4">    <span class="kw">return</span>(<span class="kw">list</span>(<span class="dt">value=</span>x, <span class="dt">value_squared=</span>x_sq)) <span class="co">## The list of object(s) that we want returned.</span></a>
-<a class="sourceLine" id="cb10-5" title="5">  }</a>
-<a class="sourceLine" id="cb10-6" title="6"><span class="kw">square</span>(<span class="dv">3</span>)</a></code></pre></div>
+<p>Specifying an explicit return value is particularly valuable when we want to return more than one object. For example, let’s say that we want to remind our user what variable they used as an argument in our function:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1">square &lt;-<span class="st"> </span></a>
+<a class="sourceLine" id="cb12-2" title="2"><span class="st">  </span><span class="cf">function</span>(x) { <span class="co">## The argument(s) that our function takes as an input</span></a>
+<a class="sourceLine" id="cb12-3" title="3">    x_sq &lt;-<span class="st"> </span>x<span class="op">^</span><span class="dv">2</span> <span class="co">## The operation(s) that our function performs</span></a>
+<a class="sourceLine" id="cb12-4" title="4">    <span class="kw">return</span>(<span class="kw">list</span>(<span class="dt">value=</span>x, <span class="dt">value_squared=</span>x_sq)) <span class="co">## The list of object(s) that we want returned.</span></a>
+<a class="sourceLine" id="cb12-5" title="5">  }</a></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1"><span class="kw">square</span>(<span class="dv">3</span>)</a></code></pre></div>
 <pre><code>## $value
 ## [1] 3
 ## 
 ## $value_squared
 ## [1] 9</code></pre>
-<p>Note that multiple return objects have to be combined in a list. I didn’t have to name these separate list elements (i.e. “value” and “value_squared”), but it seems helpful to users of our function. (How would the output change if I didn’t name the list elements?) Remember, however, that many objects in R contain multiple elements; vectors, data frames and lists are all good examples of this. So we can also specify one of these “array”-type objects if that provides a more convenient form of output.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1">square &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb12-2" title="2"><span class="st">  </span><span class="cf">function</span>(x) { </a>
-<a class="sourceLine" id="cb12-3" title="3">    x_sq &lt;-<span class="st"> </span>x<span class="op">^</span><span class="dv">2</span> </a>
-<a class="sourceLine" id="cb12-4" title="4">    df &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">value=</span>x, <span class="dt">value_squared=</span>x_sq) <span class="co">## Bundle up our input and output values into a convenient dataframe.</span></a>
-<a class="sourceLine" id="cb12-5" title="5">    <span class="kw">return</span>(df)</a>
-<a class="sourceLine" id="cb12-6" title="6">  }</a>
-<a class="sourceLine" id="cb12-7" title="7"><span class="kw">square</span>(<span class="dv">12</span>)</a></code></pre></div>
+<p>Note that multiple return objects have to be combined in a list. I didn’t have to name these separate list elements (i.e. “value” and “value_squared”), but that will likely be helpful users of our function. However, remember that many objects in R contain multiple elements; vectors, data frames and lists are all good examples of this. So we can also specify one of these “array”-type objects within the function itself if that provides a more convenient form of output. For example, we could combine the input and output values into a data frame:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" title="1">square &lt;-<span class="st"> </span></a>
+<a class="sourceLine" id="cb15-2" title="2"><span class="st">  </span><span class="cf">function</span>(x) { </a>
+<a class="sourceLine" id="cb15-3" title="3">    x_sq &lt;-<span class="st"> </span>x<span class="op">^</span><span class="dv">2</span> </a>
+<a class="sourceLine" id="cb15-4" title="4">    df &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">value=</span>x, <span class="dt">value_squared=</span>x_sq) <span class="co">## Bundle up our input and output values into a convenient dataframe.</span></a>
+<a class="sourceLine" id="cb15-5" title="5">    <span class="kw">return</span>(df)</a>
+<a class="sourceLine" id="cb15-6" title="6">  }</a></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1"><span class="kw">square</span>(<span class="dv">12</span>)</a></code></pre></div>
 <pre><code>## # A tibble: 1 x 2
 ##   value value_squared
 ##   &lt;dbl&gt;         &lt;dbl&gt;
@@ -1692,19 +1694,19 @@ EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 </div>
 <div id="specifying-default-argument-values" class="section level3">
 <h3>Specifying default argument values</h3>
-<p>Another thing worth noting about R functions is that you can assign default argument values. You have already encountered some examples of this in action. (E.g. Type <code>?rnorm</code> and see that it provides a default mean and standard deviation of 0 and 1, respectively.) We can add a default option to our own function pretty easily.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1">square &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb14-2" title="2"><span class="st">  </span><span class="cf">function</span>(<span class="dt">x =</span> <span class="dv">1</span>) { <span class="co">## Setting the default argument value </span></a>
-<a class="sourceLine" id="cb14-3" title="3">    x_sq &lt;-<span class="st"> </span>x<span class="op">^</span><span class="dv">2</span> </a>
-<a class="sourceLine" id="cb14-4" title="4">    df &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">value=</span>x, <span class="dt">value_squared=</span>x_sq)</a>
-<a class="sourceLine" id="cb14-5" title="5">    <span class="kw">return</span>(df)</a>
-<a class="sourceLine" id="cb14-6" title="6">  }</a>
-<a class="sourceLine" id="cb14-7" title="7"><span class="kw">square</span>() <span class="co">## Will take the default value of 1 since we didn&#39;t provide an alternative.</span></a></code></pre></div>
+<p>Another thing worth noting about R functions is that you can assign default argument values. You have already encountered some examples of this in action.<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> We can add a default option to our own function pretty easily.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1">square &lt;-<span class="st"> </span></a>
+<a class="sourceLine" id="cb18-2" title="2"><span class="st">  </span><span class="cf">function</span>(<span class="dt">x =</span> <span class="dv">1</span>) { <span class="co">## Setting the default argument value </span></a>
+<a class="sourceLine" id="cb18-3" title="3">    x_sq &lt;-<span class="st"> </span>x<span class="op">^</span><span class="dv">2</span> </a>
+<a class="sourceLine" id="cb18-4" title="4">    df &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">value=</span>x, <span class="dt">value_squared=</span>x_sq)</a>
+<a class="sourceLine" id="cb18-5" title="5">    <span class="kw">return</span>(df)</a>
+<a class="sourceLine" id="cb18-6" title="6">  }</a></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" title="1"><span class="kw">square</span>() <span class="co">## Will take the default value of 1 since we didn&#39;t provide an alternative.</span></a></code></pre></div>
 <pre><code>## # A tibble: 1 x 2
 ##   value value_squared
 ##   &lt;dbl&gt;         &lt;dbl&gt;
 ## 1     1             1</code></pre>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1"><span class="kw">square</span>(<span class="dv">2</span>) <span class="co">## Now takes the explicit value that we give it.</span></a></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" title="1"><span class="kw">square</span>(<span class="dv">2</span>) <span class="co">## Now takes the explicit value that we give it.</span></a></code></pre></div>
 <pre><code>## # A tibble: 1 x 2
 ##   value value_squared
 ##   &lt;dbl&gt;         &lt;dbl&gt;
@@ -1715,32 +1717,33 @@ EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 <h3>Environments and lexical scoping</h3>
 <p>Before continuing, I want to highlight the fact that none of the intermediate objects that we created within the above functions (<code>x_sq</code>, <code>df</code>, etc.) have made their way into our global environment. Take a moment to confirm this for yourself by looking in the “Environment” pane of your RStudio session.</p>
 <p>R has a set of so-called <a href="http://adv-r.had.co.nz/Functions.html#lexical-scoping"><em>lexical scoping</em></a> rules, which govern where it stores and evaluates the values of different objects. Without going into too much depth, the practical implication of lexical scoping is that functions operate in a quasi-sandboxed <a href="http://adv-r.had.co.nz/Environments.html"><em>environment</em></a>. They don’t return or use objects in the global environment unless they are forced to (e.g. with a <code>return()</code> command). Similarly, a function can look to outside environments (e.g. a level “up”) to find an object if it doesn’t see the object named within itself.</p>
-<p>We’ll explore the ideas of separate environments and lexical scoping a bit further when we get to the <a href="#functional-programming">functional programming</a> section below. We’ll also go into more depth during the next lecture on debugging.</p>
+<p>We’ll explore the ideas of separate environments and lexical scoping a bit further when we get to the <a href="#functional-programming">Functional programming</a> section below. We’ll also go into more depth during the next lecture on debugging.</p>
 </div>
 </div>
 <div id="iteration" class="section level2">
 <h2>Iteration</h2>
-<p>After learning the basic language syntax, arguably the most important early programming skill to master is writing (for) loops. They allow us to iterate over — or map — a set of inputs to a variety of functions. In so doing, loops provide the underlying power to a bewildering array of software applications and scientific analyses.</p>
-<p>However, as we’ll see, writing loops in R can require a bit more caution because of the limitations of the standard for-loop approach. Instead, I advocate that you instead adopt what is known as a “functional programming” approach to writing loops. Let’s dive into the reasons why and how these approaches differ.</p>
+<p>After learning the basic function syntax, arguably the most important early programming skill to master is writing (for) loops. These allow us to iterate over — or map — a set of inputs to a variety of functions. In so doing, loops provide the underlying power to a bewildering array of software applications and scientific analyses.</p>
+<p>However, as we’ll see, writing loops in R require a bit more nuance because of limitations of the standard for-loop approach. Instead, I advocate that you adopt what is known as a “functional programming” approach to writing loops. Let’s dive into the reasons why and how these approaches differ.</p>
 <div id="vectorisation" class="section level3">
 <h3>Vectorisation</h3>
-<p>The first question you need to ask is: “Do I need to iterate at all?” You may remember from a previous lecture that I spoke about R be optimised for working with vectors. What this effectively means is that (most) functions in R can be <em>vectorised</em>, Which is to say that you apply a function to a whole vector all at once, rather than to individual elements of a vector. Let’s demonstrate this property with our <code>square</code> function:</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1"><span class="kw">square</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>)</a></code></pre></div>
+<p>The first question you need to ask is: “Do I need to iterate at all?” You may remember from a previous lecture that I spoke about R being <em>vectorised</em>. Which is to say you can apply a function to every element of a vector at once, rather than one at a time. Let’s demonstrate this property with our <code>square</code> function:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" title="1"><span class="kw">square</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>)</a></code></pre></div>
 <pre><code>##   value value_squared
 ## 1     1             1
 ## 2     2             4
 ## 3     3             9
 ## 4     4            16
 ## 5     5            25</code></pre>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" title="1"><span class="kw">square</span>(<span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">4</span>))</a></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" title="1"><span class="kw">square</span>(<span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">4</span>))</a></code></pre></div>
 <pre><code>##   value value_squared
 ## 1     2             4
 ## 2     4            16</code></pre>
+<p>So you may not need to worry about explicit iteration at all. That being said, there are certainly cases where you will need to worry about it. Let’s explore with some simple examples (some of which are already vectorised) that provide a springboard for thinking about more complex cases.</p>
 </div>
 <div id="for-loops.-simple-but-limited-and-sometimes-dangerous" class="section level3">
 <h3>For-loops. Simple, but limited (and sometimes dangerous)</h3>
 <p>In R, standard for-loops take a pretty intuitive form. For example:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" title="1"><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">10</span>) <span class="kw">print</span>(LETTERS[i])</a></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb27-1" title="1"><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">10</span>) <span class="kw">print</span>(LETTERS[i])</a></code></pre></div>
 <pre><code>## [1] &quot;A&quot;
 ## [1] &quot;B&quot;
 ## [1] &quot;C&quot;
@@ -1751,21 +1754,21 @@ EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 ## [1] &quot;H&quot;
 ## [1] &quot;I&quot;
 ## [1] &quot;J&quot;</code></pre>
-<p>In cases where we want to “grow” an object via a for-loop, we first have to create and empty (or NULL) object.</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb24-1" title="1">kelvin &lt;-<span class="st"> </span><span class="dv">300</span><span class="op">:</span><span class="dv">305</span></a>
-<a class="sourceLine" id="cb24-2" title="2">fahrenheit &lt;-<span class="st"> </span><span class="ot">NULL</span></a>
-<a class="sourceLine" id="cb24-3" title="3"><span class="co"># fahrenheit &lt;- vector(&quot;double&quot;, length(kelvin)) ## Better than the above. Why?</span></a>
-<a class="sourceLine" id="cb24-4" title="4"><span class="cf">for</span>(k <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(kelvin)) {</a>
-<a class="sourceLine" id="cb24-5" title="5">  fahrenheit[k] &lt;-<span class="st"> </span>kelvin[k] <span class="op">*</span><span class="st"> </span><span class="dv">9</span><span class="op">/</span><span class="dv">5</span> <span class="op">-</span><span class="st"> </span><span class="fl">459.67</span></a>
-<a class="sourceLine" id="cb24-6" title="6">}</a>
-<a class="sourceLine" id="cb24-7" title="7">fahrenheit</a></code></pre></div>
+<p>Note that in cases where we want to “grow” an object via a for-loop, we first have to create an empty (or NULL) object.</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" title="1">kelvin &lt;-<span class="st"> </span><span class="dv">300</span><span class="op">:</span><span class="dv">305</span></a>
+<a class="sourceLine" id="cb29-2" title="2">fahrenheit &lt;-<span class="st"> </span><span class="ot">NULL</span></a>
+<a class="sourceLine" id="cb29-3" title="3"><span class="co"># fahrenheit &lt;- vector(&quot;double&quot;, length(kelvin)) ## Better than the above. Why?</span></a>
+<a class="sourceLine" id="cb29-4" title="4"><span class="cf">for</span>(k <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(kelvin)) {</a>
+<a class="sourceLine" id="cb29-5" title="5">  fahrenheit[k] &lt;-<span class="st"> </span>kelvin[k] <span class="op">*</span><span class="st"> </span><span class="dv">9</span><span class="op">/</span><span class="dv">5</span> <span class="op">-</span><span class="st"> </span><span class="fl">459.67</span></a>
+<a class="sourceLine" id="cb29-6" title="6">}</a>
+<a class="sourceLine" id="cb29-7" title="7">fahrenheit</a></code></pre></div>
 <pre><code>## [1] 80.33 82.13 83.93 85.73 87.53 89.33</code></pre>
-<p>Unfortunately, basic for-loops in R also come with some downsides. Historically, they used to be much slower than alternative methods (see below). This has largely been resolved, but I’ve still run into cases where an inconspicuous for-loop has brought an entire analysis crashing to its knees.<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> The bigger problem with for-loops, however, is that they deviate from the norms and best practices of <strong>functional programming</strong>.</p>
-<p>The concept of functional programming is arguably the most important thing you can take away from today’s lecture. Thus, while it can certainly be applied to iteration, I’m going to cover now in its own section.</p>
+<p>Unfortunately, basic for-loops in R also come with some downsides. Historically, they used to be much slower than alternative methods (see below). This has largely been resolved, but I’ve still run into cases where an inconspicuous for-loop has brought an entire analysis crashing to its knees.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> The bigger problem with for-loops, however, is that they deviate from the norms and best practices of <strong>functional programming</strong>.</p>
+<p>The concept of functional programming is arguably the most important thing you can take away from today’s lecture. Thus, while it can certainly be applied to iteration, I’m going to cover it in its own section.</p>
 </div>
 </div>
-<div id="functional-programming-fp" class="section level2">
-<h2>Functional programming (FP)</h2>
+<div id="functional-programming" class="section level2">
+<h2>Functional programming</h2>
 <div id="fp-defined" class="section level3">
 <h3>FP defined</h3>
 <p>Here is <a href="http://adv-r.had.co.nz/Functional-programming.html">Hadley Wickham</a> explaining the key idea:</p>
@@ -1777,18 +1780,16 @@ EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 </iframe>
 <p></br></p>
 <p><strong>Summary:</strong> For-loops tend to emphasise the <em>objects</em> that we’re working with (say, a vector of numbers) rather than the <em>operations</em> that we want to apply to them (say, get the mean or median or whatever). This is inefficient because it requires us to continually write out the for-loops by hand rather than getting an R function to create the for-loop for us.</p>
-<p>As a corollary, for-loops also pollute our global environment with the variables that are used counting variables. Take a look at your “Environment” pane in RStudio. What do you see? In addition to the <code>kelvin</code> and <code>fahrenheit</code> vectors that we created, we also see two variables <code>i</code> and <code>k</code> (equal to the last value of their respective loops). Creating these auxilliary variables is almost certainly not an intended outcome when your write a for-loop.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> More worringly, they can cause programming errors when we inadvertently refer to a similarly-named variable elsewhere in our script. So we best remove them manually as soon as we’re finished with a loop.</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" title="1"><span class="kw">rm</span>(i,k)</a></code></pre></div>
-<p>Another annoyance arrived in cases where we’re trying to “grow” an object as we iterate over it (e.g. the <code>fahrenheit</code> object in our second example). In order to do this, we had to go through the rigmorale of creating an empty object first.</p>
-<p>FP allows to avoid the explicit use of loop constructs and its associated downsides. In practice, there are two ways to implement FP in R: 1) The base <code>*apply</code> family of functions and 2) the <code>map()</code> family of functions from the <a href="https://purrr.tidyverse.org/">purrr package</a>.</p>
+<p>As a corollary, for-loops also pollute our global environment with the variables that are used counting variables. Take a look at your “Environment” pane in RStudio. What do you see? In addition to the <code>kelvin</code> and <code>fahrenheit</code> vectors that we created, we also see two variables <code>i</code> and <code>k</code> (equal to the last value of their respective loops). Creating these auxilliary variables is almost certainly not an intended outcome when your write a for-loop.<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a> More worringly, they can cause programming errors when we inadvertently refer to a similarly-named variable elsewhere in our script. So we best remove them manually as soon as we’re finished with a loop.</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb31-1" title="1"><span class="kw">rm</span>(i,k)</a></code></pre></div>
+<p>Another annoyance arrived in cases where we want to “grow” an object as we iterate over it (e.g. the <code>fahrenheit</code> object in our second example). In order to do this with a for-loop, we had to go through the rigmarole of creating an empty object first.</p>
+<p>FP allows to avoid the explicit use of loop constructs and its associated downsides. In practice, there are two ways to implement FP in R: 1) The <code>*apply</code> family of functions in base R, and 2) the <code>map()</code> family of functions from the <a href="https://purrr.tidyverse.org/">purrr package</a>.</p>
 </div>
 <div id="lapply-and-co." class="section level3">
 <h3>1) <code>lapply()</code> and co.</h3>
-<div id="lapply-basics" class="section level4">
-<h4><code>lapply()</code> basics</h4>
 <p>Base R contains a very useful family of <code>*apply</code> functions. I won’t go through all of these here — see <code>?apply</code> or <a href="https://nsaunders.wordpress.com/2010/08/20/a-brief-introduction-to-apply-in-r/">this blog post</a> among numerous excellent resources — but they all follow a similar philosophy and syntax. The good news from our perspective is that this syntax very closely mimics the basic for-loop syntax. For example, consider the code below, which is analgous to our first for-loop above, but now invokes a <strong><code>base::lapply()</code></strong> call instead.</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb27-1" title="1"><span class="co"># for(i in 1:10) print(LETTERS[i]) ## Our original for-loop (for comparison)</span></a>
-<a class="sourceLine" id="cb27-2" title="2"><span class="kw">lapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, <span class="cf">function</span>(i) LETTERS[i])</a></code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb32-1" title="1"><span class="co"># for(i in 1:10) print(LETTERS[i]) ## Our original for-loop (for comparison)</span></a>
+<a class="sourceLine" id="cb32-2" title="2"><span class="kw">lapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, <span class="cf">function</span>(i) LETTERS[i])</a></code></pre></div>
 <pre><code>## [[1]]
 ## [1] &quot;A&quot;
 ## 
@@ -1820,16 +1821,16 @@ EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 ## [1] &quot;J&quot;</code></pre>
 <p>A couple of things to notice.</p>
 <p>First, check your “Environment” pane in RStudio. Do you see an object called “i” in the Global Environment? (The answer should be“no”.) Again, this is because of R’s lexical scoping rules, which mean that any object created (and invoked by) a function is evaluated in a sandboxed environment outside of your global environment.</p>
-<p>Second, notice how little the basic syntax changed when switching over from <code>for()</code> to <code>lapply()</code>. Yes, there are some differences, but the essential structure remains the same: We first provide the iteration list (<code>1:100</code>) at the beginning and then specify desired function or operation second (<code>LETTERS[i]</code>).</p>
-<p>Third, notice that the returned object is a <em>list</em>. The <code>lapply()</code> function can take various input types as arguments — vectors, data frames, lists — but always returns a list, where each element of the returned list is the result from one iteration of the loop. (So now you know where the “l” in “<strong>l</strong>apply” comes from.)</p>
-<p>Okay, but what if you don’t want the output in list form? Well, there several options here. For example, we could pipe the output to <code>unlist()</code> if you wanted a vector instead. Taking a step back, while the default list-return behaviour may not sound ideal at first, I’ve found that I use <code>lapply()</code> more frequently than any of the other <code>apply</code> family members. One reason is that it works very well with data frames, especially when combined with <code>dplyr::bind_rows()</code>.<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a> For example, here’s a a slightly modified version of the function that now yields a data frame:</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" title="1"><span class="co"># library(tidyverse) ## Already loaded</span></a>
-<a class="sourceLine" id="cb29-2" title="2"></a>
-<a class="sourceLine" id="cb29-3" title="3"><span class="kw">lapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, <span class="cf">function</span>(i) {</a>
-<a class="sourceLine" id="cb29-4" title="4">  df &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">num =</span> i, <span class="dt">let =</span> LETTERS[i])</a>
-<a class="sourceLine" id="cb29-5" title="5">  <span class="kw">return</span>(df)</a>
-<a class="sourceLine" id="cb29-6" title="6">  }) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb29-7" title="7"><span class="st">  </span><span class="kw">bind_rows</span>()</a></code></pre></div>
+<p>Second, notice how little the basic syntax changed when switching over from <code>for()</code> to <code>lapply()</code>. Yes, there are some differences, but the essential structure remains the same: We first provide the iteration list (<code>1:100</code>) and then specify the desired function or operation (<code>LETTERS[i]</code>).</p>
+<p>Third, notice that the returned object is a list. The <code>lapply()</code> function can take various input types as arguments — vectors, data frames, lists — but <em>always returns a list</em>, where each element of the returned list is the result from one iteration of the loop. (So now you know where the “l” in “<strong>l</strong>apply” comes from.)</p>
+<p>Okay, but what if you don’t want the output in list form? Well, there several options here. For example, we could pipe the output to <code>unlist()</code> if you wanted a vector instead. Taking a step back, and while the default list-return behaviour may not sound ideal at first, I’ve found that I use <code>lapply()</code> more frequently than any of the other <code>apply</code> family members. One reason is that it works very well with data frames, especially when combined with <code>dplyr::bind_rows()</code>.<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a> For example, here’s a a slightly modified version of our function that now yields a data frame:</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb34-1" title="1"><span class="co"># library(tidyverse) ## Already loaded</span></a>
+<a class="sourceLine" id="cb34-2" title="2"></a>
+<a class="sourceLine" id="cb34-3" title="3"><span class="kw">lapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, <span class="cf">function</span>(i) {</a>
+<a class="sourceLine" id="cb34-4" title="4">  df &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">num =</span> i, <span class="dt">let =</span> LETTERS[i])</a>
+<a class="sourceLine" id="cb34-5" title="5">  <span class="kw">return</span>(df)</a>
+<a class="sourceLine" id="cb34-6" title="6">  }) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb34-7" title="7"><span class="st">  </span><span class="kw">bind_rows</span>()</a></code></pre></div>
 <pre><code>## # A tibble: 10 x 2
 ##      num let  
 ##    &lt;int&gt; &lt;chr&gt;
@@ -1843,25 +1844,24 @@ EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 ##  8     8 H    
 ##  9     9 I    
 ## 10    10 J</code></pre>
-</div>
 <div id="aside-quick-look-at-sapply" class="section level4">
 <h4>Aside: quick look at <code>sapply()</code></h4>
 <p>Another option that would work well in the this particular case is <code>sapply()</code>, which stands for “<strong>s</strong>implify apply”. This is essentially a wrapper around <code>lapply</code> that tries to return simplified output that matches the input type. If you feed the function a vector, it will try to return a vector, etc.</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb31-1" title="1"><span class="kw">sapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, <span class="cf">function</span>(i) LETTERS[i]) </a></code></pre></div>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb36-1" title="1"><span class="kw">sapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, <span class="cf">function</span>(i) LETTERS[i]) </a></code></pre></div>
 <pre><code>##  [1] &quot;A&quot; &quot;B&quot; &quot;C&quot; &quot;D&quot; &quot;E&quot; &quot;F&quot; &quot;G&quot; &quot;H&quot; &quot;I&quot; &quot;J&quot;</code></pre>
 </div>
 </div>
 <div id="create-and-iterate-over-named-functions" class="section level3">
 <h3>Create and iterate over named functions</h3>
-<p>As you may already have guessed, we can split the function and the iteration (and binding) into separate steps. This is good advice to follow, since you typically create (named) functions with the goal of reusing them.</p>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb33-1" title="1"><span class="co">## Create a named function</span></a>
-<a class="sourceLine" id="cb33-2" title="2">num_to_alpha &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb33-3" title="3"><span class="st">  </span><span class="cf">function</span>(i) {</a>
-<a class="sourceLine" id="cb33-4" title="4">  df &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">num =</span> i, <span class="dt">let =</span> LETTERS[i])</a>
-<a class="sourceLine" id="cb33-5" title="5">  <span class="kw">return</span>(df)</a>
-<a class="sourceLine" id="cb33-6" title="6">  }</a>
-<a class="sourceLine" id="cb33-7" title="7"><span class="co">## Now iterate over our function using different values</span></a>
-<a class="sourceLine" id="cb33-8" title="8"><span class="kw">lapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, num_to_alpha) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">bind_rows</span>()</a></code></pre></div>
+<p>As you may already have guessed, we can split the function and the iteration (and binding) into separate steps. This is generally a good idea, since you typically create (named) functions with the goal of reusing them.</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb38-1" title="1"><span class="co">## Create a named function</span></a>
+<a class="sourceLine" id="cb38-2" title="2">num_to_alpha &lt;-<span class="st"> </span></a>
+<a class="sourceLine" id="cb38-3" title="3"><span class="st">  </span><span class="cf">function</span>(i) {</a>
+<a class="sourceLine" id="cb38-4" title="4">  df &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">num =</span> i, <span class="dt">let =</span> LETTERS[i])</a>
+<a class="sourceLine" id="cb38-5" title="5">  <span class="kw">return</span>(df)</a>
+<a class="sourceLine" id="cb38-6" title="6">  }</a></code></pre></div>
+<p>Now, we can easily iterate over our function using different input values. For example,</p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb39-1" title="1"><span class="kw">lapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, num_to_alpha) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">bind_rows</span>()</a></code></pre></div>
 <pre><code>## # A tibble: 10 x 2
 ##      num let  
 ##    &lt;int&gt; &lt;chr&gt;
@@ -1875,7 +1875,8 @@ EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 ##  8     8 H    
 ##  9     9 I    
 ## 10    10 J</code></pre>
-<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb35-1" title="1"><span class="kw">lapply</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">26</span>, <span class="dv">3</span>), num_to_alpha) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">bind_rows</span>()</a></code></pre></div>
+<p>Or,</p>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb41-1" title="1"><span class="kw">lapply</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">26</span>, <span class="dv">3</span>), num_to_alpha) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">bind_rows</span>()</a></code></pre></div>
 <pre><code>## # A tibble: 4 x 2
 ##     num let  
 ##   &lt;dbl&gt; &lt;chr&gt;
@@ -1885,16 +1886,16 @@ EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 ## 4     3 C</code></pre>
 <div id="progress-bars-with-the-pbapply-package" class="section level4">
 <h4>Progress bars with the <code>pbapply</code> package!</h4>
-<p>One of my go-to packages for a long time has been <a href="https://github.com/psolymos/pbapply">pbapply</a>, which is a lightweight wrapper around the <code>*apply</code> functions that adds a progress bar. And who doesn’t like progress bars? I personally find it incredibly useful to get an idea of how a program of function is progressing and how much longer I should expect to wait before completion. <code>pbapply</code> offers versions for all of the <code>*apply</code> family, but the one that I use the most is (unsuprisingly) <code>pbapply::pblapply()</code>.</p>
+<p>I’m a big fan of the <a href="https://github.com/psolymos/pbapply">pbapply package</a>, which is a lightweight wrapper around the <code>*apply</code> functions that adds a progress bar. And who doesn’t like progress bars? Personally, I find it incredibly helpful to see how a function is progressing, or get a sense of how much longer I can expect to wait before completion. <code>pbapply</code> offers versions for all of the <code>*apply</code> family, but the one that I use the most is (unsuprisingly) <strong><code>pbapply::pblapply()</code></strong>.</p>
 <p><em>Note: You will need to run this next example interactively to see the effect properly.</em></p>
-<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb37-1" title="1"><span class="co"># library(pbapply) ## Already loaded</span></a>
-<a class="sourceLine" id="cb37-2" title="2"></a>
-<a class="sourceLine" id="cb37-3" title="3"><span class="kw">pblapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, <span class="cf">function</span>(i) {</a>
-<a class="sourceLine" id="cb37-4" title="4">  df &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">num =</span> i, <span class="dt">let =</span> LETTERS[i])</a>
-<a class="sourceLine" id="cb37-5" title="5">  <span class="kw">Sys.sleep</span>(<span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb37-6" title="6">  <span class="kw">return</span>(df)</a>
-<a class="sourceLine" id="cb37-7" title="7">  }) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb37-8" title="8"><span class="st">  </span><span class="kw">bind_rows</span>()</a></code></pre></div>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb43-1" title="1"><span class="co"># library(pbapply) ## Already loaded</span></a>
+<a class="sourceLine" id="cb43-2" title="2"></a>
+<a class="sourceLine" id="cb43-3" title="3"><span class="kw">pblapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, <span class="cf">function</span>(i) {</a>
+<a class="sourceLine" id="cb43-4" title="4">  df &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">num =</span> i, <span class="dt">let =</span> LETTERS[i])</a>
+<a class="sourceLine" id="cb43-5" title="5">  <span class="kw">Sys.sleep</span>(<span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb43-6" title="6">  <span class="kw">return</span>(df)</a>
+<a class="sourceLine" id="cb43-7" title="7">  }) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb43-8" title="8"><span class="st">  </span><span class="kw">bind_rows</span>()</a></code></pre></div>
 <pre><code>## # A tibble: 10 x 2
 ##      num let  
 ##    &lt;int&gt; &lt;chr&gt;
@@ -1908,14 +1909,14 @@ EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 ##  8     8 H    
 ##  9     9 I    
 ## 10    10 J</code></pre>
-<p>Another thing that I really like about the <code>pblapply()</code> function is that it allows for easy implementation of parallel (i.e. multicore) processing that works across operating systems. We’ll cover this next week.</p>
+<p>Another thing that I really like about the <code>pblapply()</code> function is that it allows for easy implementation of parallel (i.e. multicore) processing that works across operating systems. We’ll cover this next week, though.</p>
 </div>
 </div>
 <div id="purrr-package" class="section level3">
 <h3>2) purrr package</h3>
-<p>The tidyverse offers its own enhanced implementation of the base <code>*apply()</code> functions through the <a href="https://purrr.tidyverse.org/">purrr package</a>.<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a> The key function to remember here is <strong><code>purrr::map()</code></strong>. And, indeed, the syntax and output of this command are effectively identical to <code>base::lapply()</code>:</p>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb39-1" title="1"><span class="co"># lapply(1:10, num_to_alpha) ## lapply version from earlier</span></a>
-<a class="sourceLine" id="cb39-2" title="2"><span class="kw">map</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, num_to_alpha)</a></code></pre></div>
+<p>The tidyverse offers its own enhanced implementation of the base <code>*apply()</code> functions through the <a href="https://purrr.tidyverse.org/">purrr package</a>.<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a> The key function to remember here is <strong><code>purrr::map()</code></strong>. And, indeed, the syntax and output of this command are effectively identical to <code>base::lapply()</code>:</p>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb45-1" title="1"><span class="co"># lapply(1:10, num_to_alpha) ## lapply version from earlier</span></a>
+<a class="sourceLine" id="cb45-2" title="2"><span class="kw">map</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, num_to_alpha)</a></code></pre></div>
 <pre><code>## [[1]]
 ## # A tibble: 1 x 2
 ##     num let  
@@ -1975,9 +1976,9 @@ EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 ##     num let  
 ##   &lt;int&gt; &lt;chr&gt;
 ## 1    10 J</code></pre>
-<p>Given these similarities, I won’t spend much time on the purrr package (although I think it will be the optimal entry point for many you when it comes to iteration). You have already learned the syntax, so should be very easy to switch over. However, one thing I wanted to flag for today is that <code>map()</code> also comes with its own variants, which are useful for returning objects of a desired type. For example, we can use <strong><code>purrr::map_df()</code></strong> to return a data frame. This is more efficient (involves less typing) than the <code>lapply()</code> version since we don’t have to go through the extra step at the end of of binding rows.</p>
-<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb41-1" title="1"><span class="co"># lapply(1:10, num_to_alpha) %&gt;% bind_rows() ## lapply version from earlier.</span></a>
-<a class="sourceLine" id="cb41-2" title="2"><span class="kw">map_df</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, num_to_alpha)</a></code></pre></div>
+<p>Given these similarities, I won’t spend much time on the purrr package .(Although, I think it will be the optimal entry point for many you when it comes to programming and iteration). You have already learned the syntax, so should be very easy to switch over. However, one thing I wanted to flag for today is that <code>map()</code> also comes with its own variants, which are useful for returning objects of a desired type. For example, we can use <strong><code>purrr::map_df()</code></strong> to return a data frame. This is more efficient (i.e. involves less typing) than the <code>lapply()</code> version, since we don’t have to go through the extra step of binding rows at the end.</p>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb47-1" title="1"><span class="co"># lapply(1:10, num_to_alpha) %&gt;% bind_rows() ## lapply version from earlier.</span></a>
+<a class="sourceLine" id="cb47-2" title="2"><span class="kw">map_df</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, num_to_alpha)</a></code></pre></div>
 <pre><code>## # A tibble: 10 x 2
 ##      num let  
 ##    &lt;int&gt; &lt;chr&gt;
@@ -1994,36 +1995,41 @@ EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 </div>
 <div id="iterate-map-over-multiple-inputs" class="section level3">
 <h3>Iterate (map) over multiple inputs</h3>
-<p>Thus far we have only been working with functions that take a single input when iterating. For example, we give them a single vector (even though that vector contains many elements that drive the iteration process). But what if we want to iterate over multiple inputs? Consider the the following function, which takes two separate variables <code>x</code> and <code>y</code> as inputs, and then uses them create a new variable <code>z</code> in a data frame. I’ll also demonstrate that it works using (non-iterated) inputs.</p>
-<p><em>Note: Again, this is a silly example that we could easily improve upon using standard (vectorised) tidyverse tools. But the principle carries over to more complicated cases.</em></p>
-<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb43-1" title="1"><span class="co">## Create a named function</span></a>
-<a class="sourceLine" id="cb43-2" title="2">silly_func &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb43-3" title="3"><span class="st">  </span><span class="cf">function</span>(x, y) {</a>
-<a class="sourceLine" id="cb43-4" title="4">  df &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb43-5" title="5"><span class="st">    </span><span class="kw">tibble</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb43-6" title="6"><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">z =</span> (x <span class="op">+</span><span class="st"> </span>y)<span class="op">/</span><span class="kw">sqrt</span>(x))</a>
-<a class="sourceLine" id="cb43-7" title="7">  <span class="kw">return</span>(df)</a>
-<a class="sourceLine" id="cb43-8" title="8">  }</a>
-<a class="sourceLine" id="cb43-9" title="9"><span class="co">## Show that it works (using non-iterated inputs)</span></a>
-<a class="sourceLine" id="cb43-10" title="10"><span class="kw">silly_func</span>(<span class="dv">1</span>, <span class="dv">6</span>)</a></code></pre></div>
+<p>Thus far, we have only been working with functions that take a single input when iterating. For example, we feed them a single vector (even though that vector contains many elements that drive the iteration process). But what if we want to iterate over multiple inputs? Consider the following function, which takes two separate variables <code>x</code> and <code>y</code> as inputs, and then uses them create a new variable <code>z</code> in a data frame.</p>
+<p><em>Note: Again, this is a rather silly function that we could easily improve upon using standard (vectorised) tidyverse tools. But the principle carries over to more complicated cases.</em></p>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb49-1" title="1"><span class="co">## Create a named function</span></a>
+<a class="sourceLine" id="cb49-2" title="2">multi_func &lt;-<span class="st"> </span></a>
+<a class="sourceLine" id="cb49-3" title="3"><span class="st">  </span><span class="cf">function</span>(x, y) {</a>
+<a class="sourceLine" id="cb49-4" title="4">  df &lt;-<span class="st"> </span></a>
+<a class="sourceLine" id="cb49-5" title="5"><span class="st">    </span><span class="kw">tibble</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb49-6" title="6"><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">z =</span> (x <span class="op">+</span><span class="st"> </span>y)<span class="op">/</span><span class="kw">sqrt</span>(x))</a>
+<a class="sourceLine" id="cb49-7" title="7">  <span class="kw">return</span>(df)</a>
+<a class="sourceLine" id="cb49-8" title="8">  }</a></code></pre></div>
+<p>Before continuing, quickly show that it works using non-iterated inputs.</p>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb50-1" title="1"><span class="kw">multi_func</span>(<span class="dv">1</span>, <span class="dv">6</span>)</a></code></pre></div>
 <pre><code>## # A tibble: 1 x 3
 ##       x     y     z
 ##   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
 ## 1     1     6     7</code></pre>
-<p>Now lets imagine that we want to iterate over various levels of both <code>x</code> (say 1:5) and <code>y</code> (say 6:10). There are two basics approaches that we can follow: 1) Use <code>mapply()</code> or <code>pmap()</code>, and 2) Using a data frame of input combinations. Let’s quickly review both, using the <code>silly_func</code> function that we just created above.</p>
+<p>Now lets imagine that we want to iterate over various levels of both <code>x</code> (say 1:5) and <code>y</code> (say 6:10). There are two basics approaches that we can follow:</p>
+<ol style="list-style-type: decimal">
+<li>Use <code>base::mapply()</code> or <code>purrr::pmap()</code>.</li>
+<li>Use a data frame of input combinations.</li>
+</ol>
+<p>Let’s quickly review both, continuing with the <code>multi_func()</code> function that we just created above.</p>
 <div id="use-mapply-or-pmap" class="section level4">
 <h4>1) Use <code>mapply()</code> or <code>pmap()</code></h4>
-<p>Both base R — through <code>mapply()</code> — and purrr — through <code>pmap</code> — can handle multiple input cases for iteration. The latter is easier to work with in my opinion, since the syntax is closer (nearly identical) to the single input case. Still, here is a demonstration using both versions:</p>
-<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb45-1" title="1"><span class="co">## base::mapply() version. </span></a>
-<a class="sourceLine" id="cb45-2" title="2"><span class="co">## Note that the inputs are now moved to the *end* of the call. </span></a>
-<a class="sourceLine" id="cb45-3" title="3"><span class="co">## mapply is based on sapply, so we also have to tell it not to simplify if we want to keep the list structure.</span></a>
-<a class="sourceLine" id="cb45-4" title="4"><span class="kw">mapply</span>(</a>
-<a class="sourceLine" id="cb45-5" title="5">  silly_func,</a>
-<a class="sourceLine" id="cb45-6" title="6">  <span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="co">## Our &quot;x&quot; vector input</span></a>
-<a class="sourceLine" id="cb45-7" title="7">  <span class="dt">y=</span><span class="dv">6</span><span class="op">:</span><span class="dv">10</span>, <span class="co">## Our &quot;y&quot; vector input</span></a>
-<a class="sourceLine" id="cb45-8" title="8">  <span class="dt">SIMPLIFY =</span> F <span class="co">## Tell it not to simplify to keep the list structure</span></a>
-<a class="sourceLine" id="cb45-9" title="9">  ) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb45-10" title="10"><span class="st">  </span><span class="kw">bind_rows</span>()</a></code></pre></div>
+<p>Both base R — through <code>mapply()</code> — and purrr — through <code>pmap</code> — can handle multiple input cases for iteration. The latter is easier to work with in my opinion, since the syntax is closer (nearly identical) to the single input case. Still, here is a demonstration using both versions.</p>
+<p>First, <code>base::mapply()</code>:</p>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb52-1" title="1"><span class="co">## Note that the inputs are now moved to the *end* of the call. </span></a>
+<a class="sourceLine" id="cb52-2" title="2"><span class="co">## mapply is based on sapply, so we also have to tell it not to simplify if we want to keep the list structure.</span></a>
+<a class="sourceLine" id="cb52-3" title="3"><span class="kw">mapply</span>(</a>
+<a class="sourceLine" id="cb52-4" title="4">  multi_func,</a>
+<a class="sourceLine" id="cb52-5" title="5">  <span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="co">## Our &quot;x&quot; vector input</span></a>
+<a class="sourceLine" id="cb52-6" title="6">  <span class="dt">y=</span><span class="dv">6</span><span class="op">:</span><span class="dv">10</span>, <span class="co">## Our &quot;y&quot; vector input</span></a>
+<a class="sourceLine" id="cb52-7" title="7">  <span class="dt">SIMPLIFY =</span> F <span class="co">## Tell it not to simplify to keep the list structure</span></a>
+<a class="sourceLine" id="cb52-8" title="8">  ) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb52-9" title="9"><span class="st">  </span><span class="kw">bind_rows</span>()</a></code></pre></div>
 <pre><code>## # A tibble: 5 x 3
 ##       x     y     z
 ##   &lt;int&gt; &lt;int&gt; &lt;dbl&gt;
@@ -2032,9 +2038,9 @@ EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 ## 3     3     8  6.35
 ## 4     4     9  6.5 
 ## 5     5    10  6.71</code></pre>
-<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb47-1" title="1"><span class="co">## purrr::pmap() version. </span></a>
-<a class="sourceLine" id="cb47-2" title="2"><span class="co">## Note that the inputs are combined in a list.</span></a>
-<a class="sourceLine" id="cb47-3" title="3"><span class="kw">pmap_df</span>(<span class="kw">list</span>(<span class="dt">x=</span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">y=</span><span class="dv">6</span><span class="op">:</span><span class="dv">10</span>), silly_func)</a></code></pre></div>
+<p>Second, <code>purrr::pmap()</code>:</p>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb54-1" title="1"><span class="co">## Note that the inputs are combined in a list.</span></a>
+<a class="sourceLine" id="cb54-2" title="2"><span class="kw">pmap_df</span>(<span class="kw">list</span>(<span class="dt">x=</span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">y=</span><span class="dv">6</span><span class="op">:</span><span class="dv">10</span>), multi_func)</a></code></pre></div>
 <pre><code>## # A tibble: 5 x 3
 ##       x     y     z
 ##   &lt;int&gt; &lt;int&gt; &lt;dbl&gt;
@@ -2046,39 +2052,40 @@ EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 </div>
 <div id="using-a-data-frame-of-input-combinations" class="section level4">
 <h4>2) Using a data frame of input combinations</h4>
-<p>While the above approach work perfectly well, I find that I don’t actually use it much in practice. Rather, I prefer to “cheat” by feeding multi-input functions a <em>single</em> data frame that specifies the necessary combination of variables by row. I’ll demonstrate how this works in a second, but first let me explain why: It basically boils down to the fact that I feel like this gives me more control over my functions and inputs.</p>
+<p>While the above approach work perfectly well, I find that I don’t actually use it all that much in practice. Rather, I prefer to “cheat” by feeding multi-input functions a <em>single</em> data frame that specifies the necessary combination of variables by row. I’ll demonstrate how this works in a second, but first let me explain why: It basically boils down to the fact that I feel like this gives me more control over my functions and inputs.</p>
 <ul>
-<li>I don’t have to worry about accidently feeding separate inputs of different lengths. Trying running the above functions with an <code>x</code> vector input of <code>1:10</code>, for example. (Leave everything else unchanged.) <code>pmap()</code> will at least fail to iterate and give you a helpful message, but <code>mapply</code> will actually complete with totally misaligned columns. Putting everything in a (rectangular) data frame forces you to ensure the equal length of inputs <em>a priori</em>.</li>
-<li>Relatedly, I often need to run a function over all possible combinations of different inputs. A really convenient way to do this is with the <code>base::expand.grid()</code> function, which automatically generates a data frame. So its convenient for me to use this data frame as an input directly in my functoin.<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a> We encountered some related tidyverse functions (<code>tidyr::expand()</code> and <code>tidyr::complete()</code>) in an earlier lecture, as well as your second assignment.</li>
-<li>It’s just simpler and cleaner in my view to keep things down to a single input. This will be harder to see in the simple example that I’m going to present next, but I’ve found that it can make a big difference with complicated functions that have a lot of nesting (functions of functions) and/or parallelization.</li>
+<li>I don’t have to worry about accidently feeding separate inputs of different lengths. Try running the above functions with an <code>x</code> vector input of <code>1:10</code>, for example. (Leave everything else unchanged.) <code>pmap()</code> will at least fail to iterate and give you a helpful message, but <code>mapply</code> will actually complete with totally misaligned columns. Putting everything in a (rectangular) data frame forces you to ensure the equal length of inputs <em>a priori</em>.</li>
+<li>Relatedly, I often need to run a function over all possible combinations of different inputs. A really convenient way to do this is with the <code>base::expand.grid()</code> function, which automatically generates a data frame of all combinations. So it’s convenient for me to use this data frame as an input directly in my function.<a href="#fn7" class="footnote-ref" id="fnref7"><sup>7</sup></a></li>
+<li>In my view, it’s just simpler and cleaner to keep things down to a single input. This will be harder to see in the simple example that I’m going to present next, but I’ve found that it can make a big difference with complicated functions that have a lot of nesting (i.e. functions of functions) and/or parallelization.</li>
 </ul>
-<p>Those justifications aside, let’s see how this might work with an example. There are three conceptual steps:</p>
+<p>Those justifications aside, let’s see how this might work with an example. Consider the following function:</p>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb56-1" title="1">parent_func &lt;-</a>
+<a class="sourceLine" id="cb56-2" title="2"><span class="st">  </span><span class="co">## Main function: Takes a single data frame as an input</span></a>
+<a class="sourceLine" id="cb56-3" title="3"><span class="st">  </span><span class="cf">function</span>(input_df) {</a>
+<a class="sourceLine" id="cb56-4" title="4">    df &lt;-</a>
+<a class="sourceLine" id="cb56-5" title="5"><span class="st">      </span><span class="co">## Nested iteration function</span></a>
+<a class="sourceLine" id="cb56-6" title="6"><span class="st">      </span><span class="kw">map_df</span>(</a>
+<a class="sourceLine" id="cb56-7" title="7">      <span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(input_df), <span class="co">## i.e. Iterate (map) over each row of the input data frame</span></a>
+<a class="sourceLine" id="cb56-8" title="8">      <span class="cf">function</span>(n) {</a>
+<a class="sourceLine" id="cb56-9" title="9">        <span class="co">## Extract the `x` and `y` values from row &quot;n&quot; of the data frame</span></a>
+<a class="sourceLine" id="cb56-10" title="10">        x &lt;-<span class="st"> </span>input_df<span class="op">$</span>x[n]</a>
+<a class="sourceLine" id="cb56-11" title="11">        y &lt;-<span class="st"> </span>input_df<span class="op">$</span>y[n]</a>
+<a class="sourceLine" id="cb56-12" title="12">        <span class="co">## Use the extracted </span></a>
+<a class="sourceLine" id="cb56-13" title="13">        df &lt;-<span class="st"> </span><span class="kw">multi_func</span>(x, y)</a>
+<a class="sourceLine" id="cb56-14" title="14">        <span class="kw">return</span>(df)</a>
+<a class="sourceLine" id="cb56-15" title="15">      })</a>
+<a class="sourceLine" id="cb56-16" title="16">    <span class="kw">return</span>(df)</a>
+<a class="sourceLine" id="cb56-17" title="17">    }</a></code></pre></div>
+<p>There are three conceptual steps to the above code chunk:</p>
 <ol style="list-style-type: decimal">
-<li>First I’m going to create a new function called <code>parent_func()</code>, which will take a single input: a data frame containing <code>x</code> and <code>y</code> columns (and potentially other columns too).</li>
-<li>This input data frame will then be passed to a second (nested) function, which will <em>iterate over the rows of the data frame</em>.</li>
-<li>During each iteration, it will pass the <code>x</code> and <code>y</code> values for that row to our <code>silly_func()</code> function and return the resulting data frame.</li>
+<li>First, I create a new function called <code>parent_func()</code>, which takes a single input: a data frame containing <code>x</code> and <code>y</code> columns (and potentially other columns too).</li>
+<li>This input data frame is then passed to a second (nested) function, which will <em>iterate over the rows of the data frame</em>.</li>
+<li>During each iteration, the <code>x</code> and <code>y</code> values for that row are passed to our original <code>multi_func()</code> function. This will return a data frame containing the desired output.</li>
 </ol>
-<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb49-1" title="1">parent_func &lt;-</a>
-<a class="sourceLine" id="cb49-2" title="2"><span class="st">  </span><span class="co">## Main function: Takes a single data frame as an input</span></a>
-<a class="sourceLine" id="cb49-3" title="3"><span class="st">  </span><span class="cf">function</span>(input_df) {</a>
-<a class="sourceLine" id="cb49-4" title="4">    df &lt;-</a>
-<a class="sourceLine" id="cb49-5" title="5"><span class="st">      </span><span class="co">## Nested iteration function</span></a>
-<a class="sourceLine" id="cb49-6" title="6"><span class="st">      </span><span class="kw">map_df</span>(</a>
-<a class="sourceLine" id="cb49-7" title="7">      <span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(input_df), <span class="co">## i.e. Iterate (map) over each row of the input data frame</span></a>
-<a class="sourceLine" id="cb49-8" title="8">      <span class="cf">function</span>(n) {</a>
-<a class="sourceLine" id="cb49-9" title="9">        <span class="co">## Extract the `x` and `y` values from row &quot;n&quot; of the data frame</span></a>
-<a class="sourceLine" id="cb49-10" title="10">        x &lt;-<span class="st"> </span>input_df<span class="op">$</span>x[n]</a>
-<a class="sourceLine" id="cb49-11" title="11">        y &lt;-<span class="st"> </span>input_df<span class="op">$</span>y[n]</a>
-<a class="sourceLine" id="cb49-12" title="12">        <span class="co">## Use the extracted </span></a>
-<a class="sourceLine" id="cb49-13" title="13">        df &lt;-<span class="st"> </span><span class="kw">silly_func</span>(x, y)</a>
-<a class="sourceLine" id="cb49-14" title="14">        <span class="kw">return</span>(df)</a>
-<a class="sourceLine" id="cb49-15" title="15">      })</a>
-<a class="sourceLine" id="cb49-16" title="16">    <span class="kw">return</span>(df)</a>
-<a class="sourceLine" id="cb49-17" title="17">    }</a>
-<a class="sourceLine" id="cb49-18" title="18"></a>
-<a class="sourceLine" id="cb49-19" title="19"><span class="co">## Case 1: Iterate over x=1:5 and y=6:10</span></a>
-<a class="sourceLine" id="cb49-20" title="20">input_df1 &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">x=</span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">y=</span><span class="dv">6</span><span class="op">:</span><span class="dv">10</span>)</a>
-<a class="sourceLine" id="cb49-21" title="21"><span class="kw">parent_func</span>(input_df1)</a></code></pre></div>
+<p>Let’s test that it worked using two different input data frames.</p>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb57-1" title="1"><span class="co">## Case 1: Iterate over x=1:5 and y=6:10</span></a>
+<a class="sourceLine" id="cb57-2" title="2">input_df1 &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">x=</span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">y=</span><span class="dv">6</span><span class="op">:</span><span class="dv">10</span>)</a>
+<a class="sourceLine" id="cb57-3" title="3"><span class="kw">parent_func</span>(input_df1)</a></code></pre></div>
 <pre><code>## # A tibble: 5 x 3
 ##       x     y     z
 ##   &lt;int&gt; &lt;int&gt; &lt;dbl&gt;
@@ -2087,10 +2094,10 @@ EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 ## 3     3     8  6.35
 ## 4     4     9  6.5 
 ## 5     5    10  6.71</code></pre>
-<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb51-1" title="1"><span class="co">## Case 2: Iterate over *all possible combinations* of x=1:5 and y=6:10</span></a>
-<a class="sourceLine" id="cb51-2" title="2">input_df2 &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">x=</span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">y=</span><span class="dv">6</span><span class="op">:</span><span class="dv">10</span>)</a>
-<a class="sourceLine" id="cb51-3" title="3"><span class="co"># input_df2 &lt;- expand(input_df1, x, y) ## Also works</span></a>
-<a class="sourceLine" id="cb51-4" title="4"><span class="kw">parent_func</span>(input_df2)</a></code></pre></div>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb59-1" title="1"><span class="co">## Case 2: Iterate over *all possible combinations* of x=1:5 and y=6:10</span></a>
+<a class="sourceLine" id="cb59-2" title="2">input_df2 &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">x=</span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">y=</span><span class="dv">6</span><span class="op">:</span><span class="dv">10</span>)</a>
+<a class="sourceLine" id="cb59-3" title="3"><span class="co"># input_df2 &lt;- expand(input_df1, x, y) ## Also works</span></a>
+<a class="sourceLine" id="cb59-4" title="4"><span class="kw">parent_func</span>(input_df2)</a></code></pre></div>
 <pre><code>## # A tibble: 25 x 3
 ##        x     y     z
 ##    &lt;int&gt; &lt;int&gt; &lt;dbl&gt;
@@ -2110,11 +2117,11 @@ EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 </div>
 <div id="further-resources" class="section level2">
 <h2>Further resources</h2>
-<p>In the next two lectures, we’ll dive into more advanced programming and functions (debugging, parallel implementation, etc.). I hope that today has given you solid grasp of the fundamentals, though. I highly encourage you to start writing some of your own functions. You will be doing a lot of this as your career progresses a mastering this skill early will yield huge benefits. Here are some additional resources for both inspiration and reference:</p>
+<p>In the next two lectures, we’ll dive into more advanced programming and function topics (debugging, parallel implementation, etc.). However, I hope that today has given you solid grasp of the fundamentals. I highly encourage you to start writing some of your own functions. You will be doing a lot of this as your career progresses and mastering this skill early will put you on the road to data science success<sup>TM</sup>. Here are some additional resources for both inspiration and reference:</p>
 <ul>
 <li><a href="http://r4ds.had.co.nz/functions.html">Chapter 19 (“Functions)”)</a> and <a href="http://r4ds.had.co.nz/iteration.html">Chapter 21 (“Iteration)”)</a> of <em>R4DS</em> (Grolemund and Wickham) cover much of the same ground as we have here, with particular emphasis on the <code>purrr</code> package for iteration.</li>
 <li><a href="http://adv-r.had.co.nz/Functional-programming.html">Chapter 10 (“Functional programming)”)</a> and <a href="http://adv-r.had.co.nz/Functionals.html">Chapter 11 (“Functionals)”)</a> of <em>Advanced R</em> (Wickham) goes into more depth, especially on the philosophy of functional programming. It also emphasises the <code>*apply()</code> family of functions, although that is at least partly (entirely?) due to the fact that <code>purrr</code> was introduced after its publication.</li>
-<li>If you’re in the market for a more concise overview of the different <code>*apply()</code> functions, then I recommend (this blog post)[<a href="https://nsaunders.wordpress.com/2010/08/20/a-brief-introduction-to-apply-in-r/" class="uri">https://nsaunders.wordpress.com/2010/08/20/a-brief-introduction-to-apply-in-r/</a>] by Neil Saunders.</li>
+<li>If you’re in the market for a more concise overview of the different <code>*apply()</code> functions, then I recommend <a href="https://nsaunders.wordpress.com/2010/08/20/a-brief-introduction-to-apply-in-r/">this blog post</a> by Neil Saunders.</li>
 <li>On the other end of the scale, Jenny Bryan (all hail) has created a fairly epic <a href="https://jennybc.github.io/purrr-tutorial">purrr tutorial</a> mini-website. (Bonus: She goes into more depth about working with lists and list columns.)</li>
 </ul>
 </div>
@@ -2122,11 +2129,12 @@ EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 <hr />
 <ol>
 <li id="fn1"><p>Yes, it’s a function that let’s you write functions. Very meta.<a href="#fnref1" class="footnote-back">↩</a></p></li>
-<li id="fn2"><p><a href="https://github.com/grantmcdermott/bycatch/commit/18dbed157f0762bf4b44dfee437d6f319561c160">Exhibit A</a>. Trust me: debugging these cases is not much fun.<a href="#fnref2" class="footnote-back">↩</a></p></li>
-<li id="fn3"><p>The best case I can think of is when you are trying to keep track of the number of loops, but even then there are much better ways of doing this.<a href="#fnref3" class="footnote-back">↩</a></p></li>
-<li id="fn4"><p>As we’ve already seen from previous lectures, the latter function allows us to bind a list of data frames into a single data frame.<a href="#fnref4" class="footnote-back">↩</a></p></li>
-<li id="fn5"><p>In their [words](<a href="https://r4ds.had.co.nz/iteration.html" class="uri">https://r4ds.had.co.nz/iteration.html</a>: “The apply family of functions in base R solve a similar problem, but purrr is more consistent and thus is easier to learn.”<a href="#fnref5" class="footnote-back">↩</a></p></li>
-<li id="fn6"><p>Of course, you could could also extract the columns of the data frame as separate vectors and then feed these into <code>pmap()</code>/<code>mapply()</code> if you prefer.<a href="#fnref6" class="footnote-back">↩</a></p></li>
+<li id="fn2"><p>E.g. Type <code>?rnorm</code> and see that it provides a default mean and standard deviation of 0 and 1, respectively.<a href="#fnref2" class="footnote-back">↩</a></p></li>
+<li id="fn3"><p><a href="https://github.com/grantmcdermott/bycatch/commit/18dbed157f0762bf4b44dfee437d6f319561c160">Exhibit A</a>. Trust me: debugging these cases is not much fun.<a href="#fnref3" class="footnote-back">↩</a></p></li>
+<li id="fn4"><p>The best case I can think of is when you are trying to keep track of the number of loops, but even then there are much better ways of doing this.<a href="#fnref4" class="footnote-back">↩</a></p></li>
+<li id="fn5"><p>As we’ve already seen from previous lectures, the latter function allows us to bind a list of data frames into a single data frame.<a href="#fnref5" class="footnote-back">↩</a></p></li>
+<li id="fn6"><p>In their <a href="https://r4ds.had.co.nz/iteration.html:" title="The apply family of functions in base R solve a similar problem [to purrr], but purrr is more consistent and thus is easier to learn.">words</a><a href="#fnref6" class="footnote-back">↩</a></p></li>
+<li id="fn7"><p>We encountered some related tidyverse functions (<code>tidyr::expand()</code> and <code>tidyr::complete()</code>) in an earlier lecture, as well as your second assignment. Of course, you could could also extract the columns of the data frame as separate vectors and then feed these into <code>pmap()</code>/<code>mapply()</code> if you prefer.<a href="#fnref7" class="footnote-back">↩</a></p></li>
 </ol>
 </div>
 

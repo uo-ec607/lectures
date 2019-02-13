@@ -27,7 +27,7 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
 - **New:** `pbapply`
 - **Already used:** `tidyverse` 
 
-We'll mostly be loading the tidyverse to access the [purrr package](https://purrr.tidyverse.org/). Let's install (if necessary) and load these packages.Lecture 10: 
+We'll mostly be using the tidyverse to access the [purrr package](https://purrr.tidyverse.org/). Let's install (if necessary) and load everything:
 
 ```{r, cache=F, message=F}
 if (!require("pacman")) install.packages("pacman")
@@ -36,13 +36,13 @@ pacman::p_load(pbapply, tidyverse)
 
 ## Basic syntax
 
-We have already seen and used a multitude of functions in R. Some of these functions come pre-packaged with base R installation (e.g. `mean()`), while others are from external packages (e.g. `dplyr::filter()`). Regardless of where they come from, all functions in R adopt the same basic syntax:
+We have already seen and used a multitude of functions in R. Some of these functions come pre-packaged with base R (e.g. `mean()`), while others are from external packages (e.g. `dplyr::filter()`). Regardless of where they come from, functions in R all adopt the same basic syntax:
 
 ```r
 function_name(ARGUMENTS)
 ```
 
-Much of the time, we will rely on functions that other people have written for us. However, you can -- and should! -- create your own functions too. This is easy to do with the generic **`function()`** function.^[Yes, it's a function that let's you write functions. Very meta.], The syntax will again look familiar to you:
+For much of the time, we will rely on functions that other people have written for us. However, you can --- and should! --- write your own functions too. This is easy to do with the generic **`function()`** function.^[Yes, it's a function that let's you write functions. Very meta.], The syntax will again look familiar to you:
 
 ```r
 function(ARGUMENTS) {
@@ -51,7 +51,7 @@ function(ARGUMENTS) {
 }
 ```
 
-While it's possible and reasonably common to write anonymous functions like the above, we typically write functions because we want to reuse code. For this typical use-case it makes sense to name our functions. Since "everything is an object in R", this is easy to do:
+While it's possible and reasonably common to write anonymous functions like the above, we typically write functions because we want to reuse code. For this typical use-case it makes sense to name our functions. (Remember: "In R, everything is an object and everything has a name.") This is easily done:
 
 ```r
 my_func <- 
@@ -61,13 +61,13 @@ my_func <-
   }
 ```
 
-For some short functions, you don't need to invoke the curly brackets or assign an explicit RETURN object (more on this below). In these cases, you can just write your function on a single line:
+For some short functions, you don't need to invoke the curly brackets or assign an explicit return object (more on this below). In these cases, you can just write your function on a single line:
 
 ```r
 my_short_func <- function(ARGUMENTS) OPERATION
 ```
 
-Try to give your function a short, pithy name that will both make sense to you and make your code easier to read for others. This is harder than it sounds, but will pay off down the road.
+Try to give your functions short, pithy names that are informative to both you and anyone else reading your code. This is harder than it sounds, but will pay off down the road.
 
 ## A simple example
 
@@ -78,16 +78,20 @@ square <-       ## Our function name
   function(x) { ## The argument(s) that our function takes as an input
     x^2         ## The operation(s) that our function performs
   }
-square(3) ## Test that it works
+```
+
+Test it.
+```{r square 1a}
+square(3)
 ```
 
 Note that `square <- function(x) x^2` would work just as well (i.e. everything on a single line). However, we're about to add some conditions and options to our function that will strongly favour the multi-line format.
 
-**Aside:** I want to stress that our new `square()` function is not a particularly exciting... or, indeed, useful. R's built-in arithmetic functions already take care of (vectorised) exponentiation and so very efficiently. (See `?Arithmetic`.) However, I want to continue with this conceptually simple example, since it will provide a clear framework for demonstrating some general principles about functions in R.
+*<b>Aside:</b> I want to stress that our new `square()` function is not particularly exciting... or, indeed, useful. R's built-in arithmetic functions already take care of (vectorised) exponentiation and do so very efficiently. (See `?Arithmetic`.) However, I want to continue with this conceptually simple example, since it will provide a clear framework for demonstrating some general principles about functions in R.*
 
 ### Specifying return values
 
-Notice that we didn't specify a return value for our function. This will work in many cases because R's default behaviour is to automatically return the final object that you created within the function. However, that's not always true and you should get into the habit of assigning the return object(s) explicitly. Let's modify our function to be explicit about the desired return value.
+Notice that we didn't specify a return value for our function. This will work in many cases because R's default behaviour is to automatically return the final object that you created within the function. However, this won't always be the case. You should therefore get into the habit of assigning the return object(s) explicitly. Let's modify our function to do exactly that.
 
 ```{r square2}
 square <- 
@@ -95,10 +99,14 @@ square <-
     x_sq <- x^2   ## Create an intermediary object (that will be returned)
     return(x_sq)  ## The value(s) or object(s) that we want returned.
   }
-square(5) ## Test that it works
 ```
 
-Being explicit about the return object(s) is particularly valuable when we want to return more than one object. For example, say that we want to remind our user what variable they used as an argument in our function:
+Again, test that it works.
+```{r square2a}
+square(5)
+```
+
+Specifying an explicit return value is particularly valuable when we want to return more than one object. For example, let's say that we want to remind our user what variable they used as an argument in our function:
 
 ```{r square3}
 square <- 
@@ -106,10 +114,13 @@ square <-
     x_sq <- x^2 ## The operation(s) that our function performs
     return(list(value=x, value_squared=x_sq)) ## The list of object(s) that we want returned.
   }
+```
+
+```{r square3a}
 square(3)
 ```
 
-Note that multiple return objects have to be combined in a list. I didn't have to name these separate list elements (i.e. "value" and "value_squared"), but it seems helpful to users of our function. (How would the output change if I didn't name the list elements?) Remember, however, that many objects in R contain multiple elements; vectors, data frames and lists are all good examples of this. So we can also specify one of these "array"-type objects if that provides a more convenient form of output.
+Note that multiple return objects have to be combined in a list. I didn't have to name these separate list elements (i.e. "value" and "value_squared"), but that will likely be helpful users of our function. However, remember that many objects in R contain multiple elements; vectors, data frames and lists are all good examples of this. So we can also specify one of these "array"-type objects within the function itself if that provides a more convenient form of output. For example, we could combine the input and output values into a data frame:
 
 ```{r square4}
 square <- 
@@ -118,12 +129,16 @@ square <-
     df <- tibble(value=x, value_squared=x_sq) ## Bundle up our input and output values into a convenient dataframe.
     return(df)
   }
+```
+
+```{r square4a}
 square(12)
 ```
 
+
 ### Specifying default argument values
 
-Another thing worth noting about R functions is that you can assign default argument values. You have already encountered some examples of this in action. (E.g. Type `?rnorm` and see that it provides a default mean and standard deviation of 0 and 1, respectively.) We can add a default option to our own function pretty easily.
+Another thing worth noting about R functions is that you can assign default argument values. You have already encountered some examples of this in action.^[E.g. Type `?rnorm` and see that it provides a default mean and standard deviation of 0 and 1, respectively.] We can add a default option to our own function pretty easily.
 ```{r square5}
 square <- 
   function(x = 1) { ## Setting the default argument value 
@@ -131,9 +146,13 @@ square <-
     df <- tibble(value=x, value_squared=x_sq)
     return(df)
   }
+```
+
+```{r square5a}
 square() ## Will take the default value of 1 since we didn't provide an alternative.
 square(2) ## Now takes the explicit value that we give it.
 ```
+
 
 We'll return the issue of specifying default values in the next lecture on function debugging. 
 
@@ -143,21 +162,23 @@ Before continuing, I want to highlight the fact that none of the intermediate ob
 
 R has a set of so-called [*lexical scoping*](http://adv-r.had.co.nz/Functions.html#lexical-scoping) rules, which  govern where it stores and evaluates the values of different objects. Without going into too much depth, the practical implication of lexical scoping is that functions operate in a quasi-sandboxed [*environment*](http://adv-r.had.co.nz/Environments.html). They don't return or use objects in the global environment unless they are forced to (e.g. with a `return()` command). Similarly, a function can look to outside environments (e.g. a level "up") to find an object if it doesn't see the object named within itself.
 
-We'll explore the ideas of separate environments and lexical scoping a bit further when we get to the [functional programming](#functional-programming) section below. We'll also go into more depth during the next lecture on debugging.
+We'll explore the ideas of separate environments and lexical scoping a bit further when we get to the [Functional programming] section below. We'll also go into more depth during the next lecture on debugging.
 
 ## Iteration
 
-After learning the basic language syntax, arguably the most important early programming skill to master is writing (for) loops. They allow us to iterate over --- or map --- a set of inputs to a variety of functions. In so doing, loops provide the underlying power to a bewildering array of software applications and scientific analyses. 
+After learning the basic function syntax, arguably the most important early programming skill to master is writing (for) loops. These allow us to iterate over --- or map --- a set of inputs to a variety of functions. In so doing, loops provide the underlying power to a bewildering array of software applications and scientific analyses. 
 
-However, as we'll see, writing loops in R can require a bit more caution because of the limitations of the standard for-loop approach. Instead, I advocate that you instead adopt what is known as a "functional programming" approach to writing loops. Let's dive into the reasons why and how these approaches differ.
+However, as we'll see, writing loops in R require a bit more nuance because of limitations of the standard for-loop approach. Instead, I advocate that you adopt what is known as a "functional programming" approach to writing loops. Let's dive into the reasons why and how these approaches differ.
 
 ### Vectorisation
 
-The first question you need to ask is: "Do I need to iterate at all?" You may remember from a previous lecture that I spoke about R be optimised for working with vectors. What this effectively means is that (most) functions in R can be *vectorised*, Which is to say that you apply a function to a whole vector all at once, rather than to individual elements of a vector. Let's demonstrate this property with our `square` function:
+The first question you need to ask is: "Do I need to iterate at all?" You may remember from a previous lecture that I spoke about R being *vectorised*. Which is to say you can apply a function to every element of a vector at once, rather than one at a time. Let's demonstrate this property with our `square` function:
 ```{r vectorisation}
 square(1:5)
 square(c(2, 4))
 ```
+
+So you may not need to worry about explicit iteration at all. That being said, there are certainly cases where you will need to worry about it. Let's explore with some simple examples (some of which are already vectorised) that provide a springboard for thinking about more complex cases.
 
 ### For-loops. Simple, but limited (and sometimes dangerous)
 
@@ -167,7 +188,7 @@ In R, standard for-loops take a pretty intuitive form. For example:
 for(i in 1:10) print(LETTERS[i])
 ```
 
-In cases where we want to "grow" an object via a for-loop, we first have to create and empty (or NULL) object.
+Note that in cases where we want to "grow" an object via a for-loop, we first have to create an empty (or NULL) object.
 
 ```{r fahrenheit}
 kelvin <- 300:305
@@ -181,9 +202,9 @@ fahrenheit
 
 Unfortunately, basic for-loops in R also come with some downsides. Historically, they used to be much slower than alternative methods (see below). This has largely been resolved, but I've still run into cases where an inconspicuous for-loop has brought an entire analysis crashing to its knees.^[[Exhibit A](https://github.com/grantmcdermott/bycatch/commit/18dbed157f0762bf4b44dfee437d6f319561c160). Trust me: debugging these cases is not much fun.] The bigger problem with for-loops, however, is that they deviate from the norms and best practices of **functional programming**. 
 
-The concept of functional programming is arguably the most important thing you can take away from today's lecture. Thus, while it can certainly be applied to iteration, I'm going to cover now in its own section.
+The concept of functional programming is arguably the most important thing you can take away from today's lecture. Thus, while it can certainly be applied to iteration, I'm going to cover it in its own section.
 
-## Functional programming (FP)
+## Functional programming
 
 ### FP defined
 
@@ -205,13 +226,11 @@ As a corollary, for-loops also pollute our global environment with the variables
 rm(i,k)
 ```
 
-Another annoyance arrived in cases where we're trying to "grow" an object as we iterate over it (e.g. the `fahrenheit` object in our second example). In order to do this, we had to go through the rigmorale of creating an empty object first.
+Another annoyance arrived in cases where we want to "grow" an object as we iterate over it (e.g. the `fahrenheit` object in our second example). In order to do this with a for-loop, we had to go through the rigmarole of creating an empty object first.
 
-FP allows to avoid the explicit use of loop constructs and its associated downsides. In practice, there are two ways to implement FP in R: 1) The base `*apply` family of functions and 2) the `map()` family of functions from the [purrr package](https://purrr.tidyverse.org/).
+FP allows to avoid the explicit use of loop constructs and its associated downsides. In practice, there are two ways to implement FP in R: 1) The `*apply` family of functions in base R, and 2) the `map()` family of functions from the [purrr package](https://purrr.tidyverse.org/).
 
 ### 1) `lapply()` and co.
-
-#### `lapply()` basics
 
 Base R contains a very useful family of `*apply` functions. I won't go through all of these here --- see `?apply` or [this blog post](https://nsaunders.wordpress.com/2010/08/20/a-brief-introduction-to-apply-in-r/) among numerous excellent resources --- but they all follow a similar philosophy and syntax. The good news from our perspective is that this syntax very closely mimics the basic for-loop syntax. For example, consider the code below, which is analgous to our first for-loop above, but now invokes a **`base::lapply()`** call instead. 
 
@@ -224,11 +243,11 @@ A couple of things to notice.
 
 First, check your "Environment" pane in RStudio. Do you see an object called "i" in the Global Environment? (The answer should be"no".) Again, this is because of R's lexical scoping rules, which mean that any object created (and invoked by) a function is evaluated in a sandboxed environment outside of your global environment.
 
-Second, notice how little the basic syntax changed when switching over from `for()` to `lapply()`. Yes, there are some differences, but the essential structure remains the same: We first provide the iteration list (`1:100`) at the beginning and then specify desired function or operation second (`LETTERS[i]`).
+Second, notice how little the basic syntax changed when switching over from `for()` to `lapply()`. Yes, there are some differences, but the essential structure remains the same: We first provide the iteration list (`1:100`) and then specify the desired function or operation (`LETTERS[i]`).
 
-Third, notice that the returned object is a *list*. The `lapply()` function can take various input types as arguments --- vectors, data frames, lists --- but always returns a list, where each element of the returned list is the result from one iteration of the loop. (So now you know where the "l" in "**l**apply" comes from.) 
+Third, notice that the returned object is a list. The `lapply()` function can take various input types as arguments --- vectors, data frames, lists --- but *always returns a list*, where each element of the returned list is the result from one iteration of the loop. (So now you know where the "l" in "**l**apply" comes from.) 
 
-Okay, but what if you don't want the output in list form? Well, there several options here. For example, we could pipe the output to `unlist()` if you wanted a vector instead. Taking a step back, while the default list-return behaviour may not sound ideal at first, I've found that I use `lapply()` more frequently than any of the other `apply` family members. One reason is that it works very well with data frames, especially when combined with `dplyr::bind_rows()`.^[As we've already seen from previous lectures, the latter function allows us to bind a list of data frames into a single data frame.] For example, here's a a slightly modified version of the function that now yields a data frame:
+Okay, but what if you don't want the output in list form? Well, there several options here. For example, we could pipe the output to `unlist()` if you wanted a vector instead. Taking a step back, and while the default list-return behaviour may not sound ideal at first, I've found that I use `lapply()` more frequently than any of the other `apply` family members. One reason is that it works very well with data frames, especially when combined with `dplyr::bind_rows()`.^[As we've already seen from previous lectures, the latter function allows us to bind a list of data frames into a single data frame.] For example, here's a a slightly modified version of our function that now yields a data frame:
 
 ```{r bind_rows_ex}
 # library(tidyverse) ## Already loaded
@@ -251,7 +270,7 @@ sapply(1:10, function(i) LETTERS[i])
 
 ### Create and iterate over named functions
 
-As you may already have guessed, we can split the function and the iteration (and binding) into separate steps. This is good advice to follow, since you typically create (named) functions with the goal of reusing them.
+As you may already have guessed, we can split the function and the iteration (and binding) into separate steps. This is generally a good idea, since you typically create (named) functions with the goal of reusing them. 
 
 ```{r num_to_alpha}
 ## Create a named function
@@ -260,15 +279,20 @@ num_to_alpha <-
   df <- tibble(num = i, let = LETTERS[i])
   return(df)
   }
-## Now iterate over our function using different values
+```
+
+Now, we can easily iterate over our function using different input values. For example,
+```{r num_to_alpha_ex1}
 lapply(1:10, num_to_alpha) %>% bind_rows()
+```
+Or,
+```{r num_to_alpha_ex2}
 lapply(c(1, 5, 26, 3), num_to_alpha) %>% bind_rows()
 ```
 
-
 #### Progress bars with the `pbapply` package!
 
-One of my go-to packages for a long time has been [pbapply](https://github.com/psolymos/pbapply), which is a lightweight wrapper around the `*apply` functions that adds a progress bar. And who doesn't like progress bars? I personally find it incredibly useful to get an idea of how a program of function is progressing and how much longer I should expect to wait before completion. `pbapply` offers versions for all of the `*apply` family, but the one that I use the most is (unsuprisingly) `pbapply::pblapply()`. 
+I'm a big fan of the [pbapply package](https://github.com/psolymos/pbapply), which is a lightweight wrapper around the `*apply` functions that adds a progress bar. And who doesn't like progress bars? Personally, I find it incredibly helpful to see how a function is progressing, or get a sense of how much longer I can expect to wait before completion. `pbapply` offers versions for all of the `*apply` family, but the one that I use the most is (unsuprisingly) **`pbapply::pblapply()`**. 
 
 *Note: You will need to run this next example interactively to see the effect properly.*
 
@@ -283,18 +307,18 @@ pblapply(1:10, function(i) {
   bind_rows()
 ```
 
-Another thing that I really like about the `pblapply()` function is that it allows for easy implementation of parallel (i.e. multicore) processing that works across operating systems. We'll cover this next week.
+Another thing that I really like about the `pblapply()` function is that it allows for easy implementation of parallel (i.e. multicore) processing that works across operating systems. We'll cover this next week, though.
 
 ### 2) purrr package
 
-The tidyverse offers its own enhanced implementation of the base `*apply()` functions through the [purrr package](https://purrr.tidyverse.org/).^[In their [words](https://r4ds.had.co.nz/iteration.html: "The apply family of functions in base R solve a similar problem, but purrr is more consistent and thus is easier to learn."] The key function to remember here is **`purrr::map()`**. And, indeed, the syntax and output of this command are effectively identical to `base::lapply()`:
+The tidyverse offers its own enhanced implementation of the base `*apply()` functions through the [purrr package](https://purrr.tidyverse.org/).^[In their [words](https://r4ds.had.co.nz/iteration.html: "The apply family of functions in base R solve a similar problem [to purrr], but purrr is more consistent and thus is easier to learn.")] The key function to remember here is **`purrr::map()`**. And, indeed, the syntax and output of this command are effectively identical to `base::lapply()`:
 
 ```{r map}
 # lapply(1:10, num_to_alpha) ## lapply version from earlier
 map(1:10, num_to_alpha)
 ```
 
-Given these similarities, I won't spend much time on the purrr package (although I think it will be the optimal entry point for many you when it comes to iteration). You have already learned the syntax, so should be very easy to switch over. However, one thing I wanted to flag for today is that `map()` also comes with its own variants, which are useful for returning objects of a desired type. For example, we can use **`purrr::map_df()`** to return a data frame. This is more efficient (involves less typing) than the `lapply()` version since we don't have to go through the extra step at the end of of binding rows.
+Given these similarities, I won't spend much time on the purrr package .(Although, I think it will be the optimal entry point for many you when it comes to programming and iteration). You have already learned the syntax, so should be very easy to switch over. However, one thing I wanted to flag for today is that `map()` also comes with its own variants, which are useful for returning objects of a desired type. For example, we can use **`purrr::map_df()`** to return a data frame. This is more efficient (i.e. involves less typing) than the `lapply()` version, since we don't have to go through the extra step of binding rows at the end.
 
 ```{r map_df}
 # lapply(1:10, num_to_alpha) %>% bind_rows() ## lapply version from earlier.
@@ -304,59 +328,67 @@ map_df(1:10, num_to_alpha)
 
 ### Iterate (map) over multiple inputs
 
-Thus far we have only been working with functions that take a single input when iterating. For example, we give them a single vector (even though that vector contains many elements that drive the iteration process). But what if we want to iterate over multiple inputs? Consider the the following function, which takes two separate variables `x` and `y` as inputs, and then uses them create a new variable `z` in a data frame. I'll also demonstrate that it works using (non-iterated) inputs.
+Thus far, we have only been working with functions that take a single input when iterating. For example, we feed them a single vector (even though that vector contains many elements that drive the iteration process). But what if we want to iterate over multiple inputs? Consider the following function, which takes two separate variables `x` and `y` as inputs, and then uses them create a new variable `z` in a data frame. 
 
-*Note: Again, this is a silly example that we could easily improve upon using standard (vectorised) tidyverse tools. But the principle carries over to more complicated cases.*
+*Note: Again, this is a rather silly function that we could easily improve upon using standard (vectorised) tidyverse tools. But the principle carries over to more complicated cases.*
 
-```{r silly_func}
+```{r multi_func}
 ## Create a named function
-silly_func <- 
+multi_func <- 
   function(x, y) {
   df <- 
     tibble(x = x, y = y) %>%
     mutate(z = (x + y)/sqrt(x))
   return(df)
   }
-## Show that it works (using non-iterated inputs)
-silly_func(1, 6)
 ```
 
-Now lets imagine that we want to iterate over various levels of both `x` (say 1:5) and `y` (say 6:10). There are two basics approaches that we can follow: 1) Use `mapply()` or `pmap()`, and 2) Using a data frame of input combinations. Let's quickly review both, using the `silly_func` function that we just created above.
+Before continuing, quickly show that it works using non-iterated inputs.
+
+```{r multi_func_ex}
+multi_func(1, 6)
+```
+
+Now lets imagine that we want to iterate over various levels of both `x` (say 1:5) and `y` (say 6:10). There are two basics approaches that we can follow: 
+
+1. Use `base::mapply()` or `purrr::pmap()`.
+2. Use a data frame of input combinations. 
+
+Let's quickly review both, continuing with the `multi_func()` function that we just created above.
 
 #### 1) Use `mapply()` or `pmap()`
 
-Both base R --- through `mapply()` --- and purrr --- through `pmap` --- can handle multiple input cases for iteration. The latter is easier to work with in my opinion, since the syntax is closer (nearly identical) to the single input case. Still, here is a demonstration using both versions:
+Both base R --- through `mapply()` --- and purrr --- through `pmap` --- can handle multiple input cases for iteration. The latter is easier to work with in my opinion, since the syntax is closer (nearly identical) to the single input case. Still, here is a demonstration using both versions.
 
-```{r multi_map1}
-## base::mapply() version. 
+First, `base::mapply()`:
+```{r mapply}
 ## Note that the inputs are now moved to the *end* of the call. 
 ## mapply is based on sapply, so we also have to tell it not to simplify if we want to keep the list structure.
 mapply(
-  silly_func,
+  multi_func,
   1:5, ## Our "x" vector input
   y=6:10, ## Our "y" vector input
   SIMPLIFY = F ## Tell it not to simplify to keep the list structure
   ) %>%
   bind_rows()
-
-## purrr::pmap() version. 
-## Note that the inputs are combined in a list.
-pmap_df(list(x=1:5, y=6:10), silly_func)
 ```
+
+Second, `purrr::pmap()`:
+```{r pmap}
+## Note that the inputs are combined in a list.
+pmap_df(list(x=1:5, y=6:10), multi_func)
+```
+
 
 #### 2) Using a data frame of input combinations
 
-While the above approach work perfectly well, I find that I don't actually use it much in practice. Rather, I prefer to "cheat" by feeding multi-input functions a *single* data frame that specifies the necessary combination of variables by row. I'll demonstrate how this works in a second, but first let me explain why: It basically boils down to the fact that I feel like this gives me more control over my functions and inputs. 
+While the above approach work perfectly well, I find that I don't actually use it all that much in practice. Rather, I prefer to "cheat" by feeding multi-input functions a *single* data frame that specifies the necessary combination of variables by row. I'll demonstrate how this works in a second, but first let me explain why: It basically boils down to the fact that I feel like this gives me more control over my functions and inputs. 
 
-- I don't have to worry about accidently feeding separate inputs of different lengths. Trying running the above functions with an `x` vector input of `1:10`, for example. (Leave everything else unchanged.) `pmap()` will at least fail to iterate and give you a helpful message, but `mapply` will actually complete with totally misaligned columns. Putting everything in a (rectangular) data frame forces you to ensure the equal length of inputs *a priori*.
-- Relatedly, I often need to run a function over all possible combinations of different inputs. A really convenient way to do this is with the `base::expand.grid()` function, which automatically generates a data frame. So its convenient for me to use this data frame as an input directly in my functoin.^[Of course, you could could also extract the columns of the data frame as separate vectors and then feed these into `pmap()`/`mapply()` if you prefer.] We encountered some related tidyverse functions (`tidyr::expand()` and `tidyr::complete()`) in an earlier lecture, as well as your second assignment.
-- It's just simpler and cleaner in my view to keep things down to a single input. This will be harder to see in the simple example that I'm going to present next, but I've found that it can make a big difference with complicated functions that have a lot of nesting (functions of functions) and/or parallelization.
+- I don't have to worry about accidently feeding separate inputs of different lengths. Try running the above functions with an `x` vector input of `1:10`, for example. (Leave everything else unchanged.) `pmap()` will at least fail to iterate and give you a helpful message, but `mapply` will actually complete with totally misaligned columns. Putting everything in a (rectangular) data frame forces you to ensure the equal length of inputs *a priori*.
+- Relatedly, I often need to run a function over all possible combinations of different inputs. A really convenient way to do this is with the `base::expand.grid()` function, which automatically generates a data frame of all combinations. So it's convenient for me to use this data frame as an input directly in my function.^[We encountered some related tidyverse functions (`tidyr::expand()` and `tidyr::complete()`) in an earlier lecture, as well as your second assignment. Of course, you could could also extract the columns of the data frame as separate vectors and then feed these into `pmap()`/`mapply()` if you prefer.]
+- In my view, it's just simpler and cleaner to keep things down to a single input. This will be harder to see in the simple example that I'm going to present next, but I've found that it can make a big difference with complicated functions that have a lot of nesting (i.e. functions of functions) and/or parallelization.
 
-Those justifications aside, let's see how this might work with an example. There are three conceptual steps:
-
-1. First I'm going to create a new function called `parent_func()`, which will take a single input: a data frame containing `x` and `y` columns (and potentially other columns too). 
-2. This input data frame will then be passed to a second (nested) function, which will *iterate over the rows of the data frame*. 
-3. During each iteration, it will pass the `x` and `y` values for that row to our `silly_func()` function and return the resulting data frame.
+Those justifications aside, let's see how this might work with an example. Consider the following function:
 
 ```{r multi_map2}
 parent_func <-
@@ -371,12 +403,22 @@ parent_func <-
         x <- input_df$x[n]
         y <- input_df$y[n]
         ## Use the extracted 
-        df <- silly_func(x, y)
+        df <- multi_func(x, y)
         return(df)
       })
     return(df)
     }
+```
 
+There are three conceptual steps to the above code chunk:
+
+1. First, I create a new function called `parent_func()`, which takes a single input: a data frame containing `x` and `y` columns (and potentially other columns too). 
+2. This input data frame is then passed to a second (nested) function, which will *iterate over the rows of the data frame*. 
+3. During each iteration, the `x` and `y` values for that row are passed to our original `multi_func()` function. This will return a data frame containing the desired output.
+
+Let's test that it worked using two different input data frames.
+
+```{r multi_map2a}
 ## Case 1: Iterate over x=1:5 and y=6:10
 input_df1 <- tibble(x=1:5, y=6:10)
 parent_func(input_df1)
@@ -390,9 +432,9 @@ parent_func(input_df2)
 
 ## Further resources
 
-In the next two lectures, we'll dive into more advanced programming and functions (debugging, parallel implementation, etc.). I hope that today has given you solid grasp of the fundamentals, though. I highly encourage you to start writing some of your own functions. You will be doing a lot of this as your career progresses a mastering this skill early will yield huge benefits. Here are some additional resources for both inspiration and reference:
+In the next two lectures, we'll dive into more advanced programming and function topics (debugging, parallel implementation, etc.). However, I hope that today has given you solid grasp of the fundamentals. I highly encourage you to start writing some of your own functions. You will be doing a lot of this as your career progresses and mastering this skill early will put you on the road to data science success<sup>TM</sup>. Here are some additional resources for both inspiration and reference:
 
 - [Chapter 19 ("Functions)")](http://r4ds.had.co.nz/functions.html) and [Chapter 21 ("Iteration)")](http://r4ds.had.co.nz/iteration.html) of *R4DS* (Grolemund and Wickham) cover much of the same ground as we have here, with particular emphasis on the `purrr` package for iteration.
 - [Chapter 10 ("Functional programming)")](http://adv-r.had.co.nz/Functional-programming.html) and [Chapter 11 ("Functionals)")](http://adv-r.had.co.nz/Functionals.html) of *Advanced R* (Wickham) goes into more depth, especially on the philosophy of functional programming. It also emphasises the `*apply()` family of functions, although that is at least partly (entirely?) due to the fact that `purrr` was introduced after its publication.
-- If you're in the market for a more concise overview of the different `*apply()` functions, then I recommend (this blog post)[https://nsaunders.wordpress.com/2010/08/20/a-brief-introduction-to-apply-in-r/] by Neil Saunders.
+- If you're in the market for a more concise overview of the different `*apply()` functions, then I recommend [this blog post](https://nsaunders.wordpress.com/2010/08/20/a-brief-introduction-to-apply-in-r/) by Neil Saunders.
 - On the other end of the scale, Jenny Bryan (all hail) has created a fairly epic [purrr tutorial](https://jennybc.github.io/purrr-tutorial) mini-website. (Bonus: She goes into more depth about working with lists and list columns.)
