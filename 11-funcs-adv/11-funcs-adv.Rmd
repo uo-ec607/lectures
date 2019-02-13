@@ -47,6 +47,43 @@ square <-
   }
 ```
 
+## Debugging
+
+*<b>Note:</b> This debugging section will be run interactively and I've set most of the below code chunks to `eval=F` in the R Markdown document. (So don't be suprised if the knitted HTML document doesn't contain output correspoding to what I'm talking about in the text.) My advice is to run the code chunks yourself and then follow along with the text.*
+
+### Debugging with RStudio
+
+R and the RStudio IDE provide a number of excellent tools for debugging. We'll walk through these together in a live coding session in a minute, but here is a visual summary taken directly from the [RStudio IDE Cheat Sheet](https://www.rstudio.com/resources/cheatsheets/#ide).^[I mentioned this in an earlier lecture, but RStudio hosts a bunch of excellent [cheat sheets](https://www.rstudio.com/resources/cheatsheets/) that are all worth checking out.] 
+
+![Source: https://www.rstudio.com/resources/cheatsheets/#ide](pics/rstudio-debug.png)
+
+I recommend the `debugonce()` function.^[The generic `debug()` function works well too, but there are some edge cases where running it inside the RStudio IDE can result in a recursive debugging loop hell. So I advise avoiding `debug()` unless you are running R (or calling R scripts) directly from the terminal.] This will cause you to enter *debug mode*, which is really allowing you to "step inside" the function. Let's practice some examples.
+
+### Simple example (live coding)
+
+```{r debugonce, eval=F}
+debugonce(square)
+square("1")
+```
+
+Here's summary of some of the things you should see:
+
+- **Source pane.** Green arrow with highlighted text indicating which line will be run next.
+- **Environment pane.** No longer in Global Environment, but rather specifically in the "square()" function environment. Also note the new "Traceback" sub-pane. Where you are in the code and what you've done to get to this point. Not that informative with this simple example, but can be very helpful when you have long, complicated functions.
+- **Console pane.** The prompt has changed from `>` to (something like) `Browse[1]>`, indicating that you are now in the R environment browser. You also have several control buttons across the top ("Next", "Continue", "Stop", etc.), which allow you to walk through the code in different ways.
+
+In this case, the problem is obvious and R would have spat out an informative message regardless. But it still illustrates the general principle.
+
+RStudio will only throw out automated errors when there is something wrong with the R code (i.e. it yields an R error), not when there is something wrong with your code logic.
+
+## More complicated example 
+
+```{r felm, eval=T}
+source("R/felm-3w.R")
+# error
+felm_marg_effects(reg1, "treat_post", "income", "initial_income", 50000) # Error in as.matrix(cov_x1d3_x1x2d3)[i, i] : subscript out of bounds
+```
+
 
 ## Catching (user) errors and mistakes
 
