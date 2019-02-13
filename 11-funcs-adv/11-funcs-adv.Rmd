@@ -20,32 +20,39 @@ output:
 knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
 ```
 
+*Note: This is the second of three lectures on programming. Please take a look at the [first lecture](https://raw.githack.com/uo-ec607/lectures/master/10-funcs-intro/10-funcs-intro.html) if you haven't gone through it yet. Today, we'll build on that foundation by tackling some more advanced issues that arise when writing and working with functions in R. In particular, I'm going to focus on function debugging, catching user errors, and caching results.*
+
 ## Software requirements
 
 ### R packages 
 
-- **New:** `R.cache`
+- **New:** `R.cache`, `tictoc`
 - **Already used:** `tidyverse` 
 
 Install (if necessary) and load these packages now:
 
 ```{r, cache=F, message=F}
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(R.cache, tidyverse)
+pacman::p_load(R.cache, tictoc, tidyverse)
 ```
+
+We'll also be working with our simple `square()` function from the previous lecture. Let's create it again quickly.
+
+```{r square}
+square <- 
+  function(x = 1) {
+    x_sq <- x^2 
+    df <- tibble(value=x, value_squared=x_sq)
+    return(df)
+  }
+```
+
 
 ## Catching (user) errors and mistakes
 
 In the previous lecture, we implicitly assumed that the user knows exactly how to use our function. However, this isn't always the case. A related, but more complicated, case is when we mistakenly input the wrong type of argument into a function. For example, consider what happens when we mistakenly enter a string rather than a number in our `square` function from last time.
 
 ```{r square_err1, error=TRUE}
-square <- 
-  function (x = 1) { ## Setting the default argument value 
-    x_sq <- x^2 
-    df <- tibble(value=x, value_squared=x_sq)
-    return(df)
-  }
-
 square("1") 
 ```
 
@@ -175,5 +182,67 @@ And you can specify default behaviour:
 ```{r square_safely2}
 square_safely <- safely(square_simple, otherwise = NA_real_)
 square_safely("three")
-square_safely("three")$result
+square_safely("three")
 ```
+
+
+## Caching (memoization)
+
+We've already experienced the benefits (and occasional frustrations) of caching with R Markdown documents.^[Like all of my notes for the course, this lecture is written in R Markdown and then "knitted" to HTML. If you look at the top of the .Rmd source file, you'll see that I have a code chunk saying `knitr::opts_chunk$set(echo = TRUE, **cache = TRUE**, dpi=300)`. The bit in bold causes each code chunk to be cached so that it doesn't have to be re-run every time I recompile the document (unless something changes).] Caching can also be extremely for during regular programming and analysis. Functions can crash midway through for a host of reasons; ranging from invalid arguments to computer malfunction to power outtages to timeouts. This can be a soul-splintering experience if you're working on a particularly lengthy simulation or computation problem. We'll get to parallel computation next lecture, but the problem is *even worse* there. Typically what happens in a parallelized is that the entire run will complete and only reveal an error right at the end... with no saved output! 
+
+<iframe src="https://giphy.com/embed/fVfnOJ0oLb87m" width="480" height="359" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></p>
+
+Fortunately, R has our back with several tools. I'm going to focus here on the [R.cache package]
+(https://cran.r-project.org/web/packages/R.cache/index.html) from [Henrik Bengtsson](https://twitter.com/henrikbengtsson). I should perhaps also clarify that there are various forms of caching, but we're going to be focused on what's known as [memoization](https://en.wikipedia.org/wiki/Memoization).
+
+```{r slow_func}
+# library(R.cache) ## Already loaded
+
+## Emulate slow function
+slow_func <- 
+  function(x = 1) {
+    x_sq <- x^2 
+    df <- tibble(value=x, value_squared=x_sq)
+    Sys.sleep(2)
+    return(df)
+    }
+```
+
+```{r cached_func}
+cached_func <- 
+  function(x) {
+    
+    ## 1. Try to load cached data, if already generated
+    key <- list(x)
+    my_data <- loadCache(key)
+    if (!is.null(my_data)) {
+      cat("Loaded cached data\n")
+      return(my_data)
+    }
+    
+    ## 2. If not available, generate it.
+    cat("Generating data from scratch...")
+    my_data <- slow_func(x)
+    cat("ok\n")
+    saveCache(my_data, key=key, comment="slow_func()")
+    
+    return(my_data)
+  }
+```
+
+```{r cache_run1}
+# library(tictoc) ## Already loaded
+tic()
+map_df(1:10, cached_func)
+toc()
+```
+
+```{r cache_run2}
+tic()
+map_df(1:10, cached_func)
+toc()
+```
+
+## Further resources
+
+- Amanda Gadrow has an excellent video about [*Debugging techniques in RStudio*](https://www.rstudio.com/resources/videos/debugging-techniques-in-rstudio/) (23 min).
