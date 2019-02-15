@@ -27,13 +27,13 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
 ### R packages 
 
 - **New:** `R.cache`, `tictoc`
-- **Already used:** `tidyverse` 
+- **Already used:** `tidyverse`, `lfe` 
 
 Install (if necessary) and load these packages now:
 
 ```{r, cache=F, message=F}
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(R.cache, tictoc, tidyverse)
+pacman::p_load(R.cache, tictoc, tidyverse, lfe)
 ```
 
 Note that when you first install the [R.cache package](https://cran.r-project.org/web/packages/R.cache/index.html), it will ask you if you wish to create a default `~/.Rcache` directory that will hold all of your cache files. I recommend that you say yes by entering "y".^[The alternative is create a temporary directory for this session only. This is okay for experimentation, but decidedly unhelpful when the goal caching is to persist output and evaluated code across sessions.]
@@ -53,46 +53,64 @@ square <-
 
 *<b>Note:</b> This debugging section will be run interactively and I've set most of the below code chunks to `eval=F` in the R Markdown document. (So don't be suprised if the knitted HTML document doesn't contain output correspoding to what I'm talking about in the text.) My advice is to run the code chunks yourself and then follow along with the text.*
 
-### Debugging with RStudio
+### Debugging tools in RStudio
 
-R and the RStudio IDE provide a number of excellent tools for debugging. We'll walk through these together in a live coding session in a minute, but here is a visual summary taken directly from the [RStudio IDE Cheat Sheet](https://www.rstudio.com/resources/cheatsheets/#ide).^[I mentioned this in an earlier lecture, but RStudio hosts a bunch of excellent [cheat sheets](https://www.rstudio.com/resources/cheatsheets/) that are all worth checking out.] 
+R and the RStudio IDE provide a number of excellent tools for debugging. We'll walk through these together in a series of live coding examples in a minute. But, first here is a visual summary cropped directly from the [RStudio IDE Cheat Sheet](https://www.rstudio.com/resources/cheatsheets/#ide).^[I mentioned this in an earlier lecture, but RStudio hosts a bunch of excellent [cheat sheets](https://www.rstudio.com/resources/cheatsheets/) that are all worth checking out.] 
 
-![Source: https://www.rstudio.com/resources/cheatsheets/#ide](pics/rstudio-debug.png)
+![*Source: https://www.rstudio.com/resources/cheatsheets/#ide*](pics/rstudio-debug.png)
 
-I recommend the `debugonce()` function.^[The generic `debug()` function works well too, but there are some edge cases where running it inside the RStudio IDE can result in a recursive debugging loop hell. So I advise avoiding `debug()` unless you are running R (or calling R scripts) directly from the terminal.] This will cause you to enter *debug mode*, which is really allowing you to "step inside" the function. Let's practice some examples.
+### Debugger mode
 
-### Simple example (live coding)
+As the figure above suggests, there are various ways to enter so-called **debugger mode**. This is where you "step inside" a function and evaluate objects *within that function environment*. In other words, it allows you to pause time and interact with internal function objects that are normally hidden from your global environment.^[Remember from our last lecture: Functions operate in semi-sandboxed [environments](http://adv-r.had.co.nz/Environments.html) determined by R's [lexical scoping](http://adv-r.had.co.nz/Functions.html#lexical-scoping) rules.] Let's practice with an example.
+
+Suppose we feed some deliberately invalid input --- a character string --- to our `square()` function:
+
+```{r square_one, error=T}
+square("one")
+```
+
+Now, of course, we already knew that this function call would fail. (D'uh, you can't square a string.) R also produced an informative error message. However, notice that we don't actually get to see the point of failure (i.e. the point where it tried square the value "one"). For this we need to enter debugger mode. 
+
+While there are several ways to do enter the debugger, I recommend the **`debugonce()`** function. As the name suggests, running `debugonce(square)` will cause us to enter debugger mode the next time we call `square()`, but only that one time.^[The generic `debug()` function works well too. However, there are some edge cases where running it inside the RStudio IDE can result in a recursive debugging loop (i.e. hell). So I advise avoiding `debug()` in favour of `debugonce()` unless you are running R (or calling R scripts) directly from the terminal.] Let's try it in a live session:
 
 ```{r debugonce, eval=F}
+## Run this next chunk yourself in a live session
 debugonce(square)
-square("1")
+square("one")
 ```
 
-Here's summary of some of the things you should see:
+Here is a screenshot from my computer after I ran the above code chunk and explored a little.
 
-- **Source pane.** Green arrow with highlighted text indicating which line will be run next.
-- **Environment pane.** No longer in Global Environment, but rather specifically in the "square()" function environment. Also note the new "Traceback" sub-pane. Where you are in the code and what you've done to get to this point. Not that informative with this simple example, but can be very helpful when you have long, complicated functions.
-- **Console pane.** The prompt has changed from `>` to (something like) `Browse[1]>`, indicating that you are now in the R environment browser. You also have several control buttons across the top ("Next", "Continue", "Stop", etc.), which allow you to walk through the code in different ways.
+![](pics/debug_ex1.png)
 
-In this case, the problem is obvious and R would have spat out an informative message regardless. But it still illustrates the general principle.
+Note the following changes to my RStudio IDE while I'm in debugger mode:
 
-RStudio will only throw out automated errors when there is something wrong with the R code (i.e. it yields an R error), not when there is something wrong with your code logic.
+- *Source (top-left).* A new "square" debugger script has popped up. The green arrow with highlighted text indicates which line of the function will be run next.
+- *Environment (top-right).* I'm no longer in my Global Environment, but rather inside the "square()" function environment. 
+  - There is one object inside my function environment: the variable `x` (i.e. my function argument) which has been assigned the value of "one".
+  - Also note the new *Traceback*  window pane below that. The traceback (or "call stack") tells you where you are in the code and what you've done to get to this point. While the traceback stack does not add much value for simple functions like this, it can be very informative when you have longer and more complicated functions.
+- *Console (bottom-right).* The prompt has changed from `>` to `Browse[2]>`, indicating that I am now in the R environment browser. The debugger console is fully functional and I have started exploring. 
+  - There are several control buttons across the top ("Next", "Continue", "Stop", etc.), which allow me to walk through the code in different ways.
+  - I've manually entered `x` into the console prompt and confirmed that R returns a value of "one". 
+  - **Most importantly:** I then tried running the first line of the function (`x_sq <- x^2`) and was been met with an error message ("non-numeric argument to binary operator"). This is the exact point where the function actually fails.
 
-### More complicated example (live coding)
+Now, again, in this case particular case the problem was obvious and known ahead of time. But I think this simple example is useful for illustrating some general debugging principles and the power of being able to step inside functions via debugger mode. It gives you a chance to see what the functions "sees" and then work through to the root cause of the problem in a systematic way.
 
-```{r felm, error=TRUE}
-source("R/felm-3w.R")
-# error
-felm_marg_effects(reg1, "treat_post", "income", "initial_income", 50000) # Error in as.matrix(cov_x1d3_x1x2d3)[i, i] : subscript out of bounds
-```
+### Aside: Manual vs prompted debugging
+
+We don't always have to manually invoke debugger mode when a function fails --- for example with `debugonce()`. In fact, RStudio will often prompt you to "Rerun with Debug" if something goes wrong. You will see something like the below screenshot in your console when this happens. (Ignore the function and specific error message and rather focus on the blue icons on the right.)
+
+![](pics/debug_prompt.png)
+
+The automatic RStudio prompt will arise whenever there is something wrong with the way the R code in your function is being evaluated (i.e. it yields an R error). In contrast, you won't receive the automatic prompt if there is something wrong with your code logic (e.g. you try to square a character string).
 
 
-## Catching (user) errors and mistakes
+## Catching user errors
 
-In the previous lecture, we implicitly assumed that the user knows exactly how to use our function. However, this isn't always the case. A related, but more complicated, case is when we mistakenly input the wrong type of argument into a function. For example, consider what happens when we mistakenly enter a string rather than a number in our `square` function from last time.
+In the previous lecture, we implicitly assumed that the user knows exactly how to use our function. However, this isn't always the case. A related, but more complicated, case is when we mistakenly input the wrong type of argument into a function. Let's return to our earlier example, where we "accidentally" entered a string into our `square()` function.
 
 ```{r square_err1, error=TRUE}
-square("1") 
+square("one") 
 ```
 
 This may just seem like a case of particularly dumb user error. However --- trust me --- its very easy to run into this category of problem when you have a complex analysis that consists of, say, a series of nested functions. (One function calling another, calling another...) For whatever reason, a single function or iteration may produce slightly different output than expected and this can bring your entire analysis crashing to its knees, because the output can't be used in the next part of the chain. This is especially frustrating when you are running a multicore process (e.g. a parallel Monte Carlo simulation), since the program will first complete the *entire* run --- perhaps taking several hours --- before informing you right at the end that there was an error somewhere and no results (even for the valid iterations!) have been retained. 
@@ -121,7 +139,7 @@ square_ifelse <-
 
 Test it.
 ```{r square_ifelse_test}
-square_ifelse("1") ## Will trigger our warning message.
+square_ifelse("one") ## Will trigger our warning message.
 square_ifelse(1) ## Works.
 ```
 
@@ -308,5 +326,5 @@ As expected, our function only generated the new observations from scratch. The 
 
 ## Further resources
 
-- Amanda Gadrow has a great video about [*Debugging techniques in RStudio*](https://www.rstudio.com/resources/videos/debugging-techniques-in-rstudio/).
-- While it seems somewhat childish to recommend a whole on advanced topics, I would be remiss not to mention Hadley Wickham's [*Advanced R*](http://adv-r.had.co.nz/) again. In truth, he doesn't really cover the same topics as I have here, but there's a great deal of relevant knowledge to be gleaned from it. If you're looking to scale up your understanding of how R works underneath the hood and implement some truly high-performance code, then this is where you should go next.
+- RStudio have a number of great debugging resources. I recommend [*Debugging techniques in RStudio*](https://www.rstudio.com/resources/videos/debugging-techniques-in-rstudio/) (a recorded talk by Amanda Gadrow) and [Debugging with RStudio](https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-RStudio) (Jonathan McPherson).
+- The [Exceptions and debugging](http://adv-r.had.co.nz/Exceptions-Debugging.html) chapter of Hadley Wickham's [*Advanced R*](http://adv-r.had.co.nz/) is very. In fact, the whole book is fantastic. If you're looking to scale up your understanding of how R works underneath the hood and implement some truly high-performance code, then this is where you should go next.

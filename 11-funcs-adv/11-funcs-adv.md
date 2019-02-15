@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott
   affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: Lecture 11  #"12 February 2019"
+date: Lecture 11  #"15 February 2019"
 output: 
   html_document:
     theme: flatly
@@ -18,35 +18,106 @@ output:
 
 
 
+*Note: This is the second of three lectures on programming. Please take a look at the [first lecture](https://raw.githack.com/uo-ec607/lectures/master/10-funcs-intro/10-funcs-intro.html) if you haven't gone through it yet. Today, we'll build on that foundation by tackling some more advanced issues that arise when writing and working with functions in R. In particular, I'm going to focus on function debugging, catching user errors, and caching results.*
+
 ## Software requirements
 
 ### R packages 
 
-- **New:** `R.cache`
-- **Already used:** `tidyverse` 
+- **New:** `R.cache`, `tictoc`
+- **Already used:** `tidyverse`, `lfe` 
 
 Install (if necessary) and load these packages now:
 
 
 ```r
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(R.cache, tidyverse)
+pacman::p_load(R.cache, tictoc, tidyverse, lfe)
 ```
 
-## Catching (user) errors and mistakes
+Note that when you first install the [R.cache package](https://cran.r-project.org/web/packages/R.cache/index.html), it will ask you if you wish to create a default `~/.Rcache` directory that will hold all of your cache files. I recommend that you say yes by entering "y".^[The alternative is create a temporary directory for this session only. This is okay for experimentation, but decidedly unhelpful when the goal caching is to persist output and evaluated code across sessions.]
 
-In the previous lecture, we implicitly assumed that the user knows exactly how to use our function. However, this isn't always the case. A related, but more complicated, case is when we mistakenly input the wrong type of argument into a function. For example, consider what happens when we mistakenly enter a string rather than a number in our `square` function from last time.
+We will also be working with our simple `square()` function from the previous lecture. Let's create it again quickly.
 
 
 ```r
 square <- 
-  function (x = 1) { ## Setting the default argument value 
+  function(x = 1) {
     x_sq <- x^2 
     df <- tibble(value=x, value_squared=x_sq)
     return(df)
   }
+```
 
-square("1") 
+## Debugging
+
+*<b>Note:</b> This debugging section will be run interactively and I've set most of the below code chunks to `eval=F` in the R Markdown document. (So don't be suprised if the knitted HTML document doesn't contain output correspoding to what I'm talking about in the text.) My advice is to run the code chunks yourself and then follow along with the text.*
+
+### Debugging tools in RStudio
+
+R and the RStudio IDE provide a number of excellent tools for debugging. We'll walk through these together in a series of live coding examples in a minute. But, first here is a visual summary cropped directly from the [RStudio IDE Cheat Sheet](https://www.rstudio.com/resources/cheatsheets/#ide).^[I mentioned this in an earlier lecture, but RStudio hosts a bunch of excellent [cheat sheets](https://www.rstudio.com/resources/cheatsheets/) that are all worth checking out.] 
+
+![*Source: https://www.rstudio.com/resources/cheatsheets/#ide*](pics/rstudio-debug.png)
+
+### Debugger mode
+
+As the figure above suggests, there are various ways to enter so-called **debugger mode**. This is where you "step inside" a function and evaluate objects *within that function environment*. In other words, it allows you to pause time and interact with internal function objects that are normally hidden from your global environment.^[Remember from our last lecture: Functions operate in semi-sandboxed [environments](http://adv-r.had.co.nz/Environments.html) determined by R's [lexical scoping](http://adv-r.had.co.nz/Functions.html#lexical-scoping) rules.] Let's practice with an example.
+
+Suppose we feed some deliberately invalid input --- a character string --- to our `square()` function:
+
+
+```r
+square("one")
+```
+
+```
+## Error in x^2: non-numeric argument to binary operator
+```
+
+Now, of course, we already knew that this function call would fail. (D'uh, you can't square a string.) R also produced an informative error message. However, notice that we don't actually get to see the point of failure (i.e. the point where it tried square the value "one"). For this we need to enter debugger mode. 
+
+While there are several ways to do enter the debugger, I recommend the **`debugonce()`** function. As the name suggests, running `debugonce(square)` will cause us to enter debugger mode the next time we call `square()`, but only that one time.^[The generic `debug()` function works well too. However, there are some edge cases where running it inside the RStudio IDE can result in a recursive debugging loop (i.e. hell). So I advise avoiding `debug()` in favour of `debugonce()` unless you are running R (or calling R scripts) directly from the terminal.] Let's try it in a live session:
+
+
+```r
+## Run this next chunk yourself in a live session
+debugonce(square)
+square("one")
+```
+
+Here is a screenshot from my computer after I ran the above code chunk and explored a little.
+
+![](pics/debug_ex1.png)
+
+Note the following changes to my RStudio IDE while I'm in debugger mode:
+
+- *Source (top-left).* A new "square" debugger script has popped up. The green arrow with highlighted text indicates which line of the function will be run next.
+- *Environment (top-right).* I'm no longer in my Global Environment, but rather inside the "square()" function environment. 
+  - There is one object inside my function environment: the variable `x` (i.e. my function argument) which has been assigned the value of "one".
+  - Also note the new *Traceback*  window pane below that. The traceback (or "call stack") tells you where you are in the code and what you've done to get to this point. While the traceback stack does not add much value for simple functions like this, it can be very informative when you have longer and more complicated functions.
+- *Console (bottom-right).* The prompt has changed from `>` to `Browse[2]>`, indicating that I am now in the R environment browser. The debugger console is fully functional and I have started exploring. 
+  - There are several control buttons across the top ("Next", "Continue", "Stop", etc.), which allow me to walk through the code in different ways.
+  - I've manually entered `x` into the console prompt and confirmed that R returns a value of "one". 
+  - **Most importantly:** I then tried running the first line of the function (`x_sq <- x^2`) and was been met with an error message ("non-numeric argument to binary operator"). This is the exact point where the function actually fails.
+
+Now, again, in this case particular case the problem was obvious and known ahead of time. But I think this simple example is useful for illustrating some general debugging principles and the power of being able to step inside functions via debugger mode. It gives you a chance to see what the functions "sees" and then work through to the root cause of the problem in a systematic way.
+
+### Aside: Manual vs prompted debugging
+
+We don't always have to manually invoke debugger mode when a function fails --- for example with `debugonce()`. In fact, RStudio will often prompt you to "Rerun with Debug" if something goes wrong. You will see something like the below screenshot in your console when this happens. (Ignore the function and specific error message and rather focus on the blue icons on the right.)
+
+![](pics/debug_prompt.png)
+
+The automatic RStudio prompt will arise whenever there is something wrong with the way the R code in your function is being evaluated (i.e. it yields an R error). In contrast, you won't receive the automatic prompt if there is something wrong with your code logic (e.g. you try to square a character string).
+
+
+## Catching user errors
+
+In the previous lecture, we implicitly assumed that the user knows exactly how to use our function. However, this isn't always the case. A related, but more complicated, case is when we mistakenly input the wrong type of argument into a function. Let's return to our earlier example, where we "accidentally" entered a string into our `square()` function.
+
+
+```r
+square("one") 
 ```
 
 ```
@@ -81,7 +152,7 @@ square_ifelse <-
 Test it.
 
 ```r
-square_ifelse("1") ## Will trigger our warning message.
+square_ifelse("one") ## Will trigger our warning message.
 ```
 
 ```
@@ -93,7 +164,9 @@ square_ifelse(1) ## Works.
 ```
 
 ```
+## # A tibble: 1 x 2
 ##   value value_squared
+##   <dbl>         <dbl>
 ## 1     1             1
 ```
 
@@ -308,9 +381,223 @@ square_safely("three")
 ```
 
 ```r
-square_safely("three")$result
+square_safely("three")
 ```
 
 ```
+## $result
 ## [1] NA
+## 
+## $error
+## <simpleError in x^2: non-numeric argument to binary operator>
 ```
+
+
+## Caching (memoization)
+
+We've already experienced the benefits (and occasional frustrations) of caching with R Markdown documents.^[Like all of my notes for the course, this lecture is written in R Markdown and then "knitted" to HTML. If you look at the top of the .Rmd source file, you'll see that I have a code chunk saying `knitr::opts_chunk$set(echo = TRUE, **cache = TRUE**, dpi=300)`. The bit in bold causes each code chunk to be cached so that it doesn't have to be re-run every time I recompile the document (unless something changes).] Caching can also be extremely for during regular programming and analysis. Functions can crash midway through for a host of reasons: invalid arguments buried in iterated input, computer malfunction, memory limits, power outtages, timeouts, etc. This can be a soul-splintering experience if you're working on a particularly lengthy simulation or computation problem. We'll get to parallel computation next lecture, but the problem is *even worse* there. Typically what happens with a parallelized function is that the entire run will complete (potentially taking many hours or days) and only reveal an error right at the end... with no saved output! 
+
+<iframe src="https://giphy.com/embed/fVfnOJ0oLb87m" width="480" height="359" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></p>
+
+Fortunately, R has our back with several caching tools. I'm going to focus here on the [R.cache package](https://cran.r-project.org/web/packages/R.cache/index.html) from [Henrik Bengtsson](https://twitter.com/henrikbengtsson). I should perhaps also clarify that there are various forms of caching, but we're going to be practicing here is technically known as [memoization](https://en.wikipedia.org/wiki/Memoization).
+
+Let's start by creating a "slow" version of our simple square function, `slow_func()`, which will sleep for two seconds at the end of every iteration. Of course, this is just meant to emulate a computationally-intensive function, but the basic ideas will carry through entirely intact.
+
+
+```r
+## Emulate slow function
+slow_func <- 
+  function(x = 1) {
+    x_sq <- x^2 
+    df <- tibble(value=x, value_squared=x_sq)
+    Sys.sleep(2)
+    return(df)
+    }
+```
+
+Now we layer on the caching functionality. To do this, we're going to wrap our slow function in a parent function, which I'll creatively call `cached_func()`. This parent function has two primary sections:
+
+1. First, it tries to load previously cached data (if it exists) using `R.cache::loadCache()`. This works by recognising a unique file cache for a given set of input parameters, which we would have generated previously. Speaking of which...
+2. Second, it runs our slow function on any inputs that have not already been evaluated. During each iteration, we generate a new cache file using `R.cache::saveCache()`. This will save the compressed output from that iteration to disk (i.e. in our `~/.Rcache` directory) and automatically append a unique ID (hexadecimal hash code) to the file name, for convenient recall later.
+
+
+```r
+# library(R.cache) ## Already loaded
+
+cached_func <- 
+  function(x) {
+    
+    ## 1. Try to load cached data, if already generated
+    key <- list(x)
+    my_data <- loadCache(key)
+    if (!is.null(my_data)) {
+      cat("Loaded cached data\n")
+      return(my_data)
+    }
+    
+    ## 2. If not available, generate it.
+    cat("Generating data from scratch...")
+    my_data <- slow_func(x)
+    cat("ok\n")
+    saveCache(my_data, key=key, comment="slow_func()")
+    
+    return(my_data)
+  }
+```
+
+There are obviously a couple of other things happening in the function (e.g. writing helpful messages to ourselves with `cat()`), but hopefully you've understood the main points. Now let's iterate over our function using a particular set of inputs (i.e. the numbers 1 through 10). Note that I'm going to use the lightweight [tictoc package](https://cran.r-project.org/web/packages/tictoc/) to record timing.
+
+
+```r
+# library(tictoc) ## Already loaded
+tic()
+map_df(1:10, cached_func)
+```
+
+```
+## Generating data from scratch...ok
+## Generating data from scratch...ok
+## Generating data from scratch...ok
+## Generating data from scratch...ok
+## Generating data from scratch...ok
+## Generating data from scratch...ok
+## Generating data from scratch...ok
+## Generating data from scratch...ok
+## Generating data from scratch...ok
+## Generating data from scratch...ok
+```
+
+```
+## # A tibble: 10 x 2
+##    value value_squared
+##    <int>         <dbl>
+##  1     1             1
+##  2     2             4
+##  3     3             9
+##  4     4            16
+##  5     5            25
+##  6     6            36
+##  7     7            49
+##  8     8            64
+##  9     9            81
+## 10    10           100
+```
+
+```r
+toc()
+```
+
+```
+## 20.261 sec elapsed
+```
+
+As expected, this produced exactly the same output as our regular `square()` function, but it just took longer (20 seconds to be precise). The function produced some real-time feedback for us with the "Generating data from scratch... ok" message, because we asked it to. This is probably less impressive in a knitted R Markdown document, but I've found it can be very informative in a live coding session.^[Challenge: I usually include the input or iteration run in my message, so that I know where I am in the sequence. How would you do this?]
+
+Okay, now let's try running the function for a second time to see if caching makes a difference...
+
+
+```r
+tic()
+map_df(1:10, cached_func)
+```
+
+```
+## Loaded cached data
+## Loaded cached data
+## Loaded cached data
+## Loaded cached data
+## Loaded cached data
+## Loaded cached data
+## Loaded cached data
+## Loaded cached data
+## Loaded cached data
+## Loaded cached data
+```
+
+```
+## # A tibble: 10 x 2
+##    value value_squared
+##    <int>         <dbl>
+##  1     1             1
+##  2     2             4
+##  3     3             9
+##  4     4            16
+##  5     5            25
+##  6     6            36
+##  7     7            49
+##  8     8            64
+##  9     9            81
+## 10    10           100
+```
+
+```r
+toc()
+```
+
+```
+## 0.033 sec elapsed
+```
+
+And does it ever! We're down to a fraction of a second, since we didn't need to run at all again. Rather, we simply read in the previously saved (i.e. cached) results.
+
+Finally, note that our caching function is smart enough to disguish between previously cached and non-cached results. For example, consider what happens if I include five more numbers in the `x` input vector.
+
+
+```r
+tic()
+map_df(1:15, cached_func)
+```
+
+```
+## Loaded cached data
+## Loaded cached data
+## Loaded cached data
+## Loaded cached data
+## Loaded cached data
+## Loaded cached data
+## Loaded cached data
+## Loaded cached data
+## Loaded cached data
+## Loaded cached data
+## Generating data from scratch...ok
+## Generating data from scratch...ok
+## Generating data from scratch...ok
+## Generating data from scratch...ok
+## Generating data from scratch...ok
+```
+
+```
+## # A tibble: 15 x 2
+##    value value_squared
+##    <int>         <dbl>
+##  1     1             1
+##  2     2             4
+##  3     3             9
+##  4     4            16
+##  5     5            25
+##  6     6            36
+##  7     7            49
+##  8     8            64
+##  9     9            81
+## 10    10           100
+## 11    11           121
+## 12    12           144
+## 13    13           169
+## 14    14           196
+## 15    15           225
+```
+
+```r
+toc()
+```
+
+```
+## 10.246 sec elapsed
+```
+
+As expected, our function only generated the new observations from scratch. The remaining inputs were loaded from the cache. You can think of this as approximating a real-life case, where your program crashes/halts midway through its run, and you don't need to restart all the way at the beginning. No jokes, this happens more frequently than you might expect, especially when you're working with complex analyses and certain high-performance computing tools (e.g. preemptible nodes or virtual machines instances). Caching has saved me *many* lost hours and it could do the same for you.
+
+## Further resources
+
+- RStudio have a number of great debugging resources. I recommend [*Debugging techniques in RStudio*](https://www.rstudio.com/resources/videos/debugging-techniques-in-rstudio/) (a recorded talk by Amanda Gadrow) and [Debugging with RStudio](https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-RStudio) (Jonathan McPherson).
+- The [Exceptions and debugging](http://adv-r.had.co.nz/Exceptions-Debugging.html) chapter of Hadley Wickham's [*Advanced R*](http://adv-r.had.co.nz/) is very. In fact, the whole book is fantastic. If you're looking to scale up your understanding of how R works underneath the hood and implement some truly high-performance code, then this is where you should go next.
