@@ -28,25 +28,21 @@ knitr::knit_hooks$set(
     })
 ```
 
-*Note: This is the third of three lectures on programming. Please take a look at the [first](https://raw.githack.com/uo-ec607/lectures/master/10-funcs-intro/10-funcs-intro.html) [two](https://raw.githack.com/uo-ec607/lectures/master/11-funcs-adv/11-funcs-adv.html) lectures if you haven't yet. Nothing that we will cover here is critically dependent on these earlier lectures. However, I'm going to assume that you have a good understanding of how R functions and environments generally work. Our goal for today is to speed up our programming tasks by getting them to run in parallel.*
+*Note: This is the third of three lectures on programming. Please take a look at the [first](https://raw.githack.com/uo-ec607/lectures/master/10-funcs-intro/10-funcs-intro.html) [two](https://raw.githack.com/uo-ec607/lectures/master/11-funcs-adv/11-funcs-adv.html) lectures if you haven't yet. Nothing that we will cover here is critically dependent on these earlier lectures. However, I'm going to assume that you have a good understanding of how R functions and environments generally work. Our goal for today is to dramatically speed up our programming tasks by getting them to run in parallel.*
 
 ## Software requirements
-
-### External software (optional)
-
-Every operating system provides built-in tools for monitoring processes and resource useage. These typically come in the form of a nice GUI (e.g. [System Monitor](https://wiki.gnome.org/Apps/SystemMonitor)). However, I recommend taking a look at [**htop**](https://hisham.hm/htop/); a shell-based process viewer available for installation on Linux and Mac. Regardless of whether you install it now --- or can (sorry, Windows users) --- I wanted to flag `htop` before we get to the big data section of the course. At that point, we'll all be connecting to remote Linux servers through SSH, and a shell-based process monitor will prove very useful for tracking resource use and performance.
 
 ### R packages 
 
 - **New:** `parallel`, `future`, `future.apply`, `furrr`, `RhpcBLASctl`
 - **Already used:** `tidyverse`, `pbapply`, `tictoc`
 
-Let's install (if necessary) and load all these packages now. Note that the `parallel` package is bundled together with the base R installation and should already be on your system. I'm also going to call the `future::plan()` function and set the resolution to "multiprocess". Don't worry what this means right now --- I'll explain in a bit --- just think of it as a convenient way to set the desired behaviour for the rest of this document.
+The code chunk below will install (if necessary) and load all of these packages for you. Note that the `parallel` package is bundled together with the base R installation and should already be on your system. I'm also going to call the `future::plan()` function and set the resolution to "multiprocess". Don't worry what this means right now --- I'll explain in due course --- just think of it as a convenient way to set our desired parallel programming behaviour for the rest of this document.
 
 ```{r, cache=F, message=F}
 ## Load/install packages
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(tictoc, pbapply, future, future.apply, tidyverse, furrr, RhpcBLASctl)
+pacman::p_load(tictoc, parallel, pbapply, future, future.apply, tidyverse, furrr, RhpcBLASctl)
 
 ## Set future::plan() resolution strategy
 plan(multiprocess)
@@ -54,11 +50,11 @@ plan(multiprocess)
 
 ## Prologue
 
-A few lectures back, we talked about the huge difference that some relatively new packages have made to spatial analysis in R. Complex spatial operations that previously necessitated equally complex spatial objects have been superseded by much simpler and more intuitive tools. If that wasn't good enough, these new tools are also faster. 
+A few lectures back, we talked about the huge difference that some relatively new packages have made to spatial analysis in R. Complex spatial operations that previously necessitated equally complex spatial objects have been superseded by much simpler and more intuitive tools. If that wasn't good enough, these new tools are also faster. We are going to see something very similar today. Parallel programming is a big and complex topic, with many potential pitfalls. However, software innovations and some amazing new(ish) packages have made it *much* easier and safer to program in parallel.^[I should emphasise that the R-core team has provided excellent support for parallel programming for over a decade. But there's no question in my mind that the barriers to entry have recently been lowered.] 
 
-We are going to see something very similar today. Parallel programming is a big and complex topic, with many potential pitfalls. However, software innovations and some amazing new(ish) packages have made it *much* easier and safer to program in parallel.^[I should emphasise that the R-core team has provided excellent support for parallel programming for over a decade. But there's no question in my mind that the barriers to entry have recently been lowered.] 
+With that in mind, I'm going to start today's lecture with a motivating example. My goal is to demonstrate both the ease and immediate payoff of "going parallel". Then, after hopefully convincing you, I'll return to a more general discussion of parallel programming. I'll highlight some technical concepts and discuss some remaining pitfalls that you should be aware of.
 
-With that in mind, I'm going to start today's lecture with a motivating example. My goal is to demonstrate both the ease and immediate payoff of "going parallel" in R. Then, after hopefully convincing you, I'll return to a more general discussion of parallel programming in general, highlight some technical concepts and discuss some remaining pitfalls that you should be aware of.
+Ready? Let's go.
 
 ## Motivating example
 
@@ -87,7 +83,16 @@ serial_ex <- lapply(1:12, slow_func) %>% bind_rows()
 toc()
 ```
 
-Now, I'm going to iterate over the function in *parallel*. In my case, this means that I will be using all `r parallel::detectCores()` cores on my laptop. I'll use the [future.apply package](https://cran.r-project.org/web/packages/future.apply/index.html) (more about this later), but the parameters of the iteration are otherwise unchanged.
+Next, were going to iterate over the function in *parallel*. Before continuing, it's worth pointing out that our abilty to go parallel hinges on the number of CPU cores available to us. The simplest way to obtain this information from R is with the `parallel::detectCores()` function:
+
+```{r cache=F}
+# future::availableCores() ## Another option
+detectCores()
+```
+
+So, I have `r parallel::detectCores()` cores to play with on my laptop.^[A Dell Precision 5530 running Arch Linux, if you're interested.] Adjust expectations for you own system accordingly.
+
+Okay, back to our example. I'm going to implement the parallel iteration using the [future.apply package](https://cran.r-project.org/web/packages/future.apply/index.html) (more on this later). Note that the parameters of the problem are otherwise unchanged.
 
 ```{r future_ex}
 # library(future.apply)  ## Already loaded
@@ -98,13 +103,15 @@ future_ex <- future_lapply(1:12, slow_func) %>% bind_rows()
 toc()
 ```
 
-Wow, the execution time was twelve times faster! Even more impressively, look how little the syntax changed. I basically just had to tell R that I wanted to implement the iteration in parallel (`plan(multiprocess)`) and then add "future_" to my apply call (<code>**future_**apply()</code>). Let's confirm that the output is the same.
+Woah, the execution time was twelve times faster! Even more impressively, look at how little the syntax changed. I basically just had to tell R that I wanted to implement the iteration in parallel (i.e. <code>**plan(multiprocess)**</code>) and slightly amend my lapply call (i.e. <code>**future_**apply()</code>). 
+
+Let's confirm that the output is the same.
 
 ```{r all_equal_ex}
 all_equal(serial_ex, future_ex)
 ```
 
-Those of you who prefer the `purrr::map()` family of functions for iteration and are feeling left out... don't worry. The [furrr package](https://davisvaughan.github.io/furrr/index.html) (geddit?) has you covered. Once again, the syntax for these parallel functions will be very little changed from their serial implementations.^[We tell R that we want to run things in parallel with `plan(multiprocess)` and then call <code>**future_**map_df**r**()</code>. In this particular case, the extra "r" at the end tells future to concatenate the iterated frames by rows.]
+Those of you who prefer the `purrr::map()` family of functions for iteration and are feeling left out... don't worry. The [furrr package](https://davisvaughan.github.io/furrr/index.html) has you covered. Once again, the syntax for these parallel functions will be very little changed from their serial versions. We simply have to tell R that we want to run things in parallel with `plan(multiprocess)` and then call slightly amend our map call to <code>**future_**map_df**r**()</code>.^[In this particular case, the extra "r" at the end tells future to concatenate the data frames from each iteration by *rows*.]
 
 ```{r furrr_ex}
 # library(furrr)  ## Already loaded
@@ -115,7 +122,9 @@ furrr_ex <- future_map_dfr(1:12, slow_func)
 toc()
 ```
 
-How easy was that? I'm about to take a deeper dive into some of the technical issues that were abstracted away behind the scenes. But first congratulate yourself for already being such an expert at parallel programming.
+How easy was that? We hardly had to change our original code at all and didn't have to pay a cent for all that extra performance.^[Not to flog a dead horse, but as I pointed out in the very [first lecture](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.html#26) of this course: Have you seen the price of a [Stata/MP](https://www.stata.com/statamp/) license recently? Not to mention the fact that you have pay *per* core! We're talking literally thousands of dollars...] Even if you take nothing else away from the lecture, you are well placed to begin implementing parallel functions at a much larger scale.
+
+I'm about to take a deeper dive into some of the technical issues that were abstracted away behind the scenes. But first congratulate yourself for already being such an expert at parallel programming.
 
 <div align="center"><iframe src="https://giphy.com/embed/ujGfBmVppmgEg" width="480" height="359" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></p></div>
 </br>
@@ -126,44 +135,40 @@ Motivating example out of the way, let's take a look underneath the hood. I'll s
 
 ### Terminology
 
-- **Socket:** The physical connection on your computer that houses the processor. Most home and work computers --- even very high end ones --- only have one socket and thus processor. However, they can have multiple cores...
-- **Core:** The part of the processor that actually performs the computation. In days gone by ~~when dinosaurs roamed the earth~~ processors were limited to a single core. However, modern processors typically house multiple cores. Each of these cores can perform entirely separate and independent computational tasks.
-- **Process:** A single instance of a running task or program (R, Dropbox, etc). A core can only run one process at a time. However, it may give the appearance of doing more than that by efficiently scheduling between them. Speaking of which...
+- **Socket:** The physical connection on your computer that houses the processor. Most work and home computers --- even very high-end ones --- only have one socket and, thus, one processor. However, they can have multiple cores. Speaking of which...
+- **Core:** The part of the processor that actually performs the computation. Back in the day, processors were limited to a single core. However, most modern processors now house multiple cores. Each of these cores can perform entirely separate and independent computational processes.
+- **Process:** A single instance of a running task or program (R, Dropbox, etc). A single core can only run one process at a time. However, it may give the appearance of doing more than that by efficiently scheduling between them. Speaking of which...
 - **Thread:** A component or subset of a process that can, inter alia, share memory and resources with other threads. We'll return to this idea as it applies to *hyperthreading* in a few paragraphs.
 - **Cluster:** A collection of objects that are capable of hosting cores. This could range from a single socket (on your home computer) to an array of servers (on a high-performance computing network).
 
 You may wondering where the much-referenced **CPU** (i.e. central processing unit) fits into all of this. Truth be told, the meaning of CPU has evolved with the advent of new technology like multicore processors. For the purposes of this lecture I will use the following definition: 
 
-$$\text{No. of CPUs} = \text{No. of sockets} \times \text{No. of cores} \times \text{No. of threads per core}$$
+$$\text{No. of CPUs} = \text{No. of sockets} \times \text{No. of physcial cores} \times \text{No. of threads per core}$$
 
-If nothing else, this is consistent with the way that Unix records information about CPU architecure via the [lscpu](https://linux.die.net/man/1/lscpu) command. For example, on my computer: 
+If nothing else, this is consistent with the way that my Linux system records information about CPU architecure via the [lscpu](https://linux.die.net/man/1/lscpu) shell command: 
 
 ```{bash lscpu, error=T, prompt=T}
-## Run from bash-compatible shell
+## Only works on Linux
 lscpu | grep -E '^Thread|^Core|^Socket|^CPU\('
 ```
 
-### Look, just tell me how many parallel threads I can run
+Note that the headline "CPU(s)" number is the same that I got from running `parallel::detectCores()` earlier (i.e. `r parallel::detectCores()`). 
 
-Okay, okay! Our abilty to go parallel hinges on the number of computing units available to us, i.e. the number of CPU cores. The simplest way to obtain this from R is with the `parallel::detectCores()` function:
+### A bit more about logical cores and hyperthreading
 
-```{r cache=F}
-parallel::detectCores()
-```
+Logical cores extend or emulate the ability of physical cores to perform additional tasks. The most famous example is Intel's [**hyperthreading**](https://en.wikipedia.org/wiki/Hyper-threading) technology, which allows a single core to switch very rapidly between two different tasks. This mimics the appearance and performance (albeit to a lesser extent) of an extra physical core. You may find [this YouTube video](https://www.youtube.com/watch?v=mSZpDF-zUoI&) helpful for understanding the difference in more depth, including a nice analogy involving airport security lines.
 
-So I have `r parallel::detectCores()` cores available to me on this computer.^[A Dell Precision 5530 running Arch Linux, if you're interested.] The story is slightly complicated by the presence of so-called logical cores, though. These extend or emulate the ability of physical cores to perform additional tasks. The most famous example is [**hyperthreading**](https://en.wikipedia.org/wiki/Hyper-threading), an Intel technology that allows a single core to switch very rapidly between two different tasks. This mimics the appearance and performance (albeit to a lesser extent) of an extra physical core. You may find [this YouTube video](https://www.youtube.com/watch?v=mSZpDF-zUoI&) helpful for understanding the difference in more depth, including a nice analogy involving airport security lines.
-
-Taking a step back, you don't have to worry too much about the difference between physical and logical (hyperthreaded) cores for the purpose of this lecture. R doesn't care whether you run a function on a physical core or a logical one. Both will work equally well. (Okay, the latter will be a little slower.) Still, if you are interested in determining the number of physical cores versus logical cores on your system then there are lots of ways to this.^[For example, on a Unix-based computer you can run `$ htop` (provided that you've [installed](https://hisham.hm/htop/) it) from the shell. Or you can run `$ lscpu`, with a fancier version available to those who remember the pipe operator from our shell lecture: `$ lscpu | grep -E '^Thread|^Core|^Socket|^CPU\('`.] A convenient way to get this information directly from R is with the [RhpcBLASctl package](https://cran.r-project.org/web/packages/RhpcBLASctl/index.html).
+Taking a step back, you don't have to worry too much about the difference between physical and logical (hyperthreaded) cores for the purpose of this lecture. R doesn't care whether you run a function on a physical core or a logical one. Both will work equally well. (Okay, the latter will be a little slower.) Still, if you are interested in determining the number of physical cores versus logical cores on your system, then there are several ways to this from R. For example, you can use the [RhpcBLASctl package](https://cran.r-project.org/web/packages/RhpcBLASctl/index.html).
 
 ```{r cores_vs_procs}
 # library(RhpcBLASctl) ## Already loaded
 
-get_num_procs() ## No. of logical cores (including hyperthreading)
-get_num_cores() ## No. of physical cores
+get_num_procs() ## No. of all cores (including logical/hyperthreaded)
+get_num_cores() ## No. of physical cores only
 ```
 
 
-### "Embarrassingly parallelizable" tasks
+### "Embarrassingly parallel" tasks
 
 The crucial point is that these chunks of computation are unrelated and do not need to communicate in any way.
 
@@ -172,7 +177,7 @@ The crucial point is that these chunks of computation are unrelated and do not n
 
 ### FORK vs PSOCKS
 
-To borrow from [Max Gordon](http://gforge.se/2015/02/how-to-go-parallel-in-r-basics-tips/#Fork_or_sock):
+To borrow from :
 
 **FORK:** "to divide in branches and go separate ways"
 
@@ -332,8 +337,9 @@ Still, that's about as much as I want to say about GPUs for now. Installing and 
 
 ### Monitoring multicore performance
 
-htop
+[**htop**](https://hisham.hm/htop/) is a shell-based process viewer available for Linux and Mac (sorry, Windows users). It's entirely up to you whether you want to install it. Your operating system almost certainly provides built-in tools for monitoring processes and resource useage (e.g. [System Monitor](https://wiki.gnome.org/Apps/SystemMonitor)). However, I wanted to flag `htop` before we get to the big data section of the course. We'll all be connecting to remote Linux servers at that point and a shell-based (i.e. non-GUI) process monitor will prove very handy for tracking resource use.
 
 ## Further resources
 
 - The [parallel package vignette](https://stat.ethz.ch/R-manual/R-devel/library/parallel/doc/parallel.pdf) provides a very good overview, not only its own purpose, but of parallel programming in general. Particular attention is paid to the steps needed to ensure a stable R environment (e.g. across operating systems).
+- There a number of resources online that detail older parallel programming methods in R (`foreach`, `mclapply`, `parLapply` `snow`, etc.). While these methods have clearly been superseded by the future package ecosystem in my mind, there is still a lot of valuable information to be gleaned from understanding them. One of my favourite resources in this regard is Max Gordon's tutorial, [*How-to go parallel in R*](http://gforge.se/2015/02/how-to-go-parallel-in-r-basics-tips/).
