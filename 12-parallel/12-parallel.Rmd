@@ -103,7 +103,7 @@ future_ex <- future_lapply(1:12, slow_func) %>% bind_rows()
 toc()
 ```
 
-Woah, the execution time was twelve times faster! Even more impressively, look at how little the syntax changed. I basically just had to tell R that I wanted to implement the iteration in parallel (i.e. <code>**plan(multiprocess)**</code>) and slightly amend my lapply call (i.e. <code>**future_**apply()</code>). 
+Woah, the execution time was twelve times faster! Even more impressively, look at how little the syntax changed. I basically just had to tell R that I wanted to implement the iteration in parallel (i.e. <code>**plan(multiprocess)**</code>) and slightly amend my lapply call (i.e. <code>**future_**lapply()</code>). 
 
 Let's confirm that the output is the same.
 
@@ -122,7 +122,7 @@ furrr_ex <- future_map_dfr(1:12, slow_func)
 toc()
 ```
 
-How easy was that? We hardly had to change our original code at all and didn't have to pay a cent for all that extra performance.^[Not to flog a dead horse, but as I pointed out in the very [first lecture](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.html#26) of this course: Have you seen the price of a [Stata/MP](https://www.stata.com/statamp/) license recently? Not to mention the fact that you effectively pay *per* core!] Congratulate yourself on already being such an expert at parallel programming.
+How easy was that? We hardly had to change our original code and didn't have to pay a cent for all that extra performance.^[Not to flog a dead horse, but as I pointed out in the very [first lecture](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.html#26) of this course: Have you seen the price of a [Stata/MP](https://www.stata.com/statamp/) license recently? Not to mention the fact that you effectively pay *per* core...] Congratulate yourself on already being such an expert at parallel programming.
 
 <div align="center"><iframe src="https://giphy.com/embed/ujGfBmVppmgEg" width="480" height="359" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></p></div>
 </br>
@@ -131,7 +131,7 @@ How easy was that? We hardly had to change our original code at all and didn't h
 
 Our second motivating example will involve a more realistic and slightly more computationally-intensive case: Bootstrapping coefficient values for hypothesis testing. I'll also spend a bit more time talking about the packages we're using and what they're doing.
 
-Start by creating a fake data set (`our_data`) and specifying a bootstrapping function (`reg_func()`). This function will draw a sample of 10,000 observations from the the data set (with replacement), fit a regression, and then extract the coefficient on the `x` variable. Note that this coefficient estimate is expected to be around 2 given how we generated the data set in the first place.
+Start by creating a fake data set (`our_data`) and specifying a bootstrapping function (`reg_func()`). This function will draw a sample of 10,000 observations from the the data set (with replacement), fit a regression, and then extract the coefficient on the `x` variable. Note that this coefficient estimate is expected to be around 2 given how we generated the data in the first place.
 
 ```{r reg_func}
 ## Set seed (for reproducibility)
@@ -168,6 +168,8 @@ sim_serial <- lapply(1:1e4, reg_func) %>% bind_rows()
 toc()
 ```
 
+So that took about 19 seconds on my system. Not a huge pain, but let's see if we can do better by switching to a parallel (multicore) implementation.
+
 ### Parallel implemention using the `future` ecosystem
 
 All of the parallel programming that we've been doing so far is built on top of [Henrik Bengtsson's](https://twitter.com/henrikbengtsson) amazing [**future package**](https://cran.r-project.org/web/packages/future/index.html). A "future" is basically a very flexible way of evaluating code and output. Among other things, this allows you to switch effortlessly between evaluating code in _serial_ or _asynchronously_ (i.e. in parallel). You simply have to set your resolution _plan_ --- "sequential", "multiprocess", "cluster", etc. --- and let future handle the implementation for you.
@@ -178,7 +180,7 @@ Here's Henrik [describing](https://cran.r-project.org/web/packages/future/vignet
 
 As I've tried to emphasise, `future` is relatively new on the scene. It certainly is not the first or only way to implement parallel processes in R. However, I think that it provides a simple and unified framework that makes it the preeminent choice. What's more, the same commands that we use here will carry over very neatly to more complicated settings involving high-performance computing clusters. We'll experience this first hand when we get to the big data section of the course.
 
-I also keep referring to the "future ecosystem". This is because `future` provides the framework for other packages to implement parallel versions of their functions. The two that I am focusing on today are 1) the [**future.apply package**](https://cran.r-project.org/web/packages/future.apply/index.html) (also by Henrik), and the [**furrr package**](https://davisvaughan.github.io/furrr/index.html) (an implementation for purrr by [Davis Vaughan](https://twitter.com/dvaughan32)). In both cases, we start by setting the plan for resolving the future evaluation. I recommend `plan(multiprocess)`, which is a convenient way of telling the package to choose the optimal parallel strategy for our particular system. We then call our functions --- which involve minor modifications of their serial equivalents --- and let the future magic take care of everything else.
+You've probably also noted that keep referring to the "future ecosystem". This is because `future` provides the framework for other packages to implement parallel versions of their functions. The two that I am focusing on today are 1) the [**future.apply package**](https://cran.r-project.org/web/packages/future.apply/index.html) (also by Henrik), and the [**furrr package**](https://davisvaughan.github.io/furrr/index.html) (an implementation for purrr by [Davis Vaughan](https://twitter.com/dvaughan32)). In both cases, we start by setting the plan for resolving the future evaluation. I recommend `plan(multiprocess)`, which is a convenient way of telling the package to choose the optimal parallel strategy for our particular system. We then call our functions --- which involve minor modifications of their serial equivalents --- and let future magic take care of everything else.
 
 #### 1) future.apply
 
@@ -230,7 +232,7 @@ sim_furrr %>%
 
 ### Other parallel options
 
-I keep saying futures are not the only game in town for parallel programming in R. One other option that I want to mention very briefly is the [**pbapply** package](https://github.com/psolymos/pbapply). As we saw during the first programming lecture, this package provides a lightweight wrapper on the *apply functions that adds a progress bar. However, the package also adds a very convenient option for multicore implementation. You basically just have to add <code>cl=CORES</code> to the call. While it doesn't rely on futures, `pbapply` also takes care of all the OS-specific overhead for you. See [here](http://peter.solymos.org/code/2016/09/11/what-is-the-cost-of-a-progress-bar-in-r.html) for an interesting discussion on what's happening behind the scenes.
+Futures are not the only game in town for parallel programming in R. One other option that I want to mention very briefly is the [**pbapply** package](https://github.com/psolymos/pbapply). As we saw during the first programming lecture, this package provides a lightweight wrapper on the *apply functions that adds a progress bar. However, the package also adds a very convenient option for multicore implementation. You basically just have to add <code>cl=CORES</code> to the call. While it doesn't rely on futures, `pbapply` also takes care of all the OS-specific overhead for you. See [here](http://peter.solymos.org/code/2016/09/11/what-is-the-cost-of-a-progress-bar-in-r.html) for an interesting discussion on what's happening behind the scenes.
 
 *Note: You will need to run this next chunk interactively to see the progress bar. As an aside, [furrr also supports progress bars](https://github.com/DavisVaughan/furrr#progress-bars).*
 
@@ -247,7 +249,7 @@ toc()
 
 ## General parallel programming topics
 
-Motivating examples out of the way, let's take a look underneath the hood. I want to emphasise that this section is more "good to know" than "need to know". *Even if you take nothing else away from rest of this lecture, you are already well placed to begin implementing parallel functions at a much larger scale.*
+Motivating examples out of the way, let's take a look underneath the hood. I want to emphasise that this section is more "good to know" than "need to know". Even if you take nothing else away from rest of this lecture, you are already well placed to begin implementing parallel functions at a much larger scale.
 
 And yet... while you don't *need* to know the next section in order to program in parallel in R, getting a solid grasp of the basics is valuable. It will give you a better understanding of how parallel programming works in general and help you to appreciate how much `future` and co. are doing behind the scenes for you. It will also help you to understand why the same code runs faster on some systems than others, and avoid some common pitfalls.
 
@@ -339,6 +341,7 @@ blas_set_num_threads(1) ## Set BLAS threads to 1 (i.e. turn off multithreading)
 ```
 
 Since this is only in effect for the current R session, BLAS multithreading will be restored when I restart R.^[I could also reinstate the original behaviour in the same session by running `blas_set_num_threads(parallel::detectCores())`. You can turn off multithreading as the default mode by altering the configuration file when you first build/install your preferred BLAS library. However, that's both complicated and unecessarily restrictive in my view.] 
+
 ## Miscellaneous
 
 ### When should I go parallel?
@@ -385,7 +388,7 @@ A number of regression packages in R are optimised to run in parallel. For examp
 
 ### CPUs vs GPUs
 
-Graphical Processing Units, or GPUs, are specialised chipsets that were originaly built to perform the heavy lifting associated with rendering graphics. It's important to realise that not all computers have GPUs. Most laptops come with so-called [integrated graphics](https://www.laptopmag.com/articles/intel-hd-graphics-comparison), which basically means that the same processor is performing both regular and graphic-rendering tasks. However, higher-end and gaming laptops (and many desktop computers) include a dedicated GPU card. For example, the Dell Precision 5530 that I'm writing these lecture notes on has a [hybrid graphics](https://wiki.archlinux.org/index.php/hybrid_graphics) setup with two cards: 1) an integrated Intel GPU (UHD 630) and 2) a discrete NVIDIA Quadro P2000.
+Graphical Processing Units, or GPUs, are specialised chipsets that were originaly built to perform the heavy lifting associated with rendering graphics. It's important to realise that not all computers have GPUs. Most laptops come with so-called [integrated graphics](https://www.laptopmag.com/articles/intel-hd-graphics-comparison), which basically means that the same processor is performing both regular and graphic-rendering tasks. However, gaming and other high-end laptops (and many desktop computers) include a dedicated GPU card. For example, the Dell Precision 5530 that I'm writing these lecture notes on has a [hybrid graphics](https://wiki.archlinux.org/index.php/hybrid_graphics) setup with two cards: 1) an integrated Intel GPU (UHD 630) and 2) a discrete NVIDIA Quadro P2000.
 
 So why am I telling you this? Well, it turns out that GPUs also excel at non-graphic computation tasks. The same processing power needed to perform the millions of parallel calculations for rendering 3-D games or architectural software, can be put to use on scientific problems. How exactly this was discovered involves an interesting backstory of supercomputers being built with Playstations. (Google it.) But the short version is that modern GPUs comprise *thousands* of cores that can be run in parallel. Or, as a colleague once memorably described it to me: "GPUs are basically just really, really good at doing linear algebra."
 
