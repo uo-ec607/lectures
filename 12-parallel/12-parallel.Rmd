@@ -122,18 +122,20 @@ furrr_ex <- future_map_dfr(1:12, slow_func)
 toc()
 ```
 
-How easy was that? We hardly had to change our original code at all and didn't have to pay a cent for all that extra performance.^[Not to flog a dead horse, but as I pointed out in the very [first lecture](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.html#26) of this course: Have you seen the price of a [Stata/MP](https://www.stata.com/statamp/) license recently? Not to mention the fact that you have pay *per* core! We're talking literally thousands of dollars...] Even if you take nothing else away from the lecture, you are well placed to begin implementing parallel functions at a much larger scale.
+How easy was that? We hardly had to change our original code at all and didn't have to pay a cent for all that extra performance.^[Not to flog a dead horse, but as I pointed out in the very [first lecture](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.html#26) of this course: Have you seen the price of a [Stata/MP](https://www.stata.com/statamp/) license recently? Not to mention the fact that you have pay *per* core! We're talking literally thousands of dollars...] *Even if you take nothing else away from the lecture, you are well placed to begin implementing parallel functions at a much larger scale.*
 
 I'm about to take a deeper dive into some of the technical issues that were abstracted away behind the scenes. But first congratulate yourself for already being such an expert at parallel programming.
 
 <div align="center"><iframe src="https://giphy.com/embed/ujGfBmVppmgEg" width="480" height="359" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></p></div>
 </br>
 
-## Parallel basics
+## Looking underneath the hood
 
-Motivating example out of the way, let's take a look underneath the hood. I'll start by clearing up some terminology.
+Motivating example out of the way, let's take a look underneath the hood. I want to emphasise that this section is more "good to know" than "need to know". However, even though you don't *need* to this information to run parallel functions in R these days, getting a solid grasp of the basics is important. It will give you a better understanding of how parallel programming works in general and also why the same code runs faster on some systems than others.
 
 ### Terminology
+
+I'll start by clearing up some terminology.
 
 - **Socket:** The physical connection on your computer that houses the processor. Most work and home computers --- even very high-end ones --- only have one socket and, thus, one processor. However, they can have multiple cores. Speaking of which...
 - **Core:** The part of the processor that actually performs the computation. Back in the day, processors were limited to a single core. However, most modern processors now house multiple cores. Each of these cores can perform entirely separate and independent computational processes.
@@ -167,35 +169,25 @@ get_num_procs() ## No. of all cores (including logical/hyperthreaded)
 get_num_cores() ## No. of physical cores only
 ```
 
+### Forking vs Sockets
 
-### "Embarrassingly parallel" tasks
+As I keep saying, it's now incredibly easy to run parallel programs in R. The truth is that it has actually been easy to do so for a long time... but the implementation used to vary by operating system (e.g. Linux/Mac vs Windows). For example, take a look at the [help documentation](https://stat.ethz.ch/R-manual/R-devel/library/parallel/html/mclapply.html) for the `parallel::mclapply()` function, which has been around since 2011. If you did so, you would see a warning that `mclapply()` *"relies on forking and hence is not available on Windows"*.
 
-The crucial point is that these chunks of computation are unrelated and do not need to communicate in any way.
+Now, we obviously didn't encounter any OS-specific problems when we ran the parallel versions of our motivating example above. That includes anyone using Windows. ~~*Loud booing.*~~ What was happening behind the scenes is that the parallel functions were being executed in a way that was automatically optimised for your respective OS. This was all done via the new [future package](https://cran.r-project.org/web/packages/future/index.html) ecosystem, which we'll turn to shortly.
 
+But what is "forking" and why does it matter what OS I am using anyway? Those are good questions that relate to the method of parallelization (i.e. type of cluster) that your system supports. The short version is that there are basically two ways that code can be parallelized:
 
-## Clusters
+- **Forking** works by cloning your entire R environment to each separate core. This includes your data, loaded packages, functions, and any other objects in your current session. This is very efficient because you don't have to worry about reproducing your "master" environment in each "worker" node. Everything is already linked, which means that you aren't duplicating objects in memory. However, forking is not supported on Windows. 
+- **Parallel sockets** (aka "PSOCKs") work by launching a new R session in each core. This means that your master environment has to be copied over and instantiated separately in each parallel node. This requires greater overhead and causes everything to run slower, since objects will be duplicated across each core. Technically, a PSOCK works by establishing a network (e.g. as if you were connected to a remote cluster), but everything is self-contained on your computer. This approach can be implemented on every system, including Windows. 
 
-### FORK vs PSOCKS
+I've summarised the differences between the two approaches in the table below. The general rule of thumb is that you should use forking if it is available to you. And, indeed, this is exactly the heuristic that the future ecosystem follows via the `plan(multiprocess)` function.
 
-To borrow from :
-
-**FORK:** "to divide in branches and go separate ways"
-
-- Systems: Unix/Mac (not Windows)
-- Environment: Link all
-
-**PSOCK:** Parallel Socket Cluster
-
-- Systems: All (including Windows)
-- Environment: Empty
-
-While forking is faster and more memory efficient, it can cause problems in a GUI or IDE like RStudio. From the [parallel package vignette](https://stat.ethz.ch/R-manual/R-devel/library/parallel/doc/parallel.pdf):
-
-> Note that as it does share the complete process, it also shares any GUI elements, for example an R console and on-screen devices. This can cause havoc.
-
-I've only very rarely run into issues when running a forking process through RStudio.^[For example, when I'm running functions that contain many nested while-loops.] However, I want you to be aware of it, so that you aren't caught by surprise if it ever does happen to you. The simple solution is to run your R script from the terminal using, say `$ Rscript -e myscript.R`.
-
-### Local vs remote
+| Forking        | Parallel socket         |
+| ------------- |-------------|
+| ✓ Faster and more memory efficient than sockets. |  ×	Slower and more memory-intensive than forking. |
+| ✓️ Trivial to implement. | ×	Harder to implement. |
+| ×	Only available for Unix-based systems like Linux and Mac (not Windows). | ✓ Works on every operating system (including Windows). |
+| ×	Can occasionally cause problems when running through a GUI or IDE like RStudio.^[The reason is that shared GUI elements are being shared across child processes. (See the "GUI/embedded environments" section [here](https://stat.ethz.ch/R-manual/R-devel/library/parallel/html/mcfork.html).) To be fair, I've only ever run into a problem once or twice while running a forking process through RStudio. These have invariably involved very time-consuming functions that contain a bunch of nested while-loops. (I suspect the different worker processes began to move out of sync with one another.) However, I want you to be aware of it, so that you aren't caught by surprise if it ever happens to you. If it does, then the solution is simply to run your R script from the terminal using, say `$ Rscript -e myscript.R`.] | ✓ ️No risk of cross-contamination, since each process is run as a unique node. |
 
 ## Run R functions in parallel
 
@@ -291,7 +283,7 @@ Thus far we have only been concerned with *explicit* parallelization. As in, we 
 
 Did you ever wonder how R and other programming languages perform their calculations? For example, how does R actually do things like vector addition, or scalar and matrix multiplication? The answer is [**BLAS**](http://www.netlib.org/blas/) (**B**asic **L**inear **A**lgebra **S**uprograms). BLAS are a collection of low-level routines that provide standard building blocks for performing basic vector and matrix operations. These routines are then incoporated in related libraries like [**LAPACK**](http://www.netlib.org/lapack/) (**L**inear **A**lgebra **Pack**age), which provide their own routines for solving systems of linear equations and linear least squares, calculating eigenvalues, etc. In other words, BLAS and LAPACK provide the linear algebra framework that supports virtually all of statistical and computational programming 
 
-R ships with its own BLAS and LAPACK libraries by default. These libraries place a premium on stablility (e.g. common user experience across operating systems). While the default works well enough, you can get *significant* speedups by switching to more optimized libraries such as the [Intel Math Kernel Library (MKL)](https://software.intel.com/en-us/mkl) or [OpenBLAS](https://www.openblas.net/). Among other things, these optimised BLAS libraries support multi-threading. So now you are using all your available computer power to, say, solve a matrix.
+R ships with its own BLAS/LAPACK libraries by default. These libraries place a premium on stablility (e.g. common user experience across operating systems). While the default works well enough, you can get *significant* speedups by switching to more optimized libraries such as the [Intel Math Kernel Library (MKL)](https://software.intel.com/en-us/mkl) or [OpenBLAS](https://www.openblas.net/). Among other things, these optimised BLAS libraries support multi-threading. So now you are using all your available computer power to, say, solve a matrix.
 
 You can use the `sessionInfo()` command to see which BLAS/LAPACK library you are using. For example, I am using OpenBLAS on this computer:
 
@@ -301,23 +293,29 @@ sessionInfo()[c("BLAS", "LAPACK")]
 
 ### Beware resource competition
 
-While this all sounds great --- and I certainly recommend taking a look at MKL or OpenBLAS --- there is a potential downside. In particular, you risk competing with yourself for computational resources (i.e. memory) if you mix explicit and implicit parallel calls. For instance, if you run explicit multicore functions from within R on a system that has been configured with an optimised BLAS. As [Dirk Eddelbuettel](http://dirk.eddelbuettel.com/) succintly puts it in [this SO answer](https://stackoverflow.com/a/18291826):
+While this all sounds great --- and I certainly recommend taking a look at MKL or OpenBLAS --- there is a potential downside. In particular, you risk competing with yourself for computational resources (i.e. memory) if you mix explicit and implicit parallel calls. For instance, if you run explicit multicore functions from within R on a system that has been configured with an optimised BLAS. As [Dirk Eddelbuettel](http://dirk.eddelbuettel.com/) succintly puts it in [this Stack Overflow thread](https://stackoverflow.com/a/18291826):
 
-> There is one situation you want to avoid: (1) spreading a task over all N cores and (2) having each core work on the task using something like OpenBLAS or MKL with all cores. Because now you have an N by N contention: each of the N task wants to farm its linear algebra work out to all N cores.
+> There is one situation you want to avoid: (1) spreading a task over all _N_ cores and (2) having each core work on the task using something like OpenBLAS or MKL with all cores. Because now you have an _N_ by _N_ contention: each of the N task wants to farm its linear algebra work out to all _N_ cores.
 
-Now, I want to emphasise that this conflict rarely matters in my own experience. I use explicit parallel calls all the time in my R scripts and have hardly ever run into a problem, despite my reliance on optimised BLAS libraries like MKL and OpenBLAS. Moreover, when these slowdowns have occured, I've found the effect to be relatively modest.^[The major cost appears to be the unnecessary duplication of objects in memory.] Still, I have read of cases where the effect can be quite dramatic (e.g. [here](https://stat.ethz.ch/pipermail/r-sig-hpc/2014-February/001846.html)) and so I wanted you to be aware of it all the same.
+Now, I want to emphasise that this conflict rarely matters in my own experience. I use optimised BLAS libraries and run explicit parallel calls all the time in my R scripts. Despite this, I have hardly ever run into a problem. Moreover, when these slowdowns have occured, I've found the effect to be relatively modest.^[The major cost appears to be the unnecessary duplication of objects in memory.] Still, I have read of cases where the effect can be quite dramatic (e.g. [here](https://stat.ethz.ch/pipermail/r-sig-hpc/2014-February/001846.html)) and so I wanted you to be aware of it all the same.
 
-Luckily, there's also an easy and relatively costless solution: Simply turn off BLAS hyperthreading. It turns out this has minimal impact on performance, since most of the gains from an optimised BLAS library are actually You can turn off BLAS hyperthreading for the current R session via the `RhpcBLASctl::blas_set_num_threads()` function. For example, I sometimes include the following line at the top of an R script:
+Luckily, there's also an easy and relatively costless solution: Simply turn off BLAS multi-threading. It turns out this has minimal impact on performance, since most of the gains from an optimised BLAS library are actually You can turn off BLAS multi-threading for the current R session via the `RhpcBLASctl::blas_set_num_threads()` function. For example, I sometimes include the following line at the top of an R script:
 ```{r eval=F}
 # blas_get_num_procs() ## If you want to find the existing number of BLAS threads
 blas_set_num_threads(1) ## Set BLAS threads to 1 (i.e. turn off multithreading)
 ```
 
-Since this is only in effect for the current R session, BLAS multithreading will be restored when I restart R.^[You can turn off multithreading as the default by altering the configuration file when you first build/install your preferred BLAS library. However, that's both complicated and unecessarily restrictive in my view.] Of course, I can also just reinstate the original behaviour in the same session by running `blas_set_num_threads(parallel::detectCores())`.
+Since this is only in effect for the current R session, BLAS multithreading will be restored when I restart R.^[I could also reinstate the original behaviour in the same session by running `blas_set_num_threads(parallel::detectCores())`. You can turn off multithreading as the default mode by altering the configuration file when you first build/install your preferred BLAS library. However, that's both complicated and unecessarily restrictive in my view.] Interestingly, turning off BLAS multi-threading has only a modest impact on performance. The reason is that most of the benefit provided by optimised BLAS libraries actually comes from improved math vectorisation, not multi-threading. See [this blog post](https://blog.revolutionanalytics.com/2015/10/edge-cases-in-using-the-intel-mkl-and-parallel-programming.html) for a detailed discussion by Andrie de Vries of Revolution Analytics.
 
 ## Other topics
 
-### Overhead and Amdahl's law
+### When should I go parallel?
+
+"Embarrassingly parallel" tasks
+
+The crucial point is that these chunks of computation are unrelated and do not need to communicate in any way.
+
+Overhead and Amdahl's law
 
 ### Fault tolerance
 
