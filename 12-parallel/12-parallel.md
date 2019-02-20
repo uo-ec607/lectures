@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott
   affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: Lecture 12  #"`r format(Sys.time(), '%d %B %Y')`"
+date: Lecture 12  #"20 February 2019"
 output: 
   html_document:
     theme: flatly
@@ -16,17 +16,7 @@ output:
     keep_md: true
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
-## Next hook based on this SO answer: https://stackoverflow.com/a/39025054
-knitr::knit_hooks$set(
-  prompt = function(before, options, envir) {
-    options(
-      prompt = if (options$engine %in% c('sh','bash')) '$ ' else 'R> ',
-      continue = if (options$engine %in% c('sh','bash')) '$ ' else '+ '
-      )
-    })
-```
+
 
 *Note: This is the third of three lectures on programming. Please take a look at the [first](https://raw.githack.com/uo-ec607/lectures/master/10-funcs-intro/10-funcs-intro.html) [two](https://raw.githack.com/uo-ec607/lectures/master/11-funcs-adv/11-funcs-adv.html) lectures if you haven't yet. Nothing that we will cover here is critically dependent on these earlier lectures. However, I'm going to assume that you have a good understanding of how R functions and environments generally work. Our goal for today is to dramatically speed up our programming tasks by getting them to run in parallel.*
 
@@ -39,7 +29,8 @@ knitr::knit_hooks$set(
 
 The code chunk below will install (if necessary) and load all of these packages for you. Note that the `parallel` package is bundled together with the base R installation and should already be on your system. I'm also going to call the `future::plan()` function and set the resolution to "multiprocess". Don't worry what this means right now --- I'll explain in due course --- just think of it as a convenient way to set our desired parallel programming behaviour for the rest of this document.
 
-```{r, cache=F, message=F}
+
+```r
 ## Load/install packages
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(tictoc, parallel, pbapply, future, future.apply, tidyverse, hrbrthemes, furrr, RhpcBLASctl)
@@ -60,7 +51,8 @@ Ready? Let's go.
 
 Our first motivating example is going to involve the same `slow_func()` function that we saw in the previous lecture:
 
-```{r slow_func}
+
+```r
 # library(tidyverse) ## Already loaded
 
 ## Emulate slow function
@@ -75,7 +67,8 @@ slow_func <-
 
 Let's iterate over this function using the standard `lapply()` method that we're all familar with by now. Note that this iteration will be executed in *serial*. I'll use the [tictoc package](https://cran.r-project.org/web/packages/tictoc/) to record timing.
 
-```{r serial_ex}
+
+```r
 # library(tictoc) ## Already loaded
 
 tic()
@@ -83,18 +76,28 @@ serial_ex <- lapply(1:12, slow_func) %>% bind_rows()
 toc()
 ```
 
+```
+## 24.068 sec elapsed
+```
+
 Next, were going to iterate over the function in *parallel*. Before continuing, it's worth pointing out that our abilty to go parallel hinges on the number of CPU cores available to us. The simplest way to obtain this information from R is with the `parallel::detectCores()` function:
 
-```{r cache=F}
+
+```r
 # future::availableCores() ## Another option
 detectCores()
 ```
 
-So, I have `r parallel::detectCores()` cores to play with on my laptop.^[A Dell Precision 5530 running Arch Linux, if you're interested.] Adjust expectations for you own system accordingly.
+```
+## [1] 12
+```
+
+So, I have 12 cores to play with on my laptop.^[A Dell Precision 5530 running Arch Linux, if you're interested.] Adjust expectations for you own system accordingly.
 
 Okay, back to our example. I'm going to implement the parallel iteration using the [future.apply package](https://cran.r-project.org/web/packages/future.apply/index.html) (more on this later). Note that the parameters of the problem are otherwise unchanged.
 
-```{r future_ex}
+
+```r
 # library(future.apply)  ## Already loaded
 # plan(multiprocess) ## Already set above
 
@@ -103,23 +106,37 @@ future_ex <- future_lapply(1:12, slow_func) %>% bind_rows()
 toc()
 ```
 
+```
+## 2.243 sec elapsed
+```
+
 Woah, the execution time was twelve times faster! Even more impressively, look at how little the syntax changed. I basically just had to tell R that I wanted to implement the iteration in parallel (i.e. <code>**plan(multiprocess)**</code>) and slightly amend my lapply call (i.e. <code>**future_**apply()</code>). 
 
 Let's confirm that the output is the same.
 
-```{r all_equal_ex}
+
+```r
 all_equal(serial_ex, future_ex)
+```
+
+```
+## [1] TRUE
 ```
 
 Those of you who prefer the `purrr::map()` family of functions for iteration and are feeling left out... don't worry. The [furrr package](https://davisvaughan.github.io/furrr/index.html) has you covered. Once again, the syntax for these parallel functions will be very little changed from their serial versions. We simply have to tell R that we want to run things in parallel with `plan(multiprocess)` and then call slightly amend our map call to <code>**future_**map_df**r**()</code>.^[In this particular case, the extra "r" at the end tells future to concatenate the data frames from each iteration by *rows*.]
 
-```{r furrr_ex}
+
+```r
 # library(furrr)  ## Already loaded
 # plan(multiprocess) ## Already set above
 
 tic()
 furrr_ex <- future_map_dfr(1:12, slow_func)
 toc()
+```
+
+```
+## 2.23 sec elapsed
 ```
 
 How easy was that? We hardly had to change our original code at all and didn't have to pay a cent for all that extra performance.^[Not to flog a dead horse, but as I pointed out in the very [first lecture](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.html#26) of this course: Have you seen the price of a [Stata/MP](https://www.stata.com/statamp/) license recently? Not to mention the fact that you effectively pay *per* core!] Congratulate yourself on already being such an expert at parallel programming.
@@ -133,7 +150,8 @@ Our second motivating example will involve a more realistic and slightly more co
 
 Start by creating a fake data set (`our_data`) and specifying a bootstrapping function (`reg_func()`). This function will draw a sample of 10,000 observations from the the data set (with replacement), fit a regression, and then extract the coefficient on the `x` variable. Note that this coefficient estimate is expected to be around 2 given how we generated the data set in the first place.
 
-```{r reg_func}
+
+```r
 ## Set seed (for reproducibility)
 set.seed(1234)
 # Set sample size
@@ -159,13 +177,18 @@ reg_func <-
 
 ### Serial implementation (for comparison)
 
-```{r sim_serial}
+
+```r
 set.seed(123) ## Optional to ensure results are exactly the same.
 
 ## 10,000-iteration simulation
 tic()
 sim_serial <- lapply(1:1e4, reg_func) %>% bind_rows()
 toc()
+```
+
+```
+## 18.891 sec elapsed
 ```
 
 ### Parallel implemention using the `future` ecosystem
@@ -178,7 +201,8 @@ As I've tried to emphasise, `future` is a relatively new package, and is certain
 
 #### 1) future.apply
 
-```{r sim_future}
+
+```r
 set.seed(123) ## Optional to ensure results are exactly the same.
 
 # library(future.apply)  ## Already loaded
@@ -190,9 +214,14 @@ sim_future <- future_lapply(1:1e4, reg_func) %>% bind_rows()
 toc()
 ```
 
+```
+## 5.317 sec elapsed
+```
+
 #### 2) furrr
 
-```{r sim_furrr}
+
+```r
 set.seed(123) ## Optional to ensure results are exactly the same.
 
 # library(furrr)  ## Already loaded
@@ -204,11 +233,16 @@ sim_furrr <- future_map_dfr(1:1e4, reg_func)
 toc()
 ```
 
+```
+## 5.31 sec elapsed
+```
+
 ### Results
 
 Okay, let's plot this guy. Not that it matters --- all the results are the same, but I'll use the `sim_furrr` object. As you can see, the estimated coefficient values are tightly clustered around our simulated mean of 2.
 
-```{r x_coef}
+
+```r
 sim_furrr %>%
   ggplot(aes(x_coef)) +
   geom_density(col=NA, fill="gray25", alpha=0.3) +
@@ -221,6 +255,8 @@ sim_furrr %>%
   hrbrthemes::theme_ipsum()
 ```
 
+![](12-parallel_files/figure-html/x_coef-1.png)<!-- -->
+
 
 ### Other parallel options
 
@@ -228,7 +264,8 @@ One other parallel option that I want to mention very briefly is the [pbapply pa
 
 *Note: You will need to run this next chunk interactively to see the progress bar. As an aside, [furrr also supports progress bars](https://github.com/DavisVaughan/furrr#progress-bars).*
 
-```{r sim_pblapply}
+
+```r
 set.seed(123) ## Optional to ensure results are exactly the same.
 
 # library(pbapply) ## Already loaded
@@ -237,6 +274,10 @@ set.seed(123) ## Optional to ensure results are exactly the same.
 tic()
 sim_pblapply <- pblapply(1:1e4, reg_func, cl = parallel::detectCores()) %>% bind_rows()
 toc()
+```
+
+```
+## 5.644 sec elapsed
 ```
 
 ## General parallel programming topics
@@ -261,12 +302,20 @@ $$\text{No. of CPUs} = \text{No. of sockets} \times \text{No. of physcial cores}
 
 If nothing else, this is consistent with the way that my Linux system records information about CPU architecure via the [lscpu](https://linux.die.net/man/1/lscpu) shell command: 
 
-```{bash lscpu, error=T, prompt=T}
-## Only works on Linux
-lscpu | grep -E '^Thread|^Core|^Socket|^CPU\('
+
+```bash
+$ ## Only works on Linux
+$ lscpu | grep -E '^Thread|^Core|^Socket|^CPU\('
 ```
 
-Note that the headline "CPU(s)" number is the same that I got from running `parallel::detectCores()` earlier (i.e. `r parallel::detectCores()`). 
+```
+## CPU(s):              12
+## Thread(s) per core:  2
+## Core(s) per socket:  6
+## Socket(s):           1
+```
+
+Note that the headline "CPU(s)" number is the same that I got from running `parallel::detectCores()` earlier (i.e. 12). 
 
 ### A bit more about logical cores and hyperthreading
 
@@ -274,11 +323,23 @@ Logical cores extend or emulate the ability of physical cores to perform additio
 
 Taking a step back, you don't have to worry too much about the difference between physical and logical (hyperthreaded) cores for the purpose of this lecture. R doesn't care whether you run a function on a physical core or a logical one. Both will work equally well. (Okay, the latter will be a little slower.) Still, if you are interested in determining the number of physical cores versus logical cores on your system, then there are several ways to this from R. For example, you can use the [RhpcBLASctl package](https://cran.r-project.org/web/packages/RhpcBLASctl/index.html).
 
-```{r cores_vs_procs}
+
+```r
 # library(RhpcBLASctl) ## Already loaded
 
 get_num_procs() ## No. of all cores (including logical/hyperthreaded)
+```
+
+```
+## [1] 12
+```
+
+```r
 get_num_cores() ## No. of physical cores only
+```
+
+```
+## [1] 6
 ```
 
 ### Forking vs Sockets
@@ -314,8 +375,17 @@ R ships with its own BLAS/LAPACK libraries by default. These libraries place a p
 
 You can use the `sessionInfo()` command to see which BLAS/LAPACK library you are using. For example, I am using OpenBLAS on this computer:
 
-```{r blas_info}
+
+```r
 sessionInfo()[c("BLAS", "LAPACK")]
+```
+
+```
+## $BLAS
+## [1] "/usr/lib/libopenblas_haswellp-r0.3.5.so"
+## 
+## $LAPACK
+## [1] "/usr/lib/libopenblas_haswellp-r0.3.5.so"
 ```
 
 ### Beware resource competition
@@ -327,7 +397,8 @@ While this all sounds great --- and I certainly recommend taking a look at MKL o
 Now, I want to emphasise that this conflict rarely matters in my own experience. I use optimised BLAS libraries and run explicit parallel calls all the time in my R scripts. Despite this, I have hardly ever run into a problem. Moreover, when these slowdowns have occured, I've found the effect to be relatively modest.^[The major cost appears to be the unnecessary duplication of objects in memory.] Still, I have read of cases where the effect can be quite dramatic (e.g. [here](https://stat.ethz.ch/pipermail/r-sig-hpc/2014-February/001846.html)) and so I wanted you to be aware of it all the same.
 
 Luckily, there's also an easy and relatively costless solution: Simply turn off BLAS multi-threading. It turns out this has minimal impact on performance, since most of the gains from an optimised BLAS library are actually You can turn off BLAS multi-threading for the current R session via the `RhpcBLASctl::blas_set_num_threads()` function. For example, I sometimes include the following line at the top of an R script:
-```{r eval=F}
+
+```r
 # blas_get_num_procs() ## If you want to find the existing number of BLAS threads
 blas_set_num_threads(1) ## Set BLAS threads to 1 (i.e. turn off multithreading)
 ```
@@ -344,23 +415,7 @@ Having said that, there are limitations to the gains that can be had from parall
 
 On the opposite end of the spectrum, there is [Amdahl's law](https://en.wikipedia.org/wiki/Amdahl%27s_law) (generalised as [Gustafson's law](https://en.wikipedia.org/wiki/Gustafson%27s_law)). This formalises the intuitive idea that there are diminishing returns to parallelization, depending on the proportion of your code that can be run in parallel. A case in point is Bayesian MCMC routines, which typically include a fixed "burn-in" period regardless of how many parallel chains are being run in parallel.
 
-```{r amdahl, echo=F}
-expand.grid(num_cores=1:2048, par_prop=c(0.5,0.75,0.9,0.95)) %>%
-  mutate(
-    speed_up = 1/(1 - par_prop + par_prop/num_cores),
-    par_prop = scales::percent(par_prop, accuracy=1)
-    ) %>%
-  ggplot(aes(x = num_cores, y = speed_up, col = par_prop, group = par_prop)) +
-  geom_line() +
-  scale_x_continuous(trans = scales::log_trans(2), breaks = 2^c(0:11)) +
-  scale_color_brewer(name = "Parallel proportion", palette = "Set1") +
-  labs(
-    title = "Amdahl's law",
-    x = "No. of cores", y = "Theoretical speedup"
-    ) +
-  guides(colour = guide_legend(reverse=T)) + 
-  hrbrthemes::theme_ipsum()
-```
+![](12-parallel_files/figure-html/amdahl-1.png)<!-- -->
 
 ### How many cores should I use?
 
