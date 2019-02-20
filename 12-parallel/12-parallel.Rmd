@@ -170,11 +170,15 @@ toc()
 
 ### Parallel implemention using the `future` ecosystem
 
-All of the parallel programming that we've been doing so far is built on top of [Henrik Bengtsson's](https://twitter.com/henrikbengtsson) [**future package**](https://cran.r-project.org/web/packages/future/index.html). As Henrik [describes](https://cran.r-project.org/web/packages/future/vignettes/future-1-overview.html) it:
+All of the parallel programming that we've been doing so far is built on top of [Henrik Bengtsson's](https://twitter.com/henrikbengtsson) amazing [**future package**](https://cran.r-project.org/web/packages/future/index.html). A "future" is basically a very flexible way of evaluating code and output. Among other things, this allows you to switch effortlessly between evaluating code in _serial_ or _asynchronously_ (i.e. in parallel). You simply have to set your resolution _plan_ --- "sequential", "multiprocess", "cluster", etc. --- and let future handle the implementation for you.
+
+Here's Henrik [describing](https://cran.r-project.org/web/packages/future/vignettes/future-1-overview.html) the core idea in more technical terms:
 
 > In programming, a _future_ is an abstraction for a _value_ that may be available at some point in the future. The state of a future can either be unresolved or resolved. As soon as it is resolved, the value is available instantaneously. If the value is queried while the future is still unresolved, the current process is _blocked_ until the future is resolved. It is possible to check whether a future is resolved or not without blocking. Exactly how and when futures are resolved depends on what strategy is used to evaluate them. For instance, a future can be resolved using a sequential strategy, which means it is resolved in the current R session. Other strategies may be to resolve futures asynchronously, for instance, by evaluating expressions in parallel on the current machine or concurrently on a compute cluster
 
-As I've tried to emphasise, `future` is a relatively new package, and is certainly not the first or only way to implement parallel processes in R. However, I think that `future` provides a simple and unified framework that makes it the preeminent choice. What's more, the same commands that we use here will carry over very neatly to more complicated settings involving high-performance computing clusters. (We'll experience this first hand when we get to the big data section of the course.) 
+As I've tried to emphasise, `future` is relatively new on the scene. It certainly is not the first or only way to implement parallel processes in R. However, I think that it provides a simple and unified framework that makes it the preeminent choice. What's more, the same commands that we use here will carry over very neatly to more complicated settings involving high-performance computing clusters. We'll experience this first hand when we get to the big data section of the course.
+
+I also keep referring to the "future ecosystem". This is because `future` provides the framework for other packages to implement parallel versions of their functions. The two that I am focusing on today are 1) the [**future.apply package**](https://cran.r-project.org/web/packages/future.apply/index.html) (also by Henrik), and the [**furrr package**](https://davisvaughan.github.io/furrr/index.html) (an implementation for purrr by [Davis Vaughan](https://twitter.com/dvaughan32)). In both cases, we start by setting the plan for resolving the future evaluation. I recommend `plan(multiprocess)`, which is a convenient way of telling the package to choose the optimal parallel strategy for our particular system. We then call our functions --- which involve minor modifications of their serial equivalents --- and let the future magic take care of everything else.
 
 #### 1) future.apply
 
@@ -204,9 +208,11 @@ sim_furrr <- future_map_dfr(1:1e4, reg_func)
 toc()
 ```
 
+*<b>Note:</b> While significantly faster than the serial implementation, this time the parallel improvements don't scale linearly with the number of cores on my system (i.e. `r parallel::detectCores()`). The reason has to do with the overhead of running the functions. We'll cover overhead in more depth toward the bottom of this document.*
+
 ### Results
 
-Okay, let's plot this guy. Not that it matters --- all the results are the same, but I'll use the `sim_furrr` object. As you can see, the estimated coefficient values are tightly clustered around our simulated mean of 2.
+Okay, let's plot the results from this bootstrapping exercise. Not that it matters --- all the results are the same --- but I'll use the `sim_furrr` object. As you can see, the estimated coefficient values are tightly clustered around our simulated mean of 2.
 
 ```{r x_coef}
 sim_furrr %>%
@@ -224,7 +230,7 @@ sim_furrr %>%
 
 ### Other parallel options
 
-One other parallel option that I want to mention very briefly is the [pbapply package](https://github.com/psolymos/pbapply). As we saw during the first programming lecture, this package provides a lightweight wrapper on the *apply functions that adds a progress bar. However, the package also adds a very convenient option for multicore implementation. You basically just have to add <code>cl=CORES</code> to the call. See [here](http://peter.solymos.org/code/2016/09/11/what-is-the-cost-of-a-progress-bar-in-r.html) for an interesting discussion on what's happening behind the scenes.
+I keep saying futures are not the only game in town for parallel programming in R. One other option that I want to mention very briefly is the [**pbapply** package](https://github.com/psolymos/pbapply). As we saw during the first programming lecture, this package provides a lightweight wrapper on the *apply functions that adds a progress bar. However, the package also adds a very convenient option for multicore implementation. You basically just have to add <code>cl=CORES</code> to the call. While it doesn't rely on futures, `pbapply` also takes care of all the OS-specific overhead for you. See [here](http://peter.solymos.org/code/2016/09/11/what-is-the-cost-of-a-progress-bar-in-r.html) for an interesting discussion on what's happening behind the scenes.
 
 *Note: You will need to run this next chunk interactively to see the progress bar. As an aside, [furrr also supports progress bars](https://github.com/DavisVaughan/furrr#progress-bars).*
 
@@ -283,9 +289,9 @@ get_num_cores() ## No. of physical cores only
 
 ### Forking vs Sockets
 
-As I keep saying, it's now incredibly easy to run parallel programs in R. The truth is that it has actually been easy to do so for a long time... but the implementation used to vary by operating system (e.g. Linux/Mac vs Windows). For example, take a look at the [help documentation](https://stat.ethz.ch/R-manual/R-devel/library/parallel/html/mclapply.html) for the `parallel::mclapply()` function, which has been around since 2011. If you did so, you would see a warning that `mclapply()` *"relies on forking and hence is not available on Windows"*.
+As I keep saying, it's now incredibly easy to run parallel programs in R. The truth is that it has actually been easy to do so for a long time... but the implementation used to vary by operating system. In particular, simple parallel implementations that worked perfectly well on Linux or Mac didn't work on Windows (which required a lot more overhead). For example, take a look at the [help documentation](https://stat.ethz.ch/R-manual/R-devel/library/parallel/html/mclapply.html) for the `parallel::mclapply()` function, which has been around since 2011. If you did so, you would see a warning that `mclapply()` *"relies on forking and hence is not available on Windows"*.
 
-Now, we obviously didn't encounter any OS-specific problems when we ran the parallel versions of our motivating example above. That includes anyone using Windows. ~~*Loud booing.*~~ What was happening behind the scenes is that the parallel functions were being executed in a way that was automatically optimised for your respective OS. This was all done via the new [future package](https://cran.r-project.org/web/packages/future/index.html) ecosystem, which we'll turn to shortly.
+Now, we clearly didn't encounter any OS-specific problems when we ran the parallel versions of our motivating examples above. The same code worked for everyone, including anyone using Windows. ~~*Loud booing.*~~ What was happening behind the scenes is that the `future` (and `pbapply`) packages automatically handled any complications for us. The parallel functions were being executed in a way that was optimised for each person's OS.
 
 But what is "forking" and why does it matter what OS I am using anyway? Those are good questions that relate to the method of parallelization (i.e. type of cluster) that your system supports. The short version is that there are basically two ways that code can be parallelized:
 
@@ -304,7 +310,7 @@ I've summarised the differences between the two approaches in the table below. T
 
 ## Explicit vs implicit parallelization
 
-Thus far we have only been concerned with *explicit* parallelization. As in, we explicitly told R to run a particular set of commands in parallel. But there is another form of *implicit* parallelization that is equally important to be aware of. In this case, certain low-level functions and operations are automatically run in parallel regardless of whether we told R to do so or not. Implicit parallelization can make a big difference to performance, but is not the default behaviour in R. So you have to enable it first. Moreover, combining explicit and implicit parallelization can cause problems if you don't take certain precautions.
+Thus far we have only been concerned with *explicit* parallelization. As in, we explicitly told R to run a particular set of commands in parallel. But there is another form of *implicit* parallelization that is equally important to be aware of. In this case, certain low-level functions and operations are automatically run in parallel regardless of whether we told R to do so or not. Implicit parallelization can make a big difference to performance, but is not the default behaviour in R. So you have to enable it first. Moreover, combining explicit and implicit parallelization can cause problems if you don't take certain precautions. Let's take a look at where implicit parallelization enters the fray.
 
 ### BLAS/LAPACK
 
@@ -326,19 +332,18 @@ While this all sounds great --- and I certainly recommend taking a look at MKL o
 
 Now, I want to emphasise that this conflict rarely matters in my own experience. I use optimised BLAS libraries and run explicit parallel calls all the time in my R scripts. Despite this, I have hardly ever run into a problem. Moreover, when these slowdowns have occured, I've found the effect to be relatively modest.^[The major cost appears to be the unnecessary duplication of objects in memory.] Still, I have read of cases where the effect can be quite dramatic (e.g. [here](https://stat.ethz.ch/pipermail/r-sig-hpc/2014-February/001846.html)) and so I wanted you to be aware of it all the same.
 
-Luckily, there's also an easy and relatively costless solution: Simply turn off BLAS multi-threading. It turns out this has minimal impact on performance, since most of the gains from an optimised BLAS library are actually You can turn off BLAS multi-threading for the current R session via the `RhpcBLASctl::blas_set_num_threads()` function. For example, I sometimes include the following line at the top of an R script:
+Luckily, there's also an easy and relatively costless solution: Simply turn off BLAS multi-threading. It turns out this has a negligible impact on performance, since most of the gains from optimised BLAS are actually coming from improved math vectorisation, not multi-threading. (See [here post](https://blog.revolutionanalytics.com/2015/10/edge-cases-in-using-the-intel-mkl-and-parallel-programming.html) for a detailed discussion.) You can turn off BLAS multi-threading for the current R session via the `RhpcBLASctl::blas_set_num_threads()` function. For example, I sometimes include the following line at the top of an R script:
 ```{r eval=F}
 # blas_get_num_procs() ## If you want to find the existing number of BLAS threads
 blas_set_num_threads(1) ## Set BLAS threads to 1 (i.e. turn off multithreading)
 ```
 
-Since this is only in effect for the current R session, BLAS multithreading will be restored when I restart R.^[I could also reinstate the original behaviour in the same session by running `blas_set_num_threads(parallel::detectCores())`. You can turn off multithreading as the default mode by altering the configuration file when you first build/install your preferred BLAS library. However, that's both complicated and unecessarily restrictive in my view.] Interestingly, turning off BLAS multi-threading has only a modest impact on performance. The reason is that most of the benefit provided by optimised BLAS libraries actually comes from improved math vectorisation, not multi-threading. See [this blog post](https://blog.revolutionanalytics.com/2015/10/edge-cases-in-using-the-intel-mkl-and-parallel-programming.html) for a detailed discussion by Andrie de Vries of Revolution Analytics.
-
+Since this is only in effect for the current R session, BLAS multithreading will be restored when I restart R.^[I could also reinstate the original behaviour in the same session by running `blas_set_num_threads(parallel::detectCores())`. You can turn off multithreading as the default mode by altering the configuration file when you first build/install your preferred BLAS library. However, that's both complicated and unecessarily restrictive in my view.] 
 ## Miscellaneous
 
 ### When should I go parallel?
 
-The short answer is that you want to invoke the multicore option whenever you are faced with a so-called "[embarrassingly parallel](https://en.wikipedia.org/wiki/Embarrassingly_parallel)" problem. You can click on that link for a longer description, but the key idea is that these computational problems are embarrassingly easy to break up into smaller chunks. You likely have such a case if the potential code chunks are independent and do not need to communicate in any way. Classic examples include bootstrapping of standard errors (since each regression or resampling iteration is drawn independently) and Markov chain Monte Carlo (i.e. [MCMC](https://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo)).
+The short answer is that you want to invoke the multicore option whenever you are faced with a so-called "[embarrassingly parallel](https://en.wikipedia.org/wiki/Embarrassingly_parallel)" problem. You can click on that link for a longer description, but the key idea is that these computational problems are embarrassingly easy to break up into smaller chunks. You likely have such a case if the potential code chunks are independent and do not need to communicate in any way. Classic examples include bootstrapping (since each regression or resampling iteration is drawn independently) and Markov chain Monte Carlo (i.e. [MCMC](https://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo)).
 
 Having said that, there are limitations to the gains that can be had from parallelization. Most obviously, there is the [computational overhead](https://en.wikipedia.org/wiki/Overhead_(computing)) associated with splitting up the problem, tracking the individual nodes, and then bringing everything back into a single result. This can be regarded as an issue largely affecting shorter and smaller computations. In other words, the overhead component of the problem tends to diminish in relative size as the overall computation time increases. 
 
@@ -366,7 +371,7 @@ expand.grid(num_cores=1:2048, par_prop=c(0.5,0.75,0.9,0.95)) %>%
 
 If you look this question up online, you'll find that most people recommend using `detectCores()-1`. This advice stems from the idea that you probably want to reserve one core for other tasks, such as running your web browser or word processor. While I don't disagree, I typically use all available cores for my parallel computations. For one thing, I do most of my heavy computational work in the cloud (i.e. on a server or virtual machine). So keeping some computational power in reserve doesn't make sense. Second, when I am working locally, I've gotten into the habit of closing all other applications while a parallel function is running. Your mileage may vary, though. (And remember the possible diminishing returns brought on by Amdahl's law).  FWIW, calling `plan(multiprocess)` automatically defaults to using all cores. You can change that by running, say, `plan(multiprocess(workers=detectCores()-1))`.
 
-### Fault tolerance (error catching and caching)
+### Fault tolerance (error catching, caching, etc.)
 
 In my experience, the worst thing about parallel computation is that it is very sensitive to failure in any one of its nodes. An especially frustrating example is the tendency of parallel functions to ignore/hide critical errors up until the very end when they are supposed to return output. ("Oh, so you encountered a critical error several hours ago, but just decided to continue for fun anyway. Thanks!") Luckily, all of the defensive programming tools that we practiced in the previous programming lecture --- catching user errors and caching intermediate results --- carry over perfectly to their parallel equivalents. **Challenge:** Prove this to yourself by running a parallel version of the cached iteration that we [practiced last time](https://raw.githack.com/uo-ec607/lectures/master/11-funcs-adv/11-funcs-adv.html#caching_(memoization)). You will need to create the `cache_func()` function first, but then you should be able to run `furrr::future_map_dfr(1:10, cached_func)` and it will automatically return the previously cached results.
 
@@ -376,7 +381,7 @@ Random number generation (RNG) can become problematic in parallel computations (
 
 ### Parallel regression
 
-A number of regression packages in R are optimised to run in parallel. For example, the superb [lfe package]https://cran.r-project.org/web/packages/lfe/index.html) that we saw a few weeks ago in the lecture on regression analysis^[See [here](https://raw.githack.com/uo-ec607/lectures/master/08-regression/08-regression.html#fixed_effects_with_the_lfe_package).] will automatically invoke multicore capabilities when fitting high dimensional fixed effects models. The many Bayesian packages in R are also all capable of --- and, indeed, expected to --- fit regression models by running their MCMC chains in parallel (e.g. [Stan](https://cran.r-project.org/web/packages/rstan/vignettes/rstan.html#running-multiple-chains-in-parallel)). Finally, you may be interested in the [partools package](https://cran.r-project.org/web/packages/partools/index.html), which provides convenient aliases for running a variety of statistical models and algorithms in parallel.
+A number of regression packages in R are optimised to run in parallel. For example, the superb [lfe package](https://cran.r-project.org/web/packages/lfe/index.html) that we saw a few weeks ago in the lecture on regression analysis will automatically invoke multicore capabilities when fitting high dimensional fixed effects models.^[See [here](https://raw.githack.com/uo-ec607/lectures/master/08-regression/08-regression.html#fixed_effects_with_the_lfe_package).] The many Bayesian packages in R are also all capable of --- and, indeed, expected to --- fit regression models by running their MCMC chains in parallel (e.g. [Stan](https://cran.r-project.org/web/packages/rstan/vignettes/rstan.html#running-multiple-chains-in-parallel)). Finally, you may be interested in the [partools package](https://cran.r-project.org/web/packages/partools/index.html), which provides convenient aliases for running a variety of statistical models and algorithms in parallel.
 
 ### CPUs vs GPUs
 
