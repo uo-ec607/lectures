@@ -277,7 +277,7 @@ toc()
 
 ## Explicit vs implicit parallelization
 
-Thus far we have only been concerned with *explicit* parallelization. As in, we explicitly tell R to run a particular set of commands in parallel. But there is another form of *implicit* parallelization that is equally important to be aware of. In this case, certain low-level functions and operations are automatically run in parallel regardless of whether we told R to do so or not. Implicit parallelization can make a big difference to performance, but is not the default behaviour in R. So you have to enable it first. Moreover, combining explicit and implicit parallelization can cause problems if you don't take certain precautions.
+Thus far we have only been concerned with *explicit* parallelization. As in, we explicitly told R to run a particular set of commands in parallel. But there is another form of *implicit* parallelization that is equally important to be aware of. In this case, certain low-level functions and operations are automatically run in parallel regardless of whether we told R to do so or not. Implicit parallelization can make a big difference to performance, but is not the default behaviour in R. So you have to enable it first. Moreover, combining explicit and implicit parallelization can cause problems if you don't take certain precautions.
 
 ### BLAS/LAPACK
 
@@ -307,19 +307,49 @@ blas_set_num_threads(1) ## Set BLAS threads to 1 (i.e. turn off multithreading)
 
 Since this is only in effect for the current R session, BLAS multithreading will be restored when I restart R.^[I could also reinstate the original behaviour in the same session by running `blas_set_num_threads(parallel::detectCores())`. You can turn off multithreading as the default mode by altering the configuration file when you first build/install your preferred BLAS library. However, that's both complicated and unecessarily restrictive in my view.] Interestingly, turning off BLAS multi-threading has only a modest impact on performance. The reason is that most of the benefit provided by optimised BLAS libraries actually comes from improved math vectorisation, not multi-threading. See [this blog post](https://blog.revolutionanalytics.com/2015/10/edge-cases-in-using-the-intel-mkl-and-parallel-programming.html) for a detailed discussion by Andrie de Vries of Revolution Analytics.
 
-## Other topics
+## Miscellaneous
 
 ### When should I go parallel?
 
-"Embarrassingly parallel" tasks
+The short answer is that you want to invoke the multicore option whenever you are faced with a so-called "[embarrassingly parallel](https://en.wikipedia.org/wiki/Embarrassingly_parallel)" problem. You can click on that link for a longer description, but the key idea is that these computational problems are embarrassingly easy to break up into smaller chunks. You likely have such a case if the potential code chunks are independent and do not need to communicate in any way. Classic examples include bootstrapping of standard errors (since each regression or resampling iteration is drawn independently) and Markov chain Monte Carlo (i.e. [MCMC](https://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo)).
 
-The crucial point is that these chunks of computation are unrelated and do not need to communicate in any way.
+Having said that, there are limitations to the gains that can be had from parallelization. Most obviously, there is the [computational overhead](https://en.wikipedia.org/wiki/Overhead_(computing)) associated with splitting up the problem, tracking the individual nodes, and then bringing everything back into a single result. This can be regarded as an issue largely affecting shorter and smaller computations. In other words, the overhead component of the problem tends to diminish in relative size as the overall computation time increases. 
 
-Overhead and Amdahl's law
+On the opposite end of the spectrum, there is [Amdahl's law](https://en.wikipedia.org/wiki/Amdahl%27s_law) (generalised as [Gustafson's law](https://en.wikipedia.org/wiki/Gustafson%27s_law)). This formalises the intuitive idea that there are diminishing returns to parallelization, depending on the proportion of your code that can be run in parallel. A case in point is Bayesian MCMC routines, which typically include a fixed "burn-in" period regardless of how many parallel chains are being run in parallel.
 
-### Fault tolerance
+```{r amdahl, echo=F}
+expand.grid(num_cores=1:2048, par_prop=c(0.5,0.75,0.9,0.95)) %>%
+  mutate(
+    speed_up = 1/(1 - par_prop + par_prop/num_cores),
+    par_prop = scales::percent(par_prop, accuracy=1)
+    ) %>%
+  ggplot(aes(x = num_cores, y = speed_up, col = par_prop, group = par_prop)) +
+  geom_line() +
+  scale_x_continuous(trans = scales::log_trans(2), breaks = 2^c(0:11)) +
+  scale_color_brewer(name = "Parallel proportion", palette = "Set1") +
+  labs(
+    title = "Amdahl's law",
+    x = "No. of cores", y = "Theoretical speedup"
+    ) +
+  guides(colour = guide_legend(reverse=T)) + 
+  hrbrthemes::theme_ipsum()
+```
+
+### How many cores should I use?
+
+If you look this question up online, you'll find that most people recommend using `detectCores()-1`. This advice stems from the idea that you probably want to reserve one core for other tasks, such as running your web browser or word processor. While I don't disagree, I typically use all available cores for my parallel computations. For one thing, I do most of my heavy computational work in the cloud (i.e. on a server or virtual machine). So keeping some computational power in reserve doesn't make sense. Second, when I am working locally, I've gotten into the habit of closing all other applications while a parallel function is running. Your mileage may vary, though. (And remember the possible diminishing returns brought on by Amdahl's law).  FWIW, calling `plan(multiprocess)` automatically defaults to using all cores. You can change that by running, say, `plan(multiprocess(workers=detectCores()-1))`.
+
+### Fault tolerance (error catching and caching)
+
+In my experience, the worst thing about parallel computation is that it is very sensitive to failure in any one of its nodes. An especially frustrating example is the tendency of parallel functions to ignore/hide critical errors up until the very end when they are supposed to return output. ("Oh, so you encountered a critical error several hours ago, but just decided to continue for fun anyway. Thanks!") Luckily, all of the defensive programming tools that we practiced in the previous programming lecture --- catching user errors and caching intermediate results --- carry over perfectly to their parallel equivalents. **Challenge:** Prove this to yourself by running a parallel version of the cached iteration that we [practiced last time](https://raw.githack.com/uo-ec607/lectures/master/11-funcs-adv/11-funcs-adv.html#caching_(memoization)). You will need to create the `cache_func()` function first, but then you should be able to run `furrr::future_map_dfr(1:10, cached_func)` and it will automatically return the previously cached results.
 
 ### Random number generation
+
+Random number generation (RNG) can become problematic in parallel computations (whether trying to ensure the same of different RNG across processes). R has various safeguards against this and future [automatically handles](https://www.jottr.org/2017/02/19/future-rng/) RNG for you. 
+
+### Parallel regression
+
+A number of regression packages in R are optimised to run in parallel. For example, the superb [lfe package]https://cran.r-project.org/web/packages/lfe/index.html) that we saw a few weeks ago in the lecture on regression analysis^[See [here](https://raw.githack.com/uo-ec607/lectures/master/08-regression/08-regression.html#fixed_effects_with_the_lfe_package).] will automatically invoke multicore capabilities when fitting high dimensional fixed effects models. The many Bayesian packages in R are also all capable of --- and, indeed, expected to --- fit regression models by running their MCMC chains in parallel (e.g. [Stan](https://cran.r-project.org/web/packages/rstan/vignettes/rstan.html#running-multiple-chains-in-parallel)). Finally, you may be interested in the [partools package](https://cran.r-project.org/web/packages/partools/index.html), which provides convenient aliases for running a variety of statistical models and algorithms in parallel.
 
 ### CPUs vs GPUs
 
@@ -328,10 +358,6 @@ Graphical Processing Units, or GPUs, are specialised chipsets that were original
 So why am I telling you this? Well, it turns out that GPUs also excel at non-graphic computation tasks. The same processing power needed to perform the millions of parallel calculations for rendering 3-D games or architectural software, can be put to use on scientific problems. How exactly this was discovered involves an interesting backstory of supercomputers being built with Playstations. (Google it.) But the short version is that modern GPUs comprise *thousands* of cores that can be run in parallel. Or, as a colleague once memorably described it to me: "GPUs are basically just really, really good at doing linear algebra."
 
 Still, that's about as much as I want to say about GPUs for now. Installing and maintaining a working GPU setup for scientific purposes is a much more complex task. (And, frankly, overkill for the vast majority of econometric or data science needs.) We may revisit the topic when we get to the machine learning section of the course in a few weeks.^[Advanced machine learning techniques like [deep learning](https://blog.rstudio.com/2018/09/12/getting-started-with-deep-learning-in-r/) are particularly performance-dependent on GPUs.] Thus, and while the general concepts carry over, everything that we've covered today is limited to CPUs.
-
-### Parallel regression
-
-`lfe`, `partools`, and various Bayesian packages (jags, stan, etc.)
 
 ### Monitoring multicore performance
 
