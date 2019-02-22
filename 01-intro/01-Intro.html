@@ -24,10 +24,25 @@ class: center, middle, inverse, title-slide
 
 ---
 
+
+
+
+# Table of contents
+
+1. [Prologue](#prologue)
+
+2. [Syllabus highlights](#syllabus)
+
+3. [Getting started](#started)
+
+4. [R for data science](#r4ds)
+
+5. [Data visualization with ggplot2](#ggplot2)
+
+
+---
 class: inverse, center, middle
-
-
-
+name: prologue
 
 # Prologue
 
@@ -41,6 +56,7 @@ Results from our [survey](https://goo.gl/forms/PjojERKMOpbo78JJ3)...
 
 ---
 class: inverse, center, middle
+name: syllabus
 
 # Syllabus highlights
 
@@ -129,6 +145,7 @@ P.S. This is an "environmental" PhD seminar only in the most nominal sense. It i
 
 ---
 class: inverse, center, middle
+name: started
 
 # Getting started
 
@@ -223,8 +240,8 @@ PS — Just so you know where we're headed: We'll return to these R concepts (an
 - Don't worry, it will all make sense. You'll see.
 
 ---
-
 class: inverse, center, middle
+name: r4ds
 
 # R for data science
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
@@ -275,7 +292,7 @@ programming languages and APIs.
 &lt;/br&gt;
 
 Points 1. and 2. can be summarised as an [object-orientated programming](https://en.wikipedia.org/wiki/Object-oriented_programming) (OOP) approach.
-  - This may sound super abstract now, but in the coming weeks we'll see *lots* of examples will make things clear.
+  - This may sound super abstract now, but we'll see *lots* of examples over the coming weeks that will make things clear.
 
 ---
 
@@ -356,6 +373,7 @@ ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp)) +
 
 ---
 class: inverse, center, middle
+name: ggplot2
 
 # More ggplot2
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
@@ -430,13 +448,15 @@ There's a lot to say about ggplot2's implementation of this "grammar of graphics
 
 1. Your plot ("the visualization") is linked to your variables ("the data") through various **aesthetic mappings**.
 
-2. Once those those aesthetic mappings are defined, you can choose to represent your data in many different ways by choosing different **geoms** (i.e. "geometric objects" like points, lines or bars).
+2. Once the aesthetic mappings are defined, you can represent your data in different ways by choosing different **geoms** (i.e. "geometric objects" like points, lines or bars).
 
 3. You build your plot in **layers**.
 
 --
 
-That's kind of abstract. Let's original each element in turn using our original plot call.
+&lt;/br&gt;
+
+That's kind of abstract. Let's review each element in turn using our original plot call.
 
 ---
 
@@ -452,11 +472,7 @@ ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp)) +
 
 Focus on the top line, which contains the initialising `ggplot()` function call. This function accepts various arguments, including:
 - Where the data come from (i.e. `data = gapminder`).
-- What the aesthetic mappings are (i.e. `mapping = aes(x = gdpPercap, y = lifeExp)`).&lt;sup&gt;1&lt;/sup&gt;
-
-.footnote[
-&lt;sup&gt;1&lt;/sup&gt; Most people don't bother writing out the "mapping =" part of the ggplot call and just start with "aes(...)". Same for "data =". (Confirm for yourself that this still works.)
-]
+- What the aesthetic mappings are (i.e. `mapping = aes(x = gdpPercap, y = lifeExp)`).
 
 --
 
@@ -475,6 +491,10 @@ ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp, size = pop, col = conti
 
 &lt;img src="01-Intro_files/figure-html/aesthetics2-1.svg" style="display: block; margin: auto;" /&gt;
 
+--
+
+Note that I've dropped the "mapping =" part of the ggplot call. Most people just start with "aes(...)", since `ggplot2` knows the order of the arguments.
+
 ---
 
 # 1. Aesthetic mappings (cont.)
@@ -487,7 +507,6 @@ ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) + ## Applicable to all
 ```
 
 &lt;img src="01-Intro_files/figure-html/aesthetics3-1.svg" style="display: block; margin: auto;" /&gt;
-
 
 ---
 
@@ -514,7 +533,6 @@ At this point, instead of repeating the same ggplot2 call every time, it will pr
 
 
 ```r
-## Note: I'm dropping the "mapping =" part to save horizontal space.
 p = ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp))
 p
 ```

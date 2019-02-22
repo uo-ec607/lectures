@@ -1,0 +1,462 @@
+---
+title: "Webscraping: (2) Client-side and APIs"
+author:
+  name: Grant R. McDermott
+  affiliation: University of Oregon | EC 607
+  # email: grantmcd@uoregon.edu
+date: Lecture 7  #"`r format(Sys.time(), '%d %B %Y')`"
+output: 
+  html_document:
+    theme: flatly
+    highlight: haddock 
+    # code_folding: show
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
+```
+
+## Sign-up and software requirements
+
+### Sign-up
+
+We're going to be downloading economic data from the FRED API. This will require that you first [create a user account](https://research.stlouisfed.org/useraccount/apikey) and then [register a personal API key](https://research.stlouisfed.org/useraccount/apikey).
+
+### External software
+
+Today I'll be using [JSONView](https://jsonview.com/), a browser extension that renders JSON output nicely in Chrome and Firefox. (Not needed, but recommended.)
+
+### R packages 
+
+- **New:** `jsonlite`, `httr`, `listviewer`, `fredr`
+- **Already used:** `tidyverse`, `lubridate`, `hrbrthemes`
+
+The [httr package](https://httr.r-lib.org/index.html) already comes bundled with the tidyverse. So you only need to install the following:
+
+```{r, eval = F}
+## Not run. (Run this manually yourself if you haven't installed these packages yet.)
+install.packages(c("jsonlite", "listviewer", "fredr"))
+```
+
+We might as well load the tidyverse now, since we'll be using it a fair bit today. It's not necessary, but I'll also set my preferred ggplot2 theme for the rest of this document.
+
+```{r tverse, cache=F, message=F}
+library(tidyverse)
+theme_set(hrbrthemes::theme_ipsum())
+```
+
+## Recap from last time
+
+During the last lecture, we saw that websites and web applications fall into two categories: 1) Server-side and 2) Client-side. We then practised scraping data that falls into the first category --- i.e. rendered server-side --- using the `rvest` package. This technique focuses on CSS selectors (with help from [SelectorGadget](http://selectorgadget.com/)) and HTML tags. We also saw that webscraping often involves as much art as science. The plethora of CSS options and the flexibility of HTML itself means that steps which work perfectly well on one website can easily fail on another website.
+
+Today we focus on the second category: Scraping web data that is rendered **client-side**. The good news is that, when available, this approach typically makes it much easier to scrape data from the web. The downside is that, again, it can involve as much art as it does science. Moreover, as I emphasised last time, just because because we *can* scrape data, doesn't mean that we *should* (i.e. ethical, legal and other considerations). These admonishments aside, let's proceed...
+
+## Client-side, APIs, and API endpoints
+
+Recall that websites or applications that are built using a **client-side** framework typically involve something like the following steps:
+
+- You visit a URL that contains a template of static content (HTML tables, CSS, etc.). This template itself doesn't contain any data.
+- However, in the process of opening the URL, your browser sends a *request* to the host server.
+- If your request if valid, then the server issues a *response* that fetches the necessary data for you and renders the page dynamically in your browser.
+- The page that you actually see in your browser is thus a mix of static content and dynamic information that is rendered by your browser (i.e. the "client").
+
+All of this requesting, responding and rendering takes places through the host application's **API** (or **A**pplication **P**rogram **I**nterface). Time for a student presentation to go over APIs in more depth...
+
+### Student presentation: APIs
+
+If you're new to APIs or reading this after the fact, then I recommend this excellent resource from Zapier: [An Introduction to APIs](https://zapier.com/learn/apis/). It's fairly in-depth, but you don't need to work through the whole thing to get the gist. The summary version is that an API is really just a collection of rules and methods that allow different software applications to interact and share information. This includes not only web servers and browsers, but also software packages like the R libraries we've been using.^[Fun fact: A number of R packages that we'll be using later in this course (e.g. `leaflet`, `plotly`, etc.) are really just a set of wrapper functions that interact with the underlying APIs and convert your R code into some other language (e.g. JavaScript).] Key concepts include:
+
+- **Server:** A powerful computer that runs an API.
+- **Client:** A program that exchanges data with a server through an API.
+- **Protocol:** The "etiquette" underlying how computers talk to each other (e.g. HTTP).
+- **Methods:** The "verbs" that clients use to talk with a server. The main one that we'll be using is `GET` (i.e. ask a server to retrieve information), but other common methods are `POST`, `PUT` and `DELETE`.
+- **Requests:** What the client asks of the server (see Methods above).
+- **Response:** The server's response. This includes a *Status Code* (e.g. "404" if not found, or "200" if successful), a *Header* (i.e. meta-information about the reponse), and a *Body* (i.e the actual content that we're interested in).
+- Etc.
+
+### A bit more about API endpoints
+
+A key point in all of this is that, in the case of web APIs, we can access information *directly* from the API database if we can specify the correct URL(s). These URLs are known as an **API endpoints**. 
+
+API endpoints are in many ways similar to the normal website URLs that we're all used to visiting. For starters, you can navigate to them in your web browser. However, whereas normal websites display information in rich HTML content --- pictures, cat videos, nice formatting, etc. --- an API endpoint is much less visually appealing. Navigate your browser to an API endpoint and you'll just see a load of seemingly unformatted text. In truth, what you're really seeing is (probably) either [JSON](https://en.wikipedia.org/wiki/JSON) (**J**ava**S**cript **O**bject **No**tation) or [XML](https://en.wikipedia.org/wiki/XML) (E**x**tensible **M**arkup **L**anguage). 
+
+You don't need to worry too much about the syntax of JSON and XML. The important thing is that the object in your browser --- that load of seemingly unformatted text --- is actually very precisely structured and formatted. Moreover, it contains valuable information that we can easily read into R (or Python, Julia, etc.) We just need to know the right API endpoint for the data that we want.
+
+Let's practice doing this through a few example applications. I'll start with the simplest case (no API key required, explicit API endpoint) and then work through some more complicated examples. 
+
+## Application 1: Trees of New York City
+
+[NYC Open Data](https://opendata.cityofnewyork.us/) is a pretty amazing initiative. Its mission is to "make the wealth of public data generated by various New York City agencies and other City organizations available for public use". You can get data on everything from arrest data, to the location of wi-fi hotspots, to city job postings, to homeless population counts, to dog licenses, to a directory of toilets in public parks... The list goes on. I highly encourage you to explore in your own time, but we're going to do something "earthy" for this first application: Download a sample of tree data from the [**2015 NYC Street Tree Census**](https://data.cityofnewyork.us/Environment/2015-Street-Tree-Census-Tree-Data/uvpi-gqnh).
+
+I wanted to begin with an example from NYC Open Data, because you don't need to set up an API key in advance.^[Truth be told: To avoid rate limits --- i.e. throttling the number of requests that you can make per hour --- it's best to [sign up](https://data.cityofnewyork.us/profile/app_tokens) for an NYC Open Data app token. We're only going to make one or two requests here, though so we should be fine.] All you need to do is complete the following steps:
+
+- Open the [web page](https://data.cityofnewyork.us/Environment/2015-Street-Tree-Census-Tree-Data/uvpi-gqnh) in your browser (if you haven't already done so). 
+- You should immediately see the **API** tab. Click on it. 
+- Copy the [API endpoint](https://data.cityofnewyork.us/resource/nwxe-4ae8.json) that appears in the popup box. 
+- *Optional:* Paste that endpoint into a new tab in your browser. You'll see a bunch of JSON text, which you can render nicely using the JSONView browser extension that we installed earlier.
+
+Here's a GIF of me completing these steps:
+
+![](pics/trees.gif)
+
+Now that we've located the API endpoint, let's read the data into R. We'll do so using the `fromJSON()` function from the excellent [jsonlite package](https://cran.r-project.org/web/packages/jsonlite/index.html). This will automatically coerce the JSON array into a regular R data frame. However, I'll go that little bit further and convert it into a tibble, since the output is nicer to work with.
+
+```{r nyc1}
+library(jsonlite)
+nyc_trees <- 
+  fromJSON("https://data.cityofnewyork.us/resource/nwxe-4ae8.json") %>%
+  as_tibble()
+nyc_trees
+```
+
+**Aside on limits:** Note that the full census dataset contains nearly 700,000 individual trees. However, we only downloaded a tiny sample of that, since the API defaults to a limit of 1,000 rows. I don't care to access the full dataset here, since I just want to illustrate some basic concepts. Nonetheless, if you were so inclined and [read the docs](https://dev.socrata.com/docs/queries/limit.html), you'd see that you can override this default by adding `?$limit=LIMIT` to the API endpoint. For example, to read in only the first five rows, you could use:
+
+```{r nyc2, eval=F}
+## Not run
+fromJSON("https://data.cityofnewyork.us/resource/nwxe-4ae8.json?$limit=5")
+```
+
+Getting back on track, let's plot our tree data just to show it worked. One minor thing I want to point out is that `fromJSON()` automatically coerces everything into a character, so we'll also need to convert some columns to numeric before we plot.
+
+```{r nyc3}
+nyc_trees %>% 
+  select(longitude, latitude, stump_diam, spc_common, spc_latin, tree_id) %>% 
+  mutate_at(vars(longitude:stump_diam), as.numeric) %>% 
+  ggplot(aes(x=longitude, y=latitude, size=stump_diam)) + 
+  geom_point(alpha=0.5) +
+  scale_size_continuous(name = "Stump diameter") +
+  labs(
+    x = "Longitude", y = "Latitude",
+    title = "Sample of New York City trees",
+    caption = "Source: NYC Open Data"
+    )
+```
+
+Not too bad. This would probably be more fun / impressive with an actual map of New York behind it. We'll save that for the spatial lecture that's coming up later in the course, though.
+
+Again, I want to remind you that our  first application didn't require prior registration on the Open Data NYC website, or creation of an API key. This is atypical. Most API interfaces will only let you access and download data after you have registered an API key with them. This is especially true if you want to access an API linked to a federal agency or institution (Census, BEA, etc.). So let's work through an application where an API key is required...
+
+## Application 2: FRED data
+
+Our second application will involve downloading data from the [**FRED API**](https://research.stlouisfed.org/docs/api/fred/). You will need to [register an API key](https://research.stlouisfed.org/useraccount/apikey) if you want to follow along with my steps, so please do so first before continuing. 
+
+As nearly every economist could tell you, [FRED](https://fred.stlouisfed.org/) is a database maintained by the Federal Reserve Bank of St Louis. You know, the one that let's you plot cool interactive charts [like this one](https://fred.stlouisfed.org/series/GNPCA#0) of US GNP since 1929.
+
+<iframe src="https://fred.stlouisfed.org/graph/graph-landing.php?g=mPCo&width=670&height=475" scrolling="no" frameborder="0"style="overflow:hidden; width:670px; height:525px;" allowTransparency="true"></iframe>
+
+</br>
+
+For this second example application, I'm going to show you how to download the data underlying the above chart using the FRED API. In fact, I'll go one better. First I'll show you how to download it yourself, so that you get an understanding of what's happening underneath the hood. Then I'll direct you to a package that does all of the API work for you.
+
+### Do it yourself
+
+As with all APIs, a good place to start is the [FRED API developer docs](https://research.stlouisfed.org/docs/api/fred/). If you read through these, you'd see that the endpoint path we're interested in is [**series/observations**](https://research.stlouisfed.org/docs/api/fred/series_observations.html). This endpoint "gets the observations or data values for an economic data series". The endpoint documentation gives a more in-depth discussion, including the various parameters that it accepts.^[Think of API *parameters* the same way that you think about function *arguments*. They are valid inputs (instructions) that modify the response to an API request.] However, the parameters that we'll be focused on here are simply:
+
+- **file_type:** "json" (Not required, but our preferred type of output.)
+- **series_id:** "GNPCA" (Required. The series data that we want.)
+- **api_key:** "YOUR_API_KEY" (Required. Go and fetch/copy your key now.)
+
+Let's combine these parameters with the endpoint path to view the data directly in our browser. Head over to [https://api.stlouisfed.org/fred/series/observations?series_id=GNPCA&api_key=<mark>YOUR_API_KEY</mark>&file_type=json](https://api.stlouisfed.org/fred/series/observations?series_id=GNPCA&api_key=YOUR_API_KEY&file_type=json), replacing "YOUR_API_KEY" with your actual key. You should see something like the following:
+
+![](pics/fred-redacted.png)
+
+At this point you're probably tempted to read the JSON object directly into your R environment using the `jsonlite::readJSON()` function. And this will work. However, that's not what we're going to here. Rather, we're going to go through the [**httr package**](https://httr.r-lib.org/). Why? Well, basically because `httr` comes with a variety of features that allow us to interact more flexibly and securely with web APIs. 
+
+Let's start by defining some convenience variables such as the endpoint path and the parameters (which we'll store in a list).
+
+```{r fred1, include=F, cache=F}
+YOUR_FRED_KEY <- Sys.getenv("FRED_KEY")
+endpoint = "series/observations"
+params = list(
+  api_key= YOUR_FRED_KEY,
+  file_type="json", 
+  series_id="GNPCA"
+  )
+```
+```{r fred1_false, eval=FALSE}
+endpoint = "series/observations"
+params = list(
+  api_key= "YOUR_FRED_KEY", ## Change to your own key
+  file_type="json", 
+  series_id="GNPCA"
+  )
+```
+
+> **Protip:** If you want to safely use sensitive information like API keys or passwords --- even when sharing content (like these lecture notes) with others --- then save it as an R environment variable. You can read more [here](https://github.com/STAT545-UBC/Discussion/issues/81) and [here](https://happygitwithr.com/github-pat.html#a-note-about-security), but something like the below should work. Run this in your console, *never* in an R Markdown file or other shared document.
+
+  ```{r protip, eval = F}
+  Sys.setenv(MY_API_KEY="abcdefghijklmnopqrstuvwxyz0123456789") ## Add your key as an environment variable. (Current session only.)
+  # usethis::edit_r_environ() ## Open your .Renviron file and add the key. (Persists over sessions.)
+  readRenviron("~/.Renviron") ## Refresh your .Renviron file
+  ```
+
+> Once that's done, you can safely assign your key to an object (including within a R Markdown file that you're going to share) using, say, `api_key <- Sys.getenv("MY_API_KEY")`. 
+
+Okay, back to our FRED example. We'll use the `httr::GET()` function to request (i.e. download) the data. I'll assign this to an object called `fred`.
+
+```{r fred2, cache=F}
+library(httr)
+
+fred <- 
+  httr::GET(
+    url = "https://api.stlouisfed.org/", ## Base URL
+    path = paste0("fred/", endpoint), ## The API endpoint
+    query = params ## Our parameter list
+    )
+```
+
+Take a second to print the `fred` object in your console. What you'll see is pretty cool; i.e. it's the actual API response, including the *Status Code* and *Content*. Something like:
+
+```
+## Response [https://api.stlouisfed.org/fred/series/observations?api_key=YOUR_API_KEY&file_type=json&series_id=GNPCA]
+##   Date: 2019-02-01 00:06
+##   Status: 200
+##   Content-Type: application/json; charset=UTF-8
+##   Size: 9.09 kB
+```
+
+To extract the content (i.e. data) from of this response, I'll use the `httr::content()` function. Moreover, we know that this content is a JSON array, so we can convert it to an R object using `jsonlite::fromJSON()` as we did above. However, we don't yet know what format it will be in. Okay --- SPOILER --- it's going to be a list. I could use the base `str()` function to delve into the structure of this list. However, I want to introduce you to the `listviewer::jsonedit()` function, which allows for interactive inspection of list objects.^[Complex nested lists are the law of the land when it comes to JSON data. Don't worry too much about this now, but the good news is that R ideally suited to parse and handle these nested lists. We'll see more examples later in the course when we start working with programming and spatial data (e.g. geoJSON).]
+
+```{r fred3, cache=F, out.width="100%", out.height="10%"}
+fred %>% 
+  httr::content("text") %>%
+  jsonlite::fromJSON() %>%
+  listviewer::jsonedit(mode = "view")
+```
+
+Luckily, this particular list object isn't too complicated. We can see that we're really interested in the `fred$observations` sub-element. I'll re-run most of the above code and then extract this element. I could do this in several ways, but will use the `purrr::pluck()` function here.
+
+```{r fred4, cache=F}
+fred <-
+  fred %>% 
+  httr::content("text") %>%
+  jsonlite::fromJSON() %>%
+  purrr::pluck("observations") %>% ## Extract the "$observations" list element
+  # .$observations %>% ## I could also have used this
+  # magrittr::extract("observations") %>% ## Or this
+  as_tibble() ## Just for nice formatting
+fred
+```
+
+Okay! We've finally got our data and are nearly ready for some plotting. However, recall that `fromJSON()` automatically converts everything to characters so I'll quickly change some variables to dates (using `lubridate::ymd()`) and numeric.
+
+```{r fred5, message=F}
+library(lubridate)
+
+fred <-
+  fred %>%
+  mutate_at(vars(realtime_start:date), ymd) %>%
+  mutate(value = as.numeric(value)) 
+```
+
+Let's plot this sucker.
+
+```{r fred6}
+fred %>%
+  ggplot(aes(date, value)) +
+  geom_line() +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    x="Date", y="2012 USD (Billions)",
+    title="US Real Gross National Product", caption="Source: FRED"
+    )
+```
+
+
+### Use a package
+
+One of the great features about the R (and data science community in general) is that someone has probably written a package that does all the heavy API lifting for you. We'll come across many examples during the remainder of this course, but for the moment I want you to check out the [fredr package](http://sboysel.github.io/fredr/index.html). How would you access the same GDP data as above using this package? (Hint: See [here](https://cran.r-project.org/web/packages/fredr/vignettes/fredr.html).)
+
+## Application 3: World rugby rankings
+
+Our final application will involve a more challenging case where the API endpoint is *hidden from view*. In particular, I'm going to show you how to access data on [**World Rugby rankings**](https://www.world.rugby/rankings/mru). Because --- real talk --- what's more important than teaching Americans about rugby?
+
+*<b>Disclaimer:</b> World Rugby's [Terms & Conditions](https://www.world.rugby/terms-and-conditions) permits data downloading for own non-commerical use. It seems reasonable to me that these lecture notes fall under this use category.^[If you're reading this from World Rugby and disagree, please [contact me](mailto:grantmcd@uoregon.edu). In my defence, I am still awaiting a reply to my initial email confirming my interpretation of your T&Cs...] None of the methods presented below should be construed as an endorsement of data aquisition and use that violates these terms. Again: Just because you can scrape something, doesn't mean you should.*
+
+Start by taking a look at the complicated structure of the website in a [live session](http://www.worldrugby.org/rankings). Pay attention to the various tables and other interactive elements like calendars. Now take a minute or two for a quick challenge: Try to scrape the full country rankings using the `rvest` + CSS selectors approach that we practiced last time...
+
+.
+
+.
+
+.
+
+.
+
+.
+
+If you're anything like me, you would have struggled to scrape the desired information using the `rvest` + CSS selectors approach. Even if you managed to extract some kind of information, you're likely only getting a subset of what you wanted. (For example, just the column names, or the first ten rows before the "VIEW MORE RANKINGS" button). And we haven't even considered trying to get information from a different date.^[Note that the URL doesn't change even when we select a different date on the calendar.]
+
+### Locating the hidden API endpoint
+
+Fortunately, there's a better way: Access the full database of rankings through the API. First we have to find the endpoint, though. Here's a step-by-step guide of how to that that. It's fairly tedious, but pretty intuitive once you get the hang of it. You can just skip to the GIF below if you would rather see what I did instead of reading through all the steps. 
+
+- Start by inspecting the page. (**Ctr+Shift+I** in Chrome. **Ctrl+Shift+Q** in Firefox.) 
+- Head to the **Network** tab at the top of the inspect element panel. 
+- Click on the **XHR** button.^[XHR stands for **X**ML**H**ttp**R**equest and is the type of request used to fetch XML or JSON data.]
+- Refresh the page (**Ctrl+R**). This will allow us to see all the web traffic coming to and from the page in our inspect panel. 
+- Our task now is to scroll these different traffic links and see which one contains the information that we're after.
+- The top traffic link item references a URL called [https://cms<b>api</b>.pulselive.com/rugby/<b>rankings</b>/mru?language=en&client=pulse](https://cmsapi.pulselive.com/rugby/rankings/mru?language=en&client=pulse). *Hmmm. "API" you say? "Rankings" you say? Sounds promising...* 
+- Click on this item and open up the **Preview** tab.
+- In this case, we can see what looks to be the first row of the rankings table ("New Zealand", etc.) 
+- To make sure, you can grab that [https://cmsapi.pulselive.com/rugby/rankings/mru?language=en&client=pulse](URL), and paste it into our browser (using the [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc?hl=en) plugin) from before.
+
+Sweet. Looks like we've located our API endpoint. As promised, here's GIF of me walking through these steps in my browser:
+
+![](pics/inspect-rugby.gif)
+
+### Pulling the data into R
+
+Let's pull the data from the API endpoint into R. Again, I'll be using `jsonlite::readJSON()` function. 
+
+```{r rugby1}
+endpoint <- "https://cmsapi.pulselive.com/rugby/rankings/mru?language=en&client=pulse"
+rugby <- fromJSON(endpoint)
+str(rugby)
+```
+
+We have a nested list, where what looks to be the main element of interest, `$entries`, is itself a list.^[I know that R says `rugby$entries` is a data.frame, but we can tell from the `str()` call that it follows a list structure. In particular, the `rugby$entries$team` sub-element is a itself data frame. Remember: R is very flexible and allows data frames within certain data frames (and lists).] Let's extract the `$entries` element and have a look at its structure. We could use the `str()` base function, but again the interactivity of `listviewer::jsonedit()` is hard to beat for complicated list structures. 
+
+```{r rugby2, out.width="100%", out.height="10%"}
+# str(rugby$entries) ## Base option
+listviewer::jsonedit(rugby, mode = "view")
+```
+
+For completeness, let's take peak at the `rugby$entries$team` data frame to confirm that it has information that is useful to us. 
+
+```{r rugby 2a}
+head(rugby$entries$team)
+```
+
+Okay, a clearer picture is starting to emerge. It looks like we can just bind the columns of the `rugby$entries$team` data frame directly to the other elements of the parent `$team` "data frame" (actually: "list"). Let's do that using `dplyr::bind_cols()` and then clean things up a bit. I'm going to call the resulting data frame `rankings`.
+
+```{r rugby3, message=F}
+library(janitor)
+
+rankings <-
+  bind_cols(
+    rugby$entries$team,
+    rugby$entries %>% select(matches:previousPos)
+  ) %>%
+  clean_names() %>%
+  select(-c(id, alt_id, annotations)) %>% ## These columns aren't adding much of interest
+  select(pos, pts, everything()) %>% ## Reorder remaining columns
+  as_tibble() ## "Enhanced" tidyverse version of a data frame
+rankings
+```
+
+### BONUS: Get and plot the rankings history
+
+The above looks great, except for the fact that it's just a single snapshot of the most recent rankings. We are probably more interested in looking back at changes in the ratings over time. For example, back to an era when South Africa wasn't so [*kak*](https://www.urbandictionary.com/define.php?term=kak)...
+
+How do we do this? Well, in the spirit of art-vs-science, let's open up the Inspect window of the rankings page again and start exploring. What happens if we click on the calendar element, say, change the year to "2018" and month to "April"? (Do this yourself.)
+
+This looks promising! Essentially, we get the same API endpoint that we saw previously, but now appended with a date, https://cmsapi.pulselive.com/rugby/rankings/mru?date=2018-05-01&client=pulse. If you were to continue along in this manner --- clicking on the website calendar and looking for XHR traffic --- you would soon realise that these date suffixes follow a predictable pattern: They are spaced out a week apart and always fall on a Monday. In other words, World Rugby updates its internatinoal rankings table weekly and publishes the results on Mondays.
+
+We now have enough information to write a function that will loop over a set of dates and pull data from the relevant API endpoint. **NB:** I know we haven't gotten to the programming section of the course, so don't worry about the specifics of the next few code chunks. I'll try to comment my code quite explicitly, but I mostly want you to focus on the big picture.
+
+To start, we need a vector of valid dates to loop over. I'm going to use various functions from the `lubridate` package to help with this. Note that I'm only to extract a few data points --- one observation a year for the last decade or so --- since I just want to demonstrate the principle. No need to hammer the host server. (More on that below.)
+
+```{r rugby4}
+## We'll look at rankings around Jan 1st each year. I'll use 2004 as an
+## arbitrary start year and then proceed until the present year.
+start_date <- ymd("2004-01-01")
+end_date <- floor_date(today(), unit="years")
+dates <- seq(start_date, end_date, by="years")
+## Get the nearest Monday to Jan 1st to coincide with rankings release dates.
+dates <- floor_date(dates, "week", week_start = getOption("lubridate.week.start", 1))
+dates
+```
+
+Next, I'll write out a function that I'll call `rugby_scrape`. This function will take a single argument; namely a date that it will use to construct a new API endpoint during each iteration. Beyond that, it will do pretty much exactly the same things that we did in our previous, manual data scrape. The only other difference is that it will wait three seconds after running (i.e. `Sys.sleep(3)`). I'm adding this final line to avoid hammering the server with instantaneous requests when we put everything into a loop.
+
+```{r rugby5}
+## First remove our existing variables. This is not really necessary, since R is smart enough
+## to distinguish named objects in functions from named objects in our global environment.
+## But I want to emphasise that we're creating new data here and avoid any confusion.
+rm(rugby, rankings, endpoint)
+
+## Now, create the function. I'll call it "rugby_scrape".
+rugby_scrape <- 
+  function(x) {
+    endpoint <- paste0("https://cmsapi.pulselive.com/rugby/rankings/mru?date=", x, "&client=pulse")
+    rugby <- fromJSON(endpoint)
+    rankings <-
+      bind_cols(
+        rugby$entries$team,
+        rugby$entries %>% select(matches:previousPos)
+        ) %>%
+      clean_names() %>%
+      mutate(date = x) %>% ## New column to keep track of the date 
+      select(-c(id, alt_id, annotations)) %>% ## These columns aren't adding much of interest
+      select(date, pos, pts, everything()) %>% ## Reorder remaining columns
+      as_tibble() ## "Enhanced" tidyverse version of a data frame
+    Sys.sleep(3) ## Be nice!
+    return(rankings)
+  }
+```
+
+Finally, we can now iterate (i.e. loop) over our `dates` vector, by plugging the values sequentially into our `rugby_scrape` function. There are a variety of ways to iterate in R, but I'm going to use an `lapply()` call below.^[Again, don't worry too much about this now. We'll cover iteration and programming in more depth in a later lecture.] We'll then bind everything into a single data frame using `dplyr::bind_rows()` and name the resulting object `rankings_history`.
+
+```{r rugby6}
+rankings_history <-
+  lapply(dates, rugby_scrape) %>% ## Run the iteration
+  bind_rows() ## Bind the resulting list of data frames into a single data frame
+rankings_history
+```
+
+Let's review what we just did:
+
+- We created a vector of dates --- creatively called `dates` --- with observations evenly spaced (about) a year apart, falling on the Monday closest to Jan 1st for that year.
+- We then iterated (i.e. looped) over these dates using a function, `rugby_scrape`, which downloaded and cleaned data from the relevant API endpoint. 
+- At the end of each iteration, we told R to wait a few seconds before executing the next step. The reason is that R can execute these steps much, much quicker than we could ever type them manually. It probably doesn't matter for this example, but you can easily "overwhelm" a host server by hammering it with a loop of automated requests. (Or, just as likely: They have safeguards against this type of behaviour and will start denying your requests as a suspected malicious attack.) The "be nice" motto is important to remember when scraping API data.
+- Note that each run of our iteration will have produced a separate data frame, which `lapply()` by default appends into a list. We used `dplyr::bind_rows()` to bid these separate data frames into a single data frame.
+
+Okay! Let's plot the data and highlight a select few countries in the process.
+
+```{r rugby7}
+teams <- c("NZL", "RSA", "ENG", "JPN")
+team_cols <- c("NZL"="black", "RSA"="#4DAF4A", "ENG"="#377EB8", "JPN" = "red")
+
+rankings_history %>%
+  ggplot(aes(x=date, y=pts, group=abbreviation)) +
+  geom_line(col = "grey") + 
+  geom_line(
+    data = rankings_history %>% filter(abbreviation %in% teams), 
+    aes(col=fct_reorder2(abbreviation, date, pts)),
+    lwd = 1
+    ) +
+  scale_color_manual(values = team_cols) +
+  labs(
+    x = "Date", y = "Points", 
+    title = "International rugby rankings", caption = "Source: World Rugby"
+    ) +
+  theme(legend.title = element_blank())
+```
+
+It was a good time to be a South African rugby supporter around 2007--2009. These days? Not so much. OTOH, New Zealand's extended dominance in the global game is extraordinary. (Especially given its tiny population size.) They truly do have a legimate claim to being the [greatest international team](https://www.dailytelegraph.com.au/sport/rugby/are-the-all-blacks-the-greatest-international-team-in-the-history-of-sport/news-story/f61ad2d65623a9586929bbfba386b157) in the history of professional sport. Which is a good reason to link to the [best ever haka](https://www.youtube.com/watch?v=BFNCpzGnTTs).
+
+## Summary
+
+- An API is a set of rules and methods that allow one computer or program (e.g. host server) to talk to another (e.g. client or browser).
+- We can access information through an API directly by specifying a valid API endpoint.
+  - The API endpoint for most web-based applications will be a URL with either JSON or XML content.
+- Some APIs don't require an access key or token, but most do. You can add this key as a parameter to the API endpoint.
+- Downloading content from an API endpoint to our local computer (i.e. R environment) can be done in a variety of ways.
+   - E.g. `jsonlite::readJSON()` to read the the JSON array directly, or `httr::GET()` to download the entire response, or installing a package that does the job for us.
+- Next lecture: Regression analysis in R. (The start of the analysis and programming section of the course.)
+
+
+## Further resources and exercises
+
+- [Tyler Clavelle](https://twitter.com/tclavl) has written several cool [blog posts](https://tclavelle.github.io/blog/) on interacting with APIs through R. I especially recommend going over --- and replicating --- his excellent [tutorial on the GitHub API](https://tclavelle.github.io/blog/r_and_apis/). 
+
+- Jonathan Regenstein has a nice post on RStudio's *R Views* blog, "[GDP Data via API](https://rviews.rstudio.com/2018/09/12/gdp-via-api/)", which treads a similar path to my FRED example. Except he uses the Bureau of Economic Analysis (BEA) API.
+
+- Greg Reda's "[Web Scraping 201: finding the API](http://www.gregreda.com/2015/02/15/web-scraping-finding-the-api/)" covers much of the same ground as we have here. While he focuses on Python tools, I've found it to be a handy reference over the years. (You can also take a look at the earlier posts in Greg's webscraping series --- [Part 1](http://www.gregreda.com/2013/03/03/web-scraping-101-with-python/) and [Part 2](http://www.gregreda.com/2013/04/29/more-web-scraping-with-python/) --- to see some Python equivalents of the `rvest` tools that we've been using.) 
+
+- Ian London (another Python user) has a nice blog post on "[Discovering hidden APIs](https://ianlondon.github.io/blog/web-scraping-discovering-hidden-apis/)" from Airbnb.
