@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott
   affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: Lecture 12  #"20 February 2019"
+date: Lecture 12  #"21 February 2019"
 output: 
   html_document:
     theme: flatly
@@ -80,7 +80,9 @@ toc()
 ## 24.068 sec elapsed
 ```
 
-Next, were going to iterate over the function in *parallel*. Before continuing, it's worth pointing out that our abilty to go parallel hinges on the number of CPU cores available to us. The simplest way to obtain this information from R is with the `parallel::detectCores()` function:
+As expected, the iteration took about 12 seconds to run because of the enforced break (`Sys.sleep(2)`) after every sequential iteration. On the other hand, this means that we can easily speed things up by iterating in *parallel*.
+
+Before continuing, it's worth pointing out that our abilty to go parallel hinges on the number of CPU cores available to us. The simplest way to obtain this information from R is with the `parallel::detectCores()` function:
 
 
 ```r
@@ -123,7 +125,7 @@ all_equal(serial_ex, future_ex)
 ## [1] TRUE
 ```
 
-Those of you who prefer the `purrr::map()` family of functions for iteration and are feeling left out... don't worry. The [furrr package](https://davisvaughan.github.io/furrr/index.html) has you covered. Once again, the syntax for these parallel functions will be very little changed from their serial versions. We simply have to tell R that we want to run things in parallel with `plan(multiprocess)` and then call slightly amend our map call to <code>**future_**map_df**r**()</code>.^[In this particular case, the extra "r" at the end tells future to concatenate the data frames from each iteration by *rows*.]
+Those of you who prefer the `purrr::map()` family of functions for iteration and are feeling left out... don't worry. The [furrr package](https://davisvaughan.github.io/furrr/index.html) has you covered. Once again, the syntax for these parallel functions will be very little changed from their serial versions. We simply have to tell R that we want to run things in parallel with `plan(multiprocess)` and then slightly amend our map call to <code>**future_**map_df**r**()</code>.^[In this particular case, the extra "r" at the end tells future to concatenate the data frames from each iteration by *rows*.]
 
 
 ```r
@@ -191,11 +193,13 @@ toc()
 ## 18.891 sec elapsed
 ```
 
-So that took about 19 seconds on my system. Not a huge pain, but let's see if we can do better by switching to a parallel (multicore) implementation.
+So that took about 19 seconds on my system. Not a huge pain, but let's see if we can do better by switching to a parallel (multicore) implementation. For the record, though here is a screenshot showing that only core was being used during this serial version.
+
+![](pics/serial.png)
 
 ### Parallel implemention using the `future` ecosystem
 
-All of the parallel programming that we've been doing so far is built on top of [Henrik Bengtsson's](https://twitter.com/henrikbengtsson) amazing [**future package**](https://cran.r-project.org/web/packages/future/index.html). A "future" is basically a very flexible way of evaluating code and output. Among other things, this allows you to switch effortlessly between evaluating code in _serial_ or _asynchronously_ (i.e. in parallel). You simply have to set your resolution _plan_ --- "sequential", "multiprocess", "cluster", etc. --- and let future handle the implementation for you.
+All of the parallel programming that we've been doing so far is built on top of [Henrik Bengtsson's](https://twitter.com/henrikbengtsson) amazing [**future** package](https://cran.r-project.org/web/packages/future/index.html). A "future" is basically a very flexible way of evaluating code and output. Among other things, this allows you to switch effortlessly between evaluating code in _serial_ or _asynchronously_ (i.e. in parallel). You simply have to set your resolution _plan_ --- "sequential", "multiprocess", "cluster", etc. --- and let future handle the implementation for you.
 
 Here's Henrik [describing](https://cran.r-project.org/web/packages/future/vignettes/future-1-overview.html) the core idea in more technical terms:
 
@@ -203,7 +207,12 @@ Here's Henrik [describing](https://cran.r-project.org/web/packages/future/vignet
 
 As I've tried to emphasise, `future` is relatively new on the scene. It certainly is not the first or only way to implement parallel processes in R. However, I think that it provides a simple and unified framework that makes it the preeminent choice. What's more, the same commands that we use here will carry over very neatly to more complicated settings involving high-performance computing clusters. We'll experience this first hand when we get to the big data section of the course.
 
-You've probably also noted that keep referring to the "future ecosystem". This is because `future` provides the framework for other packages to implement parallel versions of their functions. The two that I am focusing on today are 1) the [**future.apply package**](https://cran.r-project.org/web/packages/future.apply/index.html) (also by Henrik), and the [**furrr package**](https://davisvaughan.github.io/furrr/index.html) (an implementation for purrr by [Davis Vaughan](https://twitter.com/dvaughan32)). In both cases, we start by setting the plan for resolving the future evaluation. I recommend `plan(multiprocess)`, which is a convenient way of telling the package to choose the optimal parallel strategy for our particular system. We then call our functions --- which involve minor modifications of their serial equivalents --- and let future magic take care of everything else.
+You've probably also noted that keep referring to the "future ecosystem". This is because `future` provides the framework for other packages to implement parallel versions of their functions. The two that I am focusing on today are
+
+1. the [**future.apply** package](https://cran.r-project.org/web/packages/future.apply/index.html) (also by Henrik), and
+2. the [**furrr** package](https://davisvaughan.github.io/furrr/index.html) (an implementation for purrr by [Davis Vaughan](https://twitter.com/dvaughan32)).
+
+In both cases, we start by setting the plan for resolving the future evaluation. I recommend `plan(multiprocess)`, which is a convenient way of telling the package to choose the optimal parallel strategy for our particular system. We then call our functions --- which involve minor modifications of their serial equivalents --- and let future magic take care of everything else.
 
 #### 1) future.apply
 
@@ -243,11 +252,13 @@ toc()
 ## 5.31 sec elapsed
 ```
 
-*<b>Note:</b> While significantly faster than the serial implementation, this time the parallel improvements don't scale linearly with the number of cores on my system (i.e. 12). The reason has to do with the overhead of running the functions. We'll cover overhead in more depth toward the bottom of this document.*
-
 ### Results
 
-Okay, let's plot the results from this bootstrapping exercise. Not that it matters --- all the results are the same --- but I'll use the `sim_furrr` object. As you can see, the estimated coefficient values are tightly clustered around our simulated mean of 2.
+As expected, we dramatically cut down on total computation time by going parallel. Note, however, that the parallel improvements for this example didn't scale linearly with the number of cores on my system (i.e. 12). The reason has to do with the *overhead* of running the parallel implementations --- a topic that I cover in more depth toward the bottom of this document. Again for the record, here is a screenshot showing that all of my cores were now being used during these parallel implementations.
+
+![](pics/parallel.png)
+
+While it wasn't exactly hard work, I think we deserve to see the results of our bootstrapping exercise in nice plot form. I'll use the `sim_furrr` results data frame for this, although it doesn't matter since they're all the same. As you can see, the estimated coefficient values are tightly clustered around our simulated mean of 2.
 
 
 ```r
@@ -445,7 +456,7 @@ A number of regression packages in R are optimised to run in parallel. For examp
 
 Graphical Processing Units, or GPUs, are specialised chipsets that were originaly built to perform the heavy lifting associated with rendering graphics. It's important to realise that not all computers have GPUs. Most laptops come with so-called [integrated graphics](https://www.laptopmag.com/articles/intel-hd-graphics-comparison), which basically means that the same processor is performing both regular and graphic-rendering tasks. However, gaming and other high-end laptops (and many desktop computers) include a dedicated GPU card. For example, the Dell Precision 5530 that I'm writing these lecture notes on has a [hybrid graphics](https://wiki.archlinux.org/index.php/hybrid_graphics) setup with two cards: 1) an integrated Intel GPU (UHD 630) and 2) a discrete NVIDIA Quadro P2000.
 
-So why am I telling you this? Well, it turns out that GPUs also excel at non-graphic computation tasks. The same processing power needed to perform the millions of parallel calculations for rendering 3-D games or architectural software, can be put to use on scientific problems. How exactly this was discovered involves an interesting backstory of supercomputers being built with Playstations. (Google it.) But the short version is that modern GPUs comprise *thousands* of cores that can be run in parallel. Or, as a colleague once memorably described it to me: "GPUs are basically just really, really good at doing linear algebra."
+So why am I telling you this? Well, it turns out that GPUs also excel at non-graphic computation tasks. The same processing power needed to perform the millions of parallel calculations for rendering 3-D games or architectural software, can be put to use on scientific problems. How exactly this was discovered involves an interesting backstory of supercomputers being built with Playstations. (Google it.) But the short version is that modern GPUs comprise *thousands* of cores that can be run in parallel. Or, as my colleague [David Evans](http://econevans.com/) once memorably described it to me: "GPUs are basically just really, really good at doing linear algebra."
 
 Still, that's about as much as I want to say about GPUs for now. Installing and maintaining a working GPU setup for scientific purposes is a much more complex task. (And, frankly, overkill for the vast majority of econometric or data science needs.) We may revisit the topic when we get to the machine learning section of the course in a few weeks.^[Advanced machine learning techniques like [deep learning](https://blog.rstudio.com/2018/09/12/getting-started-with-deep-learning-in-r/) are particularly performance-dependent on GPUs.] Thus, and while the general concepts carry over, everything that we've covered today is limited to CPUs.
 
