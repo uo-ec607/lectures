@@ -1,5 +1,6 @@
 # Data science for economists
 
+This is self-learning lecture notes from Xin. 
 This is a graduate economics seminar taught by [Grant McDermott](http://grantmcdermott.com) at the University of Oregon. 
 
 Please read the [syllabus](https://github.com/uo-ec607/syllabus/blob/master/syllabus.pdf) before you go through any of the lectures. This will detail software requirements and installation, and give you a better sense of the aims and scope of the course. I also have a "FAQ" section at the end that covers frequently asked questions (or, at least, potentially asked questions). Speaking of which, here follow answers to some questions that are more specifically related to this repo.
