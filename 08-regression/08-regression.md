@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott
   affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: Lecture 8  #"12 February 2019"
+date: Lecture 8  #"22 February 2019"
 output: 
   html_document:
     theme: flatly
@@ -18,7 +18,7 @@ output:
 
 
 
-Today's lecture is about the bread-and-butter tool of applied econometrics and data science: regression analysis. My goal is to simply give you a whirlwind tour of the key functions and commands. I'm going to assume that you already know all of the necessary theoretical background on  causal inference, asymptotics, etc. This lecture will *not* cover any of theoretical concepts or seek to justify a particular statistical model. Indeed, most of the models that we're going to run today are pretty silly. We also won't be able to cover some important topics. I'll only provide the briefest example of a Bayesian regression model and I won't touch times series analysis at. (Although, I will provide links for further reading at the bottom of this document.) These disclaimers aside, let's proceeed...
+Today's lecture is about the bread-and-butter tool of applied econometrics and data science: regression analysis. My goal is to give you a whirlwind tour of the key functions and packages. I'm going to assume that you already know all of the necessary theoretical background on causal inference, asymptotics, etc. This lecture will *not* cover any of theoretical concepts or seek to justify a particular statistical model. Indeed, most of the models that we're going to run today are pretty silly. We also won't be able to cover some important topics. For example, I'll only provide the briefest example of a Bayesian regression model and I won't touch times series analysis at all. (Although, I will provide links for further reading at the bottom of this document.) These disclaimers aside, let's proceeed...
 
 ## Software requirements
 
@@ -293,7 +293,7 @@ summary(ols2a)
 ## F-statistic: 77.18 on 1 and 56 DF,  p-value: 4.018e-12
 ```
 
-The overall model fit is much improved by the exclusion of this outlier, with R<sup>2</sup> increasing to 0.58. Still, we should be cautious about throwing out data. Another approach is to handle or account for outliers with statistical methods. WHich provides a nice segue to robust and clustered standard errors.
+The overall model fit is much improved by the exclusion of this outlier, with R<sup>2</sup> increasing to 0.58. Still, we should be cautious about throwing out data. Another approach is to handle or account for outliers with statistical methods. Which provides a nice segue to robust and clustered standard errors.
 
 ## Robust and clustered standard errors
 
