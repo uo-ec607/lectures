@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott
   affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: Lecture 12  #"21 February 2019"
+date: Lecture 12  #"22 February 2019"
 output: 
   html_document:
     theme: flatly
@@ -80,7 +80,7 @@ toc()
 ## 24.068 sec elapsed
 ```
 
-As expected, the iteration took about 12 seconds to run because of the enforced break (`Sys.sleep(2)`) after every sequential iteration. On the other hand, this means that we can easily speed things up by iterating in *parallel*.
+As expected, the iteration took about 24 seconds to run because of the enforced break after every sequential iteration (i.e. `Sys.sleep(2)`). On the other hand, this means that we can easily speed things up by iterating in *parallel*.
 
 Before continuing, it's worth pointing out that our abilty to go parallel hinges on the number of CPU cores available to us. The simplest way to obtain this information from R is with the `parallel::detectCores()` function:
 
@@ -193,7 +193,7 @@ toc()
 ## 18.891 sec elapsed
 ```
 
-So that took about 19 seconds on my system. Not a huge pain, but let's see if we can do better by switching to a parallel (multicore) implementation. For the record, though here is a screenshot showing that only core was being used during this serial version.
+So that took about 19 seconds on my system. Not a huge pain, but let's see if we can do better by switching to a parallel (multicore) implementation. For the record, though here is a screenshot of my system monitor, showing that only core was being used during this serial version.
 
 ![](pics/serial.png)
 
@@ -205,7 +205,7 @@ Here's Henrik [describing](https://cran.r-project.org/web/packages/future/vignet
 
 > In programming, a _future_ is an abstraction for a _value_ that may be available at some point in the future. The state of a future can either be unresolved or resolved. As soon as it is resolved, the value is available instantaneously. If the value is queried while the future is still unresolved, the current process is _blocked_ until the future is resolved. It is possible to check whether a future is resolved or not without blocking. Exactly how and when futures are resolved depends on what strategy is used to evaluate them. For instance, a future can be resolved using a sequential strategy, which means it is resolved in the current R session. Other strategies may be to resolve futures asynchronously, for instance, by evaluating expressions in parallel on the current machine or concurrently on a compute cluster
 
-As I've tried to emphasise, `future` is relatively new on the scene. It certainly is not the first or only way to implement parallel processes in R. However, I think that it provides a simple and unified framework that makes it the preeminent choice. What's more, the same commands that we use here will carry over very neatly to more complicated settings involving high-performance computing clusters. We'll experience this first hand when we get to the big data section of the course.
+As I've tried to emphasise, `future` is relatively new on the scene. It is certainly not the first or only way to implement parallel processes in R. However, I think that it provides a simple and unified framework that makes it the preeminent choice. What's more, the same commands that we use here will carry over very neatly to more complicated settings involving high-performance computing clusters. We'll experience this first hand when we get to the big data section of the course.
 
 You've probably also noted that keep referring to the "future ecosystem". This is because `future` provides the framework for other packages to implement parallel versions of their functions. The two that I am focusing on today are
 
@@ -415,7 +415,7 @@ While this all sounds great --- and I certainly recommend taking a look at MKL o
 
 Now, I want to emphasise that this conflict rarely matters in my own experience. I use optimised BLAS libraries and run explicit parallel calls all the time in my R scripts. Despite this, I have hardly ever run into a problem. Moreover, when these slowdowns have occured, I've found the effect to be relatively modest.^[The major cost appears to be the unnecessary duplication of objects in memory.] Still, I have read of cases where the effect can be quite dramatic (e.g. [here](https://stat.ethz.ch/pipermail/r-sig-hpc/2014-February/001846.html)) and so I wanted you to be aware of it all the same.
 
-Luckily, there's also an easy and relatively costless solution: Simply turn off BLAS multi-threading. It turns out this has a negligible impact on performance, since most of the gains from optimised BLAS are actually coming from improved math vectorisation, not multi-threading. (See [here post](https://blog.revolutionanalytics.com/2015/10/edge-cases-in-using-the-intel-mkl-and-parallel-programming.html) for a detailed discussion.) You can turn off BLAS multi-threading for the current R session via the `RhpcBLASctl::blas_set_num_threads()` function. For example, I sometimes include the following line at the top of an R script:
+Luckily, there's also an easy and relatively costless solution: Simply turn off BLAS multi-threading. It turns out this has a negligible impact on performance, since most of the gains from optimised BLAS are actually coming from improved math vectorisation, not multi-threading. (See [this post](https://blog.revolutionanalytics.com/2015/10/edge-cases-in-using-the-intel-mkl-and-parallel-programming.html) for a detailed discussion.) You can turn off BLAS multi-threading for the current R session via the `RhpcBLASctl::blas_set_num_threads()` function. For example, I sometimes include the following line at the top of an R script:
 
 ```r
 # blas_get_num_procs() ## If you want to find the existing number of BLAS threads
@@ -428,7 +428,7 @@ Since this is only in effect for the current R session, BLAS multithreading will
 
 ### When should I go parallel?
 
-The short answer is that you want to invoke the multicore option whenever you are faced with a so-called "[embarrassingly parallel](https://en.wikipedia.org/wiki/Embarrassingly_parallel)" problem. You can click on that link for a longer description, but the key idea is that these computational problems are embarrassingly easy to break up into smaller chunks. You likely have such a case if the potential code chunks are independent and do not need to communicate in any way. Classic examples include bootstrapping (since each regression or resampling iteration is drawn independently) and Markov chain Monte Carlo (i.e. [MCMC](https://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo)).
+The short answer is that you want to invoke the multicore option whenever you are faced with a so-called "[embarrassingly parallel](https://en.wikipedia.org/wiki/Embarrassingly_parallel)" problem. You can click on that link for a longer description, but the key idea is that these computational problems are easy to break up into smaller chunks. You likely have such a case if the potential code chunks are independent and do not need to communicate in any way. Classic examples include bootstrapping (since each regression or resampling iteration is drawn independently) and Markov chain Monte Carlo (i.e. [MCMC](https://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo)).
 
 Having said that, there are limitations to the gains that can be had from parallelization. Most obviously, there is the [computational overhead](https://en.wikipedia.org/wiki/Overhead_(computing)) associated with splitting up the problem, tracking the individual nodes, and then bringing everything back into a single result. This can be regarded as an issue largely affecting shorter and smaller computations. In other words, the overhead component of the problem tends to diminish in relative size as the overall computation time increases. 
 
@@ -442,7 +442,9 @@ If you look this question up online, you'll find that most people recommend usin
 
 ### Fault tolerance (error catching, caching, etc.)
 
-In my experience, the worst thing about parallel computation is that it is very sensitive to failure in any one of its nodes. An especially frustrating example is the tendency of parallel functions to ignore/hide critical errors up until the very end when they are supposed to return output. ("Oh, so you encountered a critical error several hours ago, but just decided to continue for fun anyway. Thanks!") Luckily, all of the defensive programming tools that we practiced in the previous programming lecture --- catching user errors and caching intermediate results --- carry over perfectly to their parallel equivalents. **Challenge:** Prove this to yourself by running a parallel version of the cached iteration that we [practiced last time](https://raw.githack.com/uo-ec607/lectures/master/11-funcs-adv/11-funcs-adv.html#caching_(memoization)). You will need to create the `cache_func()` function first, but then you should be able to run `furrr::future_map_dfr(1:10, cached_func)` and it will automatically return the previously cached results.
+In my experience, the worst thing about parallel computation is that it is very sensitive to failure in any one of its nodes. An especially frustrating example is the tendency of parallel functions to ignore/hide critical errors up until the very end when they are supposed to return output. ("Oh, so you encountered a critical error several hours ago, but just decided to continue for fun anyway? Thanks!") Luckily, all of the defensive programming tools that we practiced in the previous programming lecture --- catching user errors and caching intermediate results --- carry over perfectly to their parallel equivalents. 
+
+**Challenge:** Prove this to yourself by running a parallel version of the cached iteration that we [practiced last time](https://raw.githack.com/uo-ec607/lectures/master/11-funcs-adv/11-funcs-adv.html#caching_(memoization)). You will need to create the `cache_func()` function first, but then you should be able to run `furrr::future_map_dfr(1:10, cached_func)` and it will automatically return the previously cached results.
 
 ### Random number generation
 
