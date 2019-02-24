@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott
   affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: Lecture 12  #"22 February 2019"
+date: Lecture 12  #"23 February 2019"
 output: 
   html_document:
     theme: flatly
@@ -379,7 +379,7 @@ I've summarised the differences between the two approaches in the table below. T
 | ✓ Faster and more memory efficient than sockets. |  ×	Slower and more memory-intensive than forking. |
 | ✓️ Trivial to implement. | ×	Harder to implement. |
 | ×	Only available for Unix-based systems like Linux and Mac (not Windows). | ✓ Works on every operating system (including Windows). |
-| ×	Can occasionally cause problems when running through a GUI or IDE like RStudio.^[The reason is that shared GUI elements are being shared across child processes. (See the "GUI/embedded environments" section [here](https://stat.ethz.ch/R-manual/R-devel/library/parallel/html/mcfork.html).) To be fair, I've only ever run into a problem once or twice while running a forking process through RStudio. These have invariably involved very time-consuming functions that contain a bunch of nested while-loops. (I suspect the different worker processes began to move out of sync with one another.) However, I want you to be aware of it, so that you aren't caught by surprise if it ever happens to you. If it does, then the solution is simply to run your R script from the terminal using, say `$ Rscript -e myscript.R`.] | ✓ ️No risk of cross-contamination, since each process is run as a unique node. |
+| ×	Can occasionally cause problems when running through a GUI or IDE like RStudio.^[The reason is that shared GUI elements are being shared across child processes. (See the "GUI/embedded environments" section [here](https://stat.ethz.ch/R-manual/R-devel/library/parallel/html/mcfork.html).) To be fair, I've only ever run into a problem once or twice while running a forking process through RStudio. These have invariably involved very time-consuming functions that contain a bunch of nested while-loops. (I suspect the different worker processes began to move out of sync with one another.) However, I want you to be aware of it, so that you aren't caught by surprise if it ever happens to you. If it does, then the solution is simply to run your R script from the terminal using, say `$ Rscript myscript.R`.] | ✓ ️No risk of cross-contamination, since each process is run as a unique node. |
 
 
 ## Explicit vs implicit parallelization
