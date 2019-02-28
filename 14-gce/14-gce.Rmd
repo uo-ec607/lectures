@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott
   affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: Lecture 13  #"`r format(Sys.time(), '%d %B %Y')`"
+date: Lecture 14  #"`r format(Sys.time(), '%d %B %Y')`"
 output: 
   html_document:
     theme: flatly
@@ -66,17 +66,17 @@ Thus far in the course, we've spent quite a lot of time learning how to code eff
 ![](pics/moar-powa.jpg)
 </p>
 
-The easiest and cheapest way to access more computational power these days is through the cloud.^[While the cloud is not the only game in town, it offers a variety benefits that, in my view, make it a no-brainer for most people: economies of scale make it much cheaper; maintenance and depreciation worries are taken care of; access does not hinge on institutional affiliation or faculty status; cloud providers offer a host of other useful services; etc.] While there are a number of excellent cloud service providers, I'm going to focus on [**Google Cloud Platform**](https://console.cloud.google.com/) (**GCP**) because its the one I know best.^[Alternatives to GCP include [AWS](https://aws.amazon.com/) and [Digital Ocean](https://www.digitalocean.com/). RStudio recently launched its own cloud service too: [RStudio Cloud](https://rstudio.cloud/) is more narrowly focused, but is great for teaching and is (currently) free to use. The good news is that these are all great options and the general principles of cloud computing carry over very easily. So use whatever you feel comfortable with.] GCP offers a range of incredibly useful services --- some of which we'll cover in later lectures --- and the 12-month free trial makes an ideal entry point for learning about cloud computation. 
+The easiest and cheapest way to access more computational power these days is through the cloud.^[While the cloud is not the only game in town, it offers a variety benefits that, in my view, make it a no-brainer for most people: economies of scale make it much cheaper; maintenance and depreciation worries are taken care of; access does not hinge on institutional affiliation or faculty status; cloud providers offer a host of other useful services; etc.] While there are a number of excellent cloud service providers, I'm going to focus on [**Google Cloud Platform**](https://console.cloud.google.com/) (**GCP**).^[Alternatives to GCP include [AWS](https://aws.amazon.com/) and [Digital Ocean](https://www.digitalocean.com/). RStudio recently launched its own cloud service too: [RStudio Cloud](https://rstudio.cloud/) is more narrowly focused, but is great for teaching and is (currently) free to use. The good news is that these are all great options and the general principles of cloud computing carry over very easily. So use whatever you feel comfortable with.] GCP offers a range of incredibly useful services --- some of which we'll cover in later lectures --- and the 12-month free trial makes an ideal entry point for learning about cloud computation. 
 
-The particular GCP product that we're going to use today is [**Google Compute Engine**](https://cloud.google.com/compute/) (**GCE**). GCE is a service that allows users to launch so-called *virtual machines* in the cloud (i.e. on Google's data centers) on demand. There's a lot more that I can say --- and will say later --- about the benefits can bring to us. But right now, you may well be asking yourself: "What is a virtual machine and why do I need one anyway?" 
+The particular GCP product that we're going to use today is [**Google Compute Engine**](https://cloud.google.com/compute/) (**GCE**). GCE is a service that allows users to launch so-called *virtual machines* on demand in the cloud (i.e. on Google's data centers). There's a lot more that I can say --- and will say later --- about the benefits can bring to us. But right now, you may well be asking yourself: "What is a virtual machine and why do I need one anyway?" 
 
 So, let's take a step back and quickly clear up some terminology. 
 
 ### Virtual machines (VMs)
 
-In the simplest sense, a [virtual machine (VM)](https://en.wikipedia.org/wiki/Virtual_machine) is just an emulation of a computer running inside another (bigger) computer. It can potentially perform all and more of the operations that your physical laptop or desktop does. It might even share many of the same properties, from operating system to internal architecture. The key advantage of a VM from our perspective is that very powerful machines can be "spun up" in the cloud almost effortlessly and then deployed to tackle jobs that are beyond the capabilities of your local computer. Got a big dataset that requires too much memory to analyse on your old laptop? Load it into a high-powered VM. Got some code that takes an age to run? Fire up a VM and let it chug away without consuming any local resources. Or, better yet, write code that [runs in parallel](https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html) and then spin up a VM with lots of cores to get the analysis done in a fraction of the time. All you need is a working internet connection and a web browser.
+A [virtual machine (VM)](https://en.wikipedia.org/wiki/Virtual_machine) is just an emulation of a computer running inside another (bigger) computer. It can potentially perform all and more of the operations that your physical laptop or desktop does. It might even share many of the same properties, from operating system to internal architecture. The key advantage of a VM from our perspective is that very powerful machines can be "spun up" in the cloud almost effortlessly and then deployed to tackle jobs that are beyond the capabilities of your local computer. Got a big dataset that requires too much memory to analyse on your old laptop? Load it into a high-powered VM. Got some code that takes an age to run? Fire up a VM and let it chug away without consuming any local resources. Or, better yet, write code that [runs in parallel](https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html) and then spin up a VM with lots of cores to get the analysis done in a fraction of the time. All you need is a working internet connection and a web browser.
 
-Now, with that background knowledge in mind, GCE delivers high-performance, rapidly scalable VMs in the cloud. A new VM can be deployed or shut down within seconds, while existing VMs can easily be ramped up or down depending on a project's needs (cores added, RAM added, etc.) In my experience, most people would be hard-pressed to spent more than a couple of dollars a month using GCE once their free trial is over. This is especially true for researchers or data scientists who only need to fire up a VM, or VM cluster, occasionally for the most computationally-intensive part of a project, and then can easily switch it off when it is not being used.
+Now, with that background knowledge in mind, GCE delivers high-performance, rapidly scalable VMs. A new VM can be deployed or shut down within seconds, while existing VMs can easily be ramped up or down depending on a project's needs (cores added, RAM added, etc.) In my experience, most people would be hard-pressed to spent more than a couple of dollars a month using GCE once their free trial is over. This is especially true for researchers or data scientists who only need to fire up a VM, or VM cluster, occasionally for the most computationally-intensive part of a project, and then can easily switch it off when it is not being used.
 
 **Disclaimer:** While I very much stand by the above paragraph, it is ultimately *your* responsibility to keep track of your billing and utilisation rates. Take a look at [GCP's Pricing Calculator](https://cloud.google.com/products/calculator/) to see how much you can expect to be charged for a particular machine and level of usage. You can even [set a budget and create usage alerts](https://support.google.com/cloud/answer/6293540?hl=en) if you want to be extra cautious.
 
@@ -352,9 +352,9 @@ At the risk of gross simplification, there are two approaches to "brute forcing"
 1. Use a single powerful machine that has a lot of memory and cores.
 2. Use cluster of machines that, together, have a lot of memory and cores.
 
-Thus far we've only explored approach no. 1. For this next example, I want to show you how to implement approach no. 2. In particular, I want to show you how to spin up a simple cluster of VMs that you can interact with *directly* from your local RStudio instance via the [future.apply package](https://github.com/HenrikBengtsson/future.apply). Yes, you read that correctly. 
+Thus far we've only explored approach no. 1. For this next example, I want to show you how to implement approach no. 2. In particular, I want to show you how to spin up a simple cluster of VMs that you can interact with directly from your *local* RStudio instance. Yes, you read that correctly. 
 
-I'll demonstrate the effectiveness of this approach by calling a very slightly modified version of the `slow_func()` function that we saw in previous lectures. Essentially, this function is just meant to emulate some computationally-intensive process by imposing an enforced wait at the end of every run (here: five seconds). It is also a function that is embarrassingly easy to speed up in parallel.
+I'll demonstrate the effectiveness of this approach by calling a very slightly modified version of the `slow_func()` function that we saw in previous lectures. Essentially, this function is just meant to emulate some computationally-intensive process by imposing an enforced wait at the end of every run (here: five seconds). It is also a classic case of of a function that can be sped up in parallel.
 
 ```{r slow_func}
 ## Emulate slow function
@@ -407,9 +407,9 @@ As Mark [describes](https://cloudyr.github.io/googleComputeEngineR/articles/mass
 vms <- lapply(vms, gce_ssh_setup)
 ```
 
-Finally, we are ready run functions on our remote cluster. For this particular example, I'm going to loop `slow_func()` over the vector `1:15`. Which means that the loop would take (15*5=) **75 seconds** to run sequentially.
+Finally, we are ready run functions on our remote cluster. For this particular example, I'm going to loop `slow_func()` over the vector `1:15`. As a reference point, this means that the loop would take (15*5=) **75 seconds** to run sequentially.
 
-To run the parallelised version on our simple 3-CPU cluster, I'm going to use the `future.apply` package that I covered in the [lecture on parallel programming](https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html). As you can see, all I need to do is specify `plan(cluster)` and provide the location of the workers (here: the `vms` cluster that we just created). Everything else stays *exactly* the same, as if we were running the code on our local computer. It Just Works.<sup>TM</sup>
+To run the parallelised version on our simple 3-CPU cluster, I'm going to use the amazing [future.apply package](https://github.com/HenrikBengtsson/future.apply) that we covered in the [lecture on parallel programming](https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html). As you can see, all I need to do is specify `plan(cluster)` and provide the location of the workers (here: the `vms` cluster that we just created). Everything else stays *exactly* the same, as if we were running the code on our local computer. It Just Works.<sup>TM</sup>
 
 
 ```{r future_cluster}
@@ -423,7 +423,7 @@ future_cluster <- future_lapply(1:15, slow_func)
 toc()
 ```
 
-And just look at that: **A three times speedup!** Of course, we could also have implemented this using `furrr:map()` instead of `future.apply::future_apply()`. (Feel free to prove this for yourself.) The key takeaways are that we were able to create a remote cluster on GCE with a few lines of code, and then interact with it directly from our local computer using future magic. Pretty awesome.
+And just look at that: **A three times speedup!** Of course, we could also have implemented this using `furrr:map()` instead of `future.apply::future_apply()`. (Feel free to prove this for yourself.) The key takeaways are that we were able to create a remote cluster on GCE with a few lines of code, and then interact with it directly from our local computer using future magic. Pretty sweet if you ask me.
 
 Following good practice, let's stop and then delete this cluster of VMs so that we aren't billed for them.
 
@@ -439,7 +439,7 @@ The `googleComputeEngineR` package offers a lot more functionality than I can co
 
 #### More complex clusters
 
-In the example above, each VM only had 1 CPU each. A natural next step is think about spinning up a cluster of VMs that have *multiple* cores each. For example, why not spin up three machines with eight cores each to get a (3*8=) 24 times speed improvement? This is certainly possible and there are a number of computing frameworks designed to implement this kind of "nested" parallelism. However, truth be told, I have had some trouble getting a GCE cluster of this type to work as expected. You can follow [this GitHub issue](https://github.com/cloudyr/googleComputeEngineR/issues/129) for more information, but I'll post a satisfactory solution as soon as I have one.
+In the simple cluster example above, each VM only had 1 CPU. A natural next step is think about spinning up a cluster of VMs that have *multiple* cores. For example, why not spin up three machines with eight cores each to get a (3*8=) 24 times speed improvement? This is certainly possible and there are a number of computing frameworks designed to implement this kind of "nested" parallelism. However, truth be told, I have had some trouble getting a GCE cluster of this type to work as expected. You can follow [this GitHub issue](https://github.com/cloudyr/googleComputeEngineR/issues/129) for more information, but I'll post a satisfactory solution as soon as I have one.
 
 #### GPUs and deep learning
 
