@@ -44,7 +44,6 @@ Depends on a lot things and I'm too time constrained right now... but I'm thinki
 12. Parallel programming \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html)\]
 13. Docker \[[rOpenSci tutorial](http://ropenscilabs.github.io/r-docker-tutorial/)\]
 14. Cloud computing with Google Compute Engine \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/14-gce/14-gce.html)\]
-13. Docker \[[rOpenSci tutorial](http://ropenscilabs.github.io/r-docker-tutorial/)\]
 15. High performance computing (UO Talapas cluster)
 16. Databases: SQL(ite) and BigQuery
 17. Spark
