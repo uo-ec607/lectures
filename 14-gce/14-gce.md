@@ -54,7 +54,7 @@ pacman::p_load(future.apply, tictoc, usethis)
 Thus far in the course, we've spent quite a lot of time learning how to code efficiently. We've covered topics like [functional programming](https://raw.githack.com/uo-ec607/lectures/master/10-funcs-intro/10-funcs-intro.html#functional_programming), [results caching](https://raw.githack.com/uo-ec607/lectures/master/11-funcs-adv/11-funcs-adv.html#caching_(memoization)), [parallel programming](https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html), and so on. All of these tools will help you make the most of the computational resources at your disposal. However, there's a limit to how far they can take you. At some point, datasets become too big, simulations become too complex, and regressions take too damn long to run to run on your laptop. The only solution beyond this point is ~~more power~~ MOAR POWA.
 
 <p align="center">
-![](http://www.quickmeme.com/img/36/367e3387d0f203c889fe37d4e7df6d25cdbea9d75ee3bb04ec3ec89da713ebf4.jpg)
+![](pics/moar-powa.jpg)
 </p>
 
 The easiest and cheapest way to access more computational power these days is through the cloud.^[While the cloud is not the only game in town, it offers a variety benefits that, in my view, make it a no-brainer for most people: economies of scale make it much cheaper; maintenance and depreciation worries are taken care of; access does not hinge on institutional affiliation or faculty status; cloud providers offer a host of other useful services; etc.] While there are a number of excellent cloud service providers, I'm going to focus on [**Google Cloud Platform**](https://console.cloud.google.com/) (**GCP**) because its the one I know best.^[Alternatives to GCP include [AWS](https://aws.amazon.com/) and [Digital Ocean](https://www.digitalocean.com/). RStudio recently launched its own cloud service too: [RStudio Cloud](https://rstudio.cloud/) is more narrowly focused, but is great for teaching and is (currently) free to use. The good news is that these are all great options and the general principles of cloud computing carry over very easily. So use whatever you feel comfortable with.] GCP offers a range of incredibly useful services --- some of which we'll cover in later lectures --- and the 12-month free trial makes an ideal entry point for learning about cloud computation. 
@@ -341,53 +341,7 @@ vm <-
 ```
 
 ```
-## 2019-02-26 15:26:27> Creating template VM
-```
-
-```
-## 2019-02-26 15:26:27> Run gce_startup_logs(your-instance, 'cloud-config') to track startup script logs
-```
-
-```
-## 2019-02-26 15:26:30> Checking operation...PENDING
-```
-
-```
-## 2019-02-26 15:26:50> Operation complete in 8 secs
-```
-
-```
-## 2019-02-26 15:26:50> ## VM Template: 'rstudio' running at http://35.197.98.144
-```
-
-```
-## 2019-02-26 15:26:50> On first boot, wait a few minutes for docker container to install before logging in.
-```
-
-```
-## ==Google Compute Engine Instance==
-## 
-## Name:                new-vm
-## Created:             2019-02-26 15:26:29
-## Machine Type:        n1-standard-4
-## Status:              RUNNING
-## Zone:                us-west1-a
-## External IP:         35.197.98.144
-## Disks: 
-##         deviceName       type       mode boot autoDelete
-## 1 new-vm-boot-disk PERSISTENT READ_WRITE TRUE       TRUE
-## 
-## Metadata:  
-##                      key            value
-## 2               template          rstudio
-## 3 google-logging-enabled             true
-## 4           rstudio_user            oprah
-## 5             rstudio_pw        oprah1234
-## 6      gcer_docker_image rocker/tidyverse
-```
-
-```
-## 2019-02-26 15:26:51> VM running
+## 2019-02-27 22:00:06> VM running
 ```
 
 ```r
@@ -399,11 +353,11 @@ vm
 ## ==Google Compute Engine Instance==
 ## 
 ## Name:                new-vm
-## Created:             2019-02-26 15:26:29
+## Created:             2019-02-27 21:58:13
 ## Machine Type:        n1-standard-4
 ## Status:              RUNNING
 ## Zone:                us-west1-a
-## External IP:         35.197.98.144
+## External IP:         35.199.183.221
 ## Disks: 
 ##         deviceName       type       mode boot autoDelete
 ## 1 new-vm-boot-disk PERSISTENT READ_WRITE TRUE       TRUE
@@ -430,7 +384,7 @@ gce_vm_stop(vm) ## Stop the VM
 
 ```
 ## ==Zone Operation stop :  PENDING
-## Started:  2019-02-26 15:37:41
+## Started:  2019-02-27 22:00:06
 ```
 
 ```r
@@ -440,7 +394,7 @@ gce_vm_delete(vm) ## Delete the VM (optional)
 
 ```
 ## ==Zone Operation delete :  PENDING
-## Started:  2019-02-26 15:37:41
+## Started:  2019-02-27 22:00:07
 ```
 
 ### Simple cluster example
@@ -491,51 +445,51 @@ jobs <-
 ```
 
 ```
-## 2019-02-27 15:13:06> Creating template VM
+## 2019-02-27 22:00:08> Creating template VM
 ```
 
 ```
-## 2019-02-27 15:13:06> Run gce_startup_logs(your-instance, 'cloud-config') to track startup script logs
+## 2019-02-27 22:00:08> Run gce_startup_logs(your-instance, 'cloud-config') to track startup script logs
 ```
 
 ```
-## 2019-02-27 15:13:08> Returning the VM startup job, not the VM instance.
+## 2019-02-27 22:00:10> Returning the VM startup job, not the VM instance.
 ```
 
 ```
-## 2019-02-27 15:13:09> VM running
+## 2019-02-27 22:00:11> VM running
 ```
 
 ```
-## 2019-02-27 15:13:10> Creating template VM
+## 2019-02-27 22:00:11> Creating template VM
 ```
 
 ```
-## 2019-02-27 15:13:10> Run gce_startup_logs(your-instance, 'cloud-config') to track startup script logs
+## 2019-02-27 22:00:11> Run gce_startup_logs(your-instance, 'cloud-config') to track startup script logs
 ```
 
 ```
-## 2019-02-27 15:13:12> Returning the VM startup job, not the VM instance.
+## 2019-02-27 22:00:13> Returning the VM startup job, not the VM instance.
 ```
 
 ```
-## 2019-02-27 15:13:13> VM running
+## 2019-02-27 22:00:14> VM running
 ```
 
 ```
-## 2019-02-27 15:13:13> Creating template VM
+## 2019-02-27 22:00:15> Creating template VM
 ```
 
 ```
-## 2019-02-27 15:13:13> Run gce_startup_logs(your-instance, 'cloud-config') to track startup script logs
+## 2019-02-27 22:00:15> Run gce_startup_logs(your-instance, 'cloud-config') to track startup script logs
 ```
 
 ```
-## 2019-02-27 15:13:15> Returning the VM startup job, not the VM instance.
+## 2019-02-27 22:00:17> Returning the VM startup job, not the VM instance.
 ```
 
 ```
-## 2019-02-27 15:13:16> VM running
+## 2019-02-27 22:00:18> VM running
 ```
 
 ```r
@@ -545,38 +499,42 @@ lapply(jobs, gce_wait)
 ```
 
 ```
-## 2019-02-27 15:13:16> Operation running...
+## 2019-02-27 22:00:18> Operation running...
 ```
 
 ```
-## 2019-02-27 15:13:22> Operation complete in 11 secs
+## 2019-02-27 22:00:21> Operation running...
 ```
 
 ```
-## 2019-02-27 15:13:26> Operation complete in 9 secs
+## 2019-02-27 22:00:27> Operation complete in 12 secs
 ```
 
 ```
-## 2019-02-27 15:13:29> Operation complete in 9 secs
+## 2019-02-27 22:00:31> Operation complete in 8 secs
+```
+
+```
+## 2019-02-27 22:00:34> Operation complete in 9 secs
 ```
 
 ```
 ## [[1]]
 ## ==Zone Operation insert :  DONE
-## Started:  2019-02-27 15:13:08
-## Ended: 2019-02-27 15:13:19 
-## Operation complete in 11 secs 
+## Started:  2019-02-27 22:00:10
+## Ended: 2019-02-27 22:00:22 
+## Operation complete in 12 secs 
 ## 
 ## [[2]]
 ## ==Zone Operation insert :  DONE
-## Started:  2019-02-27 15:13:12
-## Ended: 2019-02-27 15:13:21 
-## Operation complete in 9 secs 
+## Started:  2019-02-27 22:00:13
+## Ended: 2019-02-27 22:00:21 
+## Operation complete in 8 secs 
 ## 
 ## [[3]]
 ## ==Zone Operation insert :  DONE
-## Started:  2019-02-27 15:13:15
-## Ended: 2019-02-27 15:13:24 
+## Started:  2019-02-27 22:00:17
+## Ended: 2019-02-27 22:00:26 
 ## Operation complete in 9 secs
 ```
 
@@ -589,15 +547,15 @@ vms <- lapply(vm_names, gce_vm)
 ```
 
 ```
-## 2019-02-27 15:13:30> VM running
+## 2019-02-27 22:00:35> VM running
 ```
 
 ```
-## 2019-02-27 15:13:31> VM running
+## 2019-02-27 22:00:36> VM running
 ```
 
 ```
-## 2019-02-27 15:13:33> VM running
+## 2019-02-27 22:00:38> VM running
 ```
 
 As Mark [describes](https://cloudyr.github.io/googleComputeEngineR/articles/massive-parallel.html), it's safest to setup SSH keys separately for multiple instances. We could do this from the shell --- as per our first manual example above --- but a convenient way to do this from R is with `gce_ssh_setup()`.
@@ -609,15 +567,15 @@ vms <- lapply(vms, gce_ssh_setup)
 ```
 
 ```
-## 2019-02-27 15:13:40> Public SSH key uploaded to instance
+## 2019-02-27 22:00:46> Public SSH key uploaded to instance
 ```
 
 ```
-## 2019-02-27 15:13:51> Public SSH key uploaded to instance
+## 2019-02-27 22:00:53> Public SSH key uploaded to instance
 ```
 
 ```
-## 2019-02-27 15:13:59> Public SSH key uploaded to instance
+## 2019-02-27 22:01:01> Public SSH key uploaded to instance
 ```
 
 Finally, we are ready run functions on our remote cluster. For this particular example, I'm going to loop `slow_func()` over the vector `1:15`. Which means that the loop would take (15*5=) **75 seconds** to run sequentially.
@@ -634,15 +592,15 @@ plan(cluster, workers = as.cluster(vms))
 ```
 
 ```
-## 2019-02-27 15:19:09> External IP for instance vm1 : 35.203.156.251
+## 2019-02-27 22:01:01> External IP for instance vm1 : 35.203.130.189
 ```
 
 ```
-## 2019-02-27 15:19:24> External IP for instance vm2 : 35.199.154.75
+## 2019-02-27 22:01:47> External IP for instance vm2 : 35.185.232.136
 ```
 
 ```
-## 2019-02-27 15:19:39> External IP for instance vm3 : 35.203.151.149
+## 2019-02-27 22:02:03> External IP for instance vm3 : 35.197.107.161
 ```
 
 ```r
@@ -652,7 +610,7 @@ toc()
 ```
 
 ```
-## 25.958 sec elapsed
+## 25.987 sec elapsed
 ```
 
 And just look at that: **A three times speedup!** Of course, we could also have implemented this using `furrr:map()` instead of `future.apply::future_apply()`. (Feel free to prove this for yourself.) The key takeaways are that we were able to create a remote cluster on GCE with a few lines of code, and then interact with it directly from our local computer using future magic. Pretty awesome.
@@ -668,13 +626,13 @@ lapply(vms, gce_vm_stop)
 ```
 ## [[1]]
 ## ==Zone Operation stop :  PENDING
-## Started:  2019-02-27 15:21:35
+## Started:  2019-02-27 22:02:46
 ## [[2]]
 ## ==Zone Operation stop :  PENDING
-## Started:  2019-02-27 15:21:36
+## Started:  2019-02-27 22:02:47
 ## [[3]]
 ## ==Zone Operation stop :  PENDING
-## Started:  2019-02-27 15:21:36
+## Started:  2019-02-27 22:02:48
 ```
 
 ```r
@@ -684,13 +642,13 @@ lapply(vms, gce_vm_delete)
 ```
 ## [[1]]
 ## ==Zone Operation delete :  PENDING
-## Started:  2019-02-27 15:21:37
+## Started:  2019-02-27 22:02:48
 ## [[2]]
 ## ==Zone Operation delete :  PENDING
-## Started:  2019-02-27 15:21:39
+## Started:  2019-02-27 22:02:49
 ## [[3]]
 ## ==Zone Operation delete :  PENDING
-## Started:  2019-02-27 15:21:40
+## Started:  2019-02-27 22:02:49
 ```
 
 ### Other topics
