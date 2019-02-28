@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott
   affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: Lecture 13  #"`r format(Sys.time(), '%d %B %Y')`"
+date: Lecture 13  #"27 February 2019"
 output: 
   html_document:
     theme: flatly
@@ -16,17 +16,7 @@ output:
     keep_md: true
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
-## Next hook based on this SO answer: https://stackoverflow.com/a/39025054
-knitr::knit_hooks$set(
-  prompt = function(before, options, envir) {
-    options(
-      prompt = if (options$engine %in% c('sh','bash')) '$ ' else 'R> ',
-      continue = if (options$engine %in% c('sh','bash')) '$ ' else '+ '
-      )
-    })
-```
+
 
 This is the first of several lectures on cloud and high-performance computing. Today you'll learn how to run virtual machines (VMs) in the cloud with Google Compute Engine. In addition, I’ll show you how to install RStudio Server on your VMs, so that you can perform your analysis in exactly the same user environment as you’re used to, but now with the full power of cloud-based computation at your disposal. Trust me, it will be awesome.
 
@@ -46,7 +36,8 @@ These next instructions are important, so please read carefully.
 
 I don't think it's strictly necessary, but I'm going to install the development version of `googleComputeEngineR`. I'm also going to hold off loading it until I've enabled auto-authentication later in the lecture. Don't worry about that now. Just run the following code chunk to get started.
 
-```{r, cache=F, message=F}
+
+```r
 ## Load/install packages
 if (!require("pacman")) install.packages("pacman")
 pacman::p_install_gh("cloudyr/googleComputeEngineR") ## Use the development version of googleComputeEngineR
@@ -96,9 +87,10 @@ Both approaches have their merits, but I think it's important to start with the 
 ### Confirm that you have installed `gcloud` correctly
 
 You'll need to choose an operating system (OS) for your VM, as well as its designated zone. Let's quickly look at the available options, since this will also be a good time to confirm that you correctly installed the [`gcloud` command-line interface](https://cloud.google.com/sdk/). Open up your shell and enter (without the `$` command prompt):
-```{bash eval=F, prompt=T}
-gcloud compute images list
-gcloud compute zones list
+
+```bash
+$ gcloud compute images list
+$ gcloud compute zones list
 ```
 
 > **Tip:** If you get an error message with the above commands, try re-running them with [`sudo`](https://en.wikipedia.org/wiki/Sudo) at the beginning. If this works for you, then you will need to append "sudo" to the other shell commands in this lecture.
@@ -110,8 +102,9 @@ You'll know that everything is working properly if these these commands return a
 The key shell command for creating your VM is **`gcloud compute instances create`**.
 You can specify the type of machine that you want and a range of other options by using the [appropriate flags](https://cloud.google.com/sdk/gcloud/reference/compute/instances/create). Let me first show you an example of the command and then walk through my (somewhat arbitrary) choices in more detail. Note that I am going to call my VM instance "my-vm", but you can call it whatever you want.
 
-```{bash, eval=F, prompt=T}
-gcloud compute instances create my-vm --image-family ubuntu-1804-lts --image-project ubuntu-os-cloud  --machine-type n1-standard-8 --zone us-west1-a
+
+```bash
+$ gcloud compute instances create my-vm --image-family ubuntu-1804-lts --image-project ubuntu-os-cloud  --machine-type n1-standard-8 --zone us-west1-a
 ```
 
 Here is a breakdown of the command and a quick explanation of my choices.
@@ -131,8 +124,9 @@ my-vm  us-west1-a  n1-standard-8               10.138.0.2   104.198.7.157  RUNNI
 
 Write down the External IP address, as we'll need it for running RStudio Server later.^[This IP address is "ephemeral" in the sense that it is only uniquely assigned to your VM while it is running continuously. This shouldn't create any significant problems, but if you prefer a static (i.e. non-ephemeral) IP address that is always going to be associated with a particular VM instance, then this is easily done. See [here](https://cloud.google.com/compute/docs/configure-instance-ip-addresses#assign_new_instance).] On a similar note, RStudio Server will run on port 8787 of the External IP, which we need to enable via the GCE firewall.^[While I don't cover it in this tutorial, anyone looking to install and run [Jupyter Notebooks](http://jupyter.org/) on their VM could simply amend the above command to Jupyter's default port of 8888.]
 
-```{bash, eval=F, prompt=T}
-gcloud compute firewall-rules create allow-my-vm --allow=tcp:8787
+
+```bash
+$ gcloud compute firewall-rules create allow-my-vm --allow=tcp:8787
 ```
 
 Congratulations: Set-up for your GCE VM instance is complete.
@@ -143,15 +137,17 @@ Easy, wasn't it?
 
 The next step is to log in via **SSH** (i.e. [**S**ecure **Sh**ell](https://en.wikipedia.org/wiki/Secure_Shell)). This is a simple matter of providing your VM's name and zone. (If you forget to specify the zone or haven't assigned a default, you'll be prompted.)
 
-```{bash, eval=F, prompt=T}
-gcloud compute ssh my-vm --zone us-west1-a
+
+```bash
+$ gcloud compute ssh my-vm --zone us-west1-a
 ```
 
 **IMPORTANT:** Upon logging into a GCE instance via SSH for the first time, you will be prompted to generate a key passphrase. Needless to say, you should *make a note of this passphrase* for future long-ins. Your passphrase will be required for all future remote log-ins to Google Cloud projects via `gcloud` and SSH from your local computer. This includes additional VMs that you create under the same project account.
 
 Passphrase successfully created and entered, you should now be connected to your VM via SSH. That is, you should see something like the following, where "grant" and "my-vm" will obviously be replaced by your own username and VM hostname.
 
-```{bash, eval=F}
+
+```bash
 grant@my-vm:~$
 ```
 
@@ -163,7 +159,8 @@ Next, we'll install R.
 
 You can find the full set of instructions and recommendations for installing R on Ubuntu [here](https://cran.r-project.org/bin/linux/ubuntu/README). Or you can just follow my choices below, which should cover everything that you need. Note that you should be running these commands directly in the shell that is connected to your VM.
 
-```{bash, eval=F}
+
+```bash
 grant@my-vm:~$ sudo sh -c 'echo "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/" >> /etc/apt/sources.list'
 grant@my-vm:~$ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
 grant@my-vm:~$ sudo apt update && sudo apt upgrade ## Hit "y" when prompted
@@ -175,11 +172,13 @@ grant@my-vm:~$ sudo apt install r-base r-base-dev ## Again, hit "y" when prompte
 In addition to the above, a number of important R packages require external Linux libraries that must be installed separately on your VM first. For Ubuntu, we can install these packages with the following commands. Again, hit "y" whenever you are prompted to confirm installation.
 
 1) For the "[tidyverse](http://tidyverse.org/)" suite of packages:
-```{bash, eval=F}
+
+```bash
 grant@my-vm:~$ sudo apt install libcurl4-openssl-dev libssl-dev libxml2-dev
 ```
 2) For the main spatial libraries (sf, sp, rgeos, etc.):
-```{bash, eval=F}
+
+```bash
 grant@my-vm:~$ sudo add-apt-repository -y ppa:ubuntugis/ubuntugis-unstable
 grant@my-vm:~$ sudo apt update && apt upgrade
 grant@my-vm:~$ sudo apt install libgeos-dev libproj-dev libgdal-dev libudunits2-dev
@@ -193,7 +192,8 @@ R is now ready to go on our VMs directly from the shell.^[Enter "R" into your sh
 
 You should check what the latest available version of Rstudio Server is [here](https://www.rstudio.com/products/rstudio/download-server/), but as of the time of writing the following is what you need:
 
-```{bash, eval=F}
+
+```bash
 grant@my-vm:~$ sudo apt install gdebi-core
 grant@my-vm:~$ sudo wget https://download2.rstudio.org/rstudio-server-1.1.463-amd64.deb
 grant@my-vm:~$ sudo gdebi rstudio-server-1.1.463-amd64.deb ## Hit "y" when prompted
@@ -203,13 +203,15 @@ grant@my-vm:~$ sudo gdebi rstudio-server-1.1.463-amd64.deb ## Hit "y" when promp
 
 Now that you're connected to your VM, you might notice that you never actually logged in as a specific user. (More discussion [here](https://groups.google.com/forum/#!msg/gce-discussion/DYfDOndtRTU/u_3kzNPqDAAJ).) This doesn't matter for most applications, but RStudio Server specifically requires a username/password combination. So we must first create a new user and give them a password before continuing. For example, we can create a new user called "elvis" like so:
 
-```{bash, eval=F}
+
+```bash
 grant@my-vm:~$ sudo adduser elvis
 ```
 
 You will then be prompted to specify a user password (and confirm various bits of biographical information which you can ignore). An optional, but recommended step is to add your new user to the `sudo` group. We'll cover this in more depth later in the tutorial, but being part of the `sudo` group will allow Elvis to temporarily invoke superuser priviledges when needed.
 
-```{bash, eval=F}
+
+```bash
 grant@my-vm:~$ sudo usermod -aG sudo elvis
 # grant@my-vm:~$ su - elvis ## Log in as elvis on SSH (optional)
 ```
@@ -220,8 +222,9 @@ grant@my-vm:~$ sudo usermod -aG sudo elvis
 
 You are now ready to open up RStudio Server by navigating to the default 8787 port of your VM's External IP address. (You remember writing this down earlier, right?) If you forgot to write the IP address down, don't worry: You can find it by logging into your Google Cloud console and looking at your [VM instances](https://console.cloud.google.com/compute/instances), or by opening up a new shell window (**not** the one currently connected to your VM) and typing:
 
-```{bash, eval=F, prompt=T}
-gcloud compute instances describe my-vm | grep 'natIP'
+
+```bash
+$ gcloud compute instances describe my-vm | grep 'natIP'
 ```
 
 Either way, once you have the address, open up your preferred web browser and navigate to:
@@ -241,9 +244,10 @@ And we're all set. Here is RStudio Server running on my laptop via Google Chrome
 ### Stopping and (re)starting your VM instance
 
 Stopping and (re)starting your VM instance is a highly advisable, since you don't want to get billed for times when you aren't using it. In a new shell window (not the one currently synced to your VM instance):
-```{bash, eval=F, prompt=T}
-gcloud compute instances stop my-vm
-gcloud compute instances start my-vm
+
+```bash
+$ gcloud compute instances stop my-vm
+$ gcloud compute instances start my-vm
 ```
 
 ### Summary
@@ -251,22 +255,26 @@ gcloud compute instances start my-vm
 Contratulations! You now have a fully-integrated VM running R and RStudio whenever you need it. Assuming that you have gone through the initial setup, here's the **tl;dr** summary of how to deploy an existing VM with RStudio Server:
 
 1) Start up your VM instance.
-  ```{bash, eval=F, prompt=T}
-  gcloud compute instances start YOUR-VM-INSTANCE-NAME
+  
+  ```bash
+  $ gcloud compute instances start YOUR-VM-INSTANCE-NAME
   ```
 2) Take note of the External IP address for step 3 below.
-  ```{bash, eval=F, prompt=T}
-  gcloud compute instances describe YOUR-VM-INSTANCE-NAME | grep 'natIP'
+  
+  ```bash
+  $ gcloud compute instances describe YOUR-VM-INSTANCE-NAME | grep 'natIP'
   ```
 3) Open up a web browser and navigate to RStudio Server on your VM. Enter your username and password as needed. http://EXTERNAL-IP-ADDRESS:8787
 
 4) Log-in via SSH. (Optional)
-  ```{bash, eval=F, prompt=T}
-  gcloud compute ssh YOUR-VM-INSTANCE-NAME
+  
+  ```bash
+  $ gcloud compute ssh YOUR-VM-INSTANCE-NAME
   ```
 5) Stop your VM.
-  ```{bash, eval=F, prompt=T}
-  gcloud compute instances stop YOUR-VM-INSTANCE-NAME
+  
+  ```bash
+  $ gcloud compute instances stop YOUR-VM-INSTANCE-NAME
   ```
 And, remember, if you really want to avoid the command line, then you can always go through the [GCE browser console](https://console.cloud.google.com/home/dashboard).
 
@@ -298,7 +306,8 @@ GCE_DEFAULT_ZONE="your-preferred-zone-here" ## E.g. us-west1-a
 
 Now, auto-authentication will automatically be enabled when you load `googleComputeEngineR` in R.
 
-```{r, cache=F, message=F}
+
+```r
 library(googleComputeEngineR)
 ```
 ```
@@ -317,7 +326,8 @@ The workhorse `googleComputeEngineR` function to remember is **`gce_vm()`**. Thi
 The below code chunk should hopefully be pretty self-explantory. Like we saw earlier, we can name our VM pretty much whatever we want and can choose from a list of predefined machine types. The key point that I want to draw your attention to here is the fact that we're using the `template = "rstudio"` option to automatically install [this Docker image](https://hub.docker.com/r/rocker/rstudio) on our VM. This means that the initial spin-up will take slightly longer (since the Docker image needs to be downloaded and installed), but RStudio Server will immediately be ready to go once that's done. You could also add your own Docker images to the `gve_vm()` call so that your entire environment is ready to go when the VM is instantiated (see [here](https://cloudyr.github.io/googleComputeEngineR/articles/docker.html). Finally, note that the `gce_vm` function provides convenient options for specifying a username and password that can be used to log into this RStudio instance.
 
 
-```{r vm}
+
+```r
 # library(googleComputeEngineR) ## Already loaded
 
 ## Create a new VM
@@ -328,9 +338,83 @@ vm <-
     template = "rstudio", ## Use the rocker/rstudio docker image
     username = "oprah", password = "oprah1234" ## Username and password for RStudio Server login
     )
+```
 
+```
+## 2019-02-26 15:26:27> Creating template VM
+```
+
+```
+## 2019-02-26 15:26:27> Run gce_startup_logs(your-instance, 'cloud-config') to track startup script logs
+```
+
+```
+## 2019-02-26 15:26:30> Checking operation...PENDING
+```
+
+```
+## 2019-02-26 15:26:50> Operation complete in 8 secs
+```
+
+```
+## 2019-02-26 15:26:50> ## VM Template: 'rstudio' running at http://35.197.98.144
+```
+
+```
+## 2019-02-26 15:26:50> On first boot, wait a few minutes for docker container to install before logging in.
+```
+
+```
+## ==Google Compute Engine Instance==
+## 
+## Name:                new-vm
+## Created:             2019-02-26 15:26:29
+## Machine Type:        n1-standard-4
+## Status:              RUNNING
+## Zone:                us-west1-a
+## External IP:         35.197.98.144
+## Disks: 
+##         deviceName       type       mode boot autoDelete
+## 1 new-vm-boot-disk PERSISTENT READ_WRITE TRUE       TRUE
+## 
+## Metadata:  
+##                      key            value
+## 2               template          rstudio
+## 3 google-logging-enabled             true
+## 4           rstudio_user            oprah
+## 5             rstudio_pw        oprah1234
+## 6      gcer_docker_image rocker/tidyverse
+```
+
+```
+## 2019-02-26 15:26:51> VM running
+```
+
+```r
 ## Check the VM data (including default settings that we didn't specify)
 vm
+```
+
+```
+## ==Google Compute Engine Instance==
+## 
+## Name:                new-vm
+## Created:             2019-02-26 15:26:29
+## Machine Type:        n1-standard-4
+## Status:              RUNNING
+## Zone:                us-west1-a
+## External IP:         35.197.98.144
+## Disks: 
+##         deviceName       type       mode boot autoDelete
+## 1 new-vm-boot-disk PERSISTENT READ_WRITE TRUE       TRUE
+## 
+## Metadata:  
+##                      key            value
+## 2               template          rstudio
+## 3 google-logging-enabled             true
+## 4           rstudio_user            oprah
+## 5             rstudio_pw        oprah1234
+## 6      gcer_docker_image rocker/tidyverse
 ```
 
 And that's really all you need. Just to prove that it worked, here's a screenshot of "Oprah" running RStudio Server on this VM.
@@ -339,10 +423,24 @@ And that's really all you need. Just to prove that it worked, here's a screensho
 
 It's also very easy to stop, (re)start, and delete a VM instance.
 
-```{r vm_delete}
+
+```r
 gce_vm_stop(vm) ## Stop the VM
+```
+
+```
+## ==Zone Operation stop :  PENDING
+## Started:  2019-02-26 15:37:41
+```
+
+```r
 # gce_vm_start(vm) ## If you wanted to restart
 gce_vm_delete(vm) ## Delete the VM (optional)
+```
+
+```
+## ==Zone Operation delete :  PENDING
+## Started:  2019-02-26 15:37:41
 ```
 
 ### Simple cluster example
@@ -356,7 +454,8 @@ Thus far we've only explored approach no. 1. For this next example, I want to sh
 
 I'll demonstrate the effectiveness of this approach by calling a very slightly modified version of the `slow_func()` function that we saw in previous lectures. Essentially, this function is just meant to emulate some computationally-intensive process by imposing an enforced wait at the end of every run (here: five seconds). It is also a function that is embarrassingly easy to speed up in parallel.
 
-```{r slow_func}
+
+```r
 ## Emulate slow function
 slow_func <- 
   function(x = 1) {
@@ -371,7 +470,8 @@ For this simple cluster example, I'm going to spin up three "g1-small" VM instan
 
 First, we create our three VMs with a simple `lapply()` loop. Note that I am installing the (smaller) [rocker/r-base](https://hub.docker.com/r/rocker/r-base/) Docker image on all three VMs, so that they are ready to run base R commands. Also note the additional `wait = FALSE` option in our `gce_vm()` call, which simply tells the function not to wait until the VMs have been created before returning. This won't make much of a difference here, but is helpful when you are spinning up lots of VMs simultaneously. We can then pair this with the `gce_wait()` convenience function, which will let us know when the job is completed.
 
-```{r jobs}
+
+```r
 ## Names of the VMs on the cluster
 vm_names <- c("vm1","vm2","vm3")
 
@@ -388,23 +488,136 @@ jobs <-
         wait = FALSE ## Don't wait for each job to finish until start the next 
         )
       })
+```
+
+```
+## 2019-02-27 15:13:06> Creating template VM
+```
+
+```
+## 2019-02-27 15:13:06> Run gce_startup_logs(your-instance, 'cloud-config') to track startup script logs
+```
+
+```
+## 2019-02-27 15:13:08> Returning the VM startup job, not the VM instance.
+```
+
+```
+## 2019-02-27 15:13:09> VM running
+```
+
+```
+## 2019-02-27 15:13:10> Creating template VM
+```
+
+```
+## 2019-02-27 15:13:10> Run gce_startup_logs(your-instance, 'cloud-config') to track startup script logs
+```
+
+```
+## 2019-02-27 15:13:12> Returning the VM startup job, not the VM instance.
+```
+
+```
+## 2019-02-27 15:13:13> VM running
+```
+
+```
+## 2019-02-27 15:13:13> Creating template VM
+```
+
+```
+## 2019-02-27 15:13:13> Run gce_startup_logs(your-instance, 'cloud-config') to track startup script logs
+```
+
+```
+## 2019-02-27 15:13:15> Returning the VM startup job, not the VM instance.
+```
+
+```
+## 2019-02-27 15:13:16> VM running
+```
+
+```r
 # jobs
 ## Wait for all the jobs to complete (i.e. the VMs are ready)
 lapply(jobs, gce_wait)
 ```
 
+```
+## 2019-02-27 15:13:16> Operation running...
+```
+
+```
+## 2019-02-27 15:13:22> Operation complete in 11 secs
+```
+
+```
+## 2019-02-27 15:13:26> Operation complete in 9 secs
+```
+
+```
+## 2019-02-27 15:13:29> Operation complete in 9 secs
+```
+
+```
+## [[1]]
+## ==Zone Operation insert :  DONE
+## Started:  2019-02-27 15:13:08
+## Ended: 2019-02-27 15:13:19 
+## Operation complete in 11 secs 
+## 
+## [[2]]
+## ==Zone Operation insert :  DONE
+## Started:  2019-02-27 15:13:12
+## Ended: 2019-02-27 15:13:21 
+## Operation complete in 9 secs 
+## 
+## [[3]]
+## ==Zone Operation insert :  DONE
+## Started:  2019-02-27 15:13:15
+## Ended: 2019-02-27 15:13:24 
+## Operation complete in 9 secs
+```
+
 Once that's done, we can collect the (now-running) VM objects.
 
-```{r vms, dependson=jobs}
+
+```r
 ## Get the VM objects
 vms <- lapply(vm_names, gce_vm)
 ```
 
+```
+## 2019-02-27 15:13:30> VM running
+```
+
+```
+## 2019-02-27 15:13:31> VM running
+```
+
+```
+## 2019-02-27 15:13:33> VM running
+```
+
 As Mark [describes](https://cloudyr.github.io/googleComputeEngineR/articles/massive-parallel.html), it's safest to setup SSH keys separately for multiple instances. We could do this from the shell --- as per our first manual example above --- but a convenient way to do this from R is with `gce_ssh_setup()`.
 
-```{r vms_ssh, dependson=vms}
+
+```r
 ## Set up SSH for the VMs
 vms <- lapply(vms, gce_ssh_setup)
+```
+
+```
+## 2019-02-27 15:13:40> Public SSH key uploaded to instance
+```
+
+```
+## 2019-02-27 15:13:51> Public SSH key uploaded to instance
+```
+
+```
+## 2019-02-27 15:13:59> Public SSH key uploaded to instance
 ```
 
 Finally, we are ready run functions on our remote cluster. For this particular example, I'm going to loop `slow_func()` over the vector `1:15`. Which means that the loop would take (15*5=) **75 seconds** to run sequentially.
@@ -412,25 +625,72 @@ Finally, we are ready run functions on our remote cluster. For this particular e
 To run the parallelised version on our simple 3-CPU cluster, I'm going to use the `future.apply` package that I covered in the [lecture on parallel programming](https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html). As you can see, all I need to do is specify `plan(cluster)` and provide the location of the workers (here: the `vms` cluster that we just created). Everything else stays *exactly* the same, as if we were running the code on our local computer. It Just Works.<sup>TM</sup>
 
 
-```{r future_cluster}
+
+```r
 # library(tictoc) ## For timing. Already loaded.
 # library(future.apply) ## Already loaded.
 
 plan(cluster, workers = as.cluster(vms)) 
+```
 
+```
+## 2019-02-27 15:19:09> External IP for instance vm1 : 35.203.156.251
+```
+
+```
+## 2019-02-27 15:19:24> External IP for instance vm2 : 35.199.154.75
+```
+
+```
+## 2019-02-27 15:19:39> External IP for instance vm3 : 35.203.151.149
+```
+
+```r
 tic()
 future_cluster <- future_lapply(1:15, slow_func)
 toc()
+```
+
+```
+## 25.958 sec elapsed
 ```
 
 And just look at that: **A three times speedup!** Of course, we could also have implemented this using `furrr:map()` instead of `future.apply::future_apply()`. (Feel free to prove this for yourself.) The key takeaways are that we were able to create a remote cluster on GCE with a few lines of code, and then interact with it directly from our local computer using future magic. Pretty awesome.
 
 Following good practice, let's stop and then delete this cluster of VMs so that we aren't billed for them.
 
-```{r delete_cluster}
+
+```r
 ## shutdown instances when finished
 lapply(vms, gce_vm_stop)
+```
+
+```
+## [[1]]
+## ==Zone Operation stop :  PENDING
+## Started:  2019-02-27 15:21:35
+## [[2]]
+## ==Zone Operation stop :  PENDING
+## Started:  2019-02-27 15:21:36
+## [[3]]
+## ==Zone Operation stop :  PENDING
+## Started:  2019-02-27 15:21:36
+```
+
+```r
 lapply(vms, gce_vm_delete)
+```
+
+```
+## [[1]]
+## ==Zone Operation delete :  PENDING
+## Started:  2019-02-27 15:21:37
+## [[2]]
+## ==Zone Operation delete :  PENDING
+## Started:  2019-02-27 15:21:39
+## [[3]]
+## ==Zone Operation delete :  PENDING
+## Started:  2019-02-27 15:21:40
 ```
 
 ### Other topics
@@ -463,8 +723,9 @@ This is arguably the simplest option and works well for copying files from your 
 
 Manually transferring files or folders across systems is done fairly easily using the command line. Note that this next code chunk would be run in a new shell instance (i.e. not the one connected to your VM via SSH).
 
-```{bash, eval=F, prompt=T}
-gcloud compute scp my-vm:/home/elvis/Papers/MyAwesomePaper/amazingresults.csv ~/local-directory/amazingresults-copy.csv --zone us-west1-a
+
+```bash
+$ gcloud compute scp my-vm:/home/elvis/Papers/MyAwesomePaper/amazingresults.csv ~/local-directory/amazingresults-copy.csv --zone us-west1-a
 ```
 It's also possible to transfer files using your regular desktop file browser thanks to SCP. (On Linux and Mac OSX at least. Windows users first need to install a program call WinSCP.) See [here](https://cloud.google.com/compute/docs/instances/transfer-files).
 
@@ -491,30 +752,36 @@ The reason has to do with user permissions; since Elvis is not an automatic "sup
 #### Share files across users
 
 Let's say that Elvis is working on a joint project together with a colleague called Priscilla. (Although, some say they are more than colleagues...) They have decided to keep all of their shared analysis in a new directory called `TeamProject`, located within Elvis's home directory. Start by creating this new shared directory:
-```{bash, eval=F, prompt=T}
-grant@my-vm:~$ sudo mkdir /home/elvis/TeamProject
+
+```bash
+$ grant@my-vm:~$ sudo mkdir /home/elvis/TeamProject
 ```
 Presumably, a real-life Priscilla would already have a user profile at this point. But let's quickly create one too for our fictional version.
-```{bash, eval=F, prompt=T}
-grant@my-vm:~$ sudo adduser priscilla
+
+```bash
+$ grant@my-vm:~$ sudo adduser priscilla
 ```
 Next, we create a user group. I'm going to call it "projectgrp", but as you wish. The group setup is useful because once we assign a set of permissions to a group, any members of that group will automatically receive those permissions too. With that in mind, we should add Elvis and Priscilla to "projectgrp" once it is created:
-```{bash, eval=F}
+
+```bash
 grant@my-vm:~$ sudo groupadd projectgrp
 grant@my-vm:~$ sudo gpasswd -a elvis projectgrp
 grant@my-vm:~$ sudo gpasswd -a priscilla projectgrp
 ```
 Now we can set the necessary ownership permissions to the shared `TeamProject` directory. First, we use the `chown` command to assign ownership of this directory to a default user (in this case, "elvis") and the other "projectgrp" members. Second, we use the `chmod 770` command to grant them all read, write and execute access to the directory. In both both cases, we'll use the `-R` flag to recursively set permissions to all children directories of `TeamProject/` too.
-```{bash, eval=F}
+
+```bash
 grant@my-vm:~$ sudo chown -R elvis:projectgrp /home/elvis/TeamProject
 grant@my-vm:~$ sudo chmod -R 770 /home/elvis/TeamProject
 ```
 The next two commands are optional, but advised if Priscilla is only going to be working on this VM through the `TeamProject` directory. First, you can change her primary group ID to "projectgrp", so that all the files she creates are automatically assigned to that group:
-```{bash, eval=F}
+
+```bash
 grant@my-vm:~$ sudo usermod -g projectgrp priscilla
 ```
 Second, you can add a symbolic link to the `TeamProject` directory in Priscilla's home directory, so that it is immediately visible when she logs into RStudio Server. (Making sure that you switch to her account before running this command):
-```{bash, eval=F}
+
+```bash
 grant@my-vm:~$ sudo su - priscilla
 priscilla@my-vm:~$ ln -s /home/elvis/TeamProject /home/priscilla/TeamProject
 priscilla@my-vm:~$ exit
@@ -531,12 +798,14 @@ The first thing to do is determine where your exisiting system-wide R library is
 This will likely return several library paths. The system-wide library path should hopefully be pretty obvious (e.g. no usernames) and will probably be one of `/usr/lib/R/library` or `/usr/local/lib/R/site-library`. In my case, it was the former, but adjust as necessary.
 
 Once we have determined the location of our system-wide library directory, we can recursively assign read, write and execute permissions to it for all members of our group. Here, I'm actually using the parent directory (i.e. `.../R` rather than `.../R/library`), but it should work regardless. Go back to your shell and type:
-```{bash, eval=F}
+
+```bash
 grant@my-vm:~$ sudo chown elvis:projectgrp -R /usr/lib/R/ ## Get location by typing ".libPaths()" in your R console
 grant@my-vm:~$ sudo chmod -R 775 R/
 ```
 Once that's done, tell R to make this shared library path the default for your user, by adding it to their `~/.Renviron` file:
-```{bash, eval=F}
+
+```bash
 grant@my-vm:~$ su - elvis
 elvis@my-vm:~$ sudo echo 'export PATH="R_LIBS_USER=/usr/lib/R/library"' >> ~/.Renviron
 ```
@@ -548,7 +817,8 @@ The R packages that Elvis installs should now be immediately available to Prisci
 
 As we discussed in the previous lecture on [parallel programming](https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html), R ships with its own BLAS/LAPACK libraries by default. While this default works well enough, you can get *significant* speedups by switching to more optimized libraries such as the [Intel Math Kernel Library (MKL)](https://software.intel.com/en-us/mkl) or [OpenBLAS](https://www.openblas.net/). The former is slightly faster according to the benchmark tests that I've seen, but was historically harder to install. However, thanks to [Dirk Eddelbuettel](https://github.com/eddelbuettel/mkl4deb), this is now very easily done:
 
-```{bash, eval=F}
+
+```bash
 grant@my-vm:~$ git clone https://github.com/eddelbuettel/mkl4deb.git
 grant@my-vm:~$ sudo bash mkl4deb/script.sh
 ```
@@ -563,13 +833,15 @@ BLAS/LAPACK: /opt/intel/compilers_and_libraries_2018.2.199/linux/mkl/lib/intel64
 
 ### Other tips
 Remember to keep your VM system up to date (just like you would a normal computer).
-```{bash, eval=F}
+
+```bash
 grant@my-vm:~$ sudo apt update
 grant@my-vm:~$ sudo apt upgrade
 ```
 You can also update the `gcloud` utility components on your local computer (i.e. not your VM) with the following command:
-```{bash, eval=F, prompt=T}
-gcloud components update
+
+```bash
+$ gcloud components update
 ```
 
 
