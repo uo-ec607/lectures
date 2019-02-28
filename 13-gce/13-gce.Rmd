@@ -44,7 +44,7 @@ These next instructions are important, so please read carefully.
 - **New:** `googleComputeEngineR`, `usethis`
 - **Already used:** `future.apply`, `tictoc`
 
-I don't think it's strictly necessary, but I'm going to install the development version of `googleComputeEngineR`. I'm also going to hold off loading it right now, because I first want to set up auto-authentication later in the lecture.
+I don't think it's strictly necessary, but I'm going to install the development version of `googleComputeEngineR`. I'm also going to hold off loading it until I've enabled auto-authentication later in the lecture.
 
 ```{r, cache=F, message=F}
 ## Load/install packages
@@ -353,40 +353,18 @@ gce_vm_stop(vm) ## Stop the VM
 gce_vm_delete(vm) ## Delete the VM (optional)
 ```
 
-### Cluster example
+### Simple cluster example
 
-For this cluster example, we're going to use the same `reg_func()` bootstrapping function that we saw in the previous lecture --- just very slightly amended since our VMs will only set up to use base R functions (i.e. no tidyverse).^[I mean, we could easily use the `rocker/tidyverse` Docker image template, but that will take longer to install for this simple example.]
+There's a lot more that you could do with the previous example. For instance, you could add your own Docker images to the `gve_vm()` call so that your entire environment is ready to go when the VM is instantiated (see [here](https://cloudyr.github.io/googleComputeEngineR/articles/docker.html).) For this second example, however, I want to show you how to spin up a simple cluster of VMs that you can interact with *directly* from your local RStudio instance via the [future.apply package](https://github.com/HenrikBengtsson/future.apply). Yes, you read that correctly. 
 
-```{r reg_func}
-## Set seed (for reproducibility)
-set.seed(1234)
-# Set sample size
-n <- 1e6
+For this simple cluster example, I'm going to spin up three "g1-small" VM instances. These are preemptible VMs that can use 1 CPU each during short bursts. So, not powerful machines by any stretch of the imagination. But they are very cheap to run and multiple g1-small instances be combined very easily to make a pretty powerful machine. You typically see these preemptible VMs used for quick, on-the-fly computation and then discarded.
 
-## Generate a large data frame of fake data for a regression
-our_data <- data.frame(x = rnorm(n), e = rnorm(n))
-our_data$y = 3 + 2*our_data$x + our_data$e
-
-## Function that draws a sample of 10,000 observations, runs a regression and extracts
-## the coefficient value on the x variable (should be around 2).
-reg_func <- 
-  function(i) {
-  ## Sample the data
-  sample_data <- our_data[sample.int(n = n, size = 1e4, replace = T), ]
-  ## Run the regression on our sampled data and extract the extract the x coefficient.
-  x_coef <- lm(y ~ x, data = sample_data)$coef[2]
-  ## Return value
-  return(data.frame(x_coef = x_coef))
-  }
-```
-
-
-```{r jobs, eval=F}
-## Names for your cluster
+```{r jobs}
+## Names of the VMs on the cluster
 vm_names <- c("vm1","vm2","vm3")
 
-## Create the cluster using default template for r-base
-## This next chunk function jobs that are creating VMs in background
+## Create the cluster using the default template for rocker/r-base
+## The this lapply loop starts the job of creating each VM in background
 jobs <- 
   lapply(
     vm_names, 
@@ -394,51 +372,75 @@ jobs <-
       gce_vm(
         name = x,
         template = "r-base",
-        predefined_type = "n1-highcpu-8",
-        wait = FALSE
+        predefined_type = "g1-small", ## Cheap preemptible machine
+        wait = FALSE ## Don't wait for each job to finish until start the next 
         )
       })
 # jobs
-## Wait for all the jobs to complete and VMs are ready
+## Wait for all the jobs to complete (i.e. the VMs are ready)
 lapply(jobs, gce_wait)
 ```
 
 
-```{r vms1, eval=F}
+```{r vms, dependson=jobs}
 ## Get the VM objects
 vms <- lapply(vm_names, gce_vm)
 ```
 
 
-```{r vms2, eval=F}
+```{r vms_ssh, dependson=vms}
 ## Set up SSH for the VMs
 vms <- lapply(vms, gce_ssh_setup)
-vms
 ```
 
 
+For this cluster example, we're going to use the same `reg_func()` bootstrapping function that we saw in the previous lecture --- just very slightly amended since our VMs will only set up to use base R functions (i.e. no tidyverse).^[I mean, we could easily use the `rocker/tidyverse` Docker image template, but that will take longer to install for this simple example.]
 
-```{r future, eval = F}
+```{r slow_func}
+## Emulate slow function
+slow_func <- 
+  function(x = 1) {
+    x_sq <- x^2 
+    df <- data.frame(value=x, value_squared=x_sq)
+    Sys.sleep(5)
+    return(df)
+    }
+```
+
+```{r future_cluster}
 # library(tictoc) ## For timing. Already loaded.
 # library(future.apply) ## Already loaded.
 
-plan(list( 
-  tweak(cluster, workers = as.cluster(vms)),  # Use a cluster of computers locally 
-  tweak(multiprocess)  # Use all the CPUs on remote machines 
-  )) 
-
-set.seed(123) ## Optional for replication
+plan(cluster, workers = as.cluster(vms)) 
 
 tic()
-future_sim <- future_lapply(1:10000, reg_func) %>% bind_rows()
+future_cluster <- future_lapply(1:15, slow_func)
 toc()
 ```
 
+And look at that: A three times speedup! 
 
+```{r delete_cluster}
+## shutdown instances when finished
+lapply(vms, gce_vm_stop)
+lapply(vms, gce_vm_delete)
+```
+
+### Other topics
+
+The `googleComputeEngineR` package offers a lot more functionality than I can cover here. However, I wanted to briefly discuss two additional topics in particular.
+
+#### More complex clusters
+
+In the example above, each VM only had 1 CPU each. A natural next step is think about spinning up a cluster of VMs that have *multiple* cores each. For example, why not spin up three machines with eight cores each to get a (3*8=) 24 times speed improvement? This is certainly possible and there are a number of computing frameworks designed to implement this kind of "nested" parallelism. However, truth be told, I have had some trouble getting a GCE cluster of this type to work as expected. You can follow [this GitHub issue](https://github.com/cloudyr/googleComputeEngineR/issues/129) for more information, but I'll post a satisfactory solution as soon as I have one.
+
+#### GPUs and deep learning
+
+On the other hand, GCE already offer support for running GPU instances, which are production-ready for training hardcore deep learning models. In my view, this is one of the most exciting developments of cloud-based computation services, as it puts the infrastructure necessary for advanced machine learning in the hands of just about everyone. See Mark's [introductory GPU tutorial](https://cloudyr.github.io/googleComputeEngineR/articles/gpu.html) on the `googleComputeEngineR` website. **Note:** These GPU instances are not available during the GCP free trial period, although users can always upgrade their account if they want.
 
 ## BONUS: Getting the most out of your GCE + RStudio Server setup
 
-You have already successfully installed all the programs and components that you'll need for high-performance statistical analysis and computing. Your VM will be ready to go with RStudio Server whenever you want it. However, there are still a few more tweaks and tips that we can use to really improve our user experience and reduce complications when interacting with these VMs from our local computers. The rest of this tutorial covers my main tips and recommendations.
+You have already completed all of the steps that you'll need for high-performance computing in the cloud. Any VM that you create on GCE using the above methods will be ready to go with RStudio Server whenever you want it. However, there are still a few more tweaks and tips that we can use to really improve our user experience and reduce complications when interacting with these VMs from our local computers. The rest of this tutorial covers my main tips and recommendations.
 
 ### Transfer and sync files between your VM and your local computer
 
@@ -566,8 +568,9 @@ gcloud components update
 
 ## Further resources
 
-I recommend consulting the official documentation if you ever get stuck. There's loads of useful advice and extra tips for getting the most out of your VM setup, including ways to integrate your system with other products within the Google Cloud platform like BigQuery, Storage, etc. etc.
+I recommend consulting the official documentation if you ever get stuck. There's loads of useful advice and extra tips for getting the most out of your VM setup, including ways to integrate your system with other products within GCP like BigQuery, Storage, etc. etc. Here are some links worth bookmarking.
 
 - GCE documentation ([link](https://cloud.google.com/compute/docs/))
 - RStudio Server documentation ([link](https://support.rstudio.com/hc/en-us/articles/234653607-Getting-Started-with-RStudio-Server))
 - Linux Journey guide ([link](https://linuxjourney.com/))
+- `googleComputeEngineR` package website ([link](https://cloudyr.github.io/googleComputeEngineR/index.html))
