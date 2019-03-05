@@ -1633,10 +1633,7 @@ University of Oregon | EC 607<br><h4 class="date"><em>Lecture 14</em></h4>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="co">## Load/install packages</span></a>
 <a class="sourceLine" id="cb1-2" title="2"><span class="cf">if</span> (<span class="op">!</span><span class="kw">require</span>(<span class="st">&quot;pacman&quot;</span>)) <span class="kw">install.packages</span>(<span class="st">&quot;pacman&quot;</span>)</a>
 <a class="sourceLine" id="cb1-3" title="3">pacman<span class="op">::</span><span class="kw">p_install_gh</span>(<span class="st">&quot;cloudyr/googleComputeEngineR&quot;</span>) <span class="co">## Use the development version of googleComputeEngineR</span></a>
-<a class="sourceLine" id="cb1-4" title="4">pacman<span class="op">::</span><span class="kw">p_load</span>(future.apply, tictoc, usethis)</a>
-<a class="sourceLine" id="cb1-5" title="5"></a>
-<a class="sourceLine" id="cb1-6" title="6"><span class="co"># ## Set future::plan() resolution strategy</span></a>
-<a class="sourceLine" id="cb1-7" title="7"><span class="co"># plan(multiprocess)</span></a></code></pre></div>
+<a class="sourceLine" id="cb1-4" title="4">pacman<span class="op">::</span><span class="kw">p_load</span>(future.apply, tictoc, usethis)</a></code></pre></div>
 </div>
 </div>
 <div id="introduction" class="section level2">
@@ -1821,8 +1818,8 @@ my-vm  us-west1-a  n1-standard-8               10.138.0.2   104.198.7.157  RUNNI
 ## Set default zone to &#39;your-preferred-zone-here&#39;</code></pre>
 <p>Nice. With that taken care of, let’s look at some examples to see how easy <code>googleComputeEngineR</code> is to work with.</p>
 </div>
-<div id="single-instance-example" class="section level3">
-<h3>Single instance example</h3>
+<div id="single-vm-example" class="section level3">
+<h3>Single VM example</h3>
 <p>The workhorse <code>googleComputeEngineR</code> function to remember is <strong><code>gce_vm()</code></strong>. This will fetch (i.e. start) an instance if it already exists, and create a new instance from scratch if it doesn’t. Let’s practice an example of the latter, since it will demonstrate the package’s integration of Docker images via the <a href="https://www.rocker-project.org/">Rocker Project</a>.<a href="#fn9" class="footnote-ref" id="fnref9"><sup>9</sup></a></p>
 <p>The below code chunk should hopefully be pretty self-explantory. Like we saw earlier, we can name our VM pretty much whatever we want and can choose from a list of predefined machine types. The key point that I want to draw your attention to here is the fact that we’re using the <code>template = &quot;rstudio&quot;</code> option to automatically install <a href="https://hub.docker.com/r/rocker/rstudio">this Docker image</a> on our VM. This means that the initial spin-up will take slightly longer (since the Docker image needs to be downloaded and installed), but RStudio Server will immediately be ready to go once that’s done. You could also add your own Docker images to the <code>gve_vm()</code> call so that your entire environment is ready to go when the VM is instantiated (see <a href="https://cloudyr.github.io/googleComputeEngineR/articles/docker.html">here</a>. Finally, note that the <code>gce_vm</code> function provides convenient options for specifying a username and password that can be used to log into this RStudio instance.</p>
 <div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" title="1"><span class="co"># library(googleComputeEngineR) ## Already loaded</span></a>
@@ -1989,17 +1986,92 @@ my-vm  us-west1-a  n1-standard-8               10.138.0.2   104.198.7.157  RUNNI
 ## ==Zone Operation delete :  PENDING
 ## Started:  2019-02-27 22:02:49</code></pre>
 </div>
+<div id="cluster-example-with-multiple-nested-parallelization" class="section level3">
+<h3>Cluster example with multiple (nested) parallelization</h3>
+<p>In the simple cluster example above, each VM only had 1 CPU. A natural next step is think about spinning up a cluster of VMs that have <em>multiple</em> cores. For example, why not spin up three machines with eight cores each to get a (3*8=) 24 times speed improvement? This is fairly easily done, although it requires a few tweaks to our simple cluster example. We start off in exactly the same way, though. The only change in the below code chunk is that now I’m going to spin up “n1-highcpu-8” VM instances that have eight cores each. (Note: I’ve switched off the return output and messages from this next code chunk, since it’s mostly repetition of what we’ve already seen above.)</p>
+<div class="sourceCode" id="cb70"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb70-1" title="1"><span class="co">## Names of the VMs on the cluster</span></a>
+<a class="sourceLine" id="cb70-2" title="2">vm_names &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;testvm1&quot;</span>,<span class="st">&quot;testvm2&quot;</span>,<span class="st">&quot;testvm3&quot;</span>)</a>
+<a class="sourceLine" id="cb70-3" title="3"></a>
+<a class="sourceLine" id="cb70-4" title="4"><span class="co">## Create the cluster using the default template for rocker/r-base</span></a>
+<a class="sourceLine" id="cb70-5" title="5"><span class="co">## The this lapply loop starts the job of creating each VM in background</span></a>
+<a class="sourceLine" id="cb70-6" title="6">jobs &lt;-<span class="st"> </span></a>
+<a class="sourceLine" id="cb70-7" title="7"><span class="st">  </span><span class="kw">lapply</span>(</a>
+<a class="sourceLine" id="cb70-8" title="8">    vm_names, </a>
+<a class="sourceLine" id="cb70-9" title="9">    <span class="cf">function</span>(x) {</a>
+<a class="sourceLine" id="cb70-10" title="10">      <span class="kw">gce_vm</span>(</a>
+<a class="sourceLine" id="cb70-11" title="11">        <span class="dt">name =</span> x,</a>
+<a class="sourceLine" id="cb70-12" title="12">        <span class="dt">template =</span> <span class="st">&quot;r-base&quot;</span>,</a>
+<a class="sourceLine" id="cb70-13" title="13">        <span class="dt">predefined_type =</span> <span class="st">&quot;n1-highcpu-8&quot;</span>, <span class="co">## CHANGED: Each VM has eight CPUs</span></a>
+<a class="sourceLine" id="cb70-14" title="14">        <span class="dt">wait =</span> <span class="ot">FALSE</span></a>
+<a class="sourceLine" id="cb70-15" title="15">        )</a>
+<a class="sourceLine" id="cb70-16" title="16">      })</a>
+<a class="sourceLine" id="cb70-17" title="17"><span class="co">## wait for all the jobs to complete and VMs are ready</span></a>
+<a class="sourceLine" id="cb70-18" title="18"><span class="kw">lapply</span>(jobs, gce_wait)</a>
+<a class="sourceLine" id="cb70-19" title="19"><span class="co">## get the VM objects</span></a>
+<a class="sourceLine" id="cb70-20" title="20">vms &lt;-<span class="st"> </span><span class="kw">lapply</span>(vm_names, gce_vm)</a>
+<a class="sourceLine" id="cb70-21" title="21"><span class="co">## set up SSH for the VMs</span></a>
+<a class="sourceLine" id="cb70-22" title="22">vms &lt;-<span class="st"> </span><span class="kw">lapply</span>(vms, gce_ssh_setup)</a></code></pre></div>
+<p>Now comes the slightly more complicated part of the setup. You can read the <a href="https://cran.r-project.org/web/packages/future/vignettes/future-3-topologies.html">Future Topologies</a> vignette for more details, but the gist is that you can define a nested plan of futures using the <code>plan(list(tweak(...), tweak(...)))</code> syntax. In this case, we are going to define two topology layers:</p>
+<ul>
+<li><strong>Topology 1.</strong> The “outer” plan, which tells <code>future</code> to use the cluster of remote VMs. This is essentially exactly the same as in our previous example, except that I need to do a bit more legwork and tell future that it needs to install the <code>future.apply</code> package on the Docker container inside each VM. (Of course, we could create and pull a Docker image that already has it installed, but I’m being lazy here.)</li>
+<li><strong>Topology 2.</strong> The “inner” plan, which simply tells future to use all available cores on each VM via the <code>multiprocess</code> option.</li>
+</ul>
+<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb71-1" title="1"><span class="kw">plan</span>(<span class="kw">list</span>( </a>
+<a class="sourceLine" id="cb71-2" title="2">  <span class="co">## Topology 1: Use a cluster of remote VMs </span></a>
+<a class="sourceLine" id="cb71-3" title="3">  <span class="kw">tweak</span>(cluster, </a>
+<a class="sourceLine" id="cb71-4" title="4">        <span class="dt">workers =</span> <span class="kw">as.cluster</span>(</a>
+<a class="sourceLine" id="cb71-5" title="5">          vms,</a>
+<a class="sourceLine" id="cb71-6" title="6">          <span class="co">## Launch Rscript inside Docker container</span></a>
+<a class="sourceLine" id="cb71-7" title="7">          <span class="dt">rscript =</span> <span class="kw">c</span>(</a>
+<a class="sourceLine" id="cb71-8" title="8">            <span class="st">&quot;docker&quot;</span>, <span class="st">&quot;run&quot;</span>, <span class="st">&quot;--net=host&quot;</span>, <span class="st">&quot;rocker/r-base&quot;</span>,</a>
+<a class="sourceLine" id="cb71-9" title="9">            <span class="st">&quot;Rscript&quot;</span></a>
+<a class="sourceLine" id="cb71-10" title="10">          ),</a>
+<a class="sourceLine" id="cb71-11" title="11">          <span class="co">## Install future.apply on each VM</span></a>
+<a class="sourceLine" id="cb71-12" title="12">          <span class="dt">rscript_args =</span> <span class="kw">c</span>(<span class="st">&quot;-e&quot;</span>, <span class="kw">shQuote</span>(<span class="st">&quot;install.packages(&#39;future.apply&#39;)&quot;</span>))</a>
+<a class="sourceLine" id="cb71-13" title="13">          )</a>
+<a class="sourceLine" id="cb71-14" title="14">        ),  </a>
+<a class="sourceLine" id="cb71-15" title="15">  <span class="co">## Topology 2: Use all the CPUs on each VM</span></a>
+<a class="sourceLine" id="cb71-16" title="16">  <span class="kw">tweak</span>(multiprocess)  </a>
+<a class="sourceLine" id="cb71-17" title="17">  ))</a></code></pre></div>
+<pre><code>## 2019-03-04 22:40:49&gt; External IP for instance testvm1 : 35.197.58.242</code></pre>
+<pre><code>## 2019-03-04 22:41:14&gt; External IP for instance testvm2 : 35.199.168.96</code></pre>
+<pre><code>## 2019-03-04 22:41:39&gt; External IP for instance testvm3 : 35.197.125.154</code></pre>
+<p>With the nested plan defined, we can now run a nested parallel function. Again, there’s a slight tweak here in the sense that we need to manually split the outer and inner <code>future_lapply()</code> calls:</p>
+<ul>
+<li>The <strong>outer</strong> <code>future_lapply()</code> call loops over the VMs in our cluster (in this case: three).</li>
+<li>The <strong>inner</strong> <code>future_lapply()</code> call then loops over the desired number of iterations, divided by the number of VMs in the cluster.</li>
+</ul>
+<p>For this example, I’ll run 120 iterations of our <code>slow_func()</code> function in total. Note that this would take 600 seconds to run sequentially. Based on the total number of cores available to us in this cluster, we would we hope to drop this computation time to around 25 seconds (i.e. a <strong>24 times speedup</strong>) by running everything in parallel.</p>
+<div class="sourceCode" id="cb75"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb75-1" title="1"><span class="co">## Total number of desired iterations</span></a>
+<a class="sourceLine" id="cb75-2" title="2">iters &lt;-<span class="st"> </span><span class="dv">120</span></a>
+<a class="sourceLine" id="cb75-3" title="3"></a>
+<a class="sourceLine" id="cb75-4" title="4"><span class="co">## Now run the function in parallel on each VM in the cluster</span></a>
+<a class="sourceLine" id="cb75-5" title="5"><span class="kw">tic</span>()</a>
+<a class="sourceLine" id="cb75-6" title="6">future_sim &lt;-<span class="st"> </span></a>
+<a class="sourceLine" id="cb75-7" title="7"><span class="st">  </span><span class="kw">future_lapply</span>(<span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(vms), <span class="cf">function</span>(x) { <span class="co">## Outer future_lapply() call loops over the no. of VMS</span></a>
+<a class="sourceLine" id="cb75-8" title="8">    <span class="kw">future_lapply</span>(<span class="dv">1</span><span class="op">:</span>(iters<span class="op">/</span><span class="kw">length</span>(vms)), slow_func) <span class="co">## Inner future_lapply() call loops over desired no. of iterations / no. of VMs</span></a>
+<a class="sourceLine" id="cb75-9" title="9">    }</a>
+<a class="sourceLine" id="cb75-10" title="10">  )</a>
+<a class="sourceLine" id="cb75-11" title="11"><span class="kw">toc</span>()</a></code></pre></div>
+<pre><code>## 27.068 sec elapsed</code></pre>
+<p>And it worked! There’s a tiny bit of overhead, but we were very close to the theoretical speedup. Note that this overhead time would increase if we were transferring large amounts of data around the cluster, but the same basic principles would apply. Bottom line: You can create can create a mini supercomputer in the cloud using only a few lines of code, and then interact with it through your local R environment. What’s not to like?</p>
+<p>As always, remember to stop you VMs once you’ve finished using them.</p>
+<div class="sourceCode" id="cb77"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb77-1" title="1"><span class="co">## Stop / shutdown instances when finished</span></a>
+<a class="sourceLine" id="cb77-2" title="2"><span class="kw">lapply</span>(vms, gce_vm_stop)</a></code></pre></div>
+<pre><code>## [[1]]
+## ==Zone Operation stop :  RUNNING
+## Started:  2019-03-04 22:42:31
+## [[2]]
+## ==Zone Operation stop :  RUNNING
+## Started:  2019-03-04 22:42:32
+## [[3]]
+## ==Zone Operation stop :  RUNNING
+## Started:  2019-03-04 22:42:32</code></pre>
+<div class="sourceCode" id="cb79"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb79-1" title="1"><span class="co"># lapply(vms, gce_vm_delete) ## Optional</span></a></code></pre></div>
+</div>
 <div id="other-topics" class="section level3">
 <h3>Other topics</h3>
-<p>The <code>googleComputeEngineR</code> package offers a lot more functionality than I can cover here. However, I wanted to briefly discuss two additional topics in particular.</p>
-<div id="more-complex-clusters" class="section level4">
-<h4>More complex clusters</h4>
-<p>In the simple cluster example above, each VM only had 1 CPU. A natural next step is think about spinning up a cluster of VMs that have <em>multiple</em> cores. For example, why not spin up three machines with eight cores each to get a (3*8=) 24 times speed improvement? This is certainly possible and there are a number of computing frameworks designed to implement this kind of “nested” parallelism. However, truth be told, I have had some trouble getting a GCE cluster of this type to work as expected. You can follow <a href="https://github.com/cloudyr/googleComputeEngineR/issues/129">this GitHub issue</a> for more information, but I’ll post a satisfactory solution as soon as I have one.</p>
-</div>
-<div id="gpus-and-deep-learning" class="section level4">
-<h4>GPUs and deep learning</h4>
-<p>On the other hand, GCE already offer support for running GPU instances, which are production-ready for training hardcore deep learning models. In my view, this is one of the most exciting developments of cloud-based computation services, as it puts the infrastructure necessary for advanced machine learning in the hands of just about everyone. See Mark’s <a href="https://cloudyr.github.io/googleComputeEngineR/articles/gpu.html">introductory GPU tutorial</a> on the <code>googleComputeEngineR</code> website. <strong>Note:</strong> These GPU instances are not available during the GCP free trial period, although users can always upgrade their account if they want.</p>
-</div>
+<p>The <code>googleComputeEngineR</code> package offers a lot more functionality than I can cover here. However, I wanted to briefly mention the fact that GCE offers GPU instances that are production-ready for training hardcore deep learning models. In my view, this is one of the most exciting developments of cloud-based computation services, as it puts the infrastructure necessary for advanced machine learning in the hands of just about everyone. See Mark’s <a href="https://cloudyr.github.io/googleComputeEngineR/articles/gpu.html">introductory GPU tutorial</a> on the <code>googleComputeEngineR</code> website. <strong>Note:</strong> These GPU instances are not available during the GCP free trial period, although users can always upgrade their account if they want.</p>
 </div>
 </div>
 <div id="bonus-getting-the-most-out-of-your-gce-rstudio-server-setup" class="section level2">
@@ -2016,7 +2088,7 @@ my-vm  us-west1-a  n1-standard-8               10.138.0.2   104.198.7.157  RUNNI
 <div id="manually-transfer-files-and-folders-using-the-command-line-or-scp" class="section level4">
 <h4>2. Manually transfer files and folders using the command line or SCP</h4>
 <p>Manually transferring files or folders across systems is done fairly easily using the command line. Note that this next code chunk would be run in a new shell instance (i.e. not the one connected to your VM via SSH).</p>
-<div class="sourceCode" id="cb70"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb70-1" title="1">$ <span class="ex">gcloud</span> compute scp my-vm:/home/elvis/Papers/MyAwesomePaper/amazingresults.csv ~/local-directory/amazingresults-copy.csv --zone us-west1-a</a></code></pre></div>
+<div class="sourceCode" id="cb80"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb80-1" title="1">$ <span class="ex">gcloud</span> compute scp my-vm:/home/elvis/Papers/MyAwesomePaper/amazingresults.csv ~/local-directory/amazingresults-copy.csv --zone us-west1-a</a></code></pre></div>
 <p>It’s also possible to transfer files using your regular desktop file browser thanks to SCP. (On Linux and Mac OSX at least. Windows users first need to install a program call WinSCP.) See <a href="https://cloud.google.com/compute/docs/instances/transfer-files">here</a>.</p>
 <blockquote>
 <p><strong>Tip:</strong> The file browser-based SCP solution is much more efficient when you have assigned a static IP address to your VM instance — otherwise you have to set it up each time you restart your VM instance and are assigned a new ephemeral IP address — so I’d advise doing that <a href="https://cloud.google.com/compute/docs/configure-instance-ip-addresses#assign_new_instance">first</a>.</p>
@@ -2040,22 +2112,22 @@ my-vm  us-west1-a  n1-standard-8               10.138.0.2   104.198.7.157  RUNNI
 <div id="share-files-across-users" class="section level4">
 <h4>Share files across users</h4>
 <p>Let’s say that Elvis is working on a joint project together with a colleague called Priscilla. (Although, some say they are more than colleagues…) They have decided to keep all of their shared analysis in a new directory called <code>TeamProject</code>, located within Elvis’s home directory. Start by creating this new shared directory:</p>
-<div class="sourceCode" id="cb71"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb71-1" title="1">$ <span class="ex">grant@my-vm</span>:~$ sudo mkdir /home/elvis/TeamProject</a></code></pre></div>
+<div class="sourceCode" id="cb81"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb81-1" title="1">$ <span class="ex">grant@my-vm</span>:~$ sudo mkdir /home/elvis/TeamProject</a></code></pre></div>
 <p>Presumably, a real-life Priscilla would already have a user profile at this point. But let’s quickly create one too for our fictional version.</p>
-<div class="sourceCode" id="cb72"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb72-1" title="1">$ <span class="ex">grant@my-vm</span>:~$ sudo adduser priscilla</a></code></pre></div>
+<div class="sourceCode" id="cb82"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb82-1" title="1">$ <span class="ex">grant@my-vm</span>:~$ sudo adduser priscilla</a></code></pre></div>
 <p>Next, we create a user group. I’m going to call it “projectgrp”, but as you wish. The group setup is useful because once we assign a set of permissions to a group, any members of that group will automatically receive those permissions too. With that in mind, we should add Elvis and Priscilla to “projectgrp” once it is created:</p>
-<div class="sourceCode" id="cb73"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb73-1" title="1"><span class="ex">grant@my-vm</span>:~$ sudo groupadd projectgrp</a>
-<a class="sourceLine" id="cb73-2" title="2"><span class="ex">grant@my-vm</span>:~$ sudo gpasswd -a elvis projectgrp</a>
-<a class="sourceLine" id="cb73-3" title="3"><span class="ex">grant@my-vm</span>:~$ sudo gpasswd -a priscilla projectgrp</a></code></pre></div>
+<div class="sourceCode" id="cb83"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb83-1" title="1"><span class="ex">grant@my-vm</span>:~$ sudo groupadd projectgrp</a>
+<a class="sourceLine" id="cb83-2" title="2"><span class="ex">grant@my-vm</span>:~$ sudo gpasswd -a elvis projectgrp</a>
+<a class="sourceLine" id="cb83-3" title="3"><span class="ex">grant@my-vm</span>:~$ sudo gpasswd -a priscilla projectgrp</a></code></pre></div>
 <p>Now we can set the necessary ownership permissions to the shared <code>TeamProject</code> directory. First, we use the <code>chown</code> command to assign ownership of this directory to a default user (in this case, “elvis”) and the other “projectgrp” members. Second, we use the <code>chmod 770</code> command to grant them all read, write and execute access to the directory. In both both cases, we’ll use the <code>-R</code> flag to recursively set permissions to all children directories of <code>TeamProject/</code> too.</p>
-<div class="sourceCode" id="cb74"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb74-1" title="1"><span class="ex">grant@my-vm</span>:~$ sudo chown -R elvis:projectgrp /home/elvis/TeamProject</a>
-<a class="sourceLine" id="cb74-2" title="2"><span class="ex">grant@my-vm</span>:~$ sudo chmod -R 770 /home/elvis/TeamProject</a></code></pre></div>
+<div class="sourceCode" id="cb84"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb84-1" title="1"><span class="ex">grant@my-vm</span>:~$ sudo chown -R elvis:projectgrp /home/elvis/TeamProject</a>
+<a class="sourceLine" id="cb84-2" title="2"><span class="ex">grant@my-vm</span>:~$ sudo chmod -R 770 /home/elvis/TeamProject</a></code></pre></div>
 <p>The next two commands are optional, but advised if Priscilla is only going to be working on this VM through the <code>TeamProject</code> directory. First, you can change her primary group ID to “projectgrp”, so that all the files she creates are automatically assigned to that group:</p>
-<div class="sourceCode" id="cb75"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb75-1" title="1"><span class="ex">grant@my-vm</span>:~$ sudo usermod -g projectgrp priscilla</a></code></pre></div>
+<div class="sourceCode" id="cb85"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb85-1" title="1"><span class="ex">grant@my-vm</span>:~$ sudo usermod -g projectgrp priscilla</a></code></pre></div>
 <p>Second, you can add a symbolic link to the <code>TeamProject</code> directory in Priscilla’s home directory, so that it is immediately visible when she logs into RStudio Server. (Making sure that you switch to her account before running this command):</p>
-<div class="sourceCode" id="cb76"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb76-1" title="1"><span class="ex">grant@my-vm</span>:~$ sudo su - priscilla</a>
-<a class="sourceLine" id="cb76-2" title="2"><span class="ex">priscilla@my-vm</span>:~$ ln -s /home/elvis/TeamProject /home/priscilla/TeamProject</a>
-<a class="sourceLine" id="cb76-3" title="3"><span class="ex">priscilla@my-vm</span>:~$ exit</a></code></pre></div>
+<div class="sourceCode" id="cb86"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb86-1" title="1"><span class="ex">grant@my-vm</span>:~$ sudo su - priscilla</a>
+<a class="sourceLine" id="cb86-2" title="2"><span class="ex">priscilla@my-vm</span>:~$ ln -s /home/elvis/TeamProject /home/priscilla/TeamProject</a>
+<a class="sourceLine" id="cb86-3" title="3"><span class="ex">priscilla@my-vm</span>:~$ exit</a></code></pre></div>
 <div id="share-r-libraries-packages-across-users" class="section level5">
 <h5>Share R libraries (packages) across users</h5>
 <p>Sharing R libraries across users is less critical than being able to share files. However, it’s still annoying having to install, say, <code>ggplot2</code> when your colleague has already installed it under her user account. Luckily, the solution to this annoyance very closely mimics the solution to file sharing that we’ve just seen above: We’re going to set a default system-wide R library path and give all of our users access to that library via a group. For convenience I’m just going to contine with the “projectgrp” group that we created above. However, you could also create a new group (say, “rusers”), add individual users to it, and proceed that way if you wanted to.</p>
@@ -2063,11 +2135,11 @@ my-vm  us-west1-a  n1-standard-8               10.138.0.2   104.198.7.157  RUNNI
 <pre><code>&gt; .libPaths()</code></pre>
 <p>This will likely return several library paths. The system-wide library path should hopefully be pretty obvious (e.g. no usernames) and will probably be one of <code>/usr/lib/R/library</code> or <code>/usr/local/lib/R/site-library</code>. In my case, it was the former, but adjust as necessary.</p>
 <p>Once we have determined the location of our system-wide library directory, we can recursively assign read, write and execute permissions to it for all members of our group. Here, I’m actually using the parent directory (i.e. <code>.../R</code> rather than <code>.../R/library</code>), but it should work regardless. Go back to your shell and type:</p>
-<div class="sourceCode" id="cb78"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb78-1" title="1"><span class="ex">grant@my-vm</span>:~$ sudo chown elvis:projectgrp -R /usr/lib/R/ <span class="co">## Get location by typing &quot;.libPaths()&quot; in your R console</span></a>
-<a class="sourceLine" id="cb78-2" title="2"><span class="ex">grant@my-vm</span>:~$ sudo chmod -R 775 R/</a></code></pre></div>
+<div class="sourceCode" id="cb88"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb88-1" title="1"><span class="ex">grant@my-vm</span>:~$ sudo chown elvis:projectgrp -R /usr/lib/R/ <span class="co">## Get location by typing &quot;.libPaths()&quot; in your R console</span></a>
+<a class="sourceLine" id="cb88-2" title="2"><span class="ex">grant@my-vm</span>:~$ sudo chmod -R 775 R/</a></code></pre></div>
 <p>Once that’s done, tell R to make this shared library path the default for your user, by adding it to their <code>~/.Renviron</code> file:</p>
-<div class="sourceCode" id="cb79"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb79-1" title="1"><span class="ex">grant@my-vm</span>:~$ su - elvis</a>
-<a class="sourceLine" id="cb79-2" title="2"><span class="ex">elvis@my-vm</span>:~$ sudo echo <span class="st">&#39;export PATH=&quot;R_LIBS_USER=/usr/lib/R/library&quot;&#39;</span> <span class="op">&gt;&gt;</span> ~/.Renviron</a></code></pre></div>
+<div class="sourceCode" id="cb89"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb89-1" title="1"><span class="ex">grant@my-vm</span>:~$ su - elvis</a>
+<a class="sourceLine" id="cb89-2" title="2"><span class="ex">elvis@my-vm</span>:~$ sudo echo <span class="st">&#39;export PATH=&quot;R_LIBS_USER=/usr/lib/R/library&quot;&#39;</span> <span class="op">&gt;&gt;</span> ~/.Renviron</a></code></pre></div>
 <p>The R packages that Elvis installs should now be immediately available to Priscilla and vice versa.</p>
 <blockquote>
 <p><strong>Tip:</strong> If you’ve already installed some packages in a local (i.e. this-user-only) library path before creating the system-wide setup, you can just move them across with the <a href="https://linuxjourney.com/lesson/move-mv-command">‘mv’</a> command. Something like the following should work, but you’ll need to check the appropriate paths yourself: <code>elvis@my-vm:~$ sudo mv &quot;/home/elvis/R/x86_64-pc-linux-gnu-library/3.5/*&quot; /usr/lib/R/library</code>.</p>
@@ -2078,8 +2150,8 @@ my-vm  us-west1-a  n1-standard-8               10.138.0.2   104.198.7.157  RUNNI
 <div id="install-the-intel-math-kernel-library-mkl-or-openblaslapack" class="section level3">
 <h3>Install the Intel Math Kernel Library (MKL) or OpenBLAS/LAPACK</h3>
 <p>As we discussed in the previous lecture on <a href="https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html">parallel programming</a>, R ships with its own BLAS/LAPACK libraries by default. While this default works well enough, you can get <em>significant</em> speedups by switching to more optimized libraries such as the <a href="https://software.intel.com/en-us/mkl">Intel Math Kernel Library (MKL)</a> or <a href="https://www.openblas.net/">OpenBLAS</a>. The former is slightly faster according to the benchmark tests that I’ve seen, but was historically harder to install. However, thanks to <a href="https://github.com/eddelbuettel/mkl4deb">Dirk Eddelbuettel</a>, this is now very easily done:</p>
-<div class="sourceCode" id="cb80"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb80-1" title="1"><span class="ex">grant@my-vm</span>:~$ git clone https://github.com/eddelbuettel/mkl4deb.git</a>
-<a class="sourceLine" id="cb80-2" title="2"><span class="ex">grant@my-vm</span>:~$ sudo bash mkl4deb/script.sh</a></code></pre></div>
+<div class="sourceCode" id="cb90"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb90-1" title="1"><span class="ex">grant@my-vm</span>:~$ git clone https://github.com/eddelbuettel/mkl4deb.git</a>
+<a class="sourceLine" id="cb90-2" title="2"><span class="ex">grant@my-vm</span>:~$ sudo bash mkl4deb/script.sh</a></code></pre></div>
 <p>Wait for the script to finish running. Once it’s done, your R session should automatically be configured to use MKL by default. You can check yourself by opening up R and checking the <code>sessionInfo()</code> output, which should return something like:</p>
 <pre><code>Matrix products: default
 BLAS/LAPACK: /opt/intel/compilers_and_libraries_2018.2.199/linux/mkl/lib/intel64_lin/libmkl_rt.so</code></pre>
@@ -2088,20 +2160,19 @@ BLAS/LAPACK: /opt/intel/compilers_and_libraries_2018.2.199/linux/mkl/lib/intel64
 <div id="other-tips" class="section level3">
 <h3>Other tips</h3>
 <p>Remember to keep your VM system up to date (just like you would a normal computer).</p>
-<div class="sourceCode" id="cb82"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb82-1" title="1"><span class="ex">grant@my-vm</span>:~$ sudo apt update</a>
-<a class="sourceLine" id="cb82-2" title="2"><span class="ex">grant@my-vm</span>:~$ sudo apt upgrade</a></code></pre></div>
+<div class="sourceCode" id="cb92"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb92-1" title="1"><span class="ex">grant@my-vm</span>:~$ sudo apt update</a>
+<a class="sourceLine" id="cb92-2" title="2"><span class="ex">grant@my-vm</span>:~$ sudo apt upgrade</a></code></pre></div>
 <p>You can also update the <code>gcloud</code> utility components on your local computer (i.e. not your VM) with the following command:</p>
-<div class="sourceCode" id="cb83"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb83-1" title="1">$ <span class="ex">gcloud</span> components update</a></code></pre></div>
+<div class="sourceCode" id="cb93"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb93-1" title="1">$ <span class="ex">gcloud</span> components update</a></code></pre></div>
 </div>
 </div>
 <div id="further-resources" class="section level2">
 <h2>Further resources</h2>
-<p>I recommend consulting the official documentation if you ever get stuck. There’s loads of useful advice and extra tips for getting the most out of your VM setup, including ways to integrate your system with other products within GCP like BigQuery, Storage, etc. etc. Here are some links worth bookmarking.</p>
 <ul>
-<li>GCE documentation (<a href="https://cloud.google.com/compute/docs/">link</a>)</li>
-<li>RStudio Server documentation (<a href="https://support.rstudio.com/hc/en-us/articles/234653607-Getting-Started-with-RStudio-Server">link</a>)</li>
-<li>Linux Journey guide (<a href="https://linuxjourney.com/">link</a>)</li>
-<li><code>googleComputeEngineR</code> package website (<a href="https://cloudyr.github.io/googleComputeEngineR/index.html">link</a>)</li>
+<li>I recommend consulting the official <a href="https://cloud.google.com/compute/docs/">GCE documentation</a> if you ever get stuck. There’s loads of useful advice and extra tips for getting the most out of your VM setup, including ways to integrate your system with other GCP products like Storage, BigQuery, etc.</li>
+<li>The <a href="https://cloudyr.github.io/googleComputeEngineR/index.html">googleComputeEngineR website</a> is also very good, with loads of helpful examples.</li>
+<li>Thinking about other cloud platforms with transferable ideas, <a href="https://blog.davisvaughan.com/">Davis Vaughan</a> provides a concise <a href="https://davisvaughan.github.io/furrr/articles/advanced-furrr-remote-connections.html">AWS example</a> using the <code>furrr</code> package (which treads a similar path to our nested <code>future_lapply()</code> example). <a href="https://www.andrewheiss.com/">Andrew Heiss</a> has a very lucid <a href="https://www.andrewheiss.com/blog/2018/07/30/disposable-supercomputer-future/">blog tutorial on his Digital Ocean setup</a> for those who want to try going that route.</li>
+<li>Other useful links include the <a href="https://support.rstudio.com/hc/en-us/articles/234653607-Getting-Started-with-RStudio-Server">RStudio Server documentation</a>, and the <a href="https://linuxjourney.com/">Linux Journey guide</a> for anyone who wants to learn more about Linux (yes, you!).</li>
 </ul>
 </div>
 <div class="footnotes">

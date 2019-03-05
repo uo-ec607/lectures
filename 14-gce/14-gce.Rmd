@@ -51,9 +51,6 @@ I don't think it's strictly necessary, but I'm going to install the development 
 if (!require("pacman")) install.packages("pacman")
 pacman::p_install_gh("cloudyr/googleComputeEngineR") ## Use the development version of googleComputeEngineR
 pacman::p_load(future.apply, tictoc, usethis)
-
-# ## Set future::plan() resolution strategy
-# plan(multiprocess)
 ```
 
 ## Introduction
@@ -310,7 +307,7 @@ library(googleComputeEngineR)
 
 Nice. With that taken care of, let's look at some examples to see how easy `googleComputeEngineR` is to work with.
 
-### Single instance example
+### Single VM example
 
 The workhorse `googleComputeEngineR` function to remember is **`gce_vm()`**. This will fetch (i.e. start) an instance if it already exists, and create a new instance from scratch if it doesn't. Let's practice an example of the latter, since it will demonstrate the package's integration of Docker images via the [Rocker Project](https://www.rocker-project.org/).^[You can test the former by running `my_vm <- gce_vm("my-vm")` in your R console. You can also get a list of all existing instances by running `gce_list_instances()`.]
 
@@ -433,17 +430,96 @@ lapply(vms, gce_vm_stop)
 lapply(vms, gce_vm_delete)
 ```
 
+### Cluster example with multiple (nested) parallelization
+
+In the simple cluster example above, each VM only had 1 CPU. A natural next step is think about spinning up a cluster of VMs that have *multiple* cores. For example, why not spin up three machines with eight cores each to get a (3*8=) 24 times speed improvement? This is fairly easily done, although it requires a few tweaks to our simple cluster example. We start off in exactly the same way, though. The only change in the below code chunk is that now I'm going to spin up "n1-highcpu-8" VM instances that have eight cores each. (Note: I've switched off the return output and messages from this next code chunk, since it's mostly repetition of what we've already seen above.)
+
+```{r vms_multi, message=FALSE, results=FALSE}
+## Names of the VMs on the cluster
+vm_names <- c("testvm1","testvm2","testvm3")
+
+## Create the cluster using the default template for rocker/r-base
+## The this lapply loop starts the job of creating each VM in background
+jobs <- 
+  lapply(
+    vm_names, 
+    function(x) {
+      gce_vm(
+        name = x,
+        template = "r-base",
+        predefined_type = "n1-highcpu-8", ## CHANGED: Each VM has eight CPUs
+        wait = FALSE
+        )
+      })
+## wait for all the jobs to complete and VMs are ready
+lapply(jobs, gce_wait)
+## get the VM objects
+vms <- lapply(vm_names, gce_vm)
+## set up SSH for the VMs
+vms <- lapply(vms, gce_ssh_setup)
+```
+
+Now comes the slightly more complicated part of the setup. You can read the [Future Topologies](https://cran.r-project.org/web/packages/future/vignettes/future-3-topologies.html) vignette for more details, but the gist is that you can define a nested plan of futures using the `plan(list(tweak(...), tweak(...)))` syntax. In this case, we are going to define two topology layers:
+
+- **Topology 1.** The "outer" plan, which tells `future` to use the cluster of remote VMs. This is essentially exactly the same as in our previous example, except that I need to do a bit more legwork and tell future that it needs to install the `future.apply` package on the Docker container inside each VM. (Of course, we could create and pull a Docker image that already has it installed, but I'm being lazy here.)
+- **Topology 2.** The "inner" plan, which simply tells future to use all available cores on each VM via the `multiprocess` option. 
+
+```{r plan_multi}
+plan(list( 
+  ## Topology 1: Use a cluster of remote VMs 
+  tweak(cluster, 
+        workers = as.cluster(
+          vms,
+          ## Launch Rscript inside Docker container
+          rscript = c(
+            "docker", "run", "--net=host", "rocker/r-base",
+            "Rscript"
+          ),
+          ## Install future.apply on each VM
+          rscript_args = c("-e", shQuote("install.packages('future.apply')"))
+          )
+        ),  
+  ## Topology 2: Use all the CPUs on each VM
+  tweak(multiprocess)  
+  ))
+```
+
+With the nested plan defined, we can now run a nested parallel function. Again, there's a slight tweak here in the sense that we need to manually split the outer and inner `future_lapply()` calls:
+
+- The **outer** `future_lapply()` call loops over the VMs in our cluster (in this case: three). 
+- The **inner** `future_lapply()` call then loops over the desired number of iterations, divided by the number of VMs in the cluster. 
+
+For this example, I'll run 120 iterations of our `slow_func()` function in total. Note that this would take 600 seconds to run sequentially. Based on the total number of cores available to us in this cluster, we would we hope to drop this computation time to around 25 seconds (i.e. a **24 times speedup**) by running everything in parallel.
+
+```{r future_sim_multi}
+## Total number of desired iterations
+iters <- 120
+
+## Now run the function in parallel on each VM in the cluster
+tic()
+future_sim <- 
+  future_lapply(1:length(vms), function(x) { ## Outer future_lapply() call loops over the no. of VMS
+    future_lapply(1:(iters/length(vms)), slow_func) ## Inner future_lapply() call loops over desired no. of iterations / no. of VMs
+    }
+  )
+toc()
+
+```
+
+And it worked! There's a tiny bit of overhead, but we were very close to the theoretical speedup. Note that this overhead time would increase if we were transferring large amounts of data around the cluster, but the same basic principles would apply. Bottom line: You can create can create a mini supercomputer in the cloud using only a few lines of code, and then interact with it through your local R environment. What's not to like?
+
+As always, remember to stop you VMs once you've finished using them.
+
+```{r stop_cluster_multi}
+## Stop / shutdown instances when finished
+lapply(vms, gce_vm_stop)
+# lapply(vms, gce_vm_delete) ## Optional
+```
+
+
 ### Other topics
 
-The `googleComputeEngineR` package offers a lot more functionality than I can cover here. However, I wanted to briefly discuss two additional topics in particular.
-
-#### More complex clusters
-
-In the simple cluster example above, each VM only had 1 CPU. A natural next step is think about spinning up a cluster of VMs that have *multiple* cores. For example, why not spin up three machines with eight cores each to get a (3*8=) 24 times speed improvement? This is certainly possible and there are a number of computing frameworks designed to implement this kind of "nested" parallelism. However, truth be told, I have had some trouble getting a GCE cluster of this type to work as expected. You can follow [this GitHub issue](https://github.com/cloudyr/googleComputeEngineR/issues/129) for more information, but I'll post a satisfactory solution as soon as I have one.
-
-#### GPUs and deep learning
-
-On the other hand, GCE already offer support for running GPU instances, which are production-ready for training hardcore deep learning models. In my view, this is one of the most exciting developments of cloud-based computation services, as it puts the infrastructure necessary for advanced machine learning in the hands of just about everyone. See Mark's [introductory GPU tutorial](https://cloudyr.github.io/googleComputeEngineR/articles/gpu.html) on the `googleComputeEngineR` website. **Note:** These GPU instances are not available during the GCP free trial period, although users can always upgrade their account if they want.
+The `googleComputeEngineR` package offers a lot more functionality than I can cover here. However, I wanted to briefly mention the fact that GCE offers GPU instances that are production-ready for training hardcore deep learning models. In my view, this is one of the most exciting developments of cloud-based computation services, as it puts the infrastructure necessary for advanced machine learning in the hands of just about everyone. See Mark's [introductory GPU tutorial](https://cloudyr.github.io/googleComputeEngineR/articles/gpu.html) on the `googleComputeEngineR` website. **Note:** These GPU instances are not available during the GCP free trial period, although users can always upgrade their account if they want.
 
 ## BONUS: Getting the most out of your GCE + RStudio Server setup
 
@@ -575,9 +651,7 @@ gcloud components update
 
 ## Further resources
 
-I recommend consulting the official documentation if you ever get stuck. There's loads of useful advice and extra tips for getting the most out of your VM setup, including ways to integrate your system with other products within GCP like BigQuery, Storage, etc. etc. Here are some links worth bookmarking.
-
-- GCE documentation ([link](https://cloud.google.com/compute/docs/))
-- RStudio Server documentation ([link](https://support.rstudio.com/hc/en-us/articles/234653607-Getting-Started-with-RStudio-Server))
-- Linux Journey guide ([link](https://linuxjourney.com/))
-- `googleComputeEngineR` package website ([link](https://cloudyr.github.io/googleComputeEngineR/index.html))
+- I recommend consulting the official [GCE documentation](https://cloud.google.com/compute/docs/) if you ever get stuck. There's loads of useful advice and extra tips for getting the most out of your VM setup, including ways to integrate your system with other GCP products like Storage, BigQuery, etc. 
+- The [googleComputeEngineR website](https://cloudyr.github.io/googleComputeEngineR/index.html) is also very good, with loads of helpful examples.
+- Thinking about other cloud platforms with transferable ideas, [Davis Vaughan](https://blog.davisvaughan.com/) provides a concise [AWS example](https://davisvaughan.github.io/furrr/articles/advanced-furrr-remote-connections.html) using the `furrr` package (which treads a similar path to our nested `future_lapply()` example). [Andrew Heiss](https://www.andrewheiss.com/) has a very lucid [blog tutorial on his Digital Ocean setup](https://www.andrewheiss.com/blog/2018/07/30/disposable-supercomputer-future/) for those who want to try going that route.
+- Other useful links include the [RStudio Server documentation](https://support.rstudio.com/hc/en-us/articles/234653607-Getting-Started-with-RStudio-Server), and the [Linux Journey guide](https://linuxjourney.com/) for anyone who wants to learn more about Linux (yes, you!).
