@@ -49,9 +49,9 @@ pacman::p_load(tidyverse, dbplyr, RSQLite, bigrquery, hrbrthemes, nycflights13, 
 theme_set(hrbrthemes::theme_ipsum())
 ```
 
-## Databases and `dplyr` (and the rest of the tidyverse)
+## Databases and the tidyverse
 
-In my opinion, one of the best features of `dplyr` is the fact that it integrates pretty much seeminglessly with databases. 
+One the best features of the tidyverse --- in particular `dplyr` --- is that allows for direct communication with databases. 
 
 What does this mean?  
 
@@ -233,7 +233,63 @@ Finally, disconnect from the connection using the `DBI::dbDisconnect()` function
 dbDisconnect(con)
 ```
 
+
 ## Scaling up: BigQuery
+
+See [here](https://cloud.google.com/bigquery/sample-tables) for a description of BigQueries sample tables. There are also many other datasets beyond these sample tables that are publicly available; see [here](https://www.reddit.com/r/bigquery/wiki/datasets) for a full list.
+
+We already set up our Google project API keys with the googleComputeEngineR package in a previous lecture. So you should have your project ID stored as the `GCE_DEFAULT_PROJECT_ID` variable in your `~/.Renviron` file. (Confirm this for yourself if you aren't sure.) This provides a convenient and safe way to share R scripts and Rmd files (like these notes!) without compromising security. Of course, you could always just specify the project ID string directly if you are working on your own scripts. 
+
+```{r billing_id}
+# library(bigrquery) ## Already loaded
+
+billing_id <- Sys.getenv("GCE_DEFAULT_PROJECT_ID") ## Replace with your project ID if this doesn't work
+```
+
+### Example 1) US birth data
+
+Having set our project IDs, we are now free to run queries and download data to our R environment using a variety of approaches. For example, we could use BigQuery's low-level API directly.
+
+```{r bq_api}
+sql_string <- "SELECT year, month, day, weight_pounds FROM `publicdata.samples.natality`"
+tb <- bq_project_query(billing_id, sql_string)
+bq_table_download(
+  tb, 
+  max_results = 10
+  )
+```
+
+However, for consistency's sake, we'd prefer to stick with the `dplyr` (and/or `DBI`) methods that we've alredy been practicing. Start by establishing a connection using `DBI::dbConnect()`, this time specifying the BigQuery backend (via `bigrquery::bigquery()`) and providing our credentials.
+
+```{r, bq_con}
+# library(DBI)
+# library(dplyr)
+
+con <- 
+  dbConnect(
+    bigrquery::bigquery(),
+    project = "publicdata",
+    dataset = "samples",
+    billing = billing_id
+    )
+```
+
+One neat thing about this setup is that the connection holds for any tables with the specified dataset (here: "samples" from the "publicdata" project). We just need to specify the exact table we need using `dplyr::tbl()` and then execute our query as per usual.
+
+```{r, bq_natality}
+natality <- tbl(con, "natality")
+
+natality %>%
+  select(year, month, day, weight_pounds) %>% 
+  head(10) %>%
+  collect()
+```
+
+As before, its best practice to disconnect from the server once you are finished.
+
+```{r bq_dbDisconnect}
+dbDisconnect(con)
+```
 
 ## SQL translation
 
