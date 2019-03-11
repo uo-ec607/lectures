@@ -274,22 +274,27 @@ con <-
     )
 ```
 
-One neat thing about this setup is that the connection holds for any tables with the specified dataset (here: "samples" from the "publicdata" project). We just need to specify the exact table we need using `dplyr::tbl()` and then execute our query as per usual.
+One neat thing about this setup is that the connection holds for any tables with the specified dataset (here: "samples" from the "publicdata" project). We just need to specify the exact table we need using `dplyr::tbl()` and then execute our query as per usual. Make sure that you run the next line interactively if this is the first time you're ever connecting to BigQuery via the `bigqueryr` package. You will be prompted to choose whether you want to cache credentials between R sessions (I recommend "Yes") and then to authorise access in your browser and w
 
 ```{r, bq_natality}
 natality <- tbl(con, "natality")
+```
 
+```{r natality_collect}
 natality %>%
   select(year, month, day, weight_pounds) %>% 
   head(10) %>%
   collect()
 ```
 
+
 As before, its best practice to disconnect from the server once you are finished.
 
 ```{r bq_dbDisconnect}
 dbDisconnect(con)
 ```
+
+### Example 2) Global fishing watch
 
 ## SQL translation
 
