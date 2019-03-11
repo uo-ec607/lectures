@@ -66,7 +66,7 @@ While `DBI` is automatically installed with `dbplyr`, you'll need to install a s
 1. `RSQLite` embeds a SQLite database.
 2. `bigrquery` connects to Google BigQuery.
 
-The former should be automatically installed with the `dbplyr` package.^[Well, I say that but for some reason I had to install it separately.] It thus provides the simplest way of demonstrating the key concepts of this section with the additional overhead required by the other database types. (No need for a outside database server, for starters.) The latter is the one that I use most frequently in my own work and also requires minimal overhead, seeing as we already set up a Google Cloud account in the previous lecture!
+The former is a lightweight SQL database engine that can exist on our local computers. It thus provides the simplest way of demonstrating the key concepts of this section without the additional overhead required by the other database types. (No need for a outside database server, for starters.) The latter is the one that I use most frequently in my own work and also requires minimal overhead, seeing as we already set up a Google Cloud account in the previous lecture.
 
 ## Getting started: SQLite
 
@@ -74,14 +74,13 @@ This next section is largely lifted directly from Hadley's excellent tutorial on
 
 ### Connecting to a database
 
-We'll started by loading the `dplyr` and `dbplyr` packages, and establishing a connection (via the `DBI` and `RSQLite` packages), which we'll call "con".
+We'll start by establishing a connection via the `DBI::dbConnect()` function. Note that I am calling the `RSQLite` package in the background for SQLite backend and telling R that this is a local connection that exists in memory. Which we'll call "con".
 
 
 ```{r con}
-# library(dplyr) ## Already loaded
-# library(dbplyr) ## Already loaded
+# library(DBI) ## Already loaded
 
-con <- DBI::dbConnect(RSQLite::SQLite(), path = ":memory:")
+con <- dbConnect(RSQLite::SQLite(), path = ":memory:")
 ```
 
 As Hadley [describes](https://db.rstudio.com/dplyr/#connecting-to-the-database), the arguments to DBI::dbConnect() vary from database to database. However, the first argument is always the database backend, i.e. `RSQLite::SQLite()` in this case since we're using (R)SQLite. We'll see another example with a BigQuery database in the next section. Again, while this differs depending on the database type that you're connecting with, SQLite only needs one other argument: the `path` to the database. Here we use the special string, ":memory:", which causes SQLite to make a temporary in-memory database. We'll explore more complicated connections later on that will involve things like password prompts for remote databases.
@@ -105,6 +104,9 @@ copy_to(con, nycflights13::flights, "flights",
 Now that we’ve copied over the data, we can reference it from `dplyr` via the `tbl()` operation:
 
 ```{r flights_db}
+# library(dplyr) ## Already loaded
+# library(dbplyr) ## Already loaded
+
 flights_db <- tbl(con, "flights")
 flights_db
 ```
@@ -193,7 +195,7 @@ And yet... At some point you may still find yourself wanting or needing to use S
 ## Show the equivalent SQL query for these dplyr commands
 flights_db %>% filter(dep_delay > 240) %>% head(5) %>% show_query()
 ## Run the query using SQL directly on the connnection.
-DBI::dbGetQuery(con, "SELECT * FROM `flights` WHERE (`dep_delay` > 240.0) LIMIT 5")
+dbGetQuery(con, "SELECT * FROM `flights` WHERE (`dep_delay` > 240.0) LIMIT 5")
 ```
 
 A safer and more integrated approach is to use the `glue::glue_sql()` function. This will allow you to 1) use local R variables in your SQL queries, and 2) divide long queries into sub-queries. Here's a simple example of the former.
@@ -218,19 +220,18 @@ sql_query <-
   )
 
 ## Run the query
-DBI::dbGetQuery(con, sql_query)
+dbGetQuery(con, sql_query)
 ```
 
 I know this seems like more work (undeniably so for this simple example). However, the `glue::glue_sql()` approach really pays off when you start working with bigger, nested queries.
 
 ### Disconnect
 
-Finally, disconnect from the connection.
+Finally, disconnect from the connection using the `DBI::dbDisconnect()` function.
 
 ```{r dbDisconnect}
-DBI::dbDisconnect(con)
+dbDisconnect(con)
 ```
-
 
 ## Scaling up: BigQuery
 
