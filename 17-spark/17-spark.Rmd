@@ -47,14 +47,14 @@ sparklyr::spark_install(version = "2.4.0") ## Latest version at the time of writ
 ### R packages 
 
 - **New:** `sparklyr`
-- **Already used:** `tidyverse`, `hrbrthemes`, `lubridate`
+- **Already used:** `tidyverse`, `hrbrthemes`, `lubridate`, `dbplot`
 
 As per usual, the code chunk below will install (if necessary) and load all of these packages for you. I'm also going to set my preferred ggplot2 theme, but as you wish.
 
 ```{r packages, cache=F, message=F}
 ## Load/install packages
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(tidyverse, hrbrthemes, lubridate, sparklyr)
+pacman::p_load(tidyverse, hrbrthemes, lubridate, janitor, sparklyr, dbplot)
 ## My preferred ggplot2 theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
@@ -193,46 +193,50 @@ collected_mean_dep_delay %>%
 
 ### Option 2: Distributed analysis using `sparklyr` and `dbplot`
 
-While the above method is great for showing off the power of the shell and the basic functionality of `sparklyr`, it doesn't demonstrate the core distributed functionality of the Spark ecosystem. So, here's an arguably better approach that does just that. 
+While the above method is great for showing off the power of the shell and the basic functionality of `sparklyr`, it doesn't demonstrate the core *distributed* functionality of the Spark ecosystem. In particular, Spark is very efficient --- optimised, even --- for working with a distributed files. Our second example is intended to demonstrate this functionality. Note that, while it will involve a pretty simple distributed set of files on our local computer, the same ideas would apply to more complicated cluster setups.
 
-Let's start by removing that `combined.csv` file from earlier, just to convince ourselves that we're not somehow reading in the shell-concatenated file. We want to make sure that we're working across a distributed set of files.
+Let's start by removing that `combined.csv` file from earlier, just to convince ourselves that we're not somehow reading in the concatenated file. We want to make sure that we're working across a distributed set of files.
 
-```{r, eval=F}
+```{r rm_combined}
 file.remove("data/combined.csv")
 list.files("data/")
 ```
 
-Good. We're only left with the individual monthly CSVs. Now we instantiate a new spark connection (which we'll again call "sc" but that doesn't matter.) Similar to the earlier shell-based approach where we extracted the column names from the first file, we'll read that structure into a separate vector called `col_names`.
+Good. We're only left with the individual monthly CSVs. Now we instantiate a new spark connection. (which we'll again call "sc" but that doesn't matter). Similar to the earlier shell-based approach where we extracted the column names from the first file, we'll read this structure into a separate vector called `col_names`. I'll also use the `janitor` package to clean up the column names.
 
-```{r, eval=F}
+```{r col_names}
 sc <- spark_connect(master = "local")
 
-library(janitor)
+# library(janitor) ## Already loaded
+
 col_names <- 
   read.csv("data/airOT201201.csv", nrows = 1, stringsAsFactors = F) %>% 
   clean_names() %>%
   names()
 ```
 
-```{r, eval=F}
-air_distr <- 
+Now, we read in the distributed files. We'll be using the same `spark_read_csv()` function as before, but now I'll just use the path for the whole `data/` directory rather than any individual CSVs. I'll call this new (distributed) Spark object `air_new`, but only to keep it clear that this is not the same object as before.
+
+```{r air_new}
+air_new <- 
   spark_read_csv(
   sc,
-  name = "air_distr",
+  name = "air_new",
   path = "./data/",
   memory = FALSE,
   columns = col_names,
   infer_schema = FALSE
-)
+  )
 
-air_distr %>% 
+air_new %>% 
   count()
-
 ```
 
-```{r, eval=F}
-cached_air_distr <- 
-  air_distr %>% 
+Next we cache the (distributed) Spark object to improve performace. There are various ways to do this and you can read more about the underlying idea [here](https://spark.rstudio.com/guides/caching/).
+
+```{r air_new_cached}
+air_new_cached <- 
+  air_new %>% 
   select(fl_date, #month,
          dep_time,
          arr_time,
@@ -241,29 +245,29 @@ cached_air_distr <-
          distance) %>%
   # mutate_all(as.numeric) %>%
   mutate_at(vars(dep_time:distance), as.numeric) %>%
-  compute("cached_air_distr")
+  compute("air_new_cached")
 
-cached_air_distr %>% 
+air_new_cached %>% 
   count()
 
-head(cached_air_distr, 5)
-
+head(air_new_cached, 5)
 ```
 
-```{r, eval=F}
-library(dbplot)
+Now we can plot using the [dbplot package](https://db.rstudio.com/dbplot/).
 
-cached_air_distr %>%
+```{r air_new_cached_plot}
+# library(dbplot) ## Already loaded
+
+air_new_cached %>%
   ## Can't use lubridate functions (e.g. ymd()), so h 
   # mutate(Date = as.Date(paste("2012", as.integer(month), "01", sep="-"))) %>% 
   mutate(Date = as.Date(fl_date)) %>%
-  dbplot_line(Date, mean(dep_delay)) +
-  theme_ipsum_rc()
+  dbplot_line(Date, mean(dep_delay))
 
 ```
 
 
-Finally, let's disconnect from our connection.
+Finally, let's disconnect from our Spark connection.
 ```{r discon, cache=F}
 spark_disconnect(sc)
 ```
