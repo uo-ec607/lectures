@@ -39,12 +39,12 @@ You should already have done this for the lecture on Google Compute Engine. See 
 - **New:** `dbplyr`, `DBI`, `RSQLite`,`bigrquery`, `glue`
 - **Already used:** `tidyverse`, `hrbrthemes`, `nycflights13`
 
-As per usual, the code chunk below will install (if necessary) and load all of these packages for you. Note that the `DBI` package is automatically installed as a dependency of `dbplyr`, so I'm not going to specify it here. I'm also going to set my preferred ggplot2 theme, but as you wish.
+As per usual, the code chunk below will install (if necessary) and load all of these packages for you. I'm also going to set my preferred ggplot2 theme, but as you wish.
 
 ```{r, cache=F, message=F}
 ## Load/install packages
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(tidyverse, dbplyr, RSQLite, bigrquery, hrbrthemes, nycflights13, glue)
+pacman::p_load(tidyverse, DBI, dbplyr, RSQLite, bigrquery, hrbrthemes, nycflights13, glue)
 ## My preferred ggplot2 theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
@@ -61,7 +61,7 @@ Simply that you can interact with the vast datasets that are stored in relationa
 
 Behind the scenes, `dplyr` is able to do this thanks to ~~black voodoo magic~~ the `dbplyr` backend. What's happening even further behind the scenes is that, upon installation, `dbplyr` suggests the `DBI` package as a dependency. `DBI` provides a common interface that allows `dplyr` to work with many different databases using the same code. 
 
-While `DBI` is automatically installed with `dbplyr`, you'll need to install a specific backend package for the type of database that you want to connect to. You can see a list of commonly used backends [here](https://db.rstudio.com/dplyr/#getting-started). For today, however, we'll focus on two: 
+While `DBI` is automatically bundled with `dbplyr`, you'll need to install a specific backend package for the type of database that you want to connect to. You can see a list of commonly used backends [here](https://db.rstudio.com/dplyr/#getting-started). For today, however, we'll focus on two: 
   
 1. `RSQLite` embeds a SQLite database.
 2. `bigrquery` connects to Google BigQuery.
@@ -274,7 +274,7 @@ con <-
     )
 ```
 
-One neat thing about this setup is that the connection holds for any tables with the specified dataset (here: "samples" from the "publicdata" project). We just need to specify the exact table we need using `dplyr::tbl()` and then execute our query as per usual. Make sure that you run the next line interactively if this is the first time you're ever connecting to BigQuery via the `bigqueryr` package. You will be prompted to choose whether you want to cache credentials between R sessions (I recommend "Yes") and then to authorise access in your browser and w
+One neat thing about this setup is that the connection holds for any tables with the specified dataset (here: "samples" from the "publicdata" project). We just need to specify the exact table we need using `dplyr::tbl()` and then execute our query as per usual. Make sure that you run the next line interactively if this is the first time you're ever connecting to BigQuery via the `bigqueryr` package. You will be prompted to choose whether you want to cache credentials between R sessions (I recommend "Yes") and then to authorise access in your browser.
 
 ```{r, bq_natality}
 natality <- tbl(con, "natality")
