@@ -82,10 +82,6 @@ Data science skills are largely distinct from (and complementary to) the core 'm
 > *"In short, we will cover things that I wish someone had taught me when I was starting out in graduate
 school."*
 
---
-
-P.S. This is an "environmental" PhD seminar only in the most nominal sense. It is really an applied data science course taught by an environmental economist.
-
 ---
 
 # You, at the end of this course
@@ -135,7 +131,7 @@ P.S. This is an "environmental" PhD seminar only in the most nominal sense. It i
 ### Scaling up: Big data and cloud computation
 
 - Docker
-- Virtual machines / cloud servers (Google Compute Engine)
+- Cloud computing with Google Compute Engine
 - High performance computing (Talapas cluster) 
 - Databases: SQL(ite) and BigQuery
 - Spark
@@ -371,7 +367,7 @@ name: ggplot2
 
 # Install and load
 
-Open up your laptops. For the remainder of this first lecture, we're going contine playing around with [ggplot2](https://ggplot2.tidyverse.org/) (i.e. livecoding).
+Open up your laptops. For the remainder of this first lecture, we're going continue playing around with [ggplot2](https://ggplot2.tidyverse.org/) (i.e. livecoding).
 
 If you don't have them already, install the `ggplot2` and `gapminder` packages via either:
 - **Console:** Enter `install.packages(c("ggplot2", "gapminder"), dependencies=T)`.
