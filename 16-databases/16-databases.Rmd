@@ -92,12 +92,15 @@ con <- dbConnect(RSQLite::SQLite(), path = ":memory:")
 
 As Hadley [describes](https://db.rstudio.com/dplyr/#connecting-to-the-database), the arguments to DBI::dbConnect() vary from database to database. However, the first argument is always the database backend, i.e. `RSQLite::SQLite()` in this case since we're using (R)SQLite. We'll see another example with a BigQuery database in the next section. Again, while this differs depending on the database type that you're connecting with, SQLite only needs one other argument: the `path` to the database. Here we use the special string, ":memory:", which causes SQLite to make a temporary in-memory database. We'll explore more complicated connections later on that will involve things like password prompts for remote databases.
 
-Our temporary database, `con`, has no data in it. For this example, we'll use copy across the `nycflights13::flights` dataset using the `dplyr::copy_to()` convenience function. This is just a quick and dirty way of getting data into a database that is useful for demonstration purposes. You can see that we're also passing a list of indexes as one of the arguments to the `copy_to()` function. Setting up these indexes (indices?) are in large part what enables efficient database performance and will typically be set by the database host platform or maintainer. Of course, that could be you one day, but we won't go into more depth about indices here.
+Our makeshift database, `con`, has no data in it. For this example, we'll use copy across the `nycflights13::flights` dataset using the `dplyr::copy_to()` convenience function. This just provides a simple way of getting data into our makeshift database, which can be used for demonstration purposes. Note that we are specifying the table name ("flights") that will exist within this database. You can also see that we're passing a list of indexes to the `copy_to()` function. Indexes enable efficient database performance, although these will be set by the database host platform or maintainer in normal applications.
 
 ```{r copy_to}
 # if (!require("nycflights13")) install.packages("nycflights13") ## Already installed
 
-copy_to(con, nycflights13::flights, "flights",
+copy_to(
+  dest = con, 
+  df = nycflights13::flights, 
+  name = "flights",
   temporary = FALSE, 
   indexes = list(
     c("year", "month", "day"), 
