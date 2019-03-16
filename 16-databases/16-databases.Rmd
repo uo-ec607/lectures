@@ -49,28 +49,35 @@ pacman::p_load(tidyverse, DBI, dbplyr, RSQLite, bigrquery, hrbrthemes, nycflight
 theme_set(hrbrthemes::theme_ipsum())
 ```
 
+## Databases 101
+
+Many "big data" problems could be accurately described as "small data problems in disguise". Which is to say, the data that we care about is only a subset or aggregation of some larger dataset. For example, we might want to access US Census data... but only for a handful of counties along the border of two contiguous states (for example, Oregon and Washington). Or, we might want to analyse climate data collected from a large number of weather stations... but aggregated up to the national or monthly level. In such cases, the underlying bottleneck is interacting with the original data, which is too big to fit into memory. How do we store data of this magnitude and effectively access it? Enter **relational databases**. 
+
+Databases can exist either locally or remotely, though the latter is more common.^[For the rest of this lecture, I'll be using "databases" and "relational databases" interchangeably, so don't be put off if I switch between them.] The key point is that they are stored on-disk, rather than in-memory. We can then **query** the database to manipulate and/or extract the bits of information that we want from this much larger information set. Once that query is complete, we can pull this more manageable data into memory and continue with our analysis as per usual.
+
+At this point, you might be tempted to think of a database as the "thing" that you interact with directly. However, it's important to realise that the data are actually organised in one or more tables within the database. These tables are rectangular, consisting of rows and columns, where each row is indentified by a unique key. In that sense, they are very much like the tidy data frames that we've been using throughout this course. Continuing with the analogy, a database is rather like a list of data frames of R. To access information from a specific table (data frame), we first have to index it from the database (list) and then execute our query functions. The only material difference being that the database can hold much more information and is extremely efficient at executing queries over its vast contents.
+
+
 ## Databases and the tidyverse
 
-One the best features of the tidyverse --- in particular `dplyr` --- is that allows for direct communication with databases. 
+Speaking of queries, virtually relational database in existence makes use of [**SQL**](https://en.wikipedia.org/wiki/SQL) (**S**tructured **Q**uery **L**anguage ).  SQL is an extremely powerful tool and has become something of prerequisite for many data science jobs. ([Exhibit A](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.html#21).) However, it is also an archaic language that is much less intuitive to work with than the tidyverse tools that we have been using to manipulate data thus far in the course. We'll see several examples of this shortly, but first the good news: You already have all the programming skills you need to start working with databases. This is because the tidyverse --- through `dplyr` --- allows for direct communication with databases. 
 
-What does this mean?  
-
-Simply that you can interact with the vast datasets that are stored in relational databases *using exactly the same tidyverse verbs and syntax that we already know*. You don't even need to learn SQL. 
+What does this mean? Simply that you can interact with the vast datasets that are stored in relational databases and tables using *exactly* the same tidyverse verbs and syntax that we already know! You don't even need to learn SQL.
 
 **Aside.** Okay, you will probably want to learn SQL eventually. Luckily, `dplyr` and `dbplyr` come with several features that can really help to speed up the learning and translation process. We'll get to these later on in the lecture.
 
-Behind the scenes, `dplyr` is able to do this thanks to ~~black voodoo magic~~ the `dbplyr` backend. What's happening even further behind the scenes is that, upon installation, `dbplyr` suggests the `DBI` package as a dependency. `DBI` provides a common interface that allows `dplyr` to work with many different databases using the same code. 
+All of this is possible thanks to the [**dbplyr** package](https://dbplyr.tidyverse.org/), which provides a database backend to `dplyr`. What's happening even further behind the scenes is that, upon installation, `dbplyr` suggests the [**DBI** package](https://db.rstudio.com/dbi) as a dependency. `DBI` provides a common interface that allows `dplyr` to work with many different databases using the same code. 
 
 While `DBI` is automatically bundled with `dbplyr`, you'll need to install a specific backend package for the type of database that you want to connect to. You can see a list of commonly used backends [here](https://db.rstudio.com/dplyr/#getting-started). For today, however, we'll focus on two: 
   
 1. `RSQLite` embeds a SQLite database.
 2. `bigrquery` connects to Google BigQuery.
 
-The former is a lightweight SQL database engine that can exist on our local computers. It thus provides the simplest way of demonstrating the key concepts of this section without the additional overhead required by the other database types. (No need for a outside database server, for starters.) The latter is the one that I use most frequently in my own work and also requires minimal overhead, seeing as we already set up a Google Cloud account in the previous lecture.
+The former is a lightweight SQL database engine that can exist on our local computers. It thus provides the simplest way of demonstrating the key concepts of this section without the additional overhead required by the other database types. (No need to connect to a remote server, for starters.) The latter is the one that I use most frequently in my own work and also requires minimal overhead, seeing as we already set up a Google Cloud account in the previous lecture.
 
 ## Getting started: SQLite
 
-This next section is largely lifted directly from Hadley's excellent tutorial on [Databases using dplyr](https://db.rstudio.com/dplyr). 
+This next section is largely lifted directly from Hadley Wickham's excellent tutorial on [Databases using dplyr](https://db.rstudio.com/dplyr). 
 
 ### Connecting to a database
 
@@ -85,7 +92,7 @@ con <- dbConnect(RSQLite::SQLite(), path = ":memory:")
 
 As Hadley [describes](https://db.rstudio.com/dplyr/#connecting-to-the-database), the arguments to DBI::dbConnect() vary from database to database. However, the first argument is always the database backend, i.e. `RSQLite::SQLite()` in this case since we're using (R)SQLite. We'll see another example with a BigQuery database in the next section. Again, while this differs depending on the database type that you're connecting with, SQLite only needs one other argument: the `path` to the database. Here we use the special string, ":memory:", which causes SQLite to make a temporary in-memory database. We'll explore more complicated connections later on that will involve things like password prompts for remote databases.
 
-Our temporary database, `con`, has no data in it. For this example, we'll use copy across the `nycflights13::flights` dataset using the `dplyr::copy_to()` convenience function. This is just a "quick and dirty" way of getting data into a database that is useful for demonstration purposes. You can see that we're also passing a list of indexes as one of the arguments to the `copy_to()` function. Setting up these indexes (indices?) are in large part what enables efficient database performance and will typically be set by the database host platform or maintainer. Of course, that could be you one day, but we won't go into more depth about indices here.
+Our temporary database, `con`, has no data in it. For this example, we'll use copy across the `nycflights13::flights` dataset using the `dplyr::copy_to()` convenience function. This is just a quick and dirty way of getting data into a database that is useful for demonstration purposes. You can see that we're also passing a list of indexes as one of the arguments to the `copy_to()` function. Setting up these indexes (indices?) are in large part what enables efficient database performance and will typically be set by the database host platform or maintainer. Of course, that could be you one day, but we won't go into more depth about indices here.
 
 ```{r copy_to}
 # if (!require("nycflights13")) install.packages("nycflights13") ## Already installed
@@ -115,13 +122,14 @@ It worked! Everything looks pretty good, although you may notice something sligh
 
 ### Generating queries
 
-Pretty much every relational database in existence makes use of [SQL](https://en.wikipedia.org/wiki/SQL) --- i.e. **S**tructured **Q**uery **L**anguage --- to query its contents. By "query", we mean manipulate the data and/or extract the bits of information that we want from a much larger information set. Again, one of the best things about `d(b)plyr` is that it automatically translates tidyverse-style code into SQL for you. In fact, many of the key `dplyr` verbs are based on SQL equivalents. 
-
-With that in mind, let's try out a few queries using the typical `dplyr` syntax that we're already used to.
+Again, one of the best things about `dplyr` is that it automatically translates tidyverse-style code into SQL for you. In fact, many of the key `dplyr` verbs are based on SQL equivalents.  With that in mind, let's try out a few queries using the typical `dplyr` syntax that we already know.
 
 ```{r flights_db_try_queries}
+## Select some columns
 flights_db %>% select(year:day, dep_delay, arr_delay)
+## Filter according to some condition
 flights_db %>% filter(dep_delay > 240) 
+## Get the mean delay by destination (group and then summarise)
 flights_db %>%
   group_by(dest) %>%
   summarise(delay = mean(dep_time))
@@ -151,7 +159,7 @@ tailnum_delay_db <-
   filter(n > 100)
 ```
 
-Surprisingly, this sequence of operations never touches the database.^[It's a little hard to tell from this simple example, but an additional clue is that fact that this sequence of commands would execute instaneously even it it was applied on a massive remote database.] It’s not until you actually ask for the data (e.g., by printing `tailnum_delay_db`) that `dplyr` generates the SQL and requests the results from the database. Even then it tries to do as little work as possible and only pulls down a few rows.
+Surprisingly, this sequence of operations never touches the database.^[It's a little hard to tell from this simple example, but an additional clue is that fact that this sequence of commands would execute instaneously even it it was applied on a massive remote database.] It’s not until you actually ask for the data (say, by printing `tailnum_delay_db`) that `dplyr` generates the SQL and requests the results from the database. Even then it tries to do as little work as possible and only pulls down a few rows.
 
 ```{r tailnum_delay_db_print}
 tailnum_delay_db
@@ -187,7 +195,7 @@ Behind the scenes, `dplyr` is translating your R code into SQL. You can use the 
 tailnum_delay_db %>% show_query()
 ```
 
-Note that the SQL call is much less appealing/intuitive our piped `dplyr` code. This results partly from the way that `dplyr` translated the code (e.g. those repeated `SELECT` commands at the top of the SQL string are redundant). However, it also reflects the simple fact that SQL is not an elegant language to work with. In particular, SQL imposes a **lexical** order of operations that doesn't necessarily preserve the **logical** order of operations.^[Which stands in direct contrast to our piped `dplyr` code, i.e. "take this object, do this, then do this", etc.] This lexical ordering is also known as "order of execution" and is strict in the sense that (nearly) every SQL query must follow the same hierarchy of commands. I don't want to go through this all now, but I did want to make you aware of it. While it can take a little while to wrap your head around, the good news is that it is certainly learnable. ([Here](https://www.eversql.com/sql-order-of-operations-sql-query-order-of-execution/) and [here](https://blog.jooq.org/2016/12/09/a-beginners-guide-to-the-true-order-of-sql-operations/) are great places to start.) The even better news is that you may not even need SQL given how well the `dplyr` translation works. Tidyverse FTW!
+Note that the SQL call is much less appealing/intuitive our piped `dplyr` code. This results partly from the way that `dplyr` translated the code (e.g. those repeated `SELECT` commands at the top of the SQL string are redundant). However, it also reflects the simple fact that SQL is not an elegant language to work with. In particular, SQL imposes a **lexical** order of operations that doesn't necessarily preserve the **logical** order of operations.^[Which stands in direct contrast to our piped `dplyr` code, i.e. "take this object, do this, then do this", etc. I even made a meme about it for you: https://www.captiongenerator.com/1325222/Dimitri-doesnt-need-SQL] This lexical ordering is also known as "order of execution" and is strict in the sense that (nearly) every SQL query must follow the same hierarchy of commands. I don't want to go through this all now, but I did want to make you aware of it. While it can take a while to wrap your head around, the good news is that it is certainly learnable. ([Here](https://www.eversql.com/sql-order-of-operations-sql-query-order-of-execution/) and [here](https://blog.jooq.org/2016/12/09/a-beginners-guide-to-the-true-order-of-sql-operations/) are great places to start.) The even better news is that you may not even need SQL given how well the `dplyr` translation works. 
 
 And yet... At some point you may still find yourself wanting or needing to use SQL code to query a database from R (or directly within a database for that matter). Thankfully, this is easily done with the `DBI` package. The same `DBI::dbGetQuery()` function that we used earlier to establish the original database connection (i.e. `con`) also accepts "raw" SQL code.
 
