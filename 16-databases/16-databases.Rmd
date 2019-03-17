@@ -245,11 +245,17 @@ dbDisconnect(con)
 ```
 
 
-## Scaling up: BigQuery
+## Scaling up: Google BigQuery
 
-See [here](https://cloud.google.com/bigquery/sample-tables) for a description of BigQueries sample tables. There are also many other datasets beyond these sample tables that are publicly available; see [here](https://www.reddit.com/r/bigquery/wiki/datasets) for a full list.
+Now that you've hopefully absorbed the key principles of database interaction from our demonstration example, let's move on to a more realistic use-case. In particular, the database service that I rely on for my own daily workflow is [**Google BigQuery**](https://cloud.google.com/bigquery/). The advertising tagline is that BigQuery is a "serverless, highly scalable, enterprise data warehouse designed to make all your data analysts productive at an unmatched price-performance." We needn't get sucked into the marketing spin and technical jargon. However, I think it's fair to say that BigQuery is a fantastic product. The salient features from our perspective are: 
 
-We already set up our Google project API keys with the googleComputeEngineR package in a previous lecture. So you should have your project ID stored as the `GCE_DEFAULT_PROJECT_ID` variable in your `~/.Renviron` file. (Confirm this for yourself if you aren't sure.) This provides a convenient and safe way to share R scripts and Rmd files (like these notes!) without compromising security. Of course, you could always just specify the project ID string directly if you are working on your own scripts. 
+- **Accessibility.** BigQuery is part of the Google Cloud Platform (GCP) that we signed up for in the [cloud computing lecture](https://raw.githack.com/uo-ec607/lectures/master/14-gce/14-gce.html). So you should already have *gratis* access to it. Sign up for a GCP [12-month free trial](https://console.cloud.google.com/freetrial) now if you haven't done so yet.
+- **Economy.** It is extremely fast and economical to use. (See: [Pricing](https://cloud.google.com/bigquery/pricing).) Even disregarding our free trial period, you are allowed to query 1 TB of data for free each month.^[That's "T" as in *terabytes*.] Each addtional TB beyond that will only cost you $5 once your free trial ends. Storage is also very cheap, although you already have access to an array of public datasets. Speaking of which...
+- **Data availability.** BigQuery hosts several [sample tables](https://cloud.google.com/bigquery/sample-tables) to get you started. Beyond that, however, there are some incredible [public datasets](https://www.reddit.com/r/bigquery/wiki/datasets) available on the platform. You can find everything from NOAA's worldwide weather records... to Wikipedia data... to Facebook comments... to liquor sales in Iowa... to real estate transactions across Latin America. I daresay you could generate an effective research program simply by staring at these public datasets.
+
+Most heavy BigQuery users tend to interact with the platform directly in the [console editor](https://console.cloud.google.com/bigquery). This has a bunch of nice features like automatic SQL query formatting and table previewing.^[[Here's](https://towardsdatascience.com/bigquery-without-a-credit-card-discover-learn-and-share-199e08d4a064) a neat example showing how to find the most popular "Alan" according to Wikipedia page views.] However, I'll focus on interacting with BigQuery databases from R, with help from the very useful [**bigrquery** package](https://bigrquery.r-dbi.org/).
+
+The starting point for using the `bigrquery` package is to provide your GCP project billing ID. It's easy enough to specify this as a string directly in your R script, say `billing_id <- "your_project_id_here"`. However, you may recall that we already stored our GCP credentials during the [cloud computing lecture](https://raw.githack.com/uo-ec607/lectures/master/14-gce/14-gce.html). In particular, your project ID should be saved as an environment variable in the `.Renviron` file in your home directory.^[We did this as part of the authentication process of the `googleComputeEngineR` package. If you aren't sure, you can confirm for yourself by running `usethis::edit_r_environ()` in your R console. If you don't see a variable called `GCE_DEFAULT_PROJECT_ID`, then you should rather specify your project ID directly.] In that case, we can just call it by using the `Sys.getenv()` command. I'm going to use this latter approach, since it provides a safe and convenient way for me to share these lecture notes without compromising security. But as you wish.
 
 ```{r billing_id}
 # library(bigrquery) ## Already loaded
@@ -257,26 +263,17 @@ We already set up our Google project API keys with the googleComputeEngineR pack
 billing_id <- Sys.getenv("GCE_DEFAULT_PROJECT_ID") ## Replace with your project ID if this doesn't work
 ```
 
+Having set our project IDs, we are now ready to run queries and download BigQuery data into our R environment. I'll demonstrate using two examples: 1) US birth data from the samples data, and 2) Fishing effort data from the Global Fishing Watch project.
+
 ### Example 1) US birth data
 
-Having set our project IDs, we are now free to run queries and download data to our R environment using a variety of approaches. For example, we could use BigQuery's low-level API directly.
-
-```{r bq_api}
-sql_string <- "SELECT year, month, day, weight_pounds FROM `publicdata.samples.natality`"
-tb <- bq_project_query(billing_id, sql_string)
-bq_table_download(
-  tb, 
-  max_results = 10
-  )
-```
-
-However, for consistency's sake, we'd prefer to stick with the `dplyr` (and/or `DBI`) methods that we've alredy been practicing. Start by establishing a connection using `DBI::dbConnect()`, this time specifying the BigQuery backend (via `bigrquery::bigquery()`) and providing our credentials.
+The `bigrquery` package supports various ways --- or "abstraction levels" --- of running queries from R, including interacting directly with the low-level API. In the interests of brevity, I'm only going to focus on the `dplyr` approach here.^[I encourage you to read the package documentation to see these other methods for yourself.] As with the the SQLite example from earlier, we start by establishing a connection using `DBI::dbConnect()`. The only difference this time is that we need to specify that are using the BigQuery backend (via `bigrquery::bigquery()`) and provide our credentials (via our project billing ID). For example, let's connect to the "samples" dataset.
 
 ```{r, bq_con}
-# library(DBI)
-# library(dplyr)
+# library(DBI) ## Already loaded
+# library(dplyr) ## Already loaded
 
-con <- 
+bq_con <- 
   dbConnect(
     bigrquery::bigquery(),
     project = "publicdata",
@@ -288,21 +285,47 @@ con <-
 One neat thing about this setup is that the connection holds for any tables with the specified dataset (here: "samples" from the "publicdata" project). We just need to specify the exact table we need using `dplyr::tbl()` and then execute our query as per usual. Make sure that you run the next line interactively if this is the first time you're ever connecting to BigQuery via the `bigqueryr` package. You will be prompted to choose whether you want to cache credentials between R sessions (I recommend "Yes") and then to authorise access in your browser.
 
 ```{r, bq_natality}
-natality <- tbl(con, "natality")
+natality <- tbl(bq_con, "natality")
 ```
 
-```{r natality_collect}
-natality %>%
-  select(year, month, day, weight_pounds) %>% 
-  head(10) %>%
+```{r birth_weight}
+birth_weight <-
+  natality %>%
+  group_by(year, is_male) %>%
+  summarise(weight_pounds = mean(weight_pounds)) %>% 
   collect()
+```
+
+```{r birth_weight_plot}
+birth_weight %>% 
+  mutate(gender = ifelse(is_male, "Male", "Female")) %>%
+  ggplot(aes(year, weight_pounds)) + 
+  geom_line() + 
+  facet_wrap(~gender)
+```
+
+
+```{r birth_weight_st}
+birth_weight_st <-
+  natality %>%
+  group_by(year, state, is_male) %>%
+  summarise(weight_pounds = mean(weight_pounds)) %>% 
+  collect()
+```
+
+```{r birth_weight_st_plot}
+birth_weight_st %>% 
+  mutate(gender = ifelse(is_male, "Male", "Female")) %>%
+  ggplot(aes(year, weight_pounds, col=gender)) + 
+  geom_line() + 
+  facet_wrap(~state)
 ```
 
 
 As before, its best practice to disconnect from the server once you are finished.
 
 ```{r bq_dbDisconnect}
-dbDisconnect(con)
+dbDisconnect(bq_con)
 ```
 
 ### Example 2) Global fishing watch
