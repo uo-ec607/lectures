@@ -45,7 +45,7 @@ Depends on a lot things and I'm too time constrained right now... but I'm thinki
 13. Docker \[[rOpenSci tutorial](http://ropenscilabs.github.io/r-docker-tutorial/)\]
 14. Cloud computing with Google Compute Engine \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/14-gce/14-gce.html)\]
 15. High performance computing (UO Talapas cluster) \[[Slides](https://docs.google.com/presentation/d/146u3W0J0ytGYBq7MZBOoE6wdbkEUrMIV-Fg5N3Cnsls/edit?usp=sharing) from Nick Maggio guest lecture.\]
-16. Databases: SQL(ite) and BigQuery
+16. Databases: SQL(ite) and BigQuery \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/16-databases/16-databases.html)\]
 17. Spark
 18. Machine learning: (1)
 19. Machine learning: (2)
