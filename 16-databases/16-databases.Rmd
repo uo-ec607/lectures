@@ -255,7 +255,7 @@ Now that you've hopefully absorbed the key principles of database interaction fr
 - **Economy.** It is extremely fast and economical to use. (See: [Pricing](https://cloud.google.com/bigquery/pricing).) Even disregarding our free trial period, you are allowed to query 1 TB of data for free each month.^[That's "T" as in *terabytes*.] Each addtional TB beyond that will only cost you $5 once your free trial ends. Storage is also very cheap, although you already have access to an array of public datasets. Speaking of which...
 - **Data availability.** BigQuery hosts several [sample tables](https://cloud.google.com/bigquery/public-data/#sample_tables) to get you started. Beyond that, however, there are some incredible [public datasets](https://www.reddit.com/r/bigquery/wiki/datasets) available on the platform. You can find everything from NOAA's worldwide weather records... to Wikipedia data... to Facebook comments... to liquor sales in Iowa... to real estate transactions across Latin America. I daresay you could generate an effective research program simply by staring at these public datasets.
 
-Most heavy BigQuery users tend to interact with the platform directly in the [console editor](https://console.cloud.google.com/bigquery). This has a bunch of nice features like automatic SQL query formatting and table previewing. I recommend you try the console out after going through these lecture notes.^[[Here's](https://towardsdatascience.com/bigquery-without-a-credit-card-discover-learn-and-share-199e08d4a064) a neat example showing how to find the most popular "Alan" according to Wikipedia page views.] For now, however, I'll focus on interacting with BigQuery databases from R, with help from the very useful [**bigrquery** package](https://bigrquery.r-dbi.org/).
+Most heavy BigQuery users tend to interact with the platform directly in the [web UI](https://console.cloud.google.com/bigquery). This has a bunch of nice features like automatic SQL query formatting and table previewing. I recommend you try the BigQuery web UI out after going through these lecture notes.^[[Here's](https://towardsdatascience.com/bigquery-without-a-credit-card-discover-learn-and-share-199e08d4a064) a neat example showing how to find the most popular "Alan" according to Wikipedia page views.] For now, however, I'll focus on interacting with BigQuery databases from R, with help from the very useful [**bigrquery** package](https://bigrquery.r-dbi.org/).
 
 The starting point for using the `bigrquery` package is to provide your GCP project billing ID. It's easy enough to specify this as a string directly in your R script. However, you may recall that we already stored our GCP credentials during the [cloud computing lecture](https://raw.githack.com/uo-ec607/lectures/master/14-gce/14-gce.html). In particular, your project ID should be saved as an environment variable in the `.Renviron` file in your home directory.^[We did this as part of the authentication process of the `googleComputeEngineR` package. If you aren't sure, you can confirm for yourself by running `usethis::edit_r_environ()` in your R console. If you don't see a variable called `GCE_DEFAULT_PROJECT_ID`, then you should rather specify your project ID directly.] In that case, we can just call it by using the `Sys.getenv()` command. I'm going to use this latter approach, since it provides a safe and convenient way for me to share these lecture notes without compromising security. But as you wish.
 
@@ -386,26 +386,26 @@ Again, we can look at the available tables within this connection using `DBI::db
 dbListTables(gfw_con)
 ```
 
-We're going to be querying the "fishing_effort" table. Let's link it to a local (lazy) data frame that we'll call `effort`.
+All of these tables are interesting in their own right, but we're going to be querying the "fishing_effort" table. Let's link it to a local (lazy) data frame that we'll call `effort`.
 
 ```{r effort}
 effort <- tbl(gfw_con, "fishing_effort")
 effort
 ```
 
-Now, we can do things like find out who are the top fishing nations in the world by total number of hours fished. As we can see, China is by far the dominant player here.
+Now, we can do things like find out who are the top fishing nations by total number of hours fished. As we can see, China is by far the dominant player on the world stage:
 
 ```{r top_fish}
 effort %>%
   group_by(flag) %>%
-  summarise(total_fishing_hours = sum(fishing_hours)) %>%
+  summarise(total_fishing_hours = sum(fishing_hours, na.rm=T)) %>%
   arrange(desc(total_fishing_hours)) %>%
   collect()
 ```
 
 #### Aside on filtering GFW data by dates
 
-One thing I wanted to flag quickly is that manipulating the GFW data according to dates is a little tricky using the `bigrquery` + `dplyr` framework. For example, you may have noticed that the "date" column in the `effort` table is actually a character string. So you would need to convert it to a date variable before doing any filtering. However, it turns out that converting a character variable to a date variable using the dplyr approach is difficult. Moreover, the preferred approach of the GFW team is to filter their data using [partition dates](https://cloud.google.com/bigquery/docs/best-practices-costs#partition_data_by_date) --- i.e. timestamps of when the data were ingested --- since this is generally a more cost-effective way of querying datasets. The way this works in native SQL is to reference a special `_PARTITIONTIME` pseudo column. See some examples [here](https://globalfishingwatch.org/data-blog/our-data-in-bigquery/). 
+One thing I wanted to flag quickly is that querying the GFW data with the `bigrquery` + `dplyr` framework is a little tricky if you want to manipulate or filter by dates. You may have noticed that the "date" column in the `effort` table is actually a character string. So you would need to convert it to a date variable before doing any filtering. However, it turns out that converting a character variable to a date variable using the `dplyr` approach here is difficult in of itself. Moreover, the preferred approach of the GFW team is to filter their data using [partition dates](https://cloud.google.com/bigquery/docs/best-practices-costs#partition_data_by_date) --- i.e. timestamps of when the data were ingested --- since this is generally a more cost-effective way of querying datasets. The way this works in native SQL is to reference a special `_PARTITIONTIME` pseudo column. See some examples [here](https://globalfishingwatch.org/data-blog/our-data-in-bigquery/). 
 
 There's currently no direct translation of this `_PARTITIONTIME` pseudo column using the `dplyr` approach to querying a BigQuery table. However, we can incorporate SQL chunks directly into our `dplyr` call using `!!build_sql()`.^[The `!!` is referred to as "bang bang" and is generally used to unquote an input that you want to be evaluated. More information on that [here](https://dplyr.tidyverse.org/articles/programming.html).] Here's an example that again identifies the world's top fishing nations, but this time limits the analysis to data from 2016 only.
 
@@ -414,16 +414,69 @@ effort %>%
   ## Here comes the filtering on partion time
   filter(
     !!build_sql("_PARTITIONTIME") >= "2016-01-01 00:00:00",
-    !!build_sql("_PARTITIONTIME") < "2017-01-01 00:00:00"
+    !!build_sql("_PARTITIONTIME") <= "2016-12-31 00:00:00"
     ) %>%
   ## End of partition time filtering
   group_by(flag) %>%
-  summarise(total_fishing_hours = sum(fishing_hours)) %>%
+  summarise(total_fishing_hours = sum(fishing_hours, na.rm=T)) %>%
   arrange(desc(total_fishing_hours)) %>%
   collect()
 ```
 
 Once again, China takes first place. There is some shuffling for the remaining places in the top 10, though.
+
+
+#### One last query: Global fishing effort in 2016
+
+Okay, here's a quick final query to get global fishing effort in 2016. I'm not going to comment my code much, but hopefully it's clear that that I'm creating 1 × 1 degree bins and then aggregating fishing effort up to that level.
+
+```{r globe}
+## Define the desired bin resolution in degrees
+resolution <- 1
+
+globe <-
+  effort %>%
+  filter(
+    !!build_sql("_PARTITIONTIME") >= "2016-01-01 00:00:00",
+    !!build_sql("_PARTITIONTIME") <= "2016-12-31 00:00:00"
+    ) %>%
+  filter(fishing_hours > 0) %>%
+  mutate(
+    lat_bin = lat_bin/100,
+    lon_bin = lon_bin/100
+    ) %>%
+  mutate(
+    lat_bin_center = floor(lat_bin/resolution)*resolution + 0.5*resolution,
+    lon_bin_center = floor(lon_bin/resolution)*resolution + 0.5*resolution
+    ) %>%
+  group_by(lat_bin_center, lon_bin_center) %>%
+  summarise(fishing_hours = sum(fishing_hours, na.rm=T)) %>%
+  collect()
+```
+
+Let's reward ourselves with a nice plot.
+
+```{r globe_plot}
+globe %>% 
+  filter(fishing_hours > 1) %>% 
+  ggplot() +
+  geom_raster(aes(x=lon_bin_center, y=lat_bin_center, fill=fishing_hours))+
+  scale_fill_viridis_c(
+    name = "Log fishing hours" ,
+    trans = "log",
+    breaks = scales::log_breaks(n = 5, base = 10),
+    labels = scales::comma
+    ) +
+  labs(
+    title = "Global fishing effort in 2016",
+    subtitle = paste0("Effort binned at the ", resolution, "° level."),
+    y = NULL, x = NULL,
+    caption = "Data from Global Fishing Watch"
+    ) +
+  theme_ipsum(grid=F) +
+  theme(axis.text=element_blank())
+```
+
 
 As always, remember to disconnect.
 
@@ -432,11 +485,20 @@ dbDisconnect(gfw_con)
 ```
 
 
-## Further resources
+## Where to next: Learning and practicing SQL
 
-- [Juan Mayorga](http://jsmayorga.com/post/getting-global-fishing-watch-from-google-bigquery-using-r) has an outstanding tutorial on "Getting Global Fishing Watch Data from Google Big Query using R". He also dives into some reasons why you might want to learn SQL and provides several examples. Highly recommended.
-- On the topic of SQL, I know that I've been somewhat dismissive about it today. I do think that you can get a great deal of mileage using the `dplyr`-database integration that we've focused on here. However, learning SQL will make a big difference to your life once you start working with databases regularly. It may also boost your employment options significantly. There are loads of good resources and courses for learning SQL online (e.g. [DataCamp](https://www.datacamp.com/courses/intro-to-sql-for-data-science) and we've already seen the `show_query()` function, which is a great way to get started if your coming from R. Another helpful `dplyr` resource is the provided by the "sql-translation" vignette, so take a look:
+I realise that I've been somewhat dismissive about SQL in these lecture notes. My goal has been to get you up running and running with databases as quickly and painlessly as possible. I also do think that you can get a great deal of mileage using the `dplyr` database integration that we've focused on here. However, learning SQL will make a big difference to your life once you start working with databases regularly. I expect that it will also boost your employment options significantly. The good news is that you are already well on your way to internalising the basic commands and structure of SQL queries. We've seen the `show_query()` function, which is a great way to get started if your coming from R and the tidyverse. Another helpful `dplyr` resource is the provided by the "sql-translation" vignette, so take a look:
 
 ```{r, eval=FALSE}
 vignette("sql-translation")
 ```
+
+In my experience, though the best best way to learn SQL is simply to *start writing your own queries*. The [**BigQuery web UI**](https://console.cloud.google.com/bigquery) is especially helpful in this regard. Not only is it extremely cheap to use (free up to 1 TB), but it also comes with a bunch of useful features like in-built query formatting and preemptive error detection. A good way to start is by copying over someone else's SQL code --- e.g. [here](https://towardsdatascience.com/bigquery-without-a-credit-card-discover-learn-and-share-199e08d4a064) or [here](https://globalfishingwatch.org/data-blog/our-data-in-bigquery/) --- modifying it slightly, and then see if you can run it in the BigQuery web UI.
+
+
+## Further resources
+
+You are spoilt for choice here and I've already hyperlinked to many resources throughout this lecture. So here are some final suggestions to get you querying databases like a boss.
+
+- [Juan Mayorga](https://twitter.com/juansmayorga) has an outstanding tutorial on "[Getting Global Fishing Watch Data from Google Big Query using R](http://jsmayorga.com/post/getting-global-fishing-watch-from-google-bigquery-using-r)". He also dives into some reasons why you might want to learn SQL and provides several examples. Highly recommended.
+- If you want a dedicated resource for learning SQL, then there are loads of online tutorials (e.g. [W3Schools](https://www.w3schools.com/sql/default.asp)) and courses (e.g. [DataCamp](https://www.datacamp.com/courses/intro-to-sql-for-data-science), [Codecademy](https://www.codecademy.com/learn/learn-sql)).
