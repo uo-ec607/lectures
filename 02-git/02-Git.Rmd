@@ -544,7 +544,7 @@ Caveats
 During your collaboration, you may have encountered a situation where Git is highlighting differences on seemingly unchanged sentences.
 - If that is the case, check whether your partner is using a different OS to you.
 
-The "culprit" is the fact that Git adds an invisible character at the end of every line. This is how Git tracks changes. (More info [here](https://help.github.com/articles/dealing-with-line-endings/).)
+The "culprit" is the fact that Git evaluates an invisible character at the end of every line. This is how Git tracks changes. (More info [here](https://help.github.com/articles/dealing-with-line-endings/) and [here](https://en.wikipedia.org/wiki/Newline).)
 - For Linux and MacOS, that ending is "LF"
 - For Windows, that ending is "CRLF" (of course it is...)
 
