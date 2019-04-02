@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott
   affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: Lecture 16  #"22 March 2019"
+date: Lecture 16  #"02 April 2019"
 output: 
   html_document:
     theme: flatly
@@ -513,6 +513,8 @@ bq_con <-
 
 One neat thing about this setup is that the connection holds for any tables within the specified database. We just need to specify the desired table using `dplyr::tbl()` and then execute our query as per usual. You can see a list of available tables within your connection by using `DBI::dbListTables()`.
 
+> **Tip:** Make sure that you run the next line interactively if this is the first time you're ever connecting to BigQuery from R. You will be prompted to choose whether you want to cache credentials between R sessions (I recommend "Yes") and then to authorise access in your browser.
+
 
 ```r
 dbListTables(bq_con)
@@ -529,15 +531,9 @@ dbListTables(bq_con)
 
 For this example, we'll go with the [natality](https://console.cloud.google.com/bigquery?p=bigquery-public-data&d=samples&t=natality&page=table&_ga=2.108840194.-1488160368.1535579560) table, which contains registered birth records for all 50 US states (1969--2008). 
 
-> **Tip:** Make sure that you run the next line interactively if this is the first time you're ever connecting to BigQuery from R. You will be prompted to choose whether you want to cache credentials between R sessions (I recommend "Yes") and then to authorise access in your browser.
-
 
 ```r
 natality <- tbl(bq_con, "natality")
-```
-
-```
-## Auto-refreshing stale OAuth token.
 ```
 
 As a reference point, the raw natality data on BigQuery is about 22 GB. Not gigantic, but enough to overwhelm most people's RAM. Here's a simple exercise where we collapse the data down to yearly means.
@@ -785,7 +781,7 @@ globe %>%
   ggplot() +
   geom_raster(aes(x=lon_bin_center, y=lat_bin_center, fill=fishing_hours))+
   scale_fill_viridis_c(
-    name = "Log fishing hours" ,
+    name = "Fishing hours (log scale)",
     trans = "log",
     breaks = scales::log_breaks(n = 5, base = 10),
     labels = scales::comma
