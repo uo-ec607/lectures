@@ -36,12 +36,25 @@ Sys.setenv(JAVA_HOME = "/usr/lib/jvm/java-8-openjdk")
 
 ### Apache Spark
 
-Much of today's lecture is going to be focused on the [sparklyr package](https://spark.rstudio.com/), which provides a seemless interface to the larger Apache Spark ecosystem. Among other things, the sparklyr package will install Spark (and different versions thereof) for you via the `sparklyr::spark_install()` command. Run this next code chunk interactively in your R session. Note that I am installing the latest available versions of both `sparklyr` and Spark, though I don't think this matters.
+Today's lecture is largely going to be focused on the [**sparklyr** package](https://spark.rstudio.com/), which provides a seemless interface to the larger [Apache Spark](https://spark.apache.org/) ecosystem. Among other things, `sparklyr` provides a convenient way to install Spark on your system via the `sparklyr::spark_install()` command. Run this next code chunk interactively in your R session. Note that I am installing the latest available versions of both `sparklyr` and Spark, although I don't think this matters.
 
 ```{r spark_install, eval=F}
 devtools::install_github("rstudio/sparklyr")
 sparklyr::spark_install(version = "2.4.0") ## Latest version at the time of writing
 ```
+
+Fair warning: Installation will take a while to complete.
+
+
+### Java 8 
+
+Spark requires Java 8. This is somewhat annoying, since you probably already have a newer version of Java installed on your system as the default.^[The method for checking which version(s) of Java you have varies by operating system. I therefore recommend that you Google it. On my linux system I can just use the following shell commands: `$ java --version` or `$ archlinux-java status` (Arch linux only).] One way to get around this problem is to [replace your current Java installation with Java 8](https://github.com/uc-cfss/Discussion/issues/71). This will automatically make it the default Java environment and is probably the simplest solution. However, I personally don't like the idea of uninstalling the most recent Java version on my computer just to run Spark. In my view, a better solution is to install Java 8 *alongside* your current version. You can then tell R which Java version it should use via an **environment variable**. This works exactly the same way as when we used environment variables to save secret API keys during our previous lectures on webscraping and so forth. (See [here](https://raw.githack.com/uo-ec607/lectures/master/07-web-apis/07-web-apis.html#aside:_safely_store_and_use_api_keys_as_environment_variables) if you missed it.) For example, you can tell R to use Java 8 for the current session by [setting a temporary environment variable](https://github.com/rstudio/sparklyr/issues/1383#issuecomment-381014611) with the following command.
+
+```{r java8, eval=F}
+Sys.setenv(JAVA_HOME = "/path/to/your/java8/installation") ## Change to the location of your Java 8 installation
+```
+
+Again, this will only last for the current R session. However, similarly to our approach for storing API keys across sessions, you can make Java 8 the permanent environment for your R work by adding `JAVA_HOME = "/path/to/your/java8/installation"` to your `~/.Renviron` file.
 
 
 ### R packages 
@@ -64,7 +77,7 @@ theme_set(hrbrthemes::theme_ipsum())
 
 Student presentation time. 
 
-If you're reading this after the fact, then the [Wikipedia page](https://en.wikipedia.org/wiki/Apache_Spark) is a good place to start. You'll note that Spark is often compared to a predecessor framework for cluster computing and distributed data processing called [(Hadoop) MapReduce](https://en.wikipedia.org/wiki/MapReduce). The key difference between these two frameworks is that Spark allows for in-memory processing, whereas MapReduce relies solely on I/O to disk. (See [here](https://www.scnsoft.com/blog/spark-vs-hadoop-mapreduce) and [here](https://www.quora.com/What-is-the-difference-in-idea-design-and-code-between-Apache-Spark-and-Apache-Hadoop/answer/Shubham-Sinha-202.)) You don't need to worry too much about all this now. It basically means that Spark is faster and better suited to our present needs. Spark also comes with a bunch of really cool extension libraries, which we'll just scratch the surface of today.
+If you're reading this after the fact, then the [Wikipedia page](https://en.wikipedia.org/wiki/Apache_Spark) is a good place to start. You'll note that Spark is often compared to a predecessor framework for cluster computing and distributed data processing called [(Hadoop) MapReduce](https://en.wikipedia.org/wiki/MapReduce). The key difference between these two frameworks is that Spark allows for in-memory processing, whereas MapReduce relies solely on I/O to disk. (See [here](https://www.scnsoft.com/blog/spark-vs-hadoop-mapreduce) and [here](https://www.quora.com/What-is-the-difference-in-idea-design-and-code-between-Apache-Spark-and-Apache-Hadoop/answer/Shubham-Sinha-202.)) You don't need to worry too much about all this now. It basically means that Spark is faster and better suited to our present needs. Spark also comes with a bunch of really cool extension libraries, which we'll barely scratch the surface of today.
 
 ## Working with big datasets
 
@@ -135,7 +148,7 @@ First, we need to instantiate a Spark connection via the **`sparklyr::spark_conn
 sc <- spark_connect(master = "local", config = spark_config())
 ```
 
-> **Tip: ** You may run into an error message to the effect of "Java X is currently unsupported in Spark distributions... Please consider uninstalling Java 9 and reinstalling Java 8". [Here's](https://github.com/uc-cfss/Discussion/issues/71) one way to do this, although I don't like the idea of uninstalling the most recent Java version on my computer for this error. A better solution, then, is to tell R that it should use Java 8 this session. Simply [set the environment variable](https://github.com/rstudio/sparklyr/issues/1383#issuecomment-381014611) by adding the following line to your R script `Sys.setenv(JAVA_HOME = "/path/to/java/installation")`.
+> **Tip: ** Did you run into an error message to the effect of "Java X is currently unsupported in Spark distributions... Please consider uninstalling Java 9 and reinstalling Java 8"? If so, please see the software requirements discussion for Java 8 (above)[#java8].
 
 A point of convenience here is `sparklyr` offers intuitive aliases for regular R functions. So, we'll be using the **`sparklyr::spark_read_csv()`** function to pull in this (pretend) large CSV. 
 
@@ -234,7 +247,7 @@ air_new %>%
 
 Next we cache the (distributed) Spark object to improve performace. There are various ways to do this and you can read more about the underlying idea [here](https://spark.rstudio.com/guides/caching/).
 
-```{r air_new_cached}
+```{r air_new_cached, dependson=air_new}
 air_new_cached <- 
   air_new %>% 
   select(fl_date, #month,
