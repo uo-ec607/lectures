@@ -30,24 +30,20 @@ Today I'll be using [JSONView](https://jsonview.com/), a browser extension that 
 
 ### R packages 
 
-- **New:** `jsonlite`, `httr`, `listviewer`, `fredr`, `usethis`
-- **Already used:** `tidyverse`, `lubridate`, `hrbrthemes`
+- **New:** `jsonlite`, `httr`, `listviewer`, `usethis`, `fredr`
+- **Already used:** `tidyverse`, `lubridate`, `hrbrthemes`, `janitor`
 
-The [httr package](https://httr.r-lib.org/index.html) already comes bundled with the tidyverse. So you only need to install the following:
-
-
-```r
-## Not run. (Run this manually yourself if you haven't installed these packages yet.)
-install.packages(c("jsonlite", "listviewer", "fredr"))
-```
-
-We might as well load the tidyverse now, since we'll be using it a fair bit today. It's not necessary, but I'll also set my preferred ggplot2 theme for the rest of this document.
+Here's a convenient way to install (if necessary) and load all of the above packages. I'll also go ahead and set my preferred plotting theme, but as you wish.
 
 
 ```r
-library(tidyverse)
+## Load and install the packages that we'll be using today
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, httr, lubridate, hrbrthemes, janitor, jsonlite, listviewer, usethis, fredr)
+## My preferred ggplot2 plotting theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
+
 
 ## Recap from last time
 
@@ -107,7 +103,8 @@ Now that we've located the API endpoint, let's read the data into R. We'll do so
 
 
 ```r
-library(jsonlite)
+# library(jsonlite) ## Already loaded
+
 nyc_trees <- 
   fromJSON("https://data.cityofnewyork.us/resource/nwxe-4ae8.json") %>%
   as_tibble()
@@ -215,7 +212,7 @@ Next, we'll use the `httr::GET()` function to request (i.e. download) the data. 
 
 
 ```r
-library(httr)
+# library(httr) ## Already loaded above
 
 fred <- 
   httr::GET(
@@ -284,7 +281,7 @@ Okay! We've finally got our data and are nearly ready for some plotting. However
 
 
 ```r
-library(lubridate)
+# library(lubridate) ## Already loaded above
 
 fred <-
   fred %>%
@@ -486,7 +483,7 @@ Okay, a clearer picture is starting to emerge. It looks like we can just bind th
 
 
 ```r
-library(janitor)
+# library(janitor) ## Already loaded above
 
 rankings <-
   bind_cols(

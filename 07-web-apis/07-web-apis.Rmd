@@ -32,22 +32,19 @@ Today I'll be using [JSONView](https://jsonview.com/), a browser extension that 
 
 ### R packages 
 
-- **New:** `jsonlite`, `httr`, `listviewer`, `fredr`, `usethis`
-- **Already used:** `tidyverse`, `lubridate`, `hrbrthemes`
+- **New:** `jsonlite`, `httr`, `listviewer`, `usethis`, `fredr`
+- **Already used:** `tidyverse`, `lubridate`, `hrbrthemes`, `janitor`
 
-The [httr package](https://httr.r-lib.org/index.html) already comes bundled with the tidyverse. So you only need to install the following:
+Here's a convenient way to install (if necessary) and load all of the above packages. I'll also go ahead and set my preferred plotting theme, but as you wish.
 
-```{r, eval = F}
-## Not run. (Run this manually yourself if you haven't installed these packages yet.)
-install.packages(c("jsonlite", "listviewer", "fredr"))
-```
-
-We might as well load the tidyverse now, since we'll be using it a fair bit today. It's not necessary, but I'll also set my preferred ggplot2 theme for the rest of this document.
-
-```{r tverse, cache=F, message=F}
-library(tidyverse)
+```{r packages, cache=F, message=F}
+## Load and install the packages that we'll be using today
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, httr, lubridate, hrbrthemes, janitor, jsonlite, listviewer, usethis, fredr)
+## My preferred ggplot2 plotting theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
+
 
 ## Recap from last time
 
@@ -106,7 +103,8 @@ Here's a GIF of me completing these steps:
 Now that we've located the API endpoint, let's read the data into R. We'll do so using the `fromJSON()` function from the excellent [jsonlite package](https://cran.r-project.org/web/packages/jsonlite/index.html). This will automatically coerce the JSON array into a regular R data frame. However, I'll go that little bit further and convert it into a tibble, since the output is nicer to work with.
 
 ```{r nyc1}
-library(jsonlite)
+# library(jsonlite) ## Already loaded
+
 nyc_trees <- 
   fromJSON("https://data.cityofnewyork.us/resource/nwxe-4ae8.json") %>%
   as_tibble()
@@ -189,7 +187,7 @@ params = list(
 Next, we'll use the `httr::GET()` function to request (i.e. download) the data. I'll assign this to an object called `fred`.
 
 ```{r fred2, cache=F}
-library(httr)
+# library(httr) ## Already loaded above
 
 fred <- 
   httr::GET(
@@ -235,7 +233,7 @@ fred
 Okay! We've finally got our data and are nearly ready for some plotting. However, recall that `fromJSON()` automatically converts everything to characters so I'll quickly change some variables to dates (using `lubridate::ymd()`) and numeric.
 
 ```{r fred5, message=F}
-library(lubridate)
+# library(lubridate) ## Already loaded above
 
 fred <-
   fred %>%
@@ -387,7 +385,7 @@ head(rugby$entries$team)
 Okay, a clearer picture is starting to emerge. It looks like we can just bind the columns of the `rugby$entries$team` data frame directly to the other elements of the parent `$team` "data frame" (actually: "list"). Let's do that using `dplyr::bind_cols()` and then clean things up a bit. I'm going to call the resulting data frame `rankings`.
 
 ```{r rugby3, message=F}
-library(janitor)
+# library(janitor) ## Already loaded above
 
 rankings <-
   bind_cols(
