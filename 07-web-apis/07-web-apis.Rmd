@@ -32,7 +32,7 @@ Today I'll be using [JSONView](https://jsonview.com/), a browser extension that 
 
 ### R packages 
 
-- **New:** `jsonlite`, `httr`, `listviewer`, `fredr`
+- **New:** `jsonlite`, `httr`, `listviewer`, `fredr`, `usethis`
 - **Already used:** `tidyverse`, `lubridate`, `hrbrthemes`
 
 The [httr package](https://httr.r-lib.org/index.html) already comes bundled with the tidyverse. So you only need to install the following:
@@ -164,15 +164,14 @@ Let's combine these parameters with the endpoint path to view the data directly 
 
 ![](pics/fred-redacted.png)
 
-At this point you're probably tempted to read the JSON object directly into your R environment using the `jsonlite::readJSON()` function. And this will work. However, that's not what we're going to here. Rather, we're going to go through the [**httr package**](https://httr.r-lib.org/). Why? Well, basically because `httr` comes with a variety of features that allow us to interact more flexibly and securely with web APIs. 
+At this point you're probably tempted to read the JSON object directly into your R environment using the `jsonlite::readJSON()` function. And this will work. However, that's not what we're going to here. Rather, we're going to go through the [**httr** package](https://httr.r-lib.org/). Why? Well, basically because `httr` comes with a variety of features that allow us to interact more flexibly and securely with web APIs. 
 
 Let's start by defining some convenience variables such as the endpoint path and the parameters (which we'll store in a list).
 
 ```{r fred1, include=F, cache=F}
-YOUR_FRED_KEY <- Sys.getenv("FRED_KEY")
 endpoint = "series/observations"
 params = list(
-  api_key= YOUR_FRED_KEY,
+  api_key = Sys.getenv("FRED_API_KEY"),
   file_type="json", 
   series_id="GNPCA"
   )
@@ -186,17 +185,8 @@ params = list(
   )
 ```
 
-> **Protip:** If you want to safely use sensitive information like API keys or passwords --- even when sharing content (like these lecture notes) with others --- then save it as an R environment variable. You can read more [here](https://github.com/STAT545-UBC/Discussion/issues/81) and [here](https://happygitwithr.com/github-pat.html#a-note-about-security), but something like the below should work. Run this in your console, *never* in an R Markdown file or other shared document.
 
-  ```{r protip, eval = F}
-  Sys.setenv(MY_API_KEY="abcdefghijklmnopqrstuvwxyz0123456789") ## Add your key as an environment variable. (Current session only.)
-  # usethis::edit_r_environ() ## Open your .Renviron file and add the key. (Persists over sessions.)
-  readRenviron("~/.Renviron") ## Refresh your .Renviron file
-  ```
-
-> Once that's done, you can safely assign your key to an object (including within a R Markdown file that you're going to share) using, say, `api_key <- Sys.getenv("MY_API_KEY")`. 
-
-Okay, back to our FRED example. We'll use the `httr::GET()` function to request (i.e. download) the data. I'll assign this to an object called `fred`.
+Next, we'll use the `httr::GET()` function to request (i.e. download) the data. I'll assign this to an object called `fred`.
 
 ```{r fred2, cache=F}
 library(httr)
@@ -267,9 +257,71 @@ fred %>%
 ```
 
 
+### Aside: Safely store and use API keys as environment variables
+
+In the above example, I assumed that you would just replace "YOUR_FRED_KEY" with your actual API key. This is obviously not very secure or scalable, since it means that you can't share your R script without giving away your key. (The same is true for compiled R Markdown documents like these lecture notes.) Luckily, there's an easy way to safely store and use sensitive information like API keys or passwords: Simply save them as an R [**environment variables**](https://stat.ethz.ch/R-manual/R-devel/library/base/html/EnvVar.html). There are two, closely related approaches:
+
+1. Set an environment variable for the current R session only.
+2. Set an environment variable that persists across R sessions.
+
+#### 1) Set an environment variable for the current R session only
+
+Defining an environment variable for the current R session is very straightforward. Simply use the base `Sys.setenv()` function. For example:
+
+```{r set_renviron_current}
+## Set new environment variable called MY_API_KEY. Current session only.
+Sys.setenv(MY_API_KEY="abcdefghijklmnopqrstuvwxyz0123456789") 
+```
+
+Once this is done, you can then safely assign your key to an object --- including within a R Markdown document that you're going to knit and share --- using the `Sys.getenv()` function. For example:
+
+```{r get_renviron_current}
+## Assign the environment variable to an R object
+my_api_key <- Sys.getenv("MY_API_KEY")
+## Print it out just to show that it worked
+my_api_key
+```
+
+**Important:** While this approach is very simple, note that in practice the `Sys.setenv()` part should only be run directly in your R console. *Never* include code chunks with sensitive `Sys.setenv()` calls in an R Markdown file or other shared documents.^[Since the new R environment variable is defined for the duration of the current session, R Markdown will have access to this variable irrespective of whether it was defined in the R Markdown script or not.] That would entirely defeat the purpose! Apart from the annoyance of having to manually set my API key each time I start a new R session, this is one reason that I prefer the next approach of persisting environment variables across sessions...
+
+#### 2) Set an environment variable that persist across R sessions
+
+The trick to setting an R environment variable that is available across sessions is to add it to a special file call `.Renviron`. This is a text file that lives on your home directory, which R reads automatically upon startup. Because `~/.Renviron` is just a text file, you can edit it with whatever is your preferred text editor. However, you may need to create it first if it doesn't exist. A convenient way to do all of this from RStudio is with the `usethis::edit_r_environ()` function. You will need to run the next few lines interactively:
+
+```{r edit_r_environ, eval = F}
+## Open your .Renviron file. Here we can add API keys that persist across R sessions.
+usethis::edit_r_environ() 
+```
+
+This will open up your `~/.Renviron` file in a new RStudio window, which you can modify as needed. As an example, let's say that you want to add your FRED API key as an environment variable that persists across sessions. You can do this by simply adding a line like the below to your `~/.Renviron` file and saving.^[I suggest calling it something that easy to remember like "FRED_API_KEY", but as you wish.]
+
+```
+FRED_API_KEY="abcdefghijklmnopqrstuvwxyz0123456789" ## Replace with your actual key
+```
+
+Once you have saved your changes, you'll need to refresh so that this new environment variable is available in the current session. You could also restart R, but that's overkill.
+
+```{r readRenviron, eval = F}
+## Optional: Refresh your .Renviron file.  
+readRenviron("~/.Renviron") ## Only necessary if you are reading in a newly added R environment variable
+```
+
+**Challenge:** Once you've refreshed your `~/.Renviron` file, try to re-download the FRED data from earlier. This time call your FRED API key directly as an environment variable in your parameter list using `Sys.getenv()` like this:
+
+```{r params_challenge, eval=F}
+params = list(
+  api_key= Sys.getenv("FRED_API_KEY"), ## Get API directly and safely from the stored environment variable
+  file_type="json", 
+  series_id="GNPCA"
+  )
+```
+
+
 ### Use a package
 
 One of the great features about the R (and data science community in general) is that someone has probably written a package that does all the heavy API lifting for you. We'll come across many examples during the remainder of this course, but for the moment I want you to check out the [fredr package](http://sboysel.github.io/fredr/index.html). How would you access the same GDP data as above using this package? (Hint: See [here](https://cran.r-project.org/web/packages/fredr/vignettes/fredr.html).)
+
+
 
 ## Application 3: World rugby rankings
 

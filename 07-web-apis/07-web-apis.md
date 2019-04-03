@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott
   affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: Lecture 7  #"17 February 2019"
+date: Lecture 7  #"02 April 2019"
 output: 
   html_document:
     theme: flatly
@@ -30,7 +30,7 @@ Today I'll be using [JSONView](https://jsonview.com/), a browser extension that 
 
 ### R packages 
 
-- **New:** `jsonlite`, `httr`, `listviewer`, `fredr`
+- **New:** `jsonlite`, `httr`, `listviewer`, `fredr`, `usethis`
 - **Already used:** `tidyverse`, `lubridate`, `hrbrthemes`
 
 The [httr package](https://httr.r-lib.org/index.html) already comes bundled with the tidyverse. So you only need to install the following:
@@ -195,7 +195,7 @@ Let's combine these parameters with the endpoint path to view the data directly 
 
 ![](pics/fred-redacted.png)
 
-At this point you're probably tempted to read the JSON object directly into your R environment using the `jsonlite::readJSON()` function. And this will work. However, that's not what we're going to here. Rather, we're going to go through the [**httr package**](https://httr.r-lib.org/). Why? Well, basically because `httr` comes with a variety of features that allow us to interact more flexibly and securely with web APIs. 
+At this point you're probably tempted to read the JSON object directly into your R environment using the `jsonlite::readJSON()` function. And this will work. However, that's not what we're going to here. Rather, we're going to go through the [**httr** package](https://httr.r-lib.org/). Why? Well, basically because `httr` comes with a variety of features that allow us to interact more flexibly and securely with web APIs. 
 
 Let's start by defining some convenience variables such as the endpoint path and the parameters (which we'll store in a list).
 
@@ -210,18 +210,8 @@ params = list(
   )
 ```
 
-> **Protip:** If you want to safely use sensitive information like API keys or passwords --- even when sharing content (like these lecture notes) with others --- then save it as an R environment variable. You can read more [here](https://github.com/STAT545-UBC/Discussion/issues/81) and [here](https://happygitwithr.com/github-pat.html#a-note-about-security), but something like the below should work. Run this in your console, *never* in an R Markdown file or other shared document.
 
-  
-  ```r
-  Sys.setenv(MY_API_KEY="abcdefghijklmnopqrstuvwxyz0123456789") ## Add your key as an environment variable. (Current session only.)
-  # usethis::edit_r_environ() ## Open your .Renviron file and add the key. (Persists over sessions.)
-  readRenviron("~/.Renviron") ## Refresh your .Renviron file
-  ```
-
-> Once that's done, you can safely assign your key to an object (including within a R Markdown file that you're going to share) using, say, `api_key <- Sys.getenv("MY_API_KEY")`. 
-
-Okay, back to our FRED example. We'll use the `httr::GET()` function to request (i.e. download) the data. I'll assign this to an object called `fred`.
+Next, we'll use the `httr::GET()` function to request (i.e. download) the data. I'll assign this to an object called `fred`.
 
 
 ```r
@@ -256,7 +246,7 @@ fred %>%
 ```
 
 <!--html_preserve--><div id="htmlwidget-1e64bec83b3e59ca9423" style="width:100%;height:10%;" class="jsonedit html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1e64bec83b3e59ca9423">{"x":{"data":{"realtime_start":"2019-02-17","realtime_end":"2019-02-17","observation_start":"1600-01-01","observation_end":"9999-12-31","units":"lin","output_type":1,"file_type":"json","order_by":"observation_date","sort_order":"asc","count":89,"offset":0,"limit":100000,"observations":{"realtime_start":["2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17"],"realtime_end":["2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17","2019-02-17"],"date":["1929-01-01","1930-01-01","1931-01-01","1932-01-01","1933-01-01","1934-01-01","1935-01-01","1936-01-01","1937-01-01","1938-01-01","1939-01-01","1940-01-01","1941-01-01","1942-01-01","1943-01-01","1944-01-01","1945-01-01","1946-01-01","1947-01-01","1948-01-01","1949-01-01","1950-01-01","1951-01-01","1952-01-01","1953-01-01","1954-01-01","1955-01-01","1956-01-01","1957-01-01","1958-01-01","1959-01-01","1960-01-01","1961-01-01","1962-01-01","1963-01-01","1964-01-01","1965-01-01","1966-01-01","1967-01-01","1968-01-01","1969-01-01","1970-01-01","1971-01-01","1972-01-01","1973-01-01","1974-01-01","1975-01-01","1976-01-01","1977-01-01","1978-01-01","1979-01-01","1980-01-01","1981-01-01","1982-01-01","1983-01-01","1984-01-01","1985-01-01","1986-01-01","1987-01-01","1988-01-01","1989-01-01","1990-01-01","1991-01-01","1992-01-01","1993-01-01","1994-01-01","1995-01-01","1996-01-01","1997-01-01","1998-01-01","1999-01-01","2000-01-01","2001-01-01","2002-01-01","2003-01-01","2004-01-01","2005-01-01","2006-01-01","2007-01-01","2008-01-01","2009-01-01","2010-01-01","2011-01-01","2012-01-01","2013-01-01","2014-01-01","2015-01-01","2016-01-01","2017-01-01"],"value":["1120.076","1025.091","958.378","834.291","823.156","911.019","992.537","1118.944","1177.572","1138.989","1230.22","1337.075","1574.74","1870.911","2187.818","2361.622","2337.63","2068.966","2048.293","2134.291","2121.201","2305.668","2493.148","2594.934","2715.067","2700.542","2893.97","2957.097","3020.083","2994.683","3201.683","3285.454","3371.35","3579.446","3736.061","3951.902","4208.08","4481.593","4604.613","4831.761","4980.667","4989.534","5156.41","5428.368","5746.389","5723.068","5697.677","6011.215","6293.525","6637.838","6868.092","6849.819","7011.223","6889.371","7199.441","7711.063","8007.532","8266.358","8549.125","8912.281","9239.186","9425.052","9406.669","9734.705","10000.831","10389.663","10672.832","11076.879","11556.745","12064.59","12647.632","13179.965","13327.458","13553.208","13953.961","14503.006","15006.043","15398.622","15748.3","15771.553","15359.37","15803.886","16081.66","16429.308","16722.335","17135.107","17608.271","17867.773","18284.031"]}},"options":{"mode":"view","modes":["code","form","text","tree","view"]}},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
+<script type="application/json" data-for="htmlwidget-1e64bec83b3e59ca9423">{"x":{"data":{"realtime_start":"2019-04-02","realtime_end":"2019-04-02","observation_start":"1600-01-01","observation_end":"9999-12-31","units":"lin","output_type":1,"file_type":"json","order_by":"observation_date","sort_order":"asc","count":90,"offset":0,"limit":100000,"observations":{"realtime_start":["2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02"],"realtime_end":["2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02","2019-04-02"],"date":["1929-01-01","1930-01-01","1931-01-01","1932-01-01","1933-01-01","1934-01-01","1935-01-01","1936-01-01","1937-01-01","1938-01-01","1939-01-01","1940-01-01","1941-01-01","1942-01-01","1943-01-01","1944-01-01","1945-01-01","1946-01-01","1947-01-01","1948-01-01","1949-01-01","1950-01-01","1951-01-01","1952-01-01","1953-01-01","1954-01-01","1955-01-01","1956-01-01","1957-01-01","1958-01-01","1959-01-01","1960-01-01","1961-01-01","1962-01-01","1963-01-01","1964-01-01","1965-01-01","1966-01-01","1967-01-01","1968-01-01","1969-01-01","1970-01-01","1971-01-01","1972-01-01","1973-01-01","1974-01-01","1975-01-01","1976-01-01","1977-01-01","1978-01-01","1979-01-01","1980-01-01","1981-01-01","1982-01-01","1983-01-01","1984-01-01","1985-01-01","1986-01-01","1987-01-01","1988-01-01","1989-01-01","1990-01-01","1991-01-01","1992-01-01","1993-01-01","1994-01-01","1995-01-01","1996-01-01","1997-01-01","1998-01-01","1999-01-01","2000-01-01","2001-01-01","2002-01-01","2003-01-01","2004-01-01","2005-01-01","2006-01-01","2007-01-01","2008-01-01","2009-01-01","2010-01-01","2011-01-01","2012-01-01","2013-01-01","2014-01-01","2015-01-01","2016-01-01","2017-01-01","2018-01-01"],"value":["1120.076","1025.091","958.378","834.291","823.156","911.019","992.537","1118.944","1177.572","1138.989","1230.22","1337.075","1574.74","1870.911","2187.818","2361.622","2337.63","2068.966","2048.293","2134.291","2121.201","2305.668","2493.148","2594.934","2715.067","2700.542","2893.97","2957.097","3020.083","2994.683","3201.683","3285.454","3371.35","3579.446","3736.061","3951.902","4208.08","4481.593","4604.613","4831.761","4980.667","4989.534","5156.41","5428.368","5746.389","5723.068","5697.677","6011.215","6293.525","6637.838","6868.092","6849.819","7011.223","6889.371","7199.441","7711.063","8007.532","8266.358","8549.125","8912.281","9239.186","9425.052","9406.669","9734.705","10000.831","10389.663","10672.832","11076.879","11556.745","12064.59","12647.632","13179.965","13327.458","13553.208","13953.961","14503.006","15006.043","15398.622","15748.3","15771.553","15359.37","15803.886","16081.66","16429.308","16722.335","17135.107","17608.271","17867.773","18284.031","18815.882"]}},"options":{"mode":"view","modes":["code","form","text","tree","view"]}},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
 
 Luckily, this particular list object isn't too complicated. We can see that we're really interested in the `fred$observations` sub-element. I'll re-run most of the above code and then extract this element. I could do this in several ways, but will use the `purrr::pluck()` function here.
 
@@ -274,20 +264,20 @@ fred
 ```
 
 ```
-## # A tibble: 89 x 4
+## # A tibble: 90 x 4
 ##    realtime_start realtime_end date       value   
 ##    <chr>          <chr>        <chr>      <chr>   
-##  1 2019-02-17     2019-02-17   1929-01-01 1120.076
-##  2 2019-02-17     2019-02-17   1930-01-01 1025.091
-##  3 2019-02-17     2019-02-17   1931-01-01 958.378 
-##  4 2019-02-17     2019-02-17   1932-01-01 834.291 
-##  5 2019-02-17     2019-02-17   1933-01-01 823.156 
-##  6 2019-02-17     2019-02-17   1934-01-01 911.019 
-##  7 2019-02-17     2019-02-17   1935-01-01 992.537 
-##  8 2019-02-17     2019-02-17   1936-01-01 1118.944
-##  9 2019-02-17     2019-02-17   1937-01-01 1177.572
-## 10 2019-02-17     2019-02-17   1938-01-01 1138.989
-## # … with 79 more rows
+##  1 2019-04-02     2019-04-02   1929-01-01 1120.076
+##  2 2019-04-02     2019-04-02   1930-01-01 1025.091
+##  3 2019-04-02     2019-04-02   1931-01-01 958.378 
+##  4 2019-04-02     2019-04-02   1932-01-01 834.291 
+##  5 2019-04-02     2019-04-02   1933-01-01 823.156 
+##  6 2019-04-02     2019-04-02   1934-01-01 911.019 
+##  7 2019-04-02     2019-04-02   1935-01-01 992.537 
+##  8 2019-04-02     2019-04-02   1936-01-01 1118.944
+##  9 2019-04-02     2019-04-02   1937-01-01 1177.572
+## 10 2019-04-02     2019-04-02   1938-01-01 1138.989
+## # … with 80 more rows
 ```
 
 Okay! We've finally got our data and are nearly ready for some plotting. However, recall that `fromJSON()` automatically converts everything to characters so I'll quickly change some variables to dates (using `lubridate::ymd()`) and numeric.
@@ -319,9 +309,80 @@ fred %>%
 ![](07-web-apis_files/figure-html/fred6-1.png)<!-- -->
 
 
+### Aside: Safely store and use API keys as environment variables
+
+In the above example, I assumed that you would just replace "YOUR_FRED_KEY" with your actual API key. This is obviously not very secure or scalable, since it means that you can't share your R script without giving away your key. (The same is true for compiled R Markdown documents like these lecture notes.) Luckily, there's an easy way to safely store and use sensitive information like API keys or passwords: Simply save them as an R [**environment variables**](https://stat.ethz.ch/R-manual/R-devel/library/base/html/EnvVar.html). There are two, closely related approaches:
+
+1. Set an environment variable for the current R session only.
+2. Set an environment variable that persists across R sessions.
+
+#### 1) Set an environment variable for the current R session only
+
+Defining an environment variable for the current R session is very straightforward. Simply use the base `Sys.setenv()` function. For example:
+
+
+```r
+## Set new environment variable called MY_API_KEY. Current session only.
+Sys.setenv(MY_API_KEY="abcdefghijklmnopqrstuvwxyz0123456789") 
+```
+
+Once this is done, you can then safely assign your key to an object --- including within a R Markdown document that you're going to knit and share --- using the `Sys.getenv()` function. For example:
+
+
+```r
+## Assign the environment variable to an R object
+my_api_key <- Sys.getenv("MY_API_KEY")
+## Print it out just to show that it worked
+my_api_key
+```
+
+```
+## [1] "abcdefghijklmnopqrstuvwxyz0123456789"
+```
+
+**Important:** While this approach is very simple, note that in practice the `Sys.setenv()` part should only be run directly in your R console. *Never* include code chunks with sensitive `Sys.setenv()` calls in an R Markdown file or other shared documents.^[Since the new R environment variable is defined for the duration of the current session, R Markdown will have access to this variable irrespective of whether it was defined in the R Markdown script or not.] That would entirely defeat the purpose! Apart from the annoyance of having to manually set my API key each time I start a new R session, this is one reason that I prefer the next approach of persisting environment variables across sessions...
+
+#### 2) Set an environment variable that persist across R sessions
+
+The trick to setting an R environment variable that is available across sessions is to add it to a special file call `.Renviron`. This is a text file that lives on your home directory, which R reads automatically upon startup. Because `~/.Renviron` is just a text file, you can edit it with whatever is your preferred text editor. However, you may need to create it first if it doesn't exist. A convenient way to do all of this from RStudio is with the `usethis::edit_r_environ()` function. You will need to run the next few lines interactively:
+
+
+```r
+## Open your .Renviron file. Here we can add API keys that persist across R sessions.
+usethis::edit_r_environ() 
+```
+
+This will open up your `~/.Renviron` file in a new RStudio window, which you can modify as needed. As an example, let's say that you want to add your FRED API key as an environment variable that persists across sessions. You can do this by simply adding a line like the below to your `~/.Renviron` file and saving.^[I suggest calling it something that easy to remember like "FRED_API_KEY", but as you wish.]
+
+```
+FRED_API_KEY="abcdefghijklmnopqrstuvwxyz0123456789" ## Replace with your actual key
+```
+
+Once you have saved your changes, you'll need to refresh so that this new environment variable is available in the current session. You could also restart R, but that's overkill.
+
+
+```r
+## Optional: Refresh your .Renviron file.  
+readRenviron("~/.Renviron") ## Only necessary if you are reading in a newly added R environment variable
+```
+
+**Challenge:** Once you've refreshed your `~/.Renviron` file, try to re-download the FRED data from earlier. This time call your FRED API key directly as an environment variable in your parameter list using `Sys.getenv()` like this:
+
+
+```r
+params = list(
+  api_key= Sys.getenv("FRED_API_KEY"), ## Get API directly and safely from the stored environment variable
+  file_type="json", 
+  series_id="GNPCA"
+  )
+```
+
+
 ### Use a package
 
 One of the great features about the R (and data science community in general) is that someone has probably written a package that does all the heavy API lifting for you. We'll come across many examples during the remainder of this course, but for the moment I want you to check out the [fredr package](http://sboysel.github.io/fredr/index.html). How would you access the same GDP data as above using this package? (Hint: See [here](https://cran.r-project.org/web/packages/fredr/vignettes/fredr.html).)
+
+
 
 ## Application 3: World rugby rankings
 
