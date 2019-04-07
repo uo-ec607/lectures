@@ -1395,9 +1395,7 @@ h6 {
 </style>
 
 
-</head>
 
-<body>
 
 <style type="text/css">
 .main-container {
@@ -1428,8 +1426,6 @@ summary {
 </style>
 
 
-
-<div class="container-fluid main-container">
 
 <!-- tabsets -->
 
@@ -1588,6 +1584,16 @@ div.tocify {
 
 </style>
 
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
 <!-- setup 3col/9col grid for toc_float and main content  -->
 <div class="row-fluid">
 <div class="col-xs-12 col-sm-4 col-md-3">
@@ -1605,9 +1611,9 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">Functions in R: 1) Introductory concepts</h1>
-<h4 class="author"><em>Grant R. McDermott</em></h4>
+<h4 class="author">Grant R. McDermott</h4>
 <address class="author_afil">
-University of Oregon | EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
+University of Oregon | EC 607<br><h4 class="date">Lecture 10</h4>
 
 </div>
 
@@ -1656,7 +1662,7 @@ University of Oregon | EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1"><span class="kw">square</span>(<span class="dv">3</span>)</a></code></pre></div>
 <pre><code>## [1] 9</code></pre>
 <p>Great, it works. Note that for this simple example we could have written everything on a single line; i.e. <code>square &lt;- function(x) x^2</code> would work just as well. (Confirm this for yourself.) However, we’re about to add some extra conditions and options to our function, which will strongly favour the multi-line format.</p>
-<p><em><b>Aside:</b> I want to stress that our new <code>square()</code> function is not particularly exciting… or, indeed, useful. R’s built-in arithmetic functions already take care of (vectorised) exponentiation and do so very efficiently. (See <code>?Arithmetic</code>.) However, I want to continue with this conceptually simple example, since it will provide a clear framework for demonstrating some general principles about functions in R.</em></p>
+<p><em><b>Aside:</b> I want to stress that our new <code>square()</code> function is not particularly exciting… or, indeed, useful. R’s built-in arithmetic functions already take care of (vectorised) exponentiation and do so very efficiently. (See <code>?Arithmetic</code>.) However, we’re going to continue with this conceptually simple example, since it will provide a clear framework for demonstrating some general principles about functions in R.</em></p>
 <div id="specifying-return-values" class="section level3">
 <h3>Specifying return values</h3>
 <p>Notice that we didn’t specify a return value for our function. This will work in many cases because R’s default behaviour is to automatically return the final object that you created within the function. However, this won’t always be the case. I thus advise that you get into the habit of assigning the return object(s) explicitly. Let’s modify our function to do exactly that.</p>
@@ -1740,7 +1746,7 @@ University of Oregon | EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 <pre><code>##   value value_squared
 ## 1     2             4
 ## 2     4            16</code></pre>
-<p>So you may not need to worry about explicit iteration at all. That being said, there are certainly cases where you will need to worry about it. Let’s explore with some simple examples (some of which are already vectorised too!) that provide a mental springboard for thinking about more complex cases.</p>
+<p>So you may not need to worry about explicit iteration at all. That being said, there are certainly cases where you will need to worry about it. Let’s explore with some simple examples (some of which are already vectorised) that provide a mental springboard for thinking about more complex cases.</p>
 </div>
 <div id="for-loops.-simple-but-limited-and-sometimes-dangerous" class="section level3">
 <h3>For-loops. Simple, but limited (and sometimes dangerous)</h3>
@@ -1828,7 +1834,7 @@ University of Oregon | EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 ## [1] &quot;J&quot;</code></pre>
 <p>A couple of things to notice.</p>
 <p>First, check your “Environment” pane in RStudio. Do you see an object called “i” in the Global Environment? (The answer should be“no”.) Again, this is because of R’s lexical scoping rules, which mean that any object created and invoked by a function is evaluated in a sandboxed environment outside of your global environment.</p>
-<p>Second, notice how little the basic syntax changed when switching over from <code>for()</code> to <code>lapply()</code>. Yes, there are some differences, but the essential structure remains the same: We first provide the iteration list (<code>1:100</code>) and then specify the desired function or operation (<code>LETTERS[i]</code>).</p>
+<p>Second, notice how little the basic syntax changed when switching over from <code>for()</code> to <code>lapply()</code>. Yes, there are some differences, but the essential structure remains the same: We first provide the iteration list (<code>1:10</code>) and then specify the desired function or operation (<code>LETTERS[i]</code>).</p>
 <p>Third, notice that the returned object is a <em>list</em>. The <code>lapply()</code> function can take various input types as arguments — vectors, data frames, lists — but always returns a list, where each element of the returned list is the result from one iteration of the loop. (So now you know where the “l” in “<strong>l</strong>apply” comes from.)</p>
 <p>Okay, but what if you don’t want the output in list form? There several options here.<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a> However, the method that I use most commonly is to bind the different list elements into a single data frame with <code>dplyr::bind_rows()</code>. For example, here’s a a slightly modified version of our function that now yields a data frame:</p>
 <div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb34-1" title="1"><span class="co"># library(tidyverse) ## Already loaded</span></a>
@@ -1861,7 +1867,7 @@ University of Oregon | EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 </div>
 <div id="create-and-iterate-over-named-functions" class="section level3">
 <h3>Create and iterate over named functions</h3>
-<p>As you may already have guessed, we can split the function and the iteration (and binding) into separate steps. This is generally a good idea, since you typically create (named) functions with the goal of reusing them.</p>
+<p>As you may have guessed already, we can split the function and the iteration (and binding) into separate steps. This is generally a good idea, since you typically create (named) functions with the goal of reusing them.</p>
 <div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb38-1" title="1"><span class="co">## Create a named function</span></a>
 <a class="sourceLine" id="cb38-2" title="2">num_to_alpha &lt;-<span class="st"> </span></a>
 <a class="sourceLine" id="cb38-3" title="3"><span class="st">  </span><span class="cf">function</span>(i) {</a>
@@ -1894,7 +1900,7 @@ University of Oregon | EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 ## 4     3 C</code></pre>
 <div id="progress-bars-with-the-pbapply-package" class="section level4">
 <h4>Progress bars with the <code>pbapply</code> package!</h4>
-<p>I’m a big fan of the <a href="https://github.com/psolymos/pbapply">pbapply package</a>, which is a lightweight wrapper around the <code>*apply</code> functions that adds a progress bar. And who doesn’t like progress bars? Personally, I find it incredibly helpful to see how a function is progressing, or get a sense of how much longer I can expect to wait before completion. <code>pbapply</code> offers versions for all of the <code>*apply</code> family, but the one that I use the most is (unsuprisingly) <strong><code>pbapply::pblapply()</code></strong>.</p>
+<p>I’m a big fan of the <a href="https://github.com/psolymos/pbapply"><strong>pbapply</strong> package</a>, which is a lightweight wrapper around the <code>*apply</code> functions that adds a progress bar. And who doesn’t like progress bars? Personally, I find it incredibly helpful to see how a function is progressing, or get a sense of how much longer I can expect to wait before completion. <code>pbapply</code> offers versions for all of the <code>*apply</code> family, but the one that I use the most is (unsuprisingly) <strong><code>pbapply::pblapply()</code></strong>.</p>
 <p><em>Note: You will need to run this next example interactively to see the effect properly.</em></p>
 <div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb43-1" title="1"><span class="co"># library(pbapply) ## Already loaded</span></a>
 <a class="sourceLine" id="cb43-2" title="2"></a>
@@ -1922,7 +1928,7 @@ University of Oregon | EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 </div>
 <div id="purrr-package" class="section level3">
 <h3>2) purrr package</h3>
-<p>The tidyverse offers its own enhanced implementation of the base <code>*apply()</code> functions through the <a href="https://purrr.tidyverse.org/">purrr package</a>.<a href="#fn7" class="footnote-ref" id="fnref7"><sup>7</sup></a> The key function to remember here is <strong><code>purrr::map()</code></strong>. And, indeed, the syntax and output of this command are effectively identical to <code>base::lapply()</code>:</p>
+<p>The tidyverse offers its own enhanced implementation of the base <code>*apply()</code> functions through the <a href="https://purrr.tidyverse.org/"><strong>purrr</strong> package</a>.<a href="#fn7" class="footnote-ref" id="fnref7"><sup>7</sup></a> The key function to remember here is <strong><code>purrr::map()</code></strong>. And, indeed, the syntax and output of this command are effectively identical to <code>base::lapply()</code>:</p>
 <div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb45-1" title="1"><span class="co"># lapply(1:10, num_to_alpha) ## lapply version from earlier</span></a>
 <a class="sourceLine" id="cb45-2" title="2"><span class="kw">map</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, num_to_alpha)</a></code></pre></div>
 <pre><code>## [[1]]
@@ -2004,7 +2010,7 @@ University of Oregon | EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 </div>
 <div id="iterate-over-multiple-inputs" class="section level3">
 <h3>Iterate over multiple inputs</h3>
-<p>Thus far, we have only been working with functions that take a single input when iterating. For example, we feed them a single vector (even though that vector contains many elements that drive the iteration process). But what if we want to iterate over multiple inputs? Consider the following function, which takes two separate variables <code>x</code> and <code>y</code> as inputs, and then uses them create a new variable <code>z</code> in a data frame.</p>
+<p>Thus far, we have only been working with functions that take a single input when iterating. For example, we feed them a single vector (even though that vector contains many elements that drive the iteration process). But what if we want to iterate over multiple inputs? Consider the following function, which takes two separate variables <code>x</code> and <code>y</code> as inputs, combines them in a data frame, and then uses them to create a third variable <code>z</code>.</p>
 <p><em>Note: Again, this is a rather silly function that we could easily improve upon using standard (vectorised) tidyverse tools. But the principle carries over to more complicated cases.</em></p>
 <div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb49-1" title="1"><span class="co">## Create a named function</span></a>
 <a class="sourceLine" id="cb49-2" title="2">multi_func &lt;-<span class="st"> </span></a>
@@ -2061,7 +2067,7 @@ University of Oregon | EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 </div>
 <div id="using-a-data-frame-of-input-combinations" class="section level4">
 <h4>2) Using a data frame of input combinations</h4>
-<p>While the above approach work perfectly well, I find that I don’t actually use it all that much in practice. Rather, I prefer to “cheat” by feeding multi-input functions a <em>single</em> data frame that specifies the necessary combination of variables by row. I’ll demonstrate how this works in a second, but first let me explain why: It basically boils down to the fact that I feel like this gives me more control over my functions and inputs.</p>
+<p>While the above approaches work perfectly well, I find that I don’t actually use either all that much in practice. Rather, I prefer to “cheat” by feeding multi-input functions a <em>single</em> data frame that specifies the necessary combination of variables by row. I’ll demonstrate how this works in a second, but first let me explain why: It basically boils down to the fact that I feel this gives me more control over my functions and inputs.</p>
 <ul>
 <li>I don’t have to worry about accidently feeding separate inputs of different lengths. Try running the above functions with an <code>x</code> vector input of <code>1:10</code>, for example. (Leave everything else unchanged.) <code>pmap()</code> will at least fail to iterate and give you a helpful message, but <code>mapply</code> will actually complete with totally misaligned columns. Putting everything in a (rectangular) data frame forces you to ensure the equal length of inputs <em>a priori</em>.</li>
 <li>Relatedly, I often need to run a function over all possible combinations of different inputs. A really convenient way to do this is with the <code>base::expand.grid()</code> function, which automatically generates a data frame of all combinations. So it’s convenient for me to use this data frame as an input directly in my function.<a href="#fn8" class="footnote-ref" id="fnref8"><sup>8</sup></a></li>
@@ -2126,7 +2132,7 @@ University of Oregon | EC 607<br><h4 class="date"><em>Lecture 10</em></h4>
 </div>
 <div id="further-resources" class="section level2">
 <h2>Further resources</h2>
-<p>In the next two lectures, we’ll dive into more advanced programming and function topics (debugging, parallel implementation, etc.). However, I hope that today has given you solid grasp of the fundamentals. I highly encourage you to start writing some of your own functions. You will be doing a lot of this as your career progresses and mastering this skill early will put you on the road to data science success<sup>TM</sup>. Here are some additional resources for both inspiration and reference:</p>
+<p>In the next two lectures, we’ll dive into more advanced programming and function topics (debugging, parallel implementation, etc.). However, I hope that today has given you solid grasp of the fundamentals. I highly encourage you to start writing some of your own functions. You will be doing this a <em>lot</em> as your career progresses. Establishing an early mastery of function writing will put you on the road to awesome data science success<sup>TM</sup>. Here are some additional resources for both inspiration and reference:</p>
 <ul>
 <li><a href="http://r4ds.had.co.nz/functions.html">Chapter 19 (“Functions)”)</a> and <a href="http://r4ds.had.co.nz/iteration.html">Chapter 21 (“Iteration)”)</a> of <em>R4DS</em> (Grolemund and Wickham) cover much of the same ground as we have here, with particular emphasis on the <code>purrr</code> package for iteration.</li>
 <li><a href="http://adv-r.had.co.nz/Functional-programming.html">Chapter 10 (“Functional programming)”)</a> and <a href="http://adv-r.had.co.nz/Functionals.html">Chapter 11 (“Functionals)”)</a> of <em>Advanced R</em> (Wickham) goes into more depth, especially on the philosophy of functional programming. It also emphasises the <code>*apply()</code> family of functions, although that is at least partly (entirely?) due to the fact that <code>purrr</code> was introduced after its publication.</li>
