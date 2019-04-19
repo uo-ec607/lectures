@@ -388,29 +388,52 @@ summary(iv_reg_robust, diagnostics = TRUE)
 
 Caculating marginal effect in a regression is utterly straightforward in cases where there are no non-linearities; just look at the coefficient values! However, that quickly goes out the window when you have interaction effects or non-linear models like probit, logit, etc. Luckily, the `margins` package (which is modeled on its namesake in Stata) goes a long way towards automating the process. You can read more in the [package vignette](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html), but here's a very simple example to illustrate. 
 
-COnsider
+Consider our earlier interaction effects regression, where we interested in how people's mass varied by height and gender. To get the average marginal effect (AME) of these dependent variables, we can just use the `margins::margins()` function.
 
-```{r margins1}
+```{r margins0}
 # library(margins) ## Already loaded
 
-# ols_ie %>% margins() %>% summary() ## Piping also works
-summary(margins(ols_ie))
+margins(ols_ie)
 ```
-If we want to compare marginal effects at specific values --- e.g. how the ME of height on mass differs across genders --- then that's easily done too.
+
+You can get standard errors by piping (or wrapping) the above object to the generic `summary()` function. 
+
+```{r margins1}
+# summary(margins(ols_ie)) ## Also works
+ols_ie %>% margins() %>% summary() 
+```
+
+If we want to compare marginal effects at specific values --- e.g. how the AME of height on mass differs across genders --- then that's easily done too.
 
 ```{r margins2}
-summary(margins(ols_ie, at = list(gender = c("male", "female"))))
+ols_ie %>% 
+  margins(
+    variables = "height", ## The main variable we're interested in
+    at = list(gender = c("male", "female")) ## How the main variable is modulated by at specific values of a second variable
+    ) #%>% 
+  # summary() ## If you want SEs etc.
 ```
 
-You can also plot it using `margins::cplot()`:
+If you're the type of person who prefers visualizations (like me), then you should consider `margins::cplot()`, which is the package's in-built method for constructing *conditional* effect plots.
 
 ```{r margins3}
-cplot(ols_ie, x="gender", dx="height")
+cplot(ols_ie, x = "gender", dx = "height", what = "effect")
 ```
 
 In this case,it doesn't make much sense to read a lot into the larger standard errors on the female group; that's being driven by a very small sub-sample size.
 
-One downside that I want to highlight briefly is that the `margins` package does [not yet work](https://github.com/leeper/margins/issues/73) with `lfe::felm` objects. There are [potential ways](https://stackoverflow.com/questions/30491545/predict-method-for-felm-from-lfe-package) around this, or you can just calculate the marginal effects manually, but it's admittedly a pain.
+Finally, you can also use `cplot()` to plot the predicted values of your outcome variable (here: "mass"), conditional on one of your dependent variables. For example:
+
+```{r margins4}
+par(mfrow=c(1, 2)) ## Just to plot these next two (base) figures side-by-side
+cplot(ols_ie, x = "gender", what = "prediction")
+cplot(ols_ie, x = "height", what = "prediction")
+par(mfrow=c(1, 1)) ## Reset plot defaults
+```
+
+Note that `cplot` automatically produces a data frame of the predicted effects too. This can be used to construct `ggplot2` versions of the figures instead of the (base) `cplot` defaults. See the package documentation for [more information](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html#ggplot2_examples).
+
+**Aside:** One downside that I want to highlight briefly is that the `margins` package does [not yet work](https://github.com/leeper/margins/issues/73) with `lfe::felm` objects. There are [potential ways](https://stackoverflow.com/questions/30491545/predict-method-for-felm-from-lfe-package) around this, or you can just calculate the marginal effects manually, but it's admittedly a pain.
 
 ### Probit, logit and other generalized linear models
 

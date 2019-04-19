@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott
   affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: Lecture 8  #"22 February 2019"
+date: Lecture 8  #"19 April 2019"
 output: 
   html_document:
     theme: flatly
@@ -509,7 +509,13 @@ summary(ols_dv2)
 
 ### Interaction effects
 
-Like dummy variables, R provides a convenient syntax for specifying interaction terms directly in the regression model without having to create them manually beforehand.^[Although there are very good reasons that you might want to modify your parent variables before doing so (e.g. centering them). As it happens, I'm [on record](https://twitter.com/grant_mcdermott/status/903691491414917122) as stating that interaction effects are most widely misunderstood and misapplied concept in econometrics. However, that's a topic for another day. (Read the paper in the link!)] You can just use `x1:x2` (to include only the interaction term) or `x1*x2` (to include the parent terms and interaction terms). Generally speaking, you are best advised to include the parent terms alongside an interaction term. This makes the `*` option a good default.
+Like dummy variables, R provides a convenient syntax for specifying interaction terms directly in the regression model without having to create them manually beforehand.^[Although there are very good reasons that you might want to modify your parent variables before doing so (e.g. centering them). As it happens, I'm [on record](https://twitter.com/grant_mcdermott/status/903691491414917122) as stating that interaction effects are most widely misunderstood and misapplied concept in econometrics. However, that's a topic for another day. (Read the paper in the link!)] You can just use `x1:x2` (to include only the interaction term) or `x1*x2` (to include the parent terms and interaction terms). Generally speaking, you are best advised to include the parent terms alongside an interaction term. This makes the `*` option a good default. 
+
+For example, we might wonder whether the relationship between a person's body mass and their height is modulated by their gender. That is, we want to run a regression of the form
+
+$$Mass = \beta_0 + \beta_1 D_{Male} + \beta_2 Height + \beta_3 D_{Male} \times Height$$
+
+To implement this in R, we simply run the following
 
 
 ```r
@@ -646,7 +652,7 @@ Fixed effects models are more common than random effects models in economics (in
 
 ## Instrumental variables
 
-Again, lots of options here. See: `?AER::ivreg`, `?lfe::felm`, and `?estimatr::ivreg_robust`. They all follow a similar syntax, where the IV first-stage regression is specified after a `|` following the main regression. Here's an example taken from the [AER package](https://cran.r-project.org/web/packages/AER/vignettes/AER.pdf), just because we haven't used it in this lecture yet. I'll follow their lead in using one of the package's own datasets on cigarette consumption.
+Again, lots of options here. See: `?AER::ivreg`, `?estimatr::iv_robust`, and `?lfe::felm`. They all follow a similar syntax, where the IV first-stage regression is specified after a `|` following the main regression. I'll demonstrate using an example taken from the [AER package](https://cran.r-project.org/web/packages/AER/vignettes/AER.pdf), just because we haven't used it in this lecture yet. I'll follow their lead in using one of the package's own datasets on average cigarette consumption by US state.
 
 
 ```r
@@ -658,13 +664,22 @@ cigs <-
   mutate(
     rprice = price/cpi,
     rincome = income/population/cpi,
+    rtax = tax/cpi,
     tdiff = (taxs - tax)/cpi
     )
+```
 
-## Run the model 
+In this case, we are interested in regressing the number of cigarettes consumed per capita (i.e. "packs") on their average cost and people's real incomes. The problem is that the price is endogenous, so we need to instrument for it using different tax variables. We could implement this in R using `AER::ivreg()` as follows:
+
+
+```r
+# library(AER) ## Already loaded
+
+## Run the IV regression 
 iv_reg <- 
   ivreg(
-    log(packs) ~ log(rprice) + log(rincome) | log(rincome) + tdiff + I(tax/cpi),
+    log(packs) ~ log(rprice) + log(rincome) | ## The main regression. "rprice" is endogenous
+      log(rincome) + tdiff + rtax, ## The first-stage regression. Note that we include "rincome" b/c it is exogenous
     data = cigs %>% filter(year == "1995")
     )
 summary(iv_reg, diagnostics = TRUE)
@@ -674,7 +689,7 @@ summary(iv_reg, diagnostics = TRUE)
 ## 
 ## Call:
 ## ivreg(formula = log(packs) ~ log(rprice) + log(rincome) | log(rincome) + 
-##     tdiff + I(tax/cpi), data = cigs %>% filter(year == "1995"))
+##     tdiff + rtax, data = cigs %>% filter(year == "1995"))
 ## 
 ## Residuals:
 ##        Min         1Q     Median         3Q        Max 
@@ -699,21 +714,78 @@ summary(iv_reg, diagnostics = TRUE)
 ## Wald test: 13.28 on 2 and 45 DF,  p-value: 2.931e-05
 ```
 
+And here's another example using `estimatr::iv_robust()`. This will default to using HC2 robust standard errors, although we could specify other options if we so wished (including clustering). More importantly, note that the syntax is effectively identical to the previous example.
 
-**Challenge:** Try run an IV regression using `lfe:felm()`, but this time on the whole `cigs` data frame (i.e. not subsetting to 1995). Use year fixed effects too.
+
+```r
+# library(estimatr) ## Already loaded
+
+## Run the IV regression with robust SEs
+iv_reg_robust <- 
+  iv_robust( ## We only need to change the function call. The rest of the syntax stays the same.
+    log(packs) ~ log(rprice) + log(rincome) | 
+      log(rincome) + tdiff + rtax,
+    data = cigs %>% filter(year == "1995")
+    )
+summary(iv_reg_robust, diagnostics = TRUE)
+```
+
+```
+## 
+## Call:
+## iv_robust(formula = log(packs) ~ log(rprice) + log(rincome) | 
+##     log(rincome) + tdiff + rtax, data = cigs %>% filter(year == 
+##     "1995"))
+## 
+## Standard error type:  HC2 
+## 
+## Coefficients:
+##              Estimate Std. Error t value  Pr(>|t|) CI Lower CI Upper DF
+## (Intercept)    9.8950     0.9777  10.120 3.569e-13   7.9257  11.8642 45
+## log(rprice)   -1.2774     0.2547  -5.015 8.739e-06  -1.7904  -0.7644 45
+## log(rincome)   0.2804     0.2547   1.101 2.768e-01  -0.2326   0.7934 45
+## 
+## Multiple R-squared:  0.4294 ,	Adjusted R-squared:  0.4041 
+## F-statistic:  15.5 on 2 and 45 DF,  p-value: 7.55e-06
+```
+
+
+**Challenge:** Try to run an IV regression using `lfe:felm()`. However, this time use the whole `cigs` data frame (i.e. not subsetting to 1995) and use year fixed effects too. Note that the IV formula specification will be a little different to the previous two examples --- I personally find it more intuitive, but check the examples in the help documentation.
 
 ## Other topics
 
 ### Marginal effects
 
-Caculating marginal effect in a regression is utterly straightforward in cases where there are no non-linearities; just look at the coefficient values! However, that quickly goes out the window when have interaction effects, probit or logit models, etc. Luckily, the `margins` package (which is modeled on its namesake in Stata) goes a long way towards automating the process. You can read more in the [package vignette](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html), but here's a very simple example to illustrate:
+Caculating marginal effect in a regression is utterly straightforward in cases where there are no non-linearities; just look at the coefficient values! However, that quickly goes out the window when you have interaction effects or non-linear models like probit, logit, etc. Luckily, the `margins` package (which is modeled on its namesake in Stata) goes a long way towards automating the process. You can read more in the [package vignette](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html), but here's a very simple example to illustrate. 
+
+Consider our earlier interaction effects regression, where we interested in how people's mass varied by height and gender. To get the average marginal effect (AME) of these dependent variables, we can just use the `margins::margins()` function.
 
 
 ```r
-library(margins)
+# library(margins) ## Already loaded
 
-# ols_ie %>% margins() %>% summary() ## Piping also works
-summary(margins(ols_ie))
+margins(ols_ie)
+```
+
+```
+## Average marginal effects
+```
+
+```
+## lm(formula = mass ~ gender * height, data = humans)
+```
+
+```
+##  height gendermale
+##   0.874      13.53
+```
+
+You can get standard errors by piping (or wrapping) the above object to the generic `summary()` function. 
+
+
+```r
+# summary(margins(ols_ie)) ## Also works
+ols_ie %>% margins() %>% summary() 
 ```
 
 ```
@@ -721,26 +793,53 @@ summary(margins(ols_ie))
 ##  gendermale 13.5253 26.7585 0.5055 0.6132 -38.9203 65.9710
 ##      height  0.8740  0.4203 2.0797 0.0376   0.0503  1.6977
 ```
-If we want to compare marginal effects at specific values --- e.g. how the ME of height on mass differs across genders --- then that's easily done too.
+
+If we want to compare marginal effects at specific values --- e.g. how the AME of height on mass differs across genders --- then that's easily done too.
 
 
 ```r
-summary(margins(ols_ie, at = list(gender = c("male", "female"))))
+ols_ie %>% 
+  margins(
+    variables = "height", ## The main variable we're interested in
+    at = list(gender = c("male", "female")) ## How the main variable is modulated by at specific values of a second variable
+    ) #%>% 
 ```
 
 ```
-##        factor gender      AME      SE       z      p    lower   upper
-##  genderfemale 1.0000 -13.5253 26.7585 -0.5055 0.6132 -65.9710 38.9203
-##  genderfemale 2.0000 -13.5253 26.7585 -0.5055 0.6132 -65.9710 38.9203
-##        height 1.0000   0.8962  0.4431  2.0228 0.0431   0.0278  1.7646
-##        height 2.0000   0.7333  1.2741  0.5756 0.5649  -1.7639  3.2306
+## Average marginal effects at specified values
 ```
 
-You can also plot it using `margins::cplot()`:
+```
+## lm(formula = mass ~ gender * height, data = humans)
+```
+
+```
+##  at(gender) height
+##        male 0.8962
+##      female 0.7333
+```
+
+```r
+  # summary() ## If you want SEs etc.
+```
+
+If you're the type of person who prefers visualizations (like me), then you should consider `margins::cplot()`, which is the package's in-built method for constructing *conditional* effect plots.
 
 
 ```r
-cplot(ols_ie, x="gender", dx="height")
+cplot(ols_ie, x = "gender", dx = "height", what = "effect")
+```
+
+![](08-regression_files/figure-html/margins3-1.png)<!-- -->
+
+In this case,it doesn't make much sense to read a lot into the larger standard errors on the female group; that's being driven by a very small sub-sample size.
+
+Finally, you can also use `cplot()` to plot the predicted values of your outcome variable (here: "mass"), conditional on one of your dependent variables. For example:
+
+
+```r
+par(mfrow=c(1, 2)) ## Just to plot these next two (base) figures side-by-side
+cplot(ols_ie, x = "gender", what = "prediction")
 ```
 
 ```
@@ -749,11 +848,43 @@ cplot(ols_ie, x="gender", dx="height")
 ## 2 female 70.66667 122.57168 18.76166
 ```
 
-![](08-regression_files/figure-html/margins3-1.png)<!-- -->
+```r
+cplot(ols_ie, x = "height", what = "prediction")
+```
 
-In this case,it doesn't make much sense to read a lot into the larger standard errors on the female group; that's being driven by a very small sub-sample size.
+```
+##       xvals    yvals     upper    lower
+## 1  150.0000 57.71242  86.90520 28.51964
+## 2  152.1667 59.65426  87.02441 32.28411
+## 3  154.3333 61.59610  87.15216 36.04003
+## 4  156.5000 63.53793  87.29040 39.78546
+## 5  158.6667 65.47977  87.44173 43.51781
+## 6  160.8333 67.42161  87.60961 47.23361
+## 7  163.0000 69.36344  87.79883 50.92806
+## 8  165.1667 71.30528  88.01610 54.59446
+## 9  167.3333 73.24711  88.27110 58.22313
+## 10 169.5000 75.18895  88.57808 61.79983
+## 11 171.6667 77.13079  88.95862 65.30296
+## 12 173.8333 79.07262  89.44599 68.69926
+## 13 176.0000 81.01446  90.09168 71.93724
+## 14 178.1667 82.95630  90.97287 74.93972
+## 15 180.3333 84.89813  92.19300 77.60326
+## 16 182.5000 86.83997  93.85745 79.82249
+## 17 184.6667 88.78181  96.01749 81.54612
+## 18 186.8333 90.72364  98.63222 82.81507
+## 19 189.0000 92.66548 101.59946 83.73149
+## 20 191.1667 94.60732 104.81353 84.40110
+```
 
-One downside that I want to highlight briefly is that the `margins` package does [not yet work](https://github.com/leeper/margins/issues/73) with `lfe::felm` objects. There are [potential ways](https://stackoverflow.com/questions/30491545/predict-method-for-felm-from-lfe-package) around this, or you can just calculate the marginal effects manually, but it's admittedly a pain.
+![](08-regression_files/figure-html/margins4-1.png)<!-- -->
+
+```r
+par(mfrow=c(1, 1)) ## Reset plot defaults
+```
+
+Note that `cplot` automatically produces a data frame of the predicted effects too. This can be used to construct `ggplot2` versions of the figures instead of the (base) `cplot` defaults. See the package documentation for [more information](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html#ggplot2_examples).
+
+**Aside:** One downside that I want to highlight briefly is that the `margins` package does [not yet work](https://github.com/leeper/margins/issues/73) with `lfe::felm` objects. There are [potential ways](https://stackoverflow.com/questions/30491545/predict-method-for-felm-from-lfe-package) around this, or you can just calculate the marginal effects manually, but it's admittedly a pain.
 
 ### Probit, logit and other generalized linear models
 
@@ -837,7 +968,6 @@ tidy(bayes_reg)
 ### Visualizing regression output and models
 
 We've already worked through several visualization examples today and you should all be familiar with ggplot2's `geom_smooth()` from our earlier lectures. For instance:
-
 
 
 ```r
@@ -968,4 +1098,5 @@ huxreg(ols_dv, ols_ie, ols_hdfe)
 - [Ed Rubin](https://twitter.com/edrubin) has outstanding [teaching notes](http://edrub.in/teaching.html) for econometrics with R on his website. This includes both [undergrad-](https://github.com/edrubin/EC421W19) and [graduate-](http://edrub.in/ARE212/notes.html)level courses. I believe that he is turning these notes into a book with some coauthors, so stay tuned.
 - Speaking of books, several introductory texts are freely available, including [*Introduction to Econometrics with R*](https://www.econometrics-with-r.org/) (Christoph Hanck *et al.*) and [*Using R for Introductory Econometrics*](http://www.urfie.net/) (Florian Heiss).
 - [Tyler Ransom](https://twitter.com/tyleransom) has a nice [cheat sheet](https://github.com/tyleransom/EconometricsLabs/blob/master/tidyRcheatsheet.pdf) for common regression tasks and specifications.
+- [Itamar Caspi](https://twitter.com/itamarcaspi) has written a neat unofficial appendix to this lecture, [*recipes for Dummies*](https://itamarcaspi.rbind.io/post/recipes-for-dummies/). The title might be a little inscrutable if you haven't heard of the `recipes` package before, but basically it handles "tidy" data preprocessing, which is an especially important topic for machine learning methods. We'll get to that later in course, but check out Itamar's post for a good introduction.
 - I promised to provide some links to time series analysis. The good news is that R's support for time series is very, very good. The [Time Series Analysis](https://cran.r-project.org/web/views/TimeSeries.html) task view on CRAN offers an excellent overview of available packages and their functionality. If you're looking for a more concise introduction, this [community tutorial](https://www.datacamp.com/community/tutorials/time-series-r) on DataCamp is a good place start.
