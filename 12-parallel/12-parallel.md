@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott
   affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: Lecture 12  #"23 February 2019"
+date: Lecture 12  #"18 April 2019"
 output: 
   html_document:
     theme: flatly
@@ -125,7 +125,7 @@ all_equal(serial_ex, future_ex)
 ## [1] TRUE
 ```
 
-Those of you who prefer the `purrr::map()` family of functions for iteration and are feeling left out... don't worry. The [furrr package](https://davisvaughan.github.io/furrr/index.html) has you covered. Once again, the syntax for these parallel functions will be very little changed from their serial versions. We simply have to tell R that we want to run things in parallel with `plan(multiprocess)` and then slightly amend our map call to <code>**future_**map_df**r**()</code>.^[In this particular case, the extra "r" at the end tells future to concatenate the data frames from each iteration by *rows*.]
+For those of you who prefer the `purrr::map()` family of functions for iteration and are feeling left out... don't worry. The [furrr package](https://davisvaughan.github.io/furrr/index.html) has you covered. Once again, the syntax for these parallel functions will be very little changed from their serial versions. We simply have to tell R that we want to run things in parallel with `plan(multiprocess)` and then slightly amend our map call to <code>**future_**map_df**r**()</code>.^[In this particular case, the extra "r" at the end tells future to concatenate the data frames from each iteration by *rows*.]
 
 
 ```r
@@ -179,6 +179,8 @@ reg_func <-
 
 ### Serial implementation (for comparison)
 
+Let's implement the function in serial first to get a benchmark for comparison.
+
 
 ```r
 set.seed(123) ## Optional to ensure results are exactly the same.
@@ -193,7 +195,7 @@ toc()
 ## 18.891 sec elapsed
 ```
 
-So that took about 19 seconds on my system. Not a huge pain, but let's see if we can do better by switching to a parallel (multicore) implementation. For the record, though here is a screenshot of my system monitor, showing that only core was being used during this serial version.
+So that took about 19 seconds on my system. Not a huge pain, but let's see if we can do better by switching to a parallel (multicore) implementation. For the record, though here is a screenshot of my system monitor, showing that only one core was being used during this serial version.
 
 ![](pics/serial.png)
 
@@ -216,6 +218,8 @@ In both cases, we start by setting the plan for resolving the future evaluation.
 
 #### 1) future.apply
 
+Here's the `future.apply::future_lapply()` parallel implementation.
+
 
 ```r
 set.seed(123) ## Optional to ensure results are exactly the same.
@@ -234,6 +238,8 @@ toc()
 ```
 
 #### 2) furrr
+
+And here's the `furrr::future_map_dfr()` implementation.
 
 
 ```r
