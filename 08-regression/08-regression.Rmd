@@ -248,7 +248,13 @@ summary(ols_dv2)
 
 ### Interaction effects
 
-Like dummy variables, R provides a convenient syntax for specifying interaction terms directly in the regression model without having to create them manually beforehand.^[Although there are very good reasons that you might want to modify your parent variables before doing so (e.g. centering them). As it happens, I'm [on record](https://twitter.com/grant_mcdermott/status/903691491414917122) as stating that interaction effects are most widely misunderstood and misapplied concept in econometrics. However, that's a topic for another day. (Read the paper in the link!)] You can just use `x1:x2` (to include only the interaction term) or `x1*x2` (to include the parent terms and interaction terms). Generally speaking, you are best advised to include the parent terms alongside an interaction term. This makes the `*` option a good default.
+Like dummy variables, R provides a convenient syntax for specifying interaction terms directly in the regression model without having to create them manually beforehand.^[Although there are very good reasons that you might want to modify your parent variables before doing so (e.g. centering them). As it happens, I'm [on record](https://twitter.com/grant_mcdermott/status/903691491414917122) as stating that interaction effects are most widely misunderstood and misapplied concept in econometrics. However, that's a topic for another day. (Read the paper in the link!)] You can just use `x1:x2` (to include only the interaction term) or `x1*x2` (to include the parent terms and interaction terms). Generally speaking, you are best advised to include the parent terms alongside an interaction term. This makes the `*` option a good default. 
+
+For example, we might wonder whether the relationship between a person's body mass and their height is modulated by their gender. That is, we want to run a regression of the form
+
+$$Mass = \beta_0 + \beta_1 D_{Male} + \beta_2 Height + \beta_3 D_{Male} \times Height$$
+
+To implement this in R, we simply run the following
 
 ```{r ols_ie}
 ols_ie <- lm(mass ~ gender*height, data = humans)
@@ -327,9 +333,9 @@ Fixed effects models are more common than random effects models in economics (in
 
 ## Instrumental variables
 
-Again, lots of options here. See: `?AER::ivreg`, `?lfe::felm`, and `?estimatr::ivreg_robust`. They all follow a similar syntax, where the IV first-stage regression is specified after a `|` following the main regression. Here's an example taken from the [AER package](https://cran.r-project.org/web/packages/AER/vignettes/AER.pdf), just because we haven't used it in this lecture yet. I'll follow their lead in using one of the package's own datasets on cigarette consumption.
+Again, lots of options here. See: `?AER::ivreg`, `?estimatr::iv_robust`, and `?lfe::felm`. They all follow a similar syntax, where the IV first-stage regression is specified after a `|` following the main regression. I'll demonstrate using an example taken from the [AER package](https://cran.r-project.org/web/packages/AER/vignettes/AER.pdf), just because we haven't used it in this lecture yet. I'll follow their lead in using one of the package's own datasets on average cigarette consumption by US state.
 
-```{r, iv_reg}
+```{r, cigs}
 ## Get the data
 data("CigarettesSW", package = "AER")
 ## Create a new data frame with some modified variables
@@ -338,29 +344,54 @@ cigs <-
   mutate(
     rprice = price/cpi,
     rincome = income/population/cpi,
+    rtax = tax/cpi,
     tdiff = (taxs - tax)/cpi
     )
+```
 
-## Run the model 
+In this case, we are interested in regressing the number of cigarettes consumed per capita (i.e. "packs") on their average cost and people's real incomes. The problem is that the price is endogenous, so we need to instrument for it using different tax variables. We could implement this in R using `AER::ivreg()` as follows:
+
+```{r, iv_reg}
+# library(AER) ## Already loaded
+
+## Run the IV regression 
 iv_reg <- 
   ivreg(
-    log(packs) ~ log(rprice) + log(rincome) | log(rincome) + tdiff + I(tax/cpi),
+    log(packs) ~ log(rprice) + log(rincome) | ## The main regression. "rprice" is endogenous
+      log(rincome) + tdiff + rtax, ## The first-stage regression. Note that we include "rincome" b/c it is exogenous
     data = cigs %>% filter(year == "1995")
     )
 summary(iv_reg, diagnostics = TRUE)
 ```
 
+And here's another example using `estimatr::iv_robust()`. This will default to using HC2 robust standard errors, although we could specify other options if we so wished (including clustering). More importantly, note that the syntax is effectively identical to the previous example.
 
-**Challenge:** Try run an IV regression using `lfe:felm()`, but this time on the whole `cigs` data frame (i.e. not subsetting to 1995). Use year fixed effects too.
+```{r, iv_robust}
+# library(estimatr) ## Already loaded
+
+## Run the IV regression with robust SEs
+iv_reg_robust <- 
+  iv_robust( ## We only need to change the function call. The rest of the syntax stays the same.
+    log(packs) ~ log(rprice) + log(rincome) | 
+      log(rincome) + tdiff + rtax,
+    data = cigs %>% filter(year == "1995")
+    )
+summary(iv_reg_robust, diagnostics = TRUE)
+```
+
+
+**Challenge:** Try to run an IV regression using `lfe:felm()`. However, this time use the whole `cigs` data frame (i.e. not subsetting to 1995) and use year fixed effects too. Note that the IV formula specification will be a little different to the previous two examples --- I personally find it more intuitive, but check the examples in the help documentation.
 
 ## Other topics
 
 ### Marginal effects
 
-Caculating marginal effect in a regression is utterly straightforward in cases where there are no non-linearities; just look at the coefficient values! However, that quickly goes out the window when have interaction effects, probit or logit models, etc. Luckily, the `margins` package (which is modeled on its namesake in Stata) goes a long way towards automating the process. You can read more in the [package vignette](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html), but here's a very simple example to illustrate:
+Caculating marginal effect in a regression is utterly straightforward in cases where there are no non-linearities; just look at the coefficient values! However, that quickly goes out the window when you have interaction effects or non-linear models like probit, logit, etc. Luckily, the `margins` package (which is modeled on its namesake in Stata) goes a long way towards automating the process. You can read more in the [package vignette](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html), but here's a very simple example to illustrate. 
+
+COnsider
 
 ```{r margins1}
-library(margins)
+# library(margins) ## Already loaded
 
 # ols_ie %>% margins() %>% summary() ## Piping also works
 summary(margins(ols_ie))
@@ -413,9 +444,6 @@ tidy(bayes_reg)
 
 We've already worked through several visualization examples today and you should all be familiar with ggplot2's `geom_smooth()` from our earlier lectures. For instance:
 
-```{r, include=F, cache=F}
-theme_set(theme_ipsum())
-```
 ```{r smooth, warning=F}
 humans %>%
   ggplot(aes(x=mass, y=height, col=gender)) + 
@@ -444,4 +472,5 @@ huxreg(ols_dv, ols_ie, ols_hdfe)
 - [Ed Rubin](https://twitter.com/edrubin) has outstanding [teaching notes](http://edrub.in/teaching.html) for econometrics with R on his website. This includes both [undergrad-](https://github.com/edrubin/EC421W19) and [graduate-](http://edrub.in/ARE212/notes.html)level courses. I believe that he is turning these notes into a book with some coauthors, so stay tuned.
 - Speaking of books, several introductory texts are freely available, including [*Introduction to Econometrics with R*](https://www.econometrics-with-r.org/) (Christoph Hanck *et al.*) and [*Using R for Introductory Econometrics*](http://www.urfie.net/) (Florian Heiss).
 - [Tyler Ransom](https://twitter.com/tyleransom) has a nice [cheat sheet](https://github.com/tyleransom/EconometricsLabs/blob/master/tidyRcheatsheet.pdf) for common regression tasks and specifications.
+- [Itamar Caspi](https://twitter.com/itamarcaspi) has written a neat unofficial appendix to this lecture, [*recipes for Dummies*](https://itamarcaspi.rbind.io/post/recipes-for-dummies/). The title might be a little inscrutable if you haven't heard of the `recipes` package before, but basically it handles "tidy" data preprocessing, which is an especially important topic for machine learning methods. We'll get to that later in course, but check out Itamar's post for a good introduction.
 - I promised to provide some links to time series analysis. The good news is that R's support for time series is very, very good. The [Time Series Analysis](https://cran.r-project.org/web/views/TimeSeries.html) task view on CRAN offers an excellent overview of available packages and their functionality. If you're looking for a more concise introduction, this [community tutorial](https://www.datacamp.com/community/tutorials/time-series-r) on DataCamp is a good place start.
