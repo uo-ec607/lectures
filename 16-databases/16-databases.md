@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott
   affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: Lecture 16  #"02 April 2019"
+date: Lecture 16  #"22 April 2019"
 output: 
   html_document:
     theme: flatly
@@ -824,4 +824,4 @@ In my experience, though the best best way to learn SQL is simply to *start writ
 You are spoilt for choice here and I've already hyperlinked to many resources throughout this lecture. So here are some final suggestions to get you querying databases like a boss.
 
 - [Juan Mayorga](https://twitter.com/juansmayorga) has an outstanding tutorial on "[Getting Global Fishing Watch Data from Google Big Query using R](http://jsmayorga.com/post/getting-global-fishing-watch-from-google-bigquery-using-r)". He also dives into some reasons why you might want to learn SQL and provides several examples. Highly recommended.
-- If you want a dedicated resource for learning SQL, then there are loads of online tutorials (e.g. [W3Schools](https://www.w3schools.com/sql/default.asp)) and courses (e.g. [DataCamp](https://www.datacamp.com/courses/intro-to-sql-for-data-science), [Codecademy](https://www.codecademy.com/learn/learn-sql)).
+- If you want a dedicated resource for learning SQL, then there are loads of online tutorials (e.g. [W3Schools](https://www.w3schools.com/sql/default.asp)) and courses (e.g. [Codecademy](https://www.codecademy.com/learn/learn-sql)).
