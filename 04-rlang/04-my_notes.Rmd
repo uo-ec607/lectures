@@ -79,6 +79,7 @@ str(my_list$c$x)
 ## this is handy as it doesn't require you to use the setwd command which is computer specific and hence hinders the reproducibility of the code on other machines
 
 library(here)
+
 data <- read.csv(here("/03-shell/examples/meals","friday.csv"))
 ## refer to (also in bookmarks): https://www.tidyverse.org/articles/2017/12/workflow-vs-script/
 
