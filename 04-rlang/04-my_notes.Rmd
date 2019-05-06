@@ -1,0 +1,98 @@
+---
+title: "My Notes"
+author: "Akanksha"
+date: "5/6/2019"
+output: html_document
+---
+```{r Data frames and Matrices}
+c <- c("alaska", "new delhi","london", "nyc")
+df <- data.frame(x=7:10, names = c("alaska", "new delhi","london", "nyc"))
+df
+
+df1 <- data.frame(a=2:4, b=4:6)
+df1
+
+df2 <- data.frame(x=rnorm(10, 1,1), y =runif(10,0,8))
+df2
+
+a<- 12
+
+m <- as.matrix(df)
+m
+m1 <- as.matrix(df1)
+m1
+
+class(df1)
+class(df)
+
+typeof(df1)
+typeof(df)
+
+str(df1)
+str(df)
+
+class(m1)
+class(m)
+
+typeof(m1)
+typeof(m)
+
+str(m1)
+str(m)
+## matrices cam't have columns of different types and that is why in matrix m, the first column in changed into a string variable. This is unlike Data frame structures, which can support vectors of different types.
+```
+
+```{r Multiple datasets and namespace conflicts}
+m1
+lm(df1$b ~ df1$a)
+
+## alternatively
+lm(b ~ a, data = df1)
+
+stats::filter(1:10,rep(1,2))
+stats::filter(1:11,rep(1,2))
+stats::filter(1:10,rep(1,3))
+
+dplyr::starwars
+scales::comma(c(10,100))
+scales::comma(c(1000,1000000))
+```
+
+```{r Indexing}
+c[1]
+c[1:3]
+
+dplyr::starwars[1,1]
+starwars[1,1]
+starwars[1:2,1:4]
+starwars[c(1,3),c(1,8)]
+
+my_list <- list(a = "hello", b = c(1,2,3), c = data.frame(x = 1:5, y = 6:10))
+my_list
+
+str(my_list[[3]][1])
+
+str(my_list$c$x)
+```
+
+```{r Here package and Removing objects}
+## this is handy as it doesn't require you to use the setwd command which is computer specific and hence hinders the reproducibility of the code on other machines
+
+library(here)
+data <- read.csv(here("/03-shell/examples/meals","friday.csv"))
+## refer to (also in bookmarks): https://www.tidyverse.org/articles/2017/12/workflow-vs-script/
+
+rm(data)
+<<<<<<< HEAD
+
+plot <- plot(2:10)
+dev.off() ## https://stackoverflow.com/questions/30042412/graphic-not-appearing-in-r-null-device
+=======
+>>>>>>> 4687e5902da16764f37c49e786db03c595c2f6ea
+
+plot <- plot(2:10)
+dev.off() ## https://stackoverflow.com/questions/30042412/graphic-not-appearing-in-r-null-device
+plot
+
+```
+
