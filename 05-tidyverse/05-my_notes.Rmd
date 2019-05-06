@@ -1,0 +1,62 @@
+---
+title: "My notes"
+author: "Akanksha"
+date: "5/6/2019"
+output: html_document
+---
+```{r}
+install.packages("nycflights13")
+library(nycflights13)
+library(readr)
+library(tidyverse)
+
+tidyverse_packages() ## lists all the packages that come with the tidyverse package - those not loaded automatically have to be loaded separately.
+
+dta <- read_csv(here("/03-shell/examples/meals","friday.csv"))
+rm(data,dta)
+```
+
+```{r Filter Command}
+starwars
+starwars %>% 
+  dplyr::filter(skin_color=="white") %>% 
+  filter(eye_color =="yellow")
+
+starwars %>% 
+  filter(skin_color=="white", eye_color =="yellow") 
+
+starwars %>% 
+  filter(grepl("Vader",name))
+
+## Useful in excluding NA
+
+starwars %>% 
+  filter(is.na(hair_color))
+
+starwars %>% 
+  filter(!is.na(hair_color))
+
+```
+
+```{r Arrange Command}
+
+starwars %>% 
+  filter(skin_color=="fair") %>% 
+  dplyr::arrange(height)
+
+starwars %>% 
+  filter(skin_color=="fair") %>% 
+  dplyr::arrange(desc(height))
+
+starwars %>% 
+  filter(skin_color=="fair") %>% 
+  dplyr::arrange(desc(name))
+
+```
+
+```{r Select Command}
+
+## does this show up ?
+
+```
+
