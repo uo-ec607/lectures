@@ -12,7 +12,7 @@ output:
       highlightLines: true
       countIncrementalSlides: false
 ---
-
+## IGNORE 
 ```{r setup, include=FALSE}
 options(htmltools.dir.version = FALSE)
 library(knitr)
