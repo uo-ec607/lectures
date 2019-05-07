@@ -28,6 +28,14 @@ starwars %>%
 starwars %>% 
   filter(grepl("Vader",name))
 
+starwars %>% 
+  select(name, height) %>%
+  filter(name %in% c("Skywalker"))
+
+starwars %>% 
+  select(name, height) %>%
+  filter(name %in% c("Luke Skywalker")) %>% 
+  
 ## Useful in excluding NA
 
 starwars %>% 
@@ -54,9 +62,121 @@ starwars %>%
 
 ```
 
-```{r Select Command}
+```{r Select Command and Renaming Variables}
+starwars %>% 
+  select(mass:gender, -skin_color, films)
 
-## does this show up ?
+starwars %>%
+  select(alias=name, crib=homeworld, sex=gender)  ## can rename variables this way 
 
+## otherways to rename variables
+
+z <- list(a = 1, b = "c", c = 1:3)
+names(z)
+# change just the name of the third element.
+names(z)[3] <- "c2"
+z
+
+z <- 1:3
+names(z)
+## assign just one name
+names(z)[2] <- "b"
+z
+
+names(starwars) <- toupper(names(starwars))
+names(starwars) <- tolower(names(starwars))
+
+starwars %>% 
+  select(mass, contains("es"))
+
+starwars %>% 
+  select(name, contains("color"),everything()) ## reordering of variables 
+
+```
+
+```{r Mutate Command}
+starwars %>% 
+  select(name,hair_color,birth_year) %>% 
+  mutate(comment = paste0("The color of the hair of ", name, " is ", hair_color))
+
+starwars %>% 
+  select(name, birth_year) %>%
+  mutate(dog_years = birth_year * 7) %>%
+  mutate(comment = paste0(name, " is ", dog_years, " in dog years."))
+## Alternatively
+starwars %>% 
+  select(name, birth_year) %>%
+  mutate(
+    dog_years = birth_year * 7, ## Separate with a comma
+    comment = paste0(name, " is ", dog_years, " in dog years.")
+    )
+
+
+## Mutate all, Mutate if and Mutate at
+# Taking from the exammples given in R
+
+iris <- as_tibble(iris)
+
+iris %>% 
+  mutate_if(is.factor,as.character) %>% 
+  mutate_if(is.double,as.integer)
+
+```
+
+```{r Summarise Command}
+starwars %>% 
+  group_by(species,gender) %>% 
+  summarise(mean_height = mean(height, na.rm = TRUE))
+
+## Summarise all, Summarise if and Summarise at
+starwars %>% 
+  select(height, mass, birth_year ) %>% 
+  summarise_all(list(min, max,mean),na.rm=T)
+
+## better to use the funs command instead of list
+summ <- starwars %>% 
+  select(height, mass, birth_year ) %>% 
+  summarise_all(funs(avrg = mean, min=min, maxm = max),na.rm=T)
+
+starwars %>%
+  summarise_at(c("height", "mass"), mean, na.rm = TRUE)
+
+starwars %>%
+  summarise_at(vars(height:hair_color), mean, na.rm = TRUE)
+
+starwars %>% 
+  group_by(species, hair_color, gender) %>% 
+  summarise_if(is.numeric, funs(avg=mean, min=min),na.rm=T) %>% 
+  head(10)
+```
+
+```{r Other Dplyr Goodies}
+
+## group and ungroup
+by_cyl <- mtcars %>% group_by(cyl)
+
+by_cyl %>% 
+  summarise(mean_mpg = mean(mpg, na.rm = T))
+
+mtcars %>% 
+  summarise(mean_mpg = mean(mpg, na.rm = T))
+
+by_cyl %>% 
+  ungroup() %>% 
+  summarise(mean_mpg = mean(mpg, na.rm = T))
+
+## slice
+
+starwars %>% 
+  
+
+```
+
+```{r %in% and other built in constants}
+1:10 %in% c(1,3,5,9)
+
+sstr <- c("c","aa","B","bba","c",NA,"@","bla","a","Ba","%")
+sstr %in% c(letters, LETTERS)
+sstr[sstr %in% c(letters, LETTERS)]
 ```
 
