@@ -150,7 +150,11 @@ starwars %>%
   head(10)
 ```
 
+<<<<<<< HEAD
 ```{r Other Dplyr Goodies - Pull, Slice, (Un)Group, Count and Distinct}
+=======
+```{r Other Dplyr Goodies}
+>>>>>>> 08e8944749e74303f7eb7aacc6b73be49d249046
 
 ## group and ungroup
 by_cyl <- mtcars %>% group_by(cyl)
@@ -168,6 +172,7 @@ by_cyl %>%
 ## slice
 
 starwars %>% 
+<<<<<<< HEAD
   slice(1:10) %>% 
   summarise_if(is.numeric, funs(avg=mean, min=min),na.rm=T)
   
