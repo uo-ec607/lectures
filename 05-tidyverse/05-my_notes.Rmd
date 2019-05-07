@@ -28,6 +28,14 @@ starwars %>%
 starwars %>% 
   filter(grepl("Vader",name))
 
+starwars %>% 
+  select(name, height) %>%
+  filter(name %in% c("Skywalker"))
+
+starwars %>% 
+  select(name, height) %>%
+  filter(name %in% c("Luke Skywalker")) %>% 
+  
 ## Useful in excluding NA
 
 starwars %>% 
@@ -54,9 +62,273 @@ starwars %>%
 
 ```
 
-```{r Select Command}
+```{r Select Command and Renaming Variables}
+starwars %>% 
+  select(mass:gender, -skin_color, films)
 
-## does this show up ?
+starwars %>%
+  select(alias=name, crib=homeworld, sex=gender)  ## can rename variables this way 
 
+## otherways to rename variables
+
+z <- list(a = 1, b = "c", c = 1:3)
+names(z)
+# change just the name of the third element.
+names(z)[3] <- "c2"
+z
+
+z <- 1:3
+names(z)
+## assign just one name
+names(z)[2] <- "b"
+z
+
+names(starwars) <- toupper(names(starwars))
+names(starwars) <- tolower(names(starwars))
+
+starwars %>% 
+  select(mass, contains("es"))
+
+starwars %>% 
+  select(name, contains("color"),everything()) ## reordering of variables 
+
+```
+
+```{r Mutate Command}
+starwars %>% 
+  select(name,hair_color,birth_year) %>% 
+  mutate(comment = paste0("The color of the hair of ", name, " is ", hair_color))
+
+starwars %>% 
+  select(name, birth_year) %>%
+  mutate(dog_years = birth_year * 7) %>%
+  mutate(comment = paste0(name, " is ", dog_years, " in dog years."))
+## Alternatively
+starwars %>% 
+  select(name, birth_year) %>%
+  mutate(
+    dog_years = birth_year * 7, ## Separate with a comma
+    comment = paste0(name, " is ", dog_years, " in dog years.")
+    )
+
+
+## Mutate all, Mutate if and Mutate at
+# Taking from the exammples given in R
+
+iris <- as_tibble(iris)
+
+iris %>% 
+  mutate_if(is.factor,as.character) %>% 
+  mutate_if(is.double,as.integer)
+
+```
+
+```{r Summarise Command}
+starwars %>% 
+  group_by(species,gender) %>% 
+  summarise(mean_height = mean(height, na.rm = TRUE))
+
+## Summarise all, Summarise if and Summarise at
+starwars %>% 
+  select(height, mass, birth_year ) %>% 
+  summarise_all(list(min, max,mean),na.rm=T)
+
+## better to use the funs command instead of list
+summ <- starwars %>% 
+  select(height, mass, birth_year ) %>% 
+  summarise_all(funs(avrg = mean, min=min, maxm = max),na.rm=T)
+
+starwars %>%
+  summarise_at(c("height", "mass"), mean, na.rm = TRUE)
+
+starwars %>%
+  summarise_at(vars(height:hair_color), mean, na.rm = TRUE)
+
+starwars %>% 
+  group_by(species, hair_color, gender) %>% 
+  summarise_if(is.numeric, funs(avg=mean, min=min),na.rm=T) %>% 
+  head(10)
+```
+
+```{r Other Dplyr Goodies - Pull, Slice, (Un)Group, Count and Distinct}
+
+## group and ungroup
+by_cyl <- mtcars %>% group_by(cyl)
+
+by_cyl %>% 
+  summarise(mean_mpg = mean(mpg, na.rm = T))
+
+mtcars %>% 
+  summarise(mean_mpg = mean(mpg, na.rm = T))
+
+by_cyl %>% 
+  ungroup() %>% 
+  summarise(mean_mpg = mean(mpg, na.rm = T))
+
+## slice
+
+starwars %>% 
+  slice(1:10) %>% 
+  summarise_if(is.numeric, funs(avg=mean, min=min),na.rm=T)
+  
+## pull
+height_fem <- starwars %>% 
+  filter(gender=="female") %>% 
+  pull(height)
+
+## count and distinct
+starwars %>% 
+   count(gender)
+
+starwars %>% 
+  filter(name=="Luke Skywalker")
+
+starwars %>% 
+   distinct(gender)
+
+starwars %>% 
+  group_by(species) %>% 
+  mutate(num = n()) %>% 
+  mutate(height_avr = mean(height,na.rm = T)) %>% 
+  select(name,num,species,height_avr, contains("color"),everything())
+```
+```{r Window Functions - Ranking and leads and lags}
+
+## Going through the Vignette of Window Functions
+library(Lahman)
+batting <- Lahman::Batting %>% 
+  select(playerID, yearID, teamID, G, AB:H) %>% 
+  arrange(playerID, yearID, teamID) %>%
+  semi_join(Lahman::AwardsPlayers, by= "playerID")
+
+##semi_join() - return all rows from x where there are matching values in y, keeping just columns from x.
+
+players <- batting %>% 
+   group_by(playerID)
+
+players %>% 
+  mutate(minrank = min_rank(desc(H)))
+
+batting %>% 
+  mutate(minrank = min_rank(desc(H)))
+
+batting %>% 
+  count(playerID)
+
+# For each player, find the two years with most hits
+players %>% 
+  filter(min_rank(desc(H)) <= 2 & H > 0)
+# Within each player, rank each year by the number of games played
+players %>% 
+  mutate(rank_g = min_rank(G))
+
+# For each player, compute avg change in games played per year
+mutate(players, G_change = (G - lag(G)) / (yearID - lag(yearID)))
+
+players %>% 
+  mutate(improve = ifelse(G>lead(G),1,0)) 
+
+##lead() and lag() have an optional argument order_by. If set, instead of using the row order to determine which value comes before another, they will use another variable. This is important if you have not already sorted the data, or you want to sort one way and lag another.
+
+# For each player, find all where they played more games than average
+filter(players, G > mean(G))
+# For each, player compute a z score based on number of games played
+mutate(players, G_z = (G - mean(G)) / sd(G))
+
+
+players %>% 
+  mutate(per=percent_rank(H)) %>% 
+  mutate(cper=cume_dist(H)) 
+
+##ntile() divides the data up into n evenly sized buckets. It’s a coarse ranking, and it can be used in with mutate() to divide the data into buckets for further summary. For example, we could use ntile() to divide the players within a team into four ranked groups, and calculate the average number of games within each group.
+
+by_team_player <- group_by(batting, teamID, playerID)
+by_team <- summarise(by_team_player, G = sum(G))
+by_team_quartile <- group_by(by_team, quartile = ntile(G, 4))
+summarise(by_team_quartile, mean(G))
+
+df <- data.frame(year = 2000:2005, value = (0:5) ^ 2)
+df
+scrambled <- df[sample(nrow(df)), ]
+scrambled
+```
+
+```{r  Window Functions - Aggregation functions}
+
+## https://cran.r-project.org/web/packages/dplyr/vignettes/window-functions.html
+
+```
+
+```{r Other Dplyr Goodies - Join Operators}
+library(nycflights13)
+flights 
+planes
+
+left_join(flights, planes) %>%
+  select(year, month, day, dep_time, arr_time, carrier, flight, tailnum, type, model)
+
+flights %>% 
+  rename(year_built = year) %>% 
+  left_join(planes, by = "tailnum") %>%  ## Be specific about the joining column
+  select(year, month, day, dep_time, arr_time, carrier, flight, tailnum, year_built, type, model) %>%
+  head(3) 
+
+## or
+
+left_join(
+  flights,
+  planes %>% rename(year_built = year), ## Not necessary w/ below line, but helpful
+  by = "tailnum" ## Be specific about the joining column
+  ) %>%
+  select(year, month, day, dep_time, arr_time, carrier, flight, tailnum, year_built, type, model) %>%
+  head(3) 
+
+## or
+left_join(
+  flights,
+  planes, ## Not renaming "year" to "year_built" this time
+  by = "tailnum"
+  ) %>%
+  select(contains("year"), month, day, dep_time, arr_time, carrier, flight, tailnum, type, model) %>%
+  head(3)
+```
+
+```{r tidyr::gather}
+
+stocks <- data.frame( ## Could use "tibble" instead of "data.frame" if you prefer
+  time = as.Date('2009-01-01') + 0:1,
+  X = rnorm(2, 0, 1),
+  Y = rnorm(2, 0, 2),
+  Z = rnorm(2, 0, 4)
+  )
+
+stocks %>% gather(key=stock, value=price, -time)
+
+# get first observation for each Species in iris data -- base R
+mini_iris <- iris[c(1, 51, 101), ]
+# gather Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
+gather(mini_iris, key = "flower_att", value = "measurement",
+       Sepal.Length, Sepal.Width, Petal.Length, Petal.Width)
+# same result but less verbose
+gather(mini_iris, key = "flower_att", value = "measurement", -Species)
+
+# repeat iris example using dplyr and the pipe operator
+mini_iris <-
+  iris %>%
+  group_by(Species) %>%
+  slice(1)
+mini_iris %>% gather(key = "flower_att", value = "measurement", -Species)
+
+
+
+```
+
+
+```{r %in% and other built in constants}
+1:10 %in% c(1,3,5,9)
+
+sstr <- c("c","aa","B","bba","c",NA,"@","bla","a","Ba","%")
+sstr %in% c(letters, LETTERS)
+sstr[sstr %in% c(letters, LETTERS)]
 ```
 
