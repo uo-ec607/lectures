@@ -89,8 +89,9 @@ names(starwars) <- tolower(names(starwars))
 starwars %>% 
   select(mass, contains("es"))
 
+## reordering of variables ------------
 starwars %>% 
-  select(name, contains("color"),everything()) ## reordering of variables 
+  select(name, contains("color"),everything()) 
 
 ```
 
@@ -112,7 +113,7 @@ starwars %>%
     )
 
 
-## Mutate all, Mutate if and Mutate at
+## Mutate all, Mutate if and Mutate at ----------------
 # Taking from the exammples given in R
 
 iris <- as_tibble(iris)
@@ -128,7 +129,7 @@ starwars %>%
   group_by(species,gender) %>% 
   summarise(mean_height = mean(height, na.rm = TRUE))
 
-## Summarise all, Summarise if and Summarise at
+## Summarise all, Summarise if and Summarise at ----------------
 starwars %>% 
   select(height, mass, birth_year ) %>% 
   summarise_all(list(min, max,mean),na.rm=T)
@@ -152,11 +153,8 @@ starwars %>%
 
 <<<<<<< HEAD
 ```{r Other Dplyr Goodies - Pull, Slice, (Un)Group, Count and Distinct}
-=======
-```{r Other Dplyr Goodies}
->>>>>>> 08e8944749e74303f7eb7aacc6b73be49d249046
 
-## group and ungroup
+## group and ungroup ----------------
 by_cyl <- mtcars %>% group_by(cyl)
 
 by_cyl %>% 
@@ -169,19 +167,18 @@ by_cyl %>%
   ungroup() %>% 
   summarise(mean_mpg = mean(mpg, na.rm = T))
 
-## slice
+## slice ----------------
 
 starwars %>% 
-<<<<<<< HEAD
   slice(1:10) %>% 
   summarise_if(is.numeric, funs(avg=mean, min=min),na.rm=T)
   
-## pull
+## pull ----------------
 height_fem <- starwars %>% 
   filter(gender=="female") %>% 
   pull(height)
 
-## count and distinct
+# count and distinct ----------------
 starwars %>% 
    count(gender)
 
@@ -199,7 +196,7 @@ starwars %>%
 ```
 ```{r Window Functions - Ranking and leads and lags}
 
-## Going through the Vignette of Window Functions
+## Going through the Vignette of Window Functions -------------------------------------------------------
 library(Lahman)
 batting <- Lahman::Batting %>% 
   select(playerID, yearID, teamID, G, AB:H) %>% 
@@ -296,9 +293,11 @@ left_join(
   ) %>%
   select(contains("year"), month, day, dep_time, arr_time, carrier, flight, tailnum, type, model) %>%
   head(3)
+
+## for more - https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html
 ```
 
-```{r tidyr::gather}
+```{r tidyr::gather, spread and separate}
 
 stocks <- data.frame( ## Could use "tibble" instead of "data.frame" if you prefer
   time = as.Date('2009-01-01') + 0:1,
@@ -324,10 +323,83 @@ mini_iris <-
   slice(1)
 mini_iris %>% gather(key = "flower_att", value = "measurement", -Species)
 
+data <- data.frame(
+  village_name = c("a","b","c","d"),
+  state_name = rep("mp",times=4),
+  pop_1991 =c(100,10,90,89),
+  pop_2001 = c(20,90,80,78),
+  lit_1991 =c(0.7,0.9,0.45,0.34),
+  lit_2001 = c(0.8,0.45,0.12,0.26)
+)
+data
+
+data %>% 
+  gather(key=attribute_yr, value, pop_1991:lit_2001)
+
+data %>% 
+  gather(key=attribute_yr, value, pop_1991:lit_2001) %>% 
+  separate(attribute_yr, c("col","year"))
+
+data %>% 
+  gather(key=attribute_yr, value, pop_1991:lit_2001) %>% 
+  separate(attribute_yr, c("col","year")) %>% 
+  arrange(village_name)
+
+data %>% 
+  gather(key=v, value, pop_1991:lit_2001) %>% 
+  separate(v, c("col", "year")) %>% 
+  arrange(village_name) %>% 
+  spread(col, value)
 
 
 ```
 
+```{r Expand and Complete}
+mtcars
+
+tidyr::expand(mtcars, vs, cyl)
+tidyr::expand(mtcars, nesting(vs, cyl))
+
+# Implicit missings ---------------------------------------------------------
+df <- tibble(
+  year   = c(2010, 2010, 2010, 2010, 2012, 2012, 2012),
+  qtr    = c(   1,    2,    3,    4,    1,    2,    3),
+  return = rnorm(7)
+)
+df
+df %>% tidyr::expand(year, qtr)
+df %>% tidyr::expand(year = 2010:2012, qtr)
+df %>% tidyr::expand(year = full_seq(year, 1), qtr)
+df %>% complete(year = full_seq(year, 1), qtr)
+
+# Nesting -------------------------------------------------------------------
+# Each person was given one of two treatments, repeated three times
+# But some of the replications haven't happened yet, so we have
+# incomplete data:
+experiment <- tibble(
+  name = rep(c("Alex", "Robert", "Sam"), c(3, 2, 1)),
+  trt  = rep(c("a", "b", "a"), c(3, 2, 1)),
+  rep = c(1, 2, 3, 1, 2, 1),
+  measurment_1 = runif(6),
+  measurment_2 = runif(6)
+)
+experiment
+
+# We can figure out the complete set of data with expand()
+# Each person only gets one treatment, so we nest name and trt together:
+all <- experiment %>% tidyr::expand(nesting(name, trt), rep)
+all
+
+# We can use anti_join to figure out which observations are missing
+all %>% anti_join(experiment) ## anti_join(x, y) drops all observations in x that have a match in y.
+
+# And use right_join to add in the appropriate missing values to the
+# original data
+experiment %>% right_join(all)
+# Or use the complete() short-hand
+experiment %>% complete(nesting(name, trt), rep)
+
+```
 
 ```{r %in% and other built in constants}
 1:10 %in% c(1,3,5,9)
