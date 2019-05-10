@@ -1,0 +1,104 @@
+---
+title: "My notes"
+author: "Akanksha"
+date: "5/9/2019"
+output: html_document
+---
+```{r Installing various libraries}
+library(ggplot2)
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, broom, hrbrthemes, plm, estimatr, sandwich, lmtest, AER, lfe, huxtable, margins)
+install.packages("hrbrthemes")
+install.packages("gdtools", type = "source")
+library(gdtools)
+library(hrbrthemes)
+library(listviewer)
+library(broom) 
+hrbrthemes::import_roboto_condensed()
+theme_set(hrbrthemes::theme_ipsum())
+```
+
+```{r lm() function}
+
+ols1 <- lm(mass ~ height, data = starwars)
+ols1
+
+str(ols1)
+listviewer::jsonedit(ols1, mode="view")
+summary(ols1)
+summary(ols1)$residuals
+
+```
+
+```{r broom package}
+# https://cran.r-project.org/web/packages/broom/vignettes/broom.html
+
+(ols1_broom <- broom::tidy(ols1, conf.int = T)) ## conf.int stands for confidence interval
+
+ols1_broom %>% 
+  ggplot(aes(x=term,y=estimate))+ geom_point()+
+  geom_errorbar(aes(ymin=conf.low, ymax=conf.high))
+
+broom::glance(ols1)
+```
+
+```{r Geom crossbar/errorbar/linerange/pointrange}
+
+#' # Create a simple example dataset
+df <- data.frame(
+  trt = factor(c(1, 1, 2, 2)),
+  resp = c(1, 5, 3, 4),
+  group = factor(c(1, 2, 1, 2)),
+  upper = c(1.1, 5.3, 3.3, 4.2),
+  lower = c(0.8, 4.6, 2.4, 3.6)
+)
+df
+
+p <- ggplot(df, aes(x=trt, y=resp, color=group)) + geom_point()
+p + geom_linerange(aes(ymin=lower, ymax=upper))
+p + geom_pointrange(aes(ymin=lower, ymax=upper))
+p + geom_crossbar(aes(ymin=lower, ymax=upper), width=0.1)
+p + geom_errorbar(aes(ymin=lower, ymax=upper), width=0.1)
+```
+```{r Regressing on subsetted or other data}
+
+starwars %>% 
+  ggplot(aes(x=height,y=mass))+geom_point(alpha=0.6) +
+  geom_point(data=starwars %>% filter(mass==max(mass, na.rm = T)),
+             color="red")+
+  geom_text(
+    data = starwars %>% filter(mass==max(mass, na.rm=T)), 
+    aes(label=name),
+    col="red", vjust = 0, nudge_y = 25
+    ) +
+  labs(
+    title = "Spot the outlier...",
+    caption = "Aside: Always plot your data!"
+    )
+
+## will run the regression without the outlier
+## creating a new dataframe --------------------
+
+(starwars2 <- starwars %>% 
+  filter(!grepl("Jabba",name)))
+
+(ols2 <-lm(mass~height, data = starwars2))
+
+summary(ols2)
+summary(ols1)
+broom::tidy(ols2, conf.int=T)
+
+
+## Subset directly in the lm() call --------------------
+
+ols2a <- lm(mass ~ height, data = starwars %>% filter(!(grepl("Jabba", name))))
+summary(ols2a)
+
+glance(ols2a)
+
+estimatr::lm_robust()
+
+
+
+```
+
