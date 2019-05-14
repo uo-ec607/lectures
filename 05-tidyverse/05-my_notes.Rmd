@@ -60,6 +60,12 @@ starwars %>%
   filter(skin_color=="fair") %>% 
   dplyr::arrange(desc(name))
 
+# grouped arrange ignores groups
+by_cyl <- mtcars %>% group_by(cyl)
+by_cyl %>% arrange(desc(wt))
+# Unless you specifically ask:
+by_cyl %>% arrange(desc(wt), .by_group = TRUE)
+
 ```
 
 ```{r Select Command and Renaming Variables}
@@ -135,9 +141,9 @@ starwars %>%
   summarise_all(list(min, max,mean),na.rm=T)
 
 ## better to use the funs command instead of list
-summ <- starwars %>% 
+(summ <- starwars %>% 
   select(height, mass, birth_year ) %>% 
-  summarise_all(funs(avrg = mean, min=min, maxm = max),na.rm=T)
+  summarise_all(list(avrg = mean, min=min, maxm = max),na.rm=T))
 
 starwars %>%
   summarise_at(c("height", "mass"), mean, na.rm = TRUE)
@@ -151,7 +157,6 @@ starwars %>%
   head(10)
 ```
 
-<<<<<<< HEAD
 ```{r Other Dplyr Goodies - Pull, Slice, (Un)Group, Count and Distinct}
 
 ## group and ungroup ----------------
@@ -188,12 +193,29 @@ starwars %>%
 starwars %>% 
    distinct(gender)
 
-starwars %>% 
+(starwars %>% 
   group_by(species) %>% 
   mutate(num = n()) %>% 
   mutate(height_avr = mean(height,na.rm = T)) %>% 
-  select(name,num,species,height_avr, contains("color"),everything())
+  select(name,num,species,height_avr, contains("color"),everything()))
+
+## logical subsetting -----------------
+
+not_cancelled <- flights %>% 
+  filter(!is.na(dep_delay), !is.na(arr_delay))
+
+not_cancelled %>% 
+  group_by(year, month, day) %>% 
+  summarise(
+    avg_delay1 = mean(arr_delay),
+    avg_delay2 = mean(arr_delay[arr_delay > 0]) # the average positive delay
+  )
+
+##Measures of spread: sd(x), IQR(x), mad(x). The root mean squared deviation, or standard deviation sd(x), is the standard measure of spread. The interquartile range IQR(x) and median absolute deviation mad(x) are robust equivalents that may be more useful if you have outliers.
+
 ```
+
+
 ```{r Window Functions - Ranking and leads and lags}
 
 ## Going through the Vignette of Window Functions -------------------------------------------------------
@@ -410,5 +432,69 @@ experiment %>% complete(nesting(name, trt), rep)
 sstr <- c("c","aa","B","bba","c",NA,"@","bla","a","Ba","%")
 sstr %in% c(letters, LETTERS)
 sstr[sstr %in% c(letters, LETTERS)]
+```
+
+```{r  R for DataScience - Chapter 5}
+
+# select
+
+flights %>% 
+  select(ends_with("time")) ## similarly have starts_with
+
+flights %>% 
+  select(contains("dep"))
+
+## matches within select
+
+iris %>% 
+  select(matches(".t."))
+
+## num_range within select
+
+df <- data.frame(name = c("a","b","c"),
+                 pop1991 = c(10,90,76),
+                 pop2001 = c(2,34,18),
+                 pop2011 = c(63,82,53))
+
+df %>% 
+  select(num_range("pop",1991:2011))
+
+## rename - a variant of select
+
+# use rename(), which is a variant of select() that keeps all the variables that aren’t explicitly mentioned
+
+flights
+rename(flights, tail_num = tailnum)
+
+
+## one_of function within select
+
+vars <- c("year", "month", "day", "dep_delay", "arr_delay")
+
+flights %>% 
+  select(one_of(vars))
+
+# transmute - only keeps the newly created variables
+
+flights %>% 
+  transmute(a = year*10, jj = dep_delay/arr_delay)
+
+#Modular arithmetic: %/% (integer division) and %% (remainder), where x == y * (x %/% y) + (x %% y). Modular arithmetic is a handy tool because it allows you to break integers up into pieces. For example, in the flights dataset, you can compute hour and minute from dep_time with
+
+(x <- 1:10)
+
+cummean(x)
+cumsum(x)
+cumprod(x)
+cummin(x)
+cummax(x)
+
+
+
+# Ranking: there are a number of ranking functions, but you should start with min_rank(). It does the most usual type of ranking (e.g. 1st, 2nd, 2nd, 4th). The default gives smallest values the small ranks; use desc(x) to give the largest values the smallest ranks. If min_rank() doesn’t do what you need, look at the variants row_number(), dense_rank(), percent_rank(), cume_dist(), ntile(). See their help pages for more details.
+
+
+
+
 ```
 
