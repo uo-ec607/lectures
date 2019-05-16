@@ -111,20 +111,25 @@ Again, this philosophy is very clearly expressed in the design and functionality
 
 # Definitions
 
-Don't be thrown off by terminology: The "shell", "terminal", "tty", "command prompt", etc. 
-- These are all basically<sup>1</sup> just different names for the same thing.
-- They are all referring to a *command line interface* (CLI).
-  
-There are many shell variants<sup>2</sup>, but we're going to focus on [**Bash**](https://www.gnu.org/software/bash/) (i.e. **B**ourne **a**gain **sh**ell).
-- Default shell on Linux and MacOS.
-- Windows users should have installed it via Git for Windows ([here](https://gitforwindows.org/)), or the new Windows Subsystem for Linux ([here](https://docs.microsoft.com/en-us/windows/wsl/install-win10" target)).
-
+Don't be thrown off by terminology: *shell*, *terminal*, *tty*, *command prompt*, etc. 
+- These are all basically just different names for the same thing.<sup>1</sup>
+- They are all referring to a **command line interface** (CLI).
 
 .footnote[
 <sup>1</sup> [Truth be told](https://unix.stackexchange.com/questions/4126/what-is-the-exact-difference-between-a-terminal-a-shell-a-tty-and-a-con), there are some subtle and sometimes important differences, as well as some interesting history behind the names. But we can safely ignore these here.
-
-<sup>2</sup> For the record, I primarily use the Z shell (zsh) in my day-to-day work, which is why it might look [somewhat different](https://ohmyz.sh/) to yours during live coding sessions.
 ]
+
+--
+
+There are many shell variants, but we're going to focus on [**Bash**](https://www.gnu.org/software/bash/) (i.e. **B**ourne **a**gain **sh**ell).
+- Default shell on Linux and MacOS.
+- Windows users should have installed it via Git for Windows ([here](https://gitforwindows.org/)), or the new Windows Subsystem for Linux ([here](https://docs.microsoft.com/en-us/windows/wsl/install-win10" target)).
+
+--
+
+</br>
+
+(For the record, I primarily use [Zsh (i.e. Z shell)](https://ohmyz.sh/), which is why my shell might look slightly different to yours during live coding sessions. The commands will stay the same, though.)
 
 
 ---
@@ -162,8 +167,9 @@ Open up your Bash shell.
 - [Mac](https://www.techwalla.com/articles/how-to-open-terminal-on-a-macbook)
 - [Windows](https://www.howtogeek.com/265900/everything-you-can-do-with-windows-10s-new-bash-shell/)
 
-You can also access the Bash shell through RStudio, by clicking on the "Terminal" tab of the bottom-left window pane (i.e. next to the "Console" tab).
-- This should run Bash by default if it is installed on your system. See [here](https://support.rstudio.com/hc/en-us/articles/115010737148-Using-the-RStudio-Terminal) for more details.
+You can also access the Bash shell through RStudio.
+- Hitting `Shift`+`Alt`+`T` will cause a "Terminal" tab to open up in the bottom-left window pane (i.e. next to the "Console" tab).
+- Again, this should run Bash by default if it is installed on your system. See [here](https://support.rstudio.com/hc/en-us/articles/115010737148-Using-the-RStudio-Terminal) for more details.
 
 ---
 
@@ -443,15 +449,19 @@ name: files
 
 # Navigation
 
+Key navigation commands:
+
 - `pwd` to print (the current) working directory.
 
 - `cd` to change directory.
 
-You can use absolute paths, but it's better to use relative paths and invoke special symbols for a user's home folder (`~`), current directory (`.`), and parent directory (`..`) as needed. 
-
 ```{bash nav1}
 pwd
 ```
+
+--
+
+You can use absolute paths, but it's better to use relative paths and invoke special symbols for a user's home folder (`~`), current directory (`.`), and parent directory (`..`) as needed. 
 
 ```{bash nav2}
 cd examples ## Move into the "examples" sub-directory of this lecture directory.
@@ -521,7 +531,7 @@ What does this all mean? Let's focus on the top line.
 <span style='background: #ffff88;'>d</span>rwxr-xr-x 2 grant users 4.0K Jan 12 22:12 ABC</span>
 
 - The first column denotes the object type:
-  - `d` (directory or folder), - `l` (link), or `-` (file)
+  - `d` (directory or folder), `l` (link), or `-` (file)
 
 ---
 
@@ -534,7 +544,7 @@ What does this all mean? Let's focus on the top line.
 <p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";>d<span style='background: #ffff88;'><span style='color: #e41a1c;'>rwx</span><span style='color: #377eb8;'>r-x</span><span style='color: #4daf4a;'>r-x</span></span> 2 grant users 4.0K Jan 12 22:12 ABC</span>
 
 - <span style='color: #A9A9A9;'>The first column denotes the object type:
-  - `d` (directory or folder), - `l` (link), or `-` (file)</span>
+  - `d` (directory or folder), `l` (link), or `-` (file)</span>
 - Next, we see the permissions associated with the object's three possible user types: 1) <span style='color: #e41a1c;'>owner</span>, 2) <span style='color: #377eb8;'>the owner's group</span>, and 3) <span style='color: #4daf4a;'>all other users</span>.
   - Permissions reflect `r` (read), `w` (write), or `x` (execute) access.
   - <b>`-`</b> denotes missing permissions for a class of operations.
@@ -549,7 +559,7 @@ What does this all mean? Let's focus on the top line.
 <p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";>drwxr-xr-x <span style='background: #ffff88;'>2</span> grant users 4.0K Jan 12 22:12 ABC</span>
 
 - <span style='color: #A9A9A9;'>The first column denotes the object type:
-  - `d` (directory or folder), - `l` (link), or `-` (file)</span>
+  - `d` (directory or folder), `l` (link), or `-` (file)</span>
 - <span style='color: #A9A9A9;'>Next, we see the permissions associated with the object's three possible user types: 1) owner, 2) the owner's group, and 3) all other users.
   - Permissions reflect `r` (read), `w` (write), or `x` (execute) access.
   - <b>`-`</b> denotes missing permissions for a class of operations.</span>
@@ -565,7 +575,7 @@ What does this all mean? Let's focus on the top line.
 <p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";>drwxr-xr-x 2 <span style='background: #ffff88;'><span style='color: #e41a1c;'>grant</span> <span style='color: #377eb8;'>users</span></span> 4.0K Jan 12 22:12 ABC</span>
 
 - <span style='color: #A9A9A9;'>The first column denotes the object type:
-  - `d` (directory or folder), - `l` (link), or `-` (file)</span>
+  - `d` (directory or folder), `l` (link), or `-` (file)</span>
 - <span style='color: #A9A9A9;'>Next, we see the permissions associated with the object's three possible user types: 1) owner, 2) the owner's group, and 3) all other users.
   - Permissions reflect `r` (read), `w` (write), or `x` (execute) access.
   - <b>`-`</b> denotes missing permissions for a class of operations.</span>
@@ -582,7 +592,7 @@ What does this all mean? Let's focus on the top line.
 <p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";>drwxr-xr-x 2 grant users <span style='background: #ffff88;'>4.0K Jan 12 22:12 ABC</span></span>
 
 - <span style='color: #A9A9A9;'>The first column denotes the object type:
-  - `d` (directory or folder), - `l` (link), or `-` (file)</span>
+  - `d` (directory or folder), `l` (link), or `-` (file)</span>
 - <span style='color: #A9A9A9;'>Next, we see the permissions associated with the object's three possible user types: 1) owner, 2) the owner's group, and 3) all other users.
   - Permissions reflect `r` (read), `w` (write), or `x` (execute) access.
   - <b>`-`</b> denotes missing permissions for a class of operations.</span>
@@ -603,7 +613,7 @@ drwxr-xr-x 2 grant users 4.0K Jan 12 22:12 ABC
 ```
 
 - The first column denotes the object type:
-  - `d` (directory or folder), - `l` (link), or `-` (file)
+  - `d` (directory or folder), `l` (link), or `-` (file)
 - Next, we see the permissions associated with the object's three possible user types: 1) owner, 2) the owner's group, and 3) all other users.
   - Permissions reflect `r` (read), `w` (write), or `x` (execute) access.
   - <b>`-`</b> denotes missing permissions for a class of operations.
@@ -619,17 +629,21 @@ Note: We'll return to file permissions and ownership at the end of the lecture.
 
 # Create: touch and mkdir
 
-Let's take directories first. To create a directory use `mkdir`:
+One of the most common shell tasks is object creation (files, directories, etc.)
+
+We use `mkdir` to create directories. E.g. To create a new "testing" directory:
 ```{bash mkdir}
 mkdir testing
 ```
 
-To create (empty) files, we can use `touch`:
+We use `touch` to create (empty) files. E.g. To add some files to our new directory:
 ```{bash touch}
 touch testing/test1.txt testing/test2.txt testing/test3.txt
 ```
 
-Check that it worked
+--
+
+Check that it worked:
 ```{bash}
 ls testing
 ```
@@ -772,11 +786,12 @@ PS — You couldn't tell here, but the character count is actually higher than w
 
 ### Read everything: cat
 
-The simplest way to read in text is with the `cat` ("concatenate") command. 
-- One problem with large files is that `cat` will read in *all* of the text. You can scroll back up in your shell window, but it can undoubtedly be a pain.
+The simplest way to read in text is with the `cat` ("concatenate") command. Note that `cat` will read in *all* of the text. You can scroll back up in your shell window, but this can still be a pain.
 
 Again, let's demonstrate using Shakespeare's Sonnets. (This will overflow the slide.)
 - I'm going to use the `-n` ("number") flag because I want to show line numbers.
+
+--
 
 ```{bash cat}
 cat -n examples/sonnets.txt
@@ -788,7 +803,7 @@ cat -n examples/sonnets.txt
 
 ### Scroll: more and less
 
-The `more` and `less` commands provide a bit of additional functionality around `cat`,for example by allowing you to move through long text one page at a time.
+The `more` and `less` commands provide extra functionality over `cat`. For example, they allow you to move through long text one page at a time.
 - Try this yourself with `$ more examples/sonnets.txt`
 - You can move forward and back using the "f" and "b" keys, and quit by hitting "q".
 
@@ -813,6 +828,8 @@ The `tail` works very similarly to `head`, but starting from the bottom. For exa
 tail -n 1 examples/sonnets.txt ## Last row
 ```
 
+--
+
 However, there's one other neat option that I want to show you. By using the `-n +N` option, we can specify that we want to preview all lines starting from row N *and after*. E.g.
 
 ```{bash tail2}
@@ -825,8 +842,8 @@ tail -n +3024 examples/sonnets.txt ## Show everything from line 3024
 
 To find patterns in text, we can use regular expression-type matching with `grep`. 
 
-For example, say we want to find the famous opening line to Shakespeare's Sonnet 18.
-- I'm going to include the `-n` ("number") flag here, which give me the line that it occurs on. 
+For example, say we want to find the famous opening line to Shakespeare's [Sonnet 18](https://en.wikipedia.org/wiki/Sonnet_18).
+- I'm going to include the `-n` ("number") flag to get the line that it occurs on. 
 
 ```{bash grep}
 grep -n "Shall I compare thee" examples/sonnets.txt
@@ -958,7 +975,7 @@ Aside: I often use this sequence when adding files to my .gitignore. E.g. `$ ech
 
 The pipe operator `|` is one of the coolest features in Bash.
 - It lets you send (i.e. "pipe") intermediate output to another command.
-- In other words, it allows us to chain together a sequence of simple operations and thereby implement a more complex operation. (DOTADIW!)
+- In other words, it allows us to chain together a sequence of simple operations and thereby implement a more complex operation. (Remember the Unix philosophy!)
 
 Let me demonstrate using a very simple example.
 

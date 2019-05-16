@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
   <head>
     <title>Lecture 3: Learning to love the shell</title>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
     <meta name="author" content="Grant McDermott | University of Oregon" />
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
@@ -104,20 +104,25 @@ Again, this philosophy is very clearly expressed in the design and functionality
 
 # Definitions
 
-Don't be thrown off by terminology: The "shell", "terminal", "tty", "command prompt", etc. 
-- These are all basically&lt;sup&gt;1&lt;/sup&gt; just different names for the same thing.
-- They are all referring to a *command line interface* (CLI).
-  
-There are many shell variants&lt;sup&gt;2&lt;/sup&gt;, but we're going to focus on [**Bash**](https://www.gnu.org/software/bash/) (i.e. **B**ourne **a**gain **sh**ell).
-- Default shell on Linux and MacOS.
-- Windows users should have installed it via Git for Windows ([here](https://gitforwindows.org/)), or the new Windows Subsystem for Linux ([here](https://docs.microsoft.com/en-us/windows/wsl/install-win10" target)).
-
+Don't be thrown off by terminology: *shell*, *terminal*, *tty*, *command prompt*, etc. 
+- These are all basically just different names for the same thing.&lt;sup&gt;1&lt;/sup&gt;
+- They are all referring to a **command line interface** (CLI).
 
 .footnote[
 &lt;sup&gt;1&lt;/sup&gt; [Truth be told](https://unix.stackexchange.com/questions/4126/what-is-the-exact-difference-between-a-terminal-a-shell-a-tty-and-a-con), there are some subtle and sometimes important differences, as well as some interesting history behind the names. But we can safely ignore these here.
-
-&lt;sup&gt;2&lt;/sup&gt; For the record, I primarily use the Z shell (zsh) in my day-to-day work, which is why it might look [somewhat different](https://ohmyz.sh/) to yours during live coding sessions.
 ]
+
+--
+
+There are many shell variants, but we're going to focus on [**Bash**](https://www.gnu.org/software/bash/) (i.e. **B**ourne **a**gain **sh**ell).
+- Default shell on Linux and MacOS.
+- Windows users should have installed it via Git for Windows ([here](https://gitforwindows.org/)), or the new Windows Subsystem for Linux ([here](https://docs.microsoft.com/en-us/windows/wsl/install-win10" target)).
+
+--
+
+&lt;/br&gt;
+
+(For the record, I primarily use [Zsh (i.e. Z shell)](https://ohmyz.sh/), which is why my shell might look slightly different to yours during live coding sessions. The commands will stay the same, though.)
 
 
 ---
@@ -155,8 +160,9 @@ Open up your Bash shell.
 - [Mac](https://www.techwalla.com/articles/how-to-open-terminal-on-a-macbook)
 - [Windows](https://www.howtogeek.com/265900/everything-you-can-do-with-windows-10s-new-bash-shell/)
 
-You can also access the Bash shell through RStudio, by clicking on the "Terminal" tab of the bottom-left window pane (i.e. next to the "Console" tab).
-- This should run Bash by default if it is installed on your system. See [here](https://support.rstudio.com/hc/en-us/articles/115010737148-Using-the-RStudio-Terminal) for more details.
+You can also access the Bash shell through RStudio.
+- Hitting `Shift`+`Alt`+`T` will cause a "Terminal" tab to open up in the bottom-left window pane (i.e. next to the "Console" tab).
+- Again, this should run Bash by default if it is installed on your system. See [here](https://support.rstudio.com/hc/en-us/articles/115010737148-Using-the-RStudio-Terminal) for more details.
 
 ---
 
@@ -601,18 +607,19 @@ $ man ls
 ## 
 ##        The SIZE argument is an integer and  optional  unit  (example:  10K  is
 ##        10*1024).   Units  are  K,M,G,T,P,E,Z,Y  (powers  of 1024) or KB,MB,...
-##        (powers of 1000).
+##        (powers of 1000).  Binary prefixes can be used, too: KiB=K, MiB=M,  and
+##        so on.
 ## 
-##        The TIME_STYLE argument can be  full-iso,  long-iso,  iso,  locale,  or
-##        +FORMAT.   FORMAT  is  interpreted  like in date(1).  If FORMAT is FOR‐
+##        The  TIME_STYLE  argument  can  be  full-iso, long-iso, iso, locale, or
+##        +FORMAT.  FORMAT is interpreted like in date(1).   If  FORMAT  is  FOR‐
 ##        MAT1&lt;newline&gt;FORMAT2, then FORMAT1 applies to non-recent files and FOR‐
-##        MAT2  to  recent files.  TIME_STYLE prefixed with 'posix-' takes effect
-##        only outside the POSIX locale.  Also the TIME_STYLE  environment  vari‐
+##        MAT2 to recent files.  TIME_STYLE prefixed with 'posix-'  takes  effect
+##        only  outside  the POSIX locale.  Also the TIME_STYLE environment vari‐
 ##        able sets the default style to use.
 ## 
-##        Using  color  to distinguish file types is disabled both by default and
-##        with --color=never.  With --color=auto, ls emits color codes only  when
-##        standard  output is connected to a terminal.  The LS_COLORS environment
+##        Using color to distinguish file types is disabled both by  default  and
+##        with  --color=never.  With --color=auto, ls emits color codes only when
+##        standard output is connected to a terminal.  The LS_COLORS  environment
 ##        variable can change the settings.  Use the dircolors command to set it.
 ## 
 ##    Exit status:
@@ -627,19 +634,19 @@ $ man ls
 ## 
 ## REPORTING BUGS
 ##        GNU coreutils online help: &lt;https://www.gnu.org/software/coreutils/&gt;
-##        Report ls translation bugs to &lt;https://translationproject.org/team/&gt;
+##        Report any translation bugs to &lt;https://translationproject.org/team/&gt;
 ## 
 ## COPYRIGHT
-##        Copyright © 2018 Free Software Foundation, Inc.   License  GPLv3+:  GNU
+##        Copyright  ©  2019  Free Software Foundation, Inc.  License GPLv3+: GNU
 ##        GPL version 3 or later &lt;https://gnu.org/licenses/gpl.html&gt;.
-##        This  is  free  software:  you  are free to change and redistribute it.
+##        This is free software: you are free  to  change  and  redistribute  it.
 ##        There is NO WARRANTY, to the extent permitted by law.
 ## 
 ## SEE ALSO
-##        Full documentation at: &lt;https://www.gnu.org/software/coreutils/ls&gt;
+##        Full documentation &lt;https://www.gnu.org/software/coreutils/ls&gt;
 ##        or available locally via: info '(coreutils) ls invocation'
 ## 
-## GNU coreutils 8.30                August 2018                            LS(1)
+## GNU coreutils 8.31                March 2019                             LS(1)
 ```
 
 ---
@@ -681,11 +688,11 @@ name: files
 
 # Navigation
 
+Key navigation commands:
+
 - `pwd` to print (the current) working directory.
 
 - `cd` to change directory.
-
-You can use absolute paths, but it's better to use relative paths and invoke special symbols for a user's home folder (`~`), current directory (`.`), and parent directory (`..`) as needed. 
 
 
 ```bash
@@ -695,6 +702,10 @@ $ pwd
 ```
 ## /home/grant/Documents/Teaching/EC607/lectures/03-shell
 ```
+
+--
+
+You can use absolute paths, but it's better to use relative paths and invoke special symbols for a user's home folder (`~`), current directory (`.`), and parent directory (`..`) as needed. 
 
 
 ```bash
@@ -755,7 +766,7 @@ $ ls -lh examples
 ## drwxr-xr-x 2 grant users 4.0K Jan 12 22:12 Bad folder name
 ## -rwxr-xr-x 1 grant users   37 Jan 14 22:36 hello.sh
 ## drwxr-xr-x 2 grant users 4.0K Jan 13 20:34 meals
-## -rw-r--r-- 1 grant users   32 Jan 24 15:08 nursery.txt
+## -rw-r--r-- 1 grant users   32 May 16 14:45 nursery.txt
 ## -rwxrwxrwx 1 grant users  153 Jan 12 21:20 reps.txt
 ## -rw-r--r-- 1 grant users 120K Jan 12 14:58 sonnets.txt
 ```
@@ -781,7 +792,7 @@ What does this all mean? Let's focus on the top line.
 &lt;span style='background: #ffff88;'&gt;d&lt;/span&gt;rwxr-xr-x 2 grant users 4.0K Jan 12 22:12 ABC&lt;/span&gt;
 
 - The first column denotes the object type:
-  - `d` (directory or folder), - `l` (link), or `-` (file)
+  - `d` (directory or folder), `l` (link), or `-` (file)
 
 ---
 
@@ -794,7 +805,7 @@ What does this all mean? Let's focus on the top line.
 &lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;d&lt;span style='background: #ffff88;'&gt;&lt;span style='color: #e41a1c;'&gt;rwx&lt;/span&gt;&lt;span style='color: #377eb8;'&gt;r-x&lt;/span&gt;&lt;span style='color: #4daf4a;'&gt;r-x&lt;/span&gt;&lt;/span&gt; 2 grant users 4.0K Jan 12 22:12 ABC&lt;/span&gt;
 
 - &lt;span style='color: #A9A9A9;'&gt;The first column denotes the object type:
-  - `d` (directory or folder), - `l` (link), or `-` (file)&lt;/span&gt;
+  - `d` (directory or folder), `l` (link), or `-` (file)&lt;/span&gt;
 - Next, we see the permissions associated with the object's three possible user types: 1) &lt;span style='color: #e41a1c;'&gt;owner&lt;/span&gt;, 2) &lt;span style='color: #377eb8;'&gt;the owner's group&lt;/span&gt;, and 3) &lt;span style='color: #4daf4a;'&gt;all other users&lt;/span&gt;.
   - Permissions reflect `r` (read), `w` (write), or `x` (execute) access.
   - &lt;b&gt;`-`&lt;/b&gt; denotes missing permissions for a class of operations.
@@ -809,7 +820,7 @@ What does this all mean? Let's focus on the top line.
 &lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;drwxr-xr-x &lt;span style='background: #ffff88;'&gt;2&lt;/span&gt; grant users 4.0K Jan 12 22:12 ABC&lt;/span&gt;
 
 - &lt;span style='color: #A9A9A9;'&gt;The first column denotes the object type:
-  - `d` (directory or folder), - `l` (link), or `-` (file)&lt;/span&gt;
+  - `d` (directory or folder), `l` (link), or `-` (file)&lt;/span&gt;
 - &lt;span style='color: #A9A9A9;'&gt;Next, we see the permissions associated with the object's three possible user types: 1) owner, 2) the owner's group, and 3) all other users.
   - Permissions reflect `r` (read), `w` (write), or `x` (execute) access.
   - &lt;b&gt;`-`&lt;/b&gt; denotes missing permissions for a class of operations.&lt;/span&gt;
@@ -825,7 +836,7 @@ What does this all mean? Let's focus on the top line.
 &lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;drwxr-xr-x 2 &lt;span style='background: #ffff88;'&gt;&lt;span style='color: #e41a1c;'&gt;grant&lt;/span&gt; &lt;span style='color: #377eb8;'&gt;users&lt;/span&gt;&lt;/span&gt; 4.0K Jan 12 22:12 ABC&lt;/span&gt;
 
 - &lt;span style='color: #A9A9A9;'&gt;The first column denotes the object type:
-  - `d` (directory or folder), - `l` (link), or `-` (file)&lt;/span&gt;
+  - `d` (directory or folder), `l` (link), or `-` (file)&lt;/span&gt;
 - &lt;span style='color: #A9A9A9;'&gt;Next, we see the permissions associated with the object's three possible user types: 1) owner, 2) the owner's group, and 3) all other users.
   - Permissions reflect `r` (read), `w` (write), or `x` (execute) access.
   - &lt;b&gt;`-`&lt;/b&gt; denotes missing permissions for a class of operations.&lt;/span&gt;
@@ -842,7 +853,7 @@ What does this all mean? Let's focus on the top line.
 &lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;drwxr-xr-x 2 grant users &lt;span style='background: #ffff88;'&gt;4.0K Jan 12 22:12 ABC&lt;/span&gt;&lt;/span&gt;
 
 - &lt;span style='color: #A9A9A9;'&gt;The first column denotes the object type:
-  - `d` (directory or folder), - `l` (link), or `-` (file)&lt;/span&gt;
+  - `d` (directory or folder), `l` (link), or `-` (file)&lt;/span&gt;
 - &lt;span style='color: #A9A9A9;'&gt;Next, we see the permissions associated with the object's three possible user types: 1) owner, 2) the owner's group, and 3) all other users.
   - Permissions reflect `r` (read), `w` (write), or `x` (execute) access.
   - &lt;b&gt;`-`&lt;/b&gt; denotes missing permissions for a class of operations.&lt;/span&gt;
@@ -863,7 +874,7 @@ drwxr-xr-x 2 grant users 4.0K Jan 12 22:12 ABC
 ```
 
 - The first column denotes the object type:
-  - `d` (directory or folder), - `l` (link), or `-` (file)
+  - `d` (directory or folder), `l` (link), or `-` (file)
 - Next, we see the permissions associated with the object's three possible user types: 1) owner, 2) the owner's group, and 3) all other users.
   - Permissions reflect `r` (read), `w` (write), or `x` (execute) access.
   - &lt;b&gt;`-`&lt;/b&gt; denotes missing permissions for a class of operations.
@@ -879,19 +890,23 @@ Note: We'll return to file permissions and ownership at the end of the lecture.
 
 # Create: touch and mkdir
 
-Let's take directories first. To create a directory use `mkdir`:
+One of the most common shell tasks is object creation (files, directories, etc.)
+
+We use `mkdir` to create directories. E.g. To create a new "testing" directory:
 
 ```bash
 $ mkdir testing
 ```
 
-To create (empty) files, we can use `touch`:
+We use `touch` to create (empty) files. E.g. To add some files to our new directory:
 
 ```bash
 $ touch testing/test1.txt testing/test2.txt testing/test3.txt
 ```
 
-Check that it worked
+--
+
+Check that it worked:
 
 ```bash
 $ ls testing
@@ -1068,11 +1083,12 @@ PS — You couldn't tell here, but the character count is actually higher than w
 
 ### Read everything: cat
 
-The simplest way to read in text is with the `cat` ("concatenate") command. 
-- One problem with large files is that `cat` will read in *all* of the text. You can scroll back up in your shell window, but it can undoubtedly be a pain.
+The simplest way to read in text is with the `cat` ("concatenate") command. Note that `cat` will read in *all* of the text. You can scroll back up in your shell window, but this can still be a pain.
 
 Again, let's demonstrate using Shakespeare's Sonnets. (This will overflow the slide.)
 - I'm going to use the `-n` ("number") flag because I want to show line numbers.
+
+--
 
 
 ```bash
@@ -4117,7 +4133,7 @@ $ cat -n examples/sonnets.txt
 
 ### Scroll: more and less
 
-The `more` and `less` commands provide a bit of additional functionality around `cat`,for example by allowing you to move through long text one page at a time.
+The `more` and `less` commands provide extra functionality over `cat`. For example, they allow you to move through long text one page at a time.
 - Try this yourself with `$ more examples/sonnets.txt`
 - You can move forward and back using the "f" and "b" keys, and quit by hitting "q".
 
@@ -4154,6 +4170,8 @@ $ tail -n 1 examples/sonnets.txt ## Last row
 ## subscribe to our email newsletter to hear about new eBooks.
 ```
 
+--
+
 However, there's one other neat option that I want to show you. By using the `-n +N` option, we can specify that we want to preview all lines starting from row N *and after*. E.g.
 
 
@@ -4176,8 +4194,8 @@ $ tail -n +3024 examples/sonnets.txt ## Show everything from line 3024
 
 To find patterns in text, we can use regular expression-type matching with `grep`. 
 
-For example, say we want to find the famous opening line to Shakespeare's Sonnet 18.
-- I'm going to include the `-n` ("number") flag here, which give me the line that it occurs on. 
+For example, say we want to find the famous opening line to Shakespeare's [Sonnet 18](https://en.wikipedia.org/wiki/Sonnet_18).
+- I'm going to include the `-n` ("number") flag to get the line that it occurs on. 
 
 
 ```bash
@@ -4367,7 +4385,7 @@ Aside: I often use this sequence when adding files to my .gitignore. E.g. `$ ech
 
 The pipe operator `|` is one of the coolest features in Bash.
 - It lets you send (i.e. "pipe") intermediate output to another command.
-- In other words, it allows us to chain together a sequence of simple operations and thereby implement a more complex operation. (DOTADIW!)
+- In other words, it allows us to chain together a sequence of simple operations and thereby implement a more complex operation. (Remember the Unix philosophy!)
 
 Let me demonstrate using a very simple example.
 
@@ -4746,6 +4764,7 @@ class: inverse, center, middle
 # Next class: *R* language basics
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
     </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({
 "highlightStyle": "github",
@@ -4756,16 +4775,57 @@ class: inverse, center, middle
 if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   window.dispatchEvent(new Event('resize'));
 });
-(function() {
-  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
   if (!r) return;
   s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
   d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
 })();</script>
 
 <script>
 (function() {
-  var i, text, code, codes = document.getElementsByTagName('code');
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
   for (i = 0; i < codes.length;) {
     code = codes[i];
     if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
@@ -4779,7 +4839,8 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
     }
     i++;
   }
-})();
+};
+slideshow._releaseMath(document);
 </script>
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
