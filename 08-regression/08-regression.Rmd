@@ -333,7 +333,9 @@ Fixed effects models are more common than random effects models in economics (in
 
 ## Instrumental variables
 
-Again, lots of options here. See: `?AER::ivreg`, `?estimatr::iv_robust`, and `?lfe::felm`. They all follow a similar syntax, where the IV first-stage regression is specified after a `|` following the main regression. I'll demonstrate using an example taken from the [AER package](https://cran.r-project.org/web/packages/AER/vignettes/AER.pdf), just because we haven't used it in this lecture yet. I'll follow their lead in using one of the package's own datasets on average cigarette consumption by US state.
+As you would have guessed by now, there are a number of ways to run instrumental variable (IV) regressions in R. I'll walk through three options using the `AER::ivreg()`, `estimatr::iv_robust()`, and `lfe::felm()` functions, respectively. These are all going to follow a very similar syntax, where the IV first-stage regression is specified after a **`|`** following the main regression. However, I'm well aware that syntactic differences can make a difference from the user's perspective. So I'll try to highlight any minor differences and let you decide which of these three options is your favourite.
+
+The dataset that we'll be using here is a panel of US cigarette consumption by state, which is taken from the [AER package](https://cran.r-project.org/web/packages/AER/vignettes/AER.pdf). Let's load the data, add some modified variables, and then take a quick look at it. Note that I'm going to limit the dataset to 2005 only, given that I want to focus the IV syntax and don't want to deal with the panel structure of the data. (Though that's very easily done, as we've already seen.)
 
 ```{r, cigs}
 ## Get the data
@@ -346,10 +348,21 @@ cigs <-
     rincome = income/population/cpi,
     rtax = tax/cpi,
     tdiff = (taxs - tax)/cpi
-    )
+    ) %>%
+  as_tibble()
+## Create a subset of the data limited to 1995
+cigs95 <- cigs %>% filter(year==1995)
+cigs95
 ```
 
-In this case, we are interested in regressing the number of cigarettes consumed per capita (i.e. "packs") on their average cost and people's real incomes. The problem is that the price is endogenous, so we need to instrument for it using different tax variables. We could implement this in R using `AER::ivreg()` as follows:
+Now, assume that we are interested in regressing the number of cigarettes packs consumed per capita on their average price and people's real incomes. The problem is that the price is endogenous (because it is simultaneously determined by demand and supply), so we need to instrument for it using different tax variables. That is, we want to run the following:
+
+$$price_i = \pi_0 + \pi_1 tdiff_i + + \pi_2 rtax_i + v_i  \hspace{1cm} \text{(First stage)}$$
+$$packs_i = \beta_0 + \beta_2\widehat{price_i} + \beta_1 rincome_i + u_i \hspace{1cm} \text{(Second stage)}$$
+
+### Option 1: `AER::ivreg()`
+
+Let's start with `AER::ivreg()`, since that's where our data are coming from. The key point from the below code chunk is that the first-stage regression is going to be specified after the **`|`** and will include *all* exogenous variables.
 
 ```{r, iv_reg}
 # library(AER) ## Already loaded
@@ -358,29 +371,73 @@ In this case, we are interested in regressing the number of cigarettes consumed 
 iv_reg <- 
   ivreg(
     log(packs) ~ log(rprice) + log(rincome) | ## The main regression. "rprice" is endogenous
-      log(rincome) + tdiff + rtax, ## The first-stage regression. Note that we include "rincome" b/c it is exogenous
-    data = cigs %>% filter(year == "1995")
+      log(rincome) + tdiff + rtax, ## List all exogenous variables, including "rincome"
+    data = cigs95
     )
 summary(iv_reg, diagnostics = TRUE)
 ```
 
-And here's another example using `estimatr::iv_robust()`. This will default to using HC2 robust standard errors, although we could specify other options if we so wished (including clustering). More importantly, note that the syntax is effectively identical to the previous example.
+I want to emphasise that you might find the above syntax a little awkward --- or, at least, unusual --- if you're coming from a language like Stata.^[Assuming that you have already created the logged variables and subsetted the data, the Stata equivalent would be something like `ivreg log_packs = log_rincome (log_rprice = tdiff rtax)`.] Note that we didn't specify the endogenous variable (i.e. "rprice") directly. Rather, we told R which are all the *exogenous* variables. It then figured out which were endogenous variables that needed to be instrumented. This makes quite a lot of sense if you think about the underlying theory behind IV, but different strokes for different folks. 
+
+The good news for those who prefer the Stata-style syntax is that `AER::ivreg()` also accepts an alternate way of specifying the first-stage. This time, we'll denote our endogenous "rprice" variable with `. -price` and include only the instrumental variables after the `|` break. Feel free to check yourself, but the outcome will be exactly the same.
+
+```{r iv_reg2}
+## Run the IV regression 
+iv_reg2 <- 
+  ivreg(
+    log(packs) ~ log(rprice) + log(rincome) | 
+      . -log(rprice) + tdiff + rtax, ## Alternative way of specifying the first-stage.
+    data = cigs95
+  )
+```
+
+
+### Option 2: `estimatr::iv_robust()`
+
+Our second IV option comes from the `estimatr` package that we saw earlier. This will default to using HC2 robust standard errors although, as before, we could specify other options if we so wished (including clustering). More importantly, note that the syntax is effectively identical to the previous example. All we need to do is change the function call from `AER::ivreg()` to `estimatr::iv_robust()`.
 
 ```{r, iv_robust}
 # library(estimatr) ## Already loaded
 
 ## Run the IV regression with robust SEs
 iv_reg_robust <- 
-  iv_robust( ## We only need to change the function call. The rest of the syntax stays the same.
+  iv_robust( ## We only need to change the function call. Everything else stays the same.
     log(packs) ~ log(rprice) + log(rincome) | 
       log(rincome) + tdiff + rtax,
-    data = cigs %>% filter(year == "1995")
+    data = cigs95
     )
 summary(iv_reg_robust, diagnostics = TRUE)
 ```
 
+### Option 3: `felm::lfe()`
 
-**Challenge:** Try to run an IV regression using `lfe:felm()`. However, this time use the whole `cigs` data frame (i.e. not subsetting to 1995) and use year fixed effects too. Note that the IV formula specification will be a little different to the previous two examples --- I personally find it more intuitive, but check the examples in the help documentation.
+Finally, we get to my personal favourite IV option using the `lfe::felm()` function that we already covered in the panel data section above.^[Needless to say, it includes all of same benefits that we saw earlier: support for high-level fixed effects, multiway clustering, etc.] It's my favourite option because I invariably work with panel data, but also because I find it has the most natural syntax. In fact, it very closely resembles Stata's approach to writing out the first-stage, where you specify the endogenous variable(s) and the instruments only.
+
+```{r iv_felm}
+# library(lfe) ## Already loaded
+
+iv_felm <- 
+  felm(
+    log(packs) ~ log(rincome) |
+      0 | ## No FEs
+      (log(rprice) ~ tdiff + rtax), ## First-stage. Note the surrounding parentheses
+    data = cigs95
+  )
+summary(iv_felm)
+```
+
+Note that in the above example, we inserted a "0" where the fixed effect slot goes, since we only used a subset of the data. Just for fun then, here's another IV regression with `felm()`. This time, I'll use the whole `cigs` data frame (i.e. not subsetting to 1995), and use both year and state fixed effects to control for the panel structure.
+
+```{r iv_felm_all}
+iv_felm_all <- 
+  felm(
+    log(packs) ~ log(rincome) |
+      year + state | ## Now include FEs
+      (log(rprice) ~ tdiff + rtax), 
+    data = cigs ## Use whole panel data set
+  )
+summary(iv_felm_all)
+```
 
 ## Other topics
 
