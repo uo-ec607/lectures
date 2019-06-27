@@ -194,7 +194,7 @@ tidy(ols1_robust_clustered, conf.int = T)
 
 ### Aside on HAC (Newey-West) standard errors
 
-On thing I want to flag is that the `estimatr` package does not yet offer support for HAC (i.e. heteroskedasticity and autocorrelation consistent) standard errors *a la* [Newey-West](https://en.wikipedia.org/wiki/Newey%E2%80%93West_estimator). I've submitted a [feature request](https://github.com/DeclareDesign/estimatr/issues/272) on GitHub --- vote up if you would like to see it added sooner! --- but you can still obtain these pretty easily using the aforementioned-mentioned `sandwich` package. For example, we can use `sandwich::NeweyWest()` on our existing `ols1` object to obtain HAC SEs for it.
+On thing I want to flag is that the `estimatr` package does not yet offer support for HAC (i.e. heteroskedasticity and autocorrelation consistent) standard errors *a la* [Newey-West](https://en.wikipedia.org/wiki/Newey%E2%80%93West_estimator). I've submitted a [feature request](https://github.com/DeclareDesign/estimatr/issues/272) on GitHub --- vote up if you would like to see it added sooner! --- but you can still obtain these pretty easily using the aforementioned `sandwich` package. For example, we can use `sandwich::NeweyWest()` on our existing `ols1` object to obtain HAC SEs for it.
 
 ```{r ols1_hac}
 # library(sandwich) ## Already loaded
@@ -333,7 +333,7 @@ Fixed effects models are more common than random effects models in economics (in
 
 ## Instrumental variables
 
-As you would have guessed by now, there are a number of ways to run instrumental variable (IV) regressions in R. I'll walk through three options using the `AER::ivreg()`, `estimatr::iv_robust()`, and `lfe::felm()` functions, respectively. These are all going to follow a very similar syntax, where the IV first-stage regression is specified after a **`|`** following the main regression. However, I'm well aware that syntactic differences can make a difference from the user's perspective. So I'll try to highlight any minor differences and let you decide which of these three options is your favourite.
+As you would have guessed by now, there are a number of ways to run instrumental variable (IV) regressions in R. I'll walk through three options using the `AER::ivreg()`, `estimatr::iv_robust()`, and `lfe::felm()` functions, respectively. These are all going to follow a similar syntax, where the IV first-stage regression is specified after a **`|`** following the main regression. However, there are also some subtle and important differences, which is why I want to go through each of them. After that, I'll let you decide which of the three options is your favourite.
 
 The dataset that we'll be using here is a panel of US cigarette consumption by state, which is taken from the [AER package](https://cran.r-project.org/web/packages/AER/vignettes/AER.pdf). Let's load the data, add some modified variables, and then take a quick look at it. Note that I'm going to limit the dataset to 2005 only, given that I want to focus the IV syntax and don't want to deal with the panel structure of the data. (Though that's very easily done, as we've already seen.)
 
@@ -362,7 +362,7 @@ $$packs_i = \beta_0 + \beta_2\widehat{price_i} + \beta_1 rincome_i + u_i \hspace
 
 ### Option 1: `AER::ivreg()`
 
-Let's start with `AER::ivreg()`, since that's where our data are coming from. The key point from the below code chunk is that the first-stage regression is going to be specified after the **`|`** and will include *all* exogenous variables.
+Let's start with `AER::ivreg()` as our first IV regression option; if for no other reason than that's where our data are coming from. The key point from the below code chunk is that the first-stage regression is going to be specified after the **`|`** and will include *all* exogenous variables.
 
 ```{r, iv_reg}
 # library(AER) ## Already loaded
@@ -377,7 +377,7 @@ iv_reg <-
 summary(iv_reg, diagnostics = TRUE)
 ```
 
-I want to emphasise that you might find the above syntax a little awkward --- or, at least, unusual --- if you're coming from a language like Stata.^[Assuming that you have already created the logged variables and subsetted the data, the Stata equivalent would be something like `ivreg log_packs = log_rincome (log_rprice = tdiff rtax)`.] Note that we didn't specify the endogenous variable (i.e. "rprice") directly. Rather, we told R which are all the *exogenous* variables. It then figured out which were endogenous variables that needed to be instrumented. This makes quite a lot of sense if you think about the underlying theory behind IV, but different strokes for different folks. 
+I want to emphasise that you might find the above syntax a little counterintuitive --- or, at least, unusual --- if you're coming from a language like Stata.^[Assuming that you have already created the logged variables and subsetted the data, the Stata equivalent would be something like `ivreg log_packs = log_rincome (log_rprice = tdiff rtax)`.] Note that we didn't specify the endogenous variable (i.e. "rprice") directly. Rather, we told R which are the *exogenous* variables. It then figured out which were the endogenous variables that needed to be instrumented and ran the necessary first-stage regression(s) in the background. This approach actually makes quite a lot of sense if you think about the underlying theory of IV. But different strokes for different folks. 
 
 The good news for those who prefer the Stata-style syntax is that `AER::ivreg()` also accepts an alternate way of specifying the first-stage. This time, we'll denote our endogenous "rprice" variable with `. -price` and include only the instrumental variables after the `|` break. Feel free to check yourself, but the outcome will be exactly the same.
 
@@ -411,7 +411,7 @@ summary(iv_reg_robust, diagnostics = TRUE)
 
 ### Option 3: `felm::lfe()`
 
-Finally, we get to my personal favourite IV option using the `lfe::felm()` function that we already covered in the panel data section above.^[Needless to say, it includes all of same benefits that we saw earlier: support for high-level fixed effects, multiway clustering, etc.] It's my favourite option because I invariably work with panel data, but also because I find it has the most natural syntax. In fact, it very closely resembles Stata's approach to writing out the first-stage, where you specify the endogenous variable(s) and the instruments only.
+Finally, we get to my personal favourite IV option using the `lfe::felm()` function that we already covered in the panel data section above.^[Needless to say, it includes all of same benefits that we saw earlier: support for high-level fixed effects, multiway clustering, etc.] It's my favourite option not because I tend work with panel data, but also because I find it has the most natural syntax. In fact, it very closely resembles Stata's approach to writing out the first-stage, where you specify the endogenous variable(s) and the instruments only.
 
 ```{r iv_felm}
 # library(lfe) ## Already loaded
@@ -502,7 +502,7 @@ See the [gsynth package](https://yiqingxu.org/software/gsynth/gsynth_examples.ht
 
 ### Bayesian regression
 
-We could spend a whole course on Bayesian models. The very, very short version is that R offers outstanding support for Bayesian models and data analysis. You will find convenient interfaces to all of the major MCMC and Bayesian software engines: [Stan](https://mc-stan.org/users/interfaces/rstan), [JAGS](http://mcmc-jags.sourceforge.net/), TensorFlow (via [Greta](https://greta-stats.org/)), etc. Here follows a *super* simple example using the [rstanarm package](http://mc-stan.org/rstanarm/). Note that we did not install this package with the others above, as it can take fairly long and involve some minor troubleshooting.^[FWIW, on my Linux machine (running Arch/Antergos) I had to install `stan` (and thus `rstanarm`) by running R through the shell. For some reason, RStudio kept closing midway through the installation process.]
+We could spend a whole course on Bayesian models. The very, very short version is that R offers outstanding support for Bayesian models and data analysis. You will find convenient interfaces to all of the major MCMC and Bayesian software engines: [Stan](https://mc-stan.org/users/interfaces/rstan), [JAGS](http://mcmc-jags.sourceforge.net/), TensorFlow (via [Greta](https://greta-stats.org/)), etc. Here follows a *super* simple example using the [rstanarm package](http://mc-stan.org/rstanarm/). Note that we did not install this package with the others above, as it can take fairly long and involve some minor troubleshooting.^[FWIW, on my machine (running Arch Linux) I had to install `stan` (and thus `rstanarm`) by running R through the shell. For some reason, RStudio kept closing midway through the installation process.]
 
 ```{r bayes_reg, error=T, message=F, warning=F, results="hide"}
 # install.packages("rstanarm") ## Run this first if you want to try yourself
