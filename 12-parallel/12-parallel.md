@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott
   affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: Lecture 12  #"18 April 2019"
+date: Lecture 12  #"28 June 2019"
 output: 
   html_document:
     theme: flatly
@@ -183,7 +183,7 @@ Let's implement the function in serial first to get a benchmark for comparison.
 
 
 ```r
-set.seed(123) ## Optional to ensure results are exactly the same.
+set.seed(123L) ## Optional to ensure that the results are the same
 
 ## 10,000-iteration simulation
 tic()
@@ -192,7 +192,7 @@ toc()
 ```
 
 ```
-## 18.891 sec elapsed
+## 18.173 sec elapsed
 ```
 
 So that took about 19 seconds on my system. Not a huge pain, but let's see if we can do better by switching to a parallel (multicore) implementation. For the record, though here is a screenshot of my system monitor, showing that only one core was being used during this serial version.
@@ -205,7 +205,7 @@ All of the parallel programming that we've been doing so far is built on top of 
 
 Here's Henrik [describing](https://cran.r-project.org/web/packages/future/vignettes/future-1-overview.html) the core idea in more technical terms:
 
-> In programming, a _future_ is an abstraction for a _value_ that may be available at some point in the future. The state of a future can either be unresolved or resolved. As soon as it is resolved, the value is available instantaneously. If the value is queried while the future is still unresolved, the current process is _blocked_ until the future is resolved. It is possible to check whether a future is resolved or not without blocking. Exactly how and when futures are resolved depends on what strategy is used to evaluate them. For instance, a future can be resolved using a sequential strategy, which means it is resolved in the current R session. Other strategies may be to resolve futures asynchronously, for instance, by evaluating expressions in parallel on the current machine or concurrently on a compute cluster
+> In programming, a _future_ is an abstraction for a _value_ that may be available at some point in the future. The state of a future can either be unresolved or resolved... Exactly how and when futures are resolved depends on what strategy is used to evaluate them. For instance, a future can be resolved using a sequential strategy, which means it is resolved in the current R session. Other strategies may be to resolve futures asynchronously, for instance, by evaluating expressions in parallel on the current machine or concurrently on a compute cluster
 
 As I've tried to emphasise, `future` is relatively new on the scene. It is certainly not the first or only way to implement parallel processes in R. However, I think that it provides a simple and unified framework that makes it the preeminent choice. What's more, the same commands that we use here will carry over very neatly to more complicated settings involving high-performance computing clusters. We'll experience this first hand when we get to the big data section of the course.
 
@@ -218,44 +218,40 @@ In both cases, we start by setting the plan for resolving the future evaluation.
 
 #### 1) future.apply
 
-Here's the `future.apply::future_lapply()` parallel implementation.
+Here's the `future.apply::future_lapply()` parallel implementation. Note that I'm adding the `future.seed=123L` option just to ensure that the results are the same. This is not necessary, though.
 
 
 ```r
-set.seed(123) ## Optional to ensure results are exactly the same.
-
 # library(future.apply)  ## Already loaded
 # plan(multiprocess) ## Already set above
 
 ## 10,000-iteration simulation
 tic()
-sim_future <- future_lapply(1:1e4, reg_func) %>% bind_rows()
+sim_future <- future_lapply(1:1e4, reg_func, future.seed=123L) %>% bind_rows()
 toc()
 ```
 
 ```
-## 5.317 sec elapsed
+## 4.981 sec elapsed
 ```
 
 #### 2) furrr
 
-And here's the `furrr::future_map_dfr()` implementation.
+And here's the `furrr::future_map_dfr()` implementation. Similar to the above, note that I'm only adding the `.options=future_options(seed=123L)` option to ensure that the output is exactly the same.
 
 
 ```r
-set.seed(123) ## Optional to ensure results are exactly the same.
-
 # library(furrr)  ## Already loaded
 # plan(multiprocess) ## Already set above
 
 ## 10,000-iteration simulation
 tic()
-sim_furrr <- future_map_dfr(1:1e4, reg_func)
+sim_furrr <- future_map_dfr(1:1e4, reg_func, .options=future_options(seed=123L))
 toc()
 ```
 
 ```
-## 5.31 sec elapsed
+## 5.07 sec elapsed
 ```
 
 ### Results
