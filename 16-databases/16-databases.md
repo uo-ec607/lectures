@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott
   affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: Lecture 16  #"22 April 2019"
+date: Lecture 16  #"30 June 2019"
 output: 
   html_document:
     theme: flatly
@@ -46,7 +46,7 @@ Many "big data" problems could be accurately described as "small data problems i
 
 Databases^[For the rest of this lecture, I'll be using "databases" and "relational databases" interchangeably, so don't be put off if I switch between them.] can exist either locally or remotely, though the latter is more common. The key point is that they are stored on-disk somewhere, rather than in-memory. Extracting the specific information that we want is a matter of submitting a **query** to the database. The query is where we tell the database how to manipulate or subset the data into a more manageable form, which we can then pull into our local environment (i.e. memory) and conduct analysis on. 
 
-At this point, you might be tempted to think of a database as the "thing" that you interact with directly. However, it's important to realise that the data are actually organised in one or more **tables** within the database. These tables are rectangular, consisting of rows and columns, where each row is indentified by a unique key. In that sense, they are very much like the data frames that we're all used to working with. Continuing with the analogy, a database then is rather like a list of data frames of R. To access information from a specific table (cf. data frame), we first have to index it from the database (cf. list) and then execute our query functions. The only material difference being that databases can hold much more information and are extremely efficient at executing queries over their vast contents.
+At this point, you might be tempted to think of a database as the "thing" that you interact with directly. However, it's important to realise that the data are actually organised in one or more **tables** within the database. These tables are rectangular, consisting of rows and columns, where each row is indentified by a unique key. In that sense, they are very much like the data frames that we're all used to working with. Continuing with the analogy, a database then is rather like a list of data frames of R. To access information from a specific table (data frame), we first have to index it from the database (list) and then execute our query functions. The only material difference being that databases can hold much more information and are extremely efficient at executing queries over their vast contents.
 
 > **Tip:** A table in a database is like a data frame in an R list. 
 
@@ -678,10 +678,6 @@ effort %>%
 ```
 
 ```
-## Auto-refreshing stale OAuth token.
-```
-
-```
 ## # A tibble: 126 x 2
 ##    flag  total_fishing_hours
 ##    <chr>               <dbl>
@@ -698,29 +694,23 @@ effort %>%
 ## # … with 116 more rows
 ```
 
-#### Aside on filtering GFW data by dates
+#### Aside on date partitioning
 
-One thing I wanted to flag quickly is that querying the GFW data with the `bigrquery` + `dplyr` framework is a little tricky if you want to manipulate or filter by dates. You may have noticed that the "date" column in the `effort` table is actually a character string. So you would need to convert it to a date variable before doing any filtering. However, it turns out that converting a character variable to a date variable using the `dplyr` approach here is difficult in of itself. Moreover, the preferred approach of the GFW team is to filter their data using [partition dates](https://cloud.google.com/bigquery/docs/best-practices-costs#partition_data_by_date) --- i.e. timestamps of when the data were ingested --- since this is generally a more cost-effective way of querying datasets. The way this works in native SQL is to reference a special `_PARTITIONTIME` pseudo column. See some examples [here](https://globalfishingwatch.org/data-blog/our-data-in-bigquery/). 
-
-There's currently no direct translation of this `_PARTITIONTIME` pseudo column using the `dplyr` approach to querying a BigQuery table. However, we can incorporate SQL chunks directly into our `dplyr` call using `!!build_sql()`.^[The `!!` is referred to as "bang bang" and is generally used to unquote an input that you want to be evaluated. More information on that [here](https://dplyr.tidyverse.org/articles/programming.html).] Here's an example that again identifies the world's top fishing nations, but this time limits the analysis to data from 2016 only.
+One thing I wanted to flag quickly is that many tables and databases in BigQuery are [date partitioned](https://cloud.google.com/bigquery/docs/best-practices-costs#partition_data_by_date), i.e. ordered according to timestamps of when the data were ingensted. The GFW data, for example, are date partitioned since this provides a more cost-effective way to query datasets. My reason for mentioning this is because it requires a minor tweak to the way we're going to query or manipulate the GFW data by date.^[You may have noticed that the "date" column in the `effort` table above is actually a character string. So you would need to convert this column to a date variable first, before using it to do any standard date filtering operations. Even then it's going to be less efficient than the partitioning approach that we're about to see.] The way this works in native SQL is to reference a special `_PARTITIONTIME` pseudo column if you want to, say, filter according to date. (See [here](https://globalfishingwatch.org/data-blog/our-data-in-bigquery/) for some examples.) There's no exact `dplyr` translation of this `_PARTITIONTIME` pseudo column. Fortunately, the very simple solution is to specify it as an SQL variable directly in our `dplyr` call using backticks. Here's an example that again identifies the world's top fishing nations, but this time limits the analysis to data from 2016 only.
 
 
 ```r
 effort %>%
   ## Here comes the filtering on partion time
   filter(
-    !!build_sql("_PARTITIONTIME") >= "2016-01-01 00:00:00",
-    !!build_sql("_PARTITIONTIME") <= "2016-12-31 00:00:00"
+    `_PARTITIONTIME` >= "2016-01-01 00:00:00",
+    `_PARTITIONTIME` <= "2016-12-31 00:00:00"
     ) %>%
   ## End of partition time filtering
   group_by(flag) %>%
   summarise(total_fishing_hours = sum(fishing_hours, na.rm=T)) %>%
   arrange(desc(total_fishing_hours)) %>%
   collect()
-```
-
-```
-## Auto-refreshing stale OAuth token.
 ```
 
 ```
@@ -755,8 +745,8 @@ resolution <- 1
 globe <-
   effort %>%
   filter(
-    !!build_sql("_PARTITIONTIME") >= "2016-01-01 00:00:00",
-    !!build_sql("_PARTITIONTIME") <= "2016-12-31 00:00:00"
+    `_PARTITIONTIME` >= "2016-01-01 00:00:00",
+    `_PARTITIONTIME` <= "2016-12-31 00:00:00"
     ) %>%
   filter(fishing_hours > 0) %>%
   mutate(
@@ -779,7 +769,7 @@ Let's reward ourselves with a nice plot.
 globe %>% 
   filter(fishing_hours > 1) %>% 
   ggplot() +
-  geom_raster(aes(x=lon_bin_center, y=lat_bin_center, fill=fishing_hours))+
+  geom_tile(aes(x=lon_bin_center, y=lat_bin_center, fill=fishing_hours))+
   scale_fill_viridis_c(
     name = "Fishing hours (log scale)",
     trans = "log",
