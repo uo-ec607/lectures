@@ -1080,7 +1080,7 @@ examples/hello.sh
 Say you want to edit my (amazing) script. 
 - Maybe you want to add some additional lines of text, or maybe you're bothered by the fact that there should be a comma after "Hello". (It's a salutation, dammit!) 
 
-We already seen how to append text lines to a file, but when it comes to larger jobs or more complicated editing work, you're better off using [nano](https://www.nano-editor.org/). 
+We have already seen how to append text lines to a file, but when it comes to larger jobs or more complicated editing work, you're better off using [nano](https://www.nano-editor.org/). 
 - In-built Unix shell text editor. (**Windows users**, see [here](https://stackoverflow.com/questions/36802996/bash-nano-command-not-found-at-windows-git-bash).)
 
 Open up the script in nano by typing `$ nano examples/hello.sh`. 
