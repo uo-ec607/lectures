@@ -762,13 +762,13 @@ $ ls -lh examples
 
 ```
 ## total 144K
-## drwxr-xr-x 2 grant users 4.0K Jan 12 22:12 ABC
-## drwxr-xr-x 2 grant users 4.0K Jan 12 22:12 Bad folder name
-## -rwxr-xr-x 1 grant users   37 Jan 14 22:36 hello.sh
-## drwxr-xr-x 2 grant users 4.0K Jan 13 20:34 meals
+## drwxr-xr-x 2 grant users 4.0K Jan 12  2019 ABC
+## drwxr-xr-x 2 grant users 4.0K Jan 12  2019 Bad folder name
+## -rwxr-xr-x 1 grant users   37 Jan 14  2019 hello.sh
+## drwxr-xr-x 2 grant users 4.0K Jan 13  2019 meals
 ## -rw-r--r-- 1 grant users   32 May 16 14:45 nursery.txt
-## -rwxrwxrwx 1 grant users  153 Jan 12 21:20 reps.txt
-## -rw-r--r-- 1 grant users 120K Jan 12 14:58 sonnets.txt
+## -rwxrwxrwx 1 grant users  153 Jan 12  2019 reps.txt
+## -rw-r--r-- 1 grant users 120K Jan 12  2019 sonnets.txt
 ```
 
 ---
@@ -4534,7 +4534,7 @@ $ # bash examples/hello.sh ## Also works
 Say you want to edit my (amazing) script. 
 - Maybe you want to add some additional lines of text, or maybe you're bothered by the fact that there should be a comma after "Hello". (It's a salutation, dammit!) 
 
-We already seen how to append text lines to a file, but when it comes to larger jobs or more complicated editing work, you're better off using [nano](https://www.nano-editor.org/). 
+We have already seen how to append text lines to a file, but when it comes to larger jobs or more complicated editing work, you're better off using [nano](https://www.nano-editor.org/). 
 - In-built Unix shell text editor. (**Windows users**, see [here](https://stackoverflow.com/questions/36802996/bash-nano-command-not-found-at-windows-git-bash).)
 
 Open up the script in nano by typing `$ nano examples/hello.sh`. 
@@ -4810,7 +4810,24 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
     }
     deleted = true;
   });
-})();</script>
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
 
 <script>
 (function() {
