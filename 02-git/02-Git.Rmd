@@ -697,7 +697,7 @@ A .gitignore file tells Git what to — *wait for it* — ignore.
 
 This is especially useful if you want to exclude whole folders or a class of files (e.g. based on size or type).
 - Proprietary data files should be ignored from the beginning if you intend to make a repo public at some point.
-- Very large individual files (>100 MB) exceed GitHub's maxmimum allowable size and should be ignored regardless. See <a href="https://help.github.com/articles/working-with-large-files/" target="_blank">here</a> and <a href="https://help.github.com/articles/versioning-large-files/" target=_"blank">here</a>.
+- Very large individual files (>100 MB) exceed GitHub's maximum allowable size and should be ignored regardless. See <a href="https://help.github.com/articles/working-with-large-files/" target="_blank">here</a> and <a href="https://help.github.com/articles/versioning-large-files/" target=_"blank">here</a>.
 
 I typically add compiled datasets to my .gitignore in the early stages of a project.
 - Reduces redundant version control history, where the main thing is the code that produces the compiled dataset, not the end CSV in of itself. ("Source is real.")
