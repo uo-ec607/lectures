@@ -700,7 +700,7 @@ A .gitignore file tells Git what to — *wait for it* — ignore.
 
 This is especially useful if you want to exclude whole folders or a class of files (e.g. based on size or type).
 - Proprietary data files should be ignored from the beginning if you intend to make a repo public at some point.
-- Very large individual files (&gt;100 MB) exceed GitHub's maxmimum allowable size and should be ignored regardless. See &lt;a href="https://help.github.com/articles/working-with-large-files/" target="_blank"&gt;here&lt;/a&gt; and &lt;a href="https://help.github.com/articles/versioning-large-files/" target=_"blank"&gt;here&lt;/a&gt;.
+- Very large individual files (&gt;100 MB) exceed GitHub's maximum allowable size and should be ignored regardless. See &lt;a href="https://help.github.com/articles/working-with-large-files/" target="_blank"&gt;here&lt;/a&gt; and &lt;a href="https://help.github.com/articles/versioning-large-files/" target=_"blank"&gt;here&lt;/a&gt;.
 
 I typically add compiled datasets to my .gitignore in the early stages of a project.
 - Reduces redundant version control history, where the main thing is the code that produces the compiled dataset, not the end CSV in of itself. ("Source is real.")
@@ -875,7 +875,24 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
     }
     deleted = true;
   });
-})();</script>
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
 
 <script>
 (function() {
