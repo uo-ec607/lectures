@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott
   affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: Lecture 14  #"04 March 2019"
+date: Lecture 14  #"24 October 2019"
 output: 
   html_document:
     theme: flatly
@@ -32,7 +32,7 @@ These next instructions are important, so please read carefully.
 ### R packages 
 
 - **New:** `googleComputeEngineR`, `usethis`
-- **Already used:** `future.apply`, `tictoc`
+- **Already used:** `future.apply`, `data.table`, `tictoc`
 
 I don't think it's strictly necessary, but I'm going to install the development version of `googleComputeEngineR`. I'm also going to hold off loading it until I've enabled auto-authentication later in the lecture. Don't worry about that now. Just run the following code chunk to get started.
 
@@ -41,7 +41,7 @@ I don't think it's strictly necessary, but I'm going to install the development 
 ## Load/install packages
 if (!require("pacman")) install.packages("pacman")
 pacman::p_install_gh("cloudyr/googleComputeEngineR") ## Use the development version of googleComputeEngineR
-pacman::p_load(future.apply, tictoc, usethis)
+pacman::p_load(future.apply, tictoc, data.table, usethis)
 ```
 
 ## Introduction
@@ -394,12 +394,12 @@ gce_vm_delete(vm) ## Delete the VM (optional)
 ## Started:  2019-02-27 22:00:07
 ```
 
-### Simple cluster example
+### Cluster of VMs
 
 At the risk of gross simplification, there are two approaches to "brute forcing" your way through a computationally-intensive problem.^[Of course, you can also combine a cluster of very power machines to get a *really* powerful system. That's what supercomputing services like the University of Oregon's [Talapas cluster](https://hpcf.uoregon.edu/content/talapas) provide, which is the subject of our next lecture.]
 
-1. Use a single powerful machine that has a lot of memory and cores.
-2. Use cluster of machines that, together, have a lot of memory and cores.
+1. Use a single powerful machine that has a lot of memory and/or cores.
+2. Use cluster of machines that, together, have a lot of memory/or and cores.
 
 Thus far we've only explored approach no. 1. For this next example, I want to show you how to implement approach no. 2. In particular, I want to show you how to spin up a simple cluster of VMs that you can interact with directly from your *local* RStudio instance. Yes, you read that correctly. 
 
@@ -417,168 +417,76 @@ slow_func <-
     }
 ```
 
-For this simple cluster example, I'm going to spin up three "g1-small" VM instances. These are preemptible VMs that can use 1 CPU each during short bursts. So, not powerful machines by any stretch of the imagination. But they are very cheap to run and multiple g1-small instances be combined very easily to make a pretty powerful machine. You typically see these preemptible VMs used for quick, on-the-fly computation and then discarded.
+Okay, let's see how these GCE clusters work in practice. I'm going to walk you through several examples. The first example is going to keep things as simple as possible, to introduce you to the key concepts. We'll add complexity (although not too much) in the examples that follow thereafter.
 
-First, we create our three VMs with a simple `lapply()` loop. Note that I am installing the (smaller) [rocker/r-base](https://hub.docker.com/r/rocker/r-base/) Docker image on all three VMs, so that they are ready to run base R commands. Also note the additional `wait = FALSE` option in our `gce_vm()` call, which simply tells the function not to wait until the VMs have been created before returning. This won't make much of a difference here, but is helpful when you are spinning up lots of VMs simultaneously. We can then pair this with the `gce_wait()` convenience function, which will let us know when the job is completed.
+#### Simple cluster
 
+For this first cluster example, I'm going to spin up three "g1-small" VM instances. These are preemptible VMs that can each use 1 CPU during short bursts. So, not powerful machines by any stretch of the imagination. But they are very cheap to run and multiple g1-small instances be combined very easily to make a pretty powerful machine. You typically see these preemptible VMs used for quick, on-the-fly computation and then discarded.^[It is also possible to spin up preemptible versions of other, larger VMs using the `scheduling = list(preemptible = TRUE)` argument. We'll see an example of that shortly.]
 
-```r
-## Names of the VMs on the cluster
-vm_names <- c("vm1","vm2","vm3")
-
-## Create the cluster using the default template for rocker/r-base
-## The this lapply loop starts the job of creating each VM in background
-jobs <- 
-  lapply(
-    vm_names, 
-    function(x) {
-      gce_vm(
-        name = x,
-        template = "r-base",
-        predefined_type = "g1-small", ## Cheap preemptible machine
-        wait = FALSE ## Don't wait for each job to finish until start the next 
-        )
-      })
-```
-
-```
-## 2019-02-27 22:00:08> Creating template VM
-```
-
-```
-## 2019-02-27 22:00:08> Run gce_startup_logs(your-instance, 'cloud-config') to track startup script logs
-```
-
-```
-## 2019-02-27 22:00:10> Returning the VM startup job, not the VM instance.
-```
-
-```
-## 2019-02-27 22:00:11> VM running
-```
-
-```
-## 2019-02-27 22:00:11> Creating template VM
-```
-
-```
-## 2019-02-27 22:00:11> Run gce_startup_logs(your-instance, 'cloud-config') to track startup script logs
-```
-
-```
-## 2019-02-27 22:00:13> Returning the VM startup job, not the VM instance.
-```
-
-```
-## 2019-02-27 22:00:14> VM running
-```
-
-```
-## 2019-02-27 22:00:15> Creating template VM
-```
-
-```
-## 2019-02-27 22:00:15> Run gce_startup_logs(your-instance, 'cloud-config') to track startup script logs
-```
-
-```
-## 2019-02-27 22:00:17> Returning the VM startup job, not the VM instance.
-```
-
-```
-## 2019-02-27 22:00:18> VM running
-```
-
-```r
-# jobs
-## Wait for all the jobs to complete (i.e. the VMs are ready)
-lapply(jobs, gce_wait)
-```
-
-```
-## 2019-02-27 22:00:18> Operation running...
-```
-
-```
-## 2019-02-27 22:00:21> Operation running...
-```
-
-```
-## 2019-02-27 22:00:27> Operation complete in 12 secs
-```
-
-```
-## 2019-02-27 22:00:31> Operation complete in 8 secs
-```
-
-```
-## 2019-02-27 22:00:34> Operation complete in 9 secs
-```
-
-```
-## [[1]]
-## ==Zone Operation insert :  DONE
-## Started:  2019-02-27 22:00:10
-## Ended: 2019-02-27 22:00:22 
-## Operation complete in 12 secs 
-## 
-## [[2]]
-## ==Zone Operation insert :  DONE
-## Started:  2019-02-27 22:00:13
-## Ended: 2019-02-27 22:00:21 
-## Operation complete in 8 secs 
-## 
-## [[3]]
-## ==Zone Operation insert :  DONE
-## Started:  2019-02-27 22:00:17
-## Ended: 2019-02-27 22:00:26 
-## Operation complete in 9 secs
-```
-
-Once that's done, we can collect the (now-running) VM objects.
+First, we create (and start) three VMs using the `gce_vm_cluster()` convenience function. This will automatically take care of the SSH setup for us, as well as install the [rocker/r-parallel](https://hub.docker.com/r/rocker/r-parallel) Docker image on all the VMs by default. However, I'm going to install the (slightly smaller, quicker to install) [rocker/r-base](https://hub.docker.com/r/rocker/r-base/) image instead, since I'm only going to be using base R commands here. I also wanted to make you aware of the fact that you have options here.
 
 
 ```r
-## Get the VM objects
-vms <- lapply(vm_names, gce_vm)
+vms <- 
+  gce_vm_cluster(
+    vm_prefix = "simple-cluster",   ## All VMs in our cluster will have this prefix
+    cluster_size = 3,               ## How many VMs in our cluster?
+    docker_image = "rocker/r-base", ## Default is rocker/r-parallel
+    predefined_type = "g1-small"    ## Cheap preemptible machine
+    )
 ```
 
 ```
-## 2019-02-27 22:00:35> VM running
+## 2019-10-24 07:58:05> # Creating cluster with settings: predefined_type = g1-small, template = r-base, dynamic_image = rocker/r-base, wait = FALSE
 ```
 
 ```
-## 2019-02-27 22:00:36> VM running
+## 2019-10-24 07:58:13> Operation running...
 ```
 
 ```
-## 2019-02-27 22:00:38> VM running
-```
-
-As Mark [describes](https://cloudyr.github.io/googleComputeEngineR/articles/massive-parallel.html), it's safest to setup SSH keys separately for multiple instances. We could do this from the shell --- as per our first manual example above --- but a convenient way to do this from R is with `gce_ssh_setup()`.
-
-
-```r
-## Set up SSH for the VMs
-vms <- lapply(vms, gce_ssh_setup)
+## 2019-10-24 07:58:19> Operation complete in 7 secs
 ```
 
 ```
-## 2019-02-27 22:00:46> Public SSH key uploaded to instance
+## 2019-10-24 07:58:23> Operation complete in 6 secs
 ```
 
 ```
-## 2019-02-27 22:00:53> Public SSH key uploaded to instance
+## 2019-10-24 07:58:26> Operation complete in 6 secs
 ```
 
 ```
-## 2019-02-27 22:01:01> Public SSH key uploaded to instance
+## 2019-10-24 07:58:28> simple-cluster1 VM running
 ```
 
-Finally, we are ready run functions on our remote cluster. For this particular example, I'm going to loop `slow_func()` over the vector `1:15`. As a reference point, this means that the loop would take (15*5=) **75 seconds** to run sequentially.
+```
+## 2019-10-24 07:58:29> simple-cluster2 VM running
+```
+
+```
+## 2019-10-24 07:58:31> simple-cluster3 VM running
+```
+
+```
+## 2019-10-24 07:58:39> Public SSH key uploaded to instance
+```
+
+```
+## 2019-10-24 07:58:47> Public SSH key uploaded to instance
+```
+
+```
+## 2019-10-24 07:58:55> Public SSH key uploaded to instance
+```
+
+```
+## 2019-10-24 07:58:55> # Testing cluster:
+```
+
+And that's all it takes. We are ready to use our remote cluster. For this simple example, I'm going to loop `slow_func()` over the vector `1:15`. As a reference point, recall that the loop would take (15*5=) **75 seconds** to run sequentially.
 
 To run the parallelised version on our simple 3-CPU cluster, I'm going to use the amazing [future.apply package](https://github.com/HenrikBengtsson/future.apply) that we covered in the [lecture on parallel programming](https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html). As you can see, all I need to do is specify `plan(cluster)` and provide the location of the workers (here: the `vms` cluster that we just created). Everything else stays *exactly* the same, as if we were running the code on our local computer. It Just Works.<sup>TM</sup>
-
 
 
 ```r
@@ -586,186 +494,295 @@ To run the parallelised version on our simple 3-CPU cluster, I'm going to use th
 # library(future.apply) ## Already loaded.
 
 plan(cluster, workers = as.cluster(vms)) 
-```
 
-```
-## 2019-02-27 22:01:01> External IP for instance vm1 : 35.203.130.189
-```
-
-```
-## 2019-02-27 22:01:47> External IP for instance vm2 : 35.185.232.136
-```
-
-```
-## 2019-02-27 22:02:03> External IP for instance vm3 : 35.197.107.161
-```
-
-```r
 tic()
 future_cluster <- future_lapply(1:15, slow_func)
 toc()
 ```
 
 ```
-## 25.987 sec elapsed
+## 25.93 sec elapsed
 ```
 
-And just look at that: **A three times speedup!** Of course, we could also have implemented this using `furrr:map()` instead of `future.apply::future_apply()`. (Feel free to prove this for yourself.) The key takeaways are that we were able to create a remote cluster on GCE with a few lines of code, and then interact with it directly from our local computer using future magic. Pretty sweet if you ask me.
+And just look at that: **A three times speedup!** Of course, we could also have implemented this using `furrr::map()` instead of `future.apply::future_apply()`. (Feel free to prove this for yourself.) The key takeaways are that we were able to create a remote cluster on GCE with a few lines of code, and then interact with it directly from our local computer using future magic. Pretty sweet if you ask me.
 
 Following good practice, let's stop and then delete this cluster of VMs so that we aren't billed for them.
 
 
 ```r
 ## shutdown instances when finished
-lapply(vms, gce_vm_stop)
+gce_vm_stop(vms)
 ```
 
 ```
 ## [[1]]
-## ==Zone Operation stop :  PENDING
-## Started:  2019-02-27 22:02:46
+## ==Zone Operation stop :  RUNNING
+## Started:  2019-10-24 08:01:04
 ## [[2]]
-## ==Zone Operation stop :  PENDING
-## Started:  2019-02-27 22:02:47
+## ==Zone Operation stop :  RUNNING
+## Started:  2019-10-24 08:01:05
 ## [[3]]
-## ==Zone Operation stop :  PENDING
-## Started:  2019-02-27 22:02:48
+## ==Zone Operation stop :  RUNNING
+## Started:  2019-10-24 08:01:05
 ```
 
 ```r
-lapply(vms, gce_vm_delete)
+gce_vm_delete(vms)
 ```
 
 ```
 ## [[1]]
 ## ==Zone Operation delete :  PENDING
-## Started:  2019-02-27 22:02:48
+## Started:  2019-10-24 08:01:06
 ## [[2]]
 ## ==Zone Operation delete :  PENDING
-## Started:  2019-02-27 22:02:49
+## Started:  2019-10-24 08:01:07
 ## [[3]]
 ## ==Zone Operation delete :  PENDING
-## Started:  2019-02-27 22:02:49
+## Started:  2019-10-24 08:01:07
 ```
 
-### Cluster example with multiple (nested) parallelization
+#### Cluster with nested parallelization
 
-In the simple cluster example above, each VM only had 1 CPU. A natural next step is think about spinning up a cluster of VMs that have *multiple* cores. For example, why not spin up three machines with eight cores each to get a (3*8=) 24 times speed improvement? This is fairly easily done, although it requires a few tweaks to our simple cluster example. We start off in exactly the same way, though. The only change in the below code chunk is that now I'm going to spin up "n1-highcpu-8" VM instances that have eight cores each. (Note: I've switched off the return output and messages from this next code chunk, since it's mostly repetition of what we've already seen above.)
+In the simple cluster example above, each VM only had 1 CPU. A natural next step is think about spinning up a cluster of VMs that have *multiple* cores. Why not spin up, say, three machines with eight cores each to get a (3*8=) 24 times speed improvement? This is fairly easily done, although it requires a few extra tweaks. Our strategy here can be summarised as following two steps:
+
+1. Parallelize across the remote VMs in our cluster
+2. Parallelize within each VM, making sure we "chunk" the input data appropriately to avoid duplication.
+
+Let's see how this works in practice with another example. We start off in exactly the same way as before, calling the `gce_vm_cluster()` function. The most material change in the below code chunk is that I'm now spinning up three "n1-highcpu-8" VM instances that each have eight cores. Note that I'm also installing the (default) rocker/r-parallel Docker image on each VM, since this comes preloaded with the future functions that we'll need to paralleize operations on the VMs themselves. Finally, I'm going to use an optional `scheduling` argument that instructs GCE to use cheaper, preemptible instances. This is entirely up to you, of course, but I wanted to show you the option since preemptible instances are ideally suited for this type of problem.
 
 
 ```r
-## Names of the VMs on the cluster
-vm_names <- c("testvm1","testvm2","testvm3")
-
-## Create the cluster using the default template for rocker/r-base
-## The this lapply loop starts the job of creating each VM in background
-jobs <- 
-  lapply(
-    vm_names, 
-    function(x) {
-      gce_vm(
-        name = x,
-        template = "r-base",
-        predefined_type = "n1-highcpu-8", ## CHANGED: Each VM has eight CPUs
-        wait = FALSE
-        )
-      })
-## wait for all the jobs to complete and VMs are ready
-lapply(jobs, gce_wait)
-## get the VM objects
-vms <- lapply(vm_names, gce_vm)
-## set up SSH for the VMs
-vms <- lapply(vms, gce_ssh_setup)
+vms_nested <- 
+  gce_vm_cluster(
+    vm_prefix = "nested-cluster",        
+    cluster_size = 3,                    
+    #docker_image = "rocker/r-parallel",  ## CHANGED: Use the (default) rocker/r-parallel Docker image 
+    predefined_type = "n1-highcpu-8",     ## CHANGED: Each VM has eight CPUs,
+    scheduling = list(preemptible = TRUE) ## OPTIONAL: Use cheaper, preemptible machines
+    )
 ```
 
-Now comes the slightly more complicated part of the setup. You can read the [Future Topologies](https://cran.r-project.org/web/packages/future/vignettes/future-3-topologies.html) vignette for more details, but the gist is that you can define a nested plan of futures using the `plan(list(tweak(...), tweak(...)))` syntax. In this case, we are going to define two topology layers:
+```
+## 2019-10-24 11:29:07> # Creating cluster with settings: predefined_type = n1-highcpu-8, scheduling = list(preemptible = TRUE), template = r-base, dynamic_image = rocker/r-parallel, wait = FALSE
+```
 
-- **Topology 1.** The "outer" plan, which tells `future` to use the cluster of remote VMs. This is essentially exactly the same as in our previous example, except that I need to do a bit more legwork and tell future that it needs to install the `future.apply` package on the Docker container inside each VM. (Of course, we could create and pull a Docker image that already has it installed, but I'm being lazy here.)
-- **Topology 2.** The "inner" plan, which simply tells future to use all available cores on each VM via the `multiprocess` option. 
+```
+## 2019-10-24 11:29:15> Operation running...
+```
+
+```
+## 2019-10-24 11:29:22> Operation complete in 6 secs
+```
+
+```
+## 2019-10-24 11:29:25> Operation complete in 5 secs
+```
+
+```
+## 2019-10-24 11:29:28> Operation complete in 7 secs
+```
+
+```
+## 2019-10-24 11:29:30> nested-cluster1 VM running
+```
+
+```
+## 2019-10-24 11:29:32> nested-cluster2 VM running
+```
+
+```
+## 2019-10-24 11:29:34> nested-cluster3 VM running
+```
+
+```
+## 2019-10-24 11:29:42> Public SSH key uploaded to instance
+```
+
+```
+## 2019-10-24 11:29:51> Public SSH key uploaded to instance
+```
+
+```
+## 2019-10-24 11:29:59> Public SSH key uploaded to instance
+```
+
+```
+## 2019-10-24 11:29:59> # Testing cluster:
+```
+
+Now comes part where we need to tweak our cluster setup. Nesting in the future framework is operationalised by defining a series of so-called [future "topologies"](https://cran.r-project.org/web/packages/future/vignettes/future-3-topologies.html). You can click on the previous link for more details, but the gist is that we define a nested plan of futures using the `plan(list(tweak(...), tweak(...)))` syntax. In this case, we are going to define two topology layers:
+
+- **Topology 1.** The "outer" plan, which tells `future` to use the cluster of three remote VMs.
+- **Topology 2.** The "inner" plan, which tells future to use all eight cores on each VM via the `multiprocess` option. 
 
 
 ```r
 plan(list( 
-  ## Topology 1: Use a cluster of remote VMs 
-  tweak(cluster, 
-        workers = as.cluster(
-          vms,
-          ## Launch Rscript inside Docker container
-          rscript = c(
-            "docker", "run", "--net=host", "rocker/r-base",
-            "Rscript"
-          ),
-          ## Install future.apply on each VM
-          rscript_args = c("-e", shQuote("install.packages('future.apply')"))
-          )
-        ),  
-  ## Topology 2: Use all the CPUs on each VM
+  ## Topology 1: Use the cluster of remote VMs 
+  tweak(cluster, workers = as.cluster(vms_nested)),  
+  ## Topology 2: Use all CPUs on each VM
   tweak(multiprocess)  
   ))
 ```
 
-```
-## 2019-03-04 22:40:49> External IP for instance testvm1 : 35.197.58.242
-```
-
-```
-## 2019-03-04 22:41:14> External IP for instance testvm2 : 35.199.168.96
-```
-
-```
-## 2019-03-04 22:41:39> External IP for instance testvm3 : 35.197.125.154
-```
-
-With the nested plan defined, we can now run a nested parallel function. Again, there's a slight tweak here in the sense that we need to manually split the outer and inner `future_lapply()` calls:
-
-- The **outer** `future_lapply()` call loops over the VMs in our cluster (in this case: three). 
-- The **inner** `future_lapply()` call then loops over the desired number of iterations, divided by the number of VMs in the cluster. 
-
-For this example, I'll run 120 iterations of our `slow_func()` function in total. Note that this would take 600 seconds to run sequentially. Based on the total number of cores available to us in this cluster, we would we hope to drop this computation time to around 25 seconds (i.e. a **24 times speedup**) by running everything in parallel.
+That wasn't too complicated, was it? We are now ready to use our cluster by feeding it a parallel function that can take advange of the nested structure. Here is one potential implementation that seems like it should work. I haven't run it here, however, because there is something that we probably want to fix first. Can you guess what it is? (Try running the command yourself and then examining the output if you aren't sure.) The answer is underneath.
 
 
 ```r
-## Total number of desired iterations
-iters <- 120
+## NOT RUN (Run it yourself to see why it yields the wrong answer)
 
-## Now run the function in parallel on each VM in the cluster
+## Outer future_lapply() loop over the two VMS
+future_lapply(seq_along(vms_nested), function(v) {
+    ## Inner future_lapply() loop: 24 asynchronous iterations of our slow function  
+    future_lapply(1:24, slow_func)
+  })
+```
+
+The problem with the above code is that it will duplicate (triplicate?) the exact same 24 iterations on *each* VM, instead of spliting up the job efficiently between them. What we want to do, then, is split the input data into distinct "chunks" for each VM to work on separately. There are various ways to do this chunking, but here's an option that I've borrowed from [StackOverflow](https://stackoverflow.com/a/16275428). I like this function because it uses only base R functions and is robust to complications like unequal chunk lengths and different input types (e.g. factors vs numeric).
+
+
+```r
+chunk_func <- function(x, n) split(x, cut(seq_along(x), n, labels = FALSE)) 
+## Examples (try them yoruself)
+# chunk_func(1:24, 3)
+# chunk_func(1:5, 2)
+# chunk_func(as.factor(LETTERS[1:5]), 2)
+```
+
+Okay, now we're really ready to make full use our cluster. For this example, I'll even go ahead and run 120 iterations of our `slow_func()` function in total. Note that this would take 600 seconds to run sequentially. Based on the total number of cores available to us in this cluster, we would we hope to drop this computation time to around 25 seconds (i.e. a **24 times speedup**) by running everything in parallel. I've commented the code quite explicitly, so please read carefully to see what's happening. In words, though: first we parallelize over the three VMs; then we chunk the input data so that each VM works on a distinct part of problem; and finally we feed the chunked data to our `slow_func` function where it is run in parallel on each VM.
+
+
+```r
+## Input data (vector to be interated over by our function)
+input_data <- 1:120
+
 tic()
-future_sim <- 
-  future_lapply(1:length(vms), function(x) { ## Outer future_lapply() call loops over the no. of VMS
-    future_lapply(1:(iters/length(vms)), slow_func) ## Inner future_lapply() call loops over desired no. of iterations / no. of VMs
-    }
-  )
+## Run the function in (nested) parallel on our cluster
+future_nested_cluster <- 
+  ## Outer future_lapply() loop over the three VMS
+  future_lapply(seq_along(vms_nested), function(v) {
+    ## Split the input data into distinct chunks for each VM
+    input_chunk <- chunk_func(input_data, length(vms_nested))[[v]] 
+    ## Inner future_lapply() loop within each of the VMs  
+    future_lapply(input_chunk, slow_func)
+    })
 toc()
 ```
 
 ```
-## 27.068 sec elapsed
+## 27.09 sec elapsed
 ```
 
-And it worked! There's a tiny bit of overhead, but we were very close to the theoretical speedup. Note that this overhead time would increase if we were transferring large amounts of data around the cluster, but the same basic principles would apply. Bottom line: You can create can create a mini supercomputer in the cloud using only a few lines of code, and then interact with it through your local R environment. What's not to like?
+And it worked! There's a little bit of overhead, but we are very close to the maximum theoretical speedup. Note that this overhead time would increase if we were transferring large amounts of data around the cluster &mdash; which, again future will take care of automatically for us &mdash; but the same basic principles would apply. 
 
-As always, remember to stop you VMs once you've finished using them.
+**Bottom line:** You can create can create a mini supercomputer up in the cloud using only a few lines of code, and then interact with it directly from your local R environment. Honestly, what's not to like?
+
+Normally, I would remind you to shut down your VM instances now. But first, let's quickly using them again for one last example.
+
+#### One final example
+
+The final example that I'm going to show you is a slight adaptation of the nested cluster that we just covered.^[Indeed, we're going to be using the same three VMs. These should still be running in the background, unless you've taken a long time to get to this next section. Just spin them up again if you run into problems.] This time we're going to install and use an additional R package on our remote VMs that didn't come pre-installed on the "r-parallel" Docker image. (The package in question is going to be [data.table](http://rdatatable.gitlab.io/data.table/), but that's not really the point of the exercise.) I wanted to cover this kind of scenario because a) it's very likely that you'll want to do something similar if you start using remote clusters regularly, and b) the commands for doing so aren't obvious if you're not used to R scripting on Docker containers. The good news is that it's pretty easy once you've seen an example and that everything can be done through `plan()`. Let's proceed.
+
+The [Rscript](https://linux.die.net/man/1/rscript) shell command is how we can install additional R packages on a remote VM (or cluster) that is busy running a Docker container. However, we first need to tell Docker to launch Rscript inside the container in question. That's what the `rscript = c(...)` line below is doing. Next we feed it the actual Rscript argument(s) to be run. In this case, it's going to be `Rscript -e install.packages(PACKAGE)`. Again, this looks a little abstruce here because it has to go through the `rscript_args = c(...)` argument, but hopefully you get the idea.
 
 
 ```r
-## Stop / shutdown instances when finished
-lapply(vms, gce_vm_stop)
+plan(list( 
+  ## Topology 1: Use the cluster of remote VMs 
+  tweak(cluster, 
+        workers = as.cluster(
+        vms_nested,
+        ## Launch Rscript inside the r-parallel Docker containers on each VM
+        rscript = c(
+          "docker", "run", "--net=host", "rocker/r-parallel",
+          "Rscript"
+          ),
+          ## Install the data.table package on the R instances running in the containers 
+          rscript_args = c("-e", shQuote("install.packages('data.table')"))
+          )
+        ),  
+  ## Topology 2: Use all the CPUs on each VM
+  tweak(multiprocess)  
+))
+```
+
+(Note: I've hidden the output from the above code chunk, because takes up quite of vertical space with all of the installation messages, etc. You should see messages detailing data.table's installation progress across each of your VMs if you run this code on your own computer.)
+
+Let's prove to ourselves that the installation of `data.table` worked by running a very slightly modified version of our earlier code. This time we'll use `data.table::rbindList()` to coerce the resulting list objects from each `future_lapply()` call into a data table. Note that we'll need to do this twice: once for our inner loop(s) and once for the outer loop.
+
+
+```r
+## Same as earlier, but this time binding the results into a data.table with
+## data.table::rbindList()
+
+## Run the function in (nested) parallel on our cluster
+future_nested_cluster_DT <-
+  ## Outer future_lapply() loop over the three VMs
+  data.table::rbindlist(
+    future_lapply(seq_along(vms_nested), function(v) {
+      ## Split the input data into distinct chunks for each VM
+      input_chunk <- chunk_func(input_data, length(vms_nested))[[v]]
+      ## Inner future_lapply() loop within each of the VMs
+      data.table::rbindlist(future_lapply(input_chunk, slow_func))
+      })
+    )
+
+## Show that it worked
+future_nested_cluster_DT
+```
+
+```
+##      value value_squared
+##   1:     1             1
+##   2:     2             4
+##   3:     3             9
+##   4:     4            16
+##   5:     5            25
+##  ---                    
+## 116:   116         13456
+## 117:   117         13689
+## 118:   118         13924
+## 119:   119         14161
+## 120:   120         14400
+```
+
+And would you just look at that. It worked like a charm. We're so awesome.
+
+These, being preemptible VMs, will automatically be deleted within 24 hours. But there's no need to have them sitting around incurring charges now that we're done with them.
+
+
+```r
+## shutdown instances when finished
+gce_vm_stop(vms_nested)
 ```
 
 ```
 ## [[1]]
 ## ==Zone Operation stop :  RUNNING
-## Started:  2019-03-04 22:42:31
+## Started:  2019-10-24 11:32:53
 ## [[2]]
 ## ==Zone Operation stop :  RUNNING
-## Started:  2019-03-04 22:42:32
+## Started:  2019-10-24 11:32:53
 ## [[3]]
 ## ==Zone Operation stop :  RUNNING
-## Started:  2019-03-04 22:42:32
+## Started:  2019-10-24 11:32:54
 ```
 
 ```r
-# lapply(vms, gce_vm_delete) ## Optional
+gce_vm_delete(vms_nested)
+```
+
+```
+## [[1]]
+## ==Zone Operation delete :  PENDING
+## Started:  2019-10-24 11:32:55
+## [[2]]
+## ==Zone Operation delete :  PENDING
+## Started:  2019-10-24 11:32:56
+## [[3]]
+## ==Zone Operation delete :  PENDING
+## Started:  2019-10-24 11:32:57
 ```
 
 
