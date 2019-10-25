@@ -316,7 +316,7 @@ library(googleComputeEngineR)
 
 Nice. With that taken care of, let's look at some examples to see how easy `googleComputeEngineR` is to work with.
 
-### Single VM example
+### Single VM
 
 The workhorse `googleComputeEngineR` function to remember is **`gce_vm()`**. This will fetch (i.e. start) an instance if it already exists, and create a new instance from scratch if it doesn't. Let's practice an example of the latter, since it will demonstrate the package's integration of Docker images via the [Rocker Project](https://www.rocker-project.org/).^[You can test the former by running `my_vm <- gce_vm("my-vm")` in your R console. You can also get a list of all existing instances by running `gce_list_instances()`.]
 
