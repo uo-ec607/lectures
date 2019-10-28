@@ -368,7 +368,7 @@ wr100 %>%
   - A typical workflow is: `read_html(URL) %>% html_nodes(CSS_SELECTORS) %>% html_table()`.
   - You might need other functions depending on the content type (e.g. see `?html_text`).
 - Just because you *can* scrape something doesn't mean you *should* (i.e. ethical and legal restrictions).
-- Webscraping involves as much as it does science. Be prepared to do a lot of experimenting and data cleaning.
+- Webscraping involves as much art as it does science. Be prepared to do a lot of experimenting and data cleaning.
 - Next lecture: Webscraping: (2) Client-side and APIs.
 
 
