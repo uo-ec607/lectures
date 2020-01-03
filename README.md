@@ -1,4 +1,4 @@
-# Data science for economists!!!!
+# Data science for economists!!!
 
 This is a graduate economics seminar taught by [Grant McDermott](http://grantmcdermott.com) at the University of Oregon. 
 
