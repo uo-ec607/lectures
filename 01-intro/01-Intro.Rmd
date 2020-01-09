@@ -1,9 +1,9 @@
 ---
 title: "Data Science for Economists"
 # subtitle: "<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
-subtitle: "Introduction"
+subtitle: "Lecture 1: Introduction"
 author: "Grant McDermott"
-date: "University of Oregon | [EC 607](https://github.com/uo-ec607) | Lecture 1" #"`r format(Sys.time(), '%d %B %Y')`"
+date: "University of Oregon | [EC 607](https://github.com/uo-ec607)" #"`r format(Sys.time(), '%d %B %Y')`"
 output:
   xaringan::moon_reader:
     css: [default, metropolis, metropolis-fonts] 
