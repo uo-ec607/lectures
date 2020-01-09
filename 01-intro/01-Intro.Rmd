@@ -1,8 +1,9 @@
 ---
-title: "Lecture 1: Introduction"
-subtitle: "<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
-author: Grant McDermott | University of Oregon
-date: EC 607 #"`r format(Sys.time(), '%d %B %Y')`"
+title: "Data Science for Economists"
+# subtitle: "<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
+subtitle: "Introduction"
+author: "Grant McDermott"
+date: "University of Oregon | [EC 607](https://github.com/uo-ec607) | Lecture 1" #"`r format(Sys.time(), '%d %B %Y')`"
 output:
   xaringan::moon_reader:
     css: [default, metropolis, metropolis-fonts] 
@@ -25,6 +26,7 @@ opts_chunk$set(
   )
 library(tidyverse)
 library(hrbrthemes)
+library(fontawesome)
 ```
 
 # Table of contents
@@ -50,9 +52,31 @@ name: prologue
 
 ---
 
-# Survey
+# Introductions
 
-Results from our [survey](https://goo.gl/forms/PjojERKMOpbo78JJ3)...
+### Course
+
+`r fa('globe')` https://github.com/uo-ec607
+
+You'll soon receive access to a quarter-specific copy of this repo, where we 
+submit assignments, upload presentations, etc.
+
+--
+
+### Me
+
+`r fa('address-book')` [Grant McDermott](https://grantmcdermott.com/)
+
+`r fa('envelope')` [grantmcd@uoregon.edu](mailto:grantmcd@uoregon.edu)
+
+`r fa('graduation-cap')` Assistant Professor (environmental economics and data science)
+
+--
+
+### You
+
+A quick roundtable of names, fields/interests, and coding background.
+
 
 ---
 class: inverse, center, middle
@@ -97,12 +121,12 @@ school."*
 |:-|-:|
 | 5 × homework assignments (15% each) | 75% |
 | 2 × short presentations (5% each)		| 10% |
-| 1 × peer-review						          | 10% |
+| 1 × OSS contribtion				          | 10% |
 |	In-class participation						  | 5%  |
 
 - You can swap out one homework assignment for an (approved) final presentation of your own research.
-- Short presentations summarize either a key lecture reading, or an (approved) software package/platform.
-- We'll get to peer-review later in the course.
+- [Short presentations](https://github.com/uo-ec607/presentations) summarize either a key lecture reading, or an (approved) software package/platform.
+- We'll get to OSS contribution later in the course, but this year I'm particularly encouraging contributions to [LOST](lost-stats.github.io/).
 
 ---
 # Lecture outline
@@ -178,7 +202,7 @@ If you had trouble completing any of these steps, please raise your hand.
 ☑ Do you have the most recent version of RStudio? (The [preview version](https://www.rstudio.com/products/rstudio/download/preview/) is fine.)
   ```{r eval=FALSE}
   RStudio.Version()$version
-  ## Requires an interactive session but should return something like "[1] ‘1.1.463’"
+  ## Requires an interactive session but should return something like "[1] ‘1.2.5001’"
   ```
 
 ☑ Have you updated all of your R packages? 
@@ -314,7 +338,7 @@ Points 1. and 2. can be summarised as an [object-orientated programming](https:/
 If you're coming from Stata, some additional things worth emphasizing:
 
 - Multiple objects (e.g. data frames) can exist happily in the same workspace. 
-   - No more `keep`, `preserve`, `restore` hackery.
+   - No more `keep`, `preserve`, `restore` hackery. (Though, props to [Stata 16](https://www.stata.com/new-in-stata/multiple-datasets-in-memory/).)
    - This is a direct consequence of the OOP approach.
 
 - You will load packages at the start of every new R session. Make peace with this.
@@ -330,8 +354,8 @@ If you're coming from Stata, some additional things worth emphasizing:
 
 # R code example (linear regression)
 
-```{r}
-fit = lm(dist ~ 1 + speed, data = cars)
+```{r fit}
+fit = lm(mpg ~ wt, data = mtcars)
 summary(fit)
 ```
 
@@ -339,21 +363,21 @@ summary(fit)
 
 # Base R plot
 
-```{r cars_basefig, dev="svg"}
+```{r mtcars_baseplot, dev="svg"}
 par(mar = c(4, 4, 1, .1)) ## Just for nice plot margins on this slide deck
-plot(cars, pch = 19, col = 'darkgray', las = 1)
-abline(fit, lwd = 2)
+plot(mtcars$wt, mtcars$mpg)
+abline(fit, col = "red")
 ```
 
 ---
 
 # ggplot2
 
-```{r gapm_plot, dev="svg"}
+```{r mtcars_ggplot, dev="svg"}
 library(ggplot2)
-library(gapminder) ## For the gapminder data
-ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp)) + 
-  geom_point()
+ggplot(data = mtcars, aes(x = wt, y = mpg)) + 
+  geom_smooth(method = "lm", col = "red") + 
+  geom_point() 
 ```
 
 ---
@@ -380,9 +404,9 @@ If you don't have them already, install the `ggplot2` and `gapminder` packages v
 # Install and load (cont.)
 
 Once the packages are installed, load them into your R session with the `library()` function.
-```{r pkg_load, eval=FALSE}
+```{r pkg_load}
 library(ggplot2)
-library(gapminder) ## Again, we're just using this package for its dataset
+library(gapminder) ## We're just using this package for the gapminder data
 ```
 
 Notice too that you don't need quotes around the package names any more. Reason: R now recognises these packages as defined objects with given names. ("Everything in R is an object and everything has a name.")
@@ -422,13 +446,21 @@ There's a lot to say about ggplot2's implementation of this "grammar of graphics
 
 </br>
 
-That's kind of abstract. Let's review each element in turn using our original plot call.
+That's kind of abstract. Let's review each element in turn with some actual plots.
 
 ---
 
 # 1. Aesthetic mappings
 
-Here's our earlier ggplot2 code again:
+```{r, aesthetics0}
+ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp)) + 
+  geom_point()
+```
+
+
+---
+
+# 1. Aesthetic mappings (cont.)
 
 ```{r aesthetics1, eval=FALSE}
 ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp)) + 
