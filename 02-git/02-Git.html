@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
   <head>
-    <title>Lecture 2: Version control with Git(Hub)</title>
+    <title>Data Science for Economists</title>
     <meta charset="utf-8" />
-    <meta name="author" content="Grant McDermott | University of Oregon" />
+    <meta name="author" content="Grant McDermott" />
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
     <link href="libs/remark-css/metropolis-fonts.css" rel="stylesheet" />
@@ -12,15 +12,10 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# Lecture 2: Version control with Git(Hub)
-## <html>
-<div style="float:left">
-
-</div>
-<hr color='#EB811B' size=1px width=796px>
-</html>
-### Grant McDermott | University of Oregon
-### EC 607
+# Data Science for Economists
+## Lecture 2: Version control with Git(Hub)
+### Grant McDermott
+### University of Oregon | <a href="https://github.com/uo-ec607">EC 607</a>
 
 ---
 
@@ -200,6 +195,7 @@ Now open up the README file (see the "Files" tab in the bottom-right panel).
 - Add some text like "Hello World!" and save the README.
 - Do you see any changes in the "Git" panel? Good. (Raise your hand if not.)
 
+Again, see my GIF walkthrough on the next slide...
 
 .footnote[&lt;sup&gt;1&lt;/sup&gt; They're important, but not for the purposes of this section.]
 
@@ -256,7 +252,7 @@ Note the helpful commit message to ourselves.
 
 --
 
-See [here](https://github.com/richelbilderbeek/Cer2016/issues/6) if you get `Error: unable to read askpass response from 'rpostback-askpass'`.
+See [here](https://ohi-science.org/manual/#rpostback-askpass-error) if you get `Error: unable to read askpass response from 'rpostback-askpass'`.
 
 ---
 
@@ -276,6 +272,10 @@ NB aside: Always pull from the upstream repo *before* you push any changes. Seri
 --
 
 PS — You were likely challenged for your GitHub credentials at some point. Learn how to cache these [here](https://happygitwithr.com/credential-caching.html).
+
+--
+
+PPS — Speaking of credentials, an even better approach is to [switch to SSH](https://happygitwithr.com/ssh-keys.html). I recommend you do this once you feel comfortable with the main Git operations.
 
 ---
 
@@ -392,9 +392,9 @@ Turn to the person next to you. You are now partners. (Congratulations.)
 
 - P1: Invite P2 to join you as a collaborator on the "test" GitHub repo that you created earlier. (See the *Settings* tab of your repo.)
 
-- P2: Clone P1's repo to your local machine.&lt;sup&gt;1&lt;/sup&gt; Make some edits to the README (e.g. delete lines of text). Stage, commit and push these changes.
+- P2: Clone P1's repo to your local machine.&lt;sup&gt;1&lt;/sup&gt; Make some edits to the README (e.g. delete lines of text and add your own). Stage, commit and push these changes.
 
-- P1: Now make changes to the README on your machine too. Stage, commit and then try to push them (*after* pulling from the GitHub repo first).
+- P1: Make your own changes to the README on your local machine. Stage, commit and then try to push them (*after* pulling from the GitHub repo first).
 
 .footnote[&lt;sup&gt;1&lt;/sup&gt; Change into a new directory first or give it a different name to avoid conflicts with your own "test" repo. Don't worry, Git tracking will still work if you change the repo name locally.]
 
@@ -441,7 +441,7 @@ Text added by Partner 1.
 More text here.
 ```
 
-.footnote[&lt;sup&gt;1&lt;/sup&gt; I also use and recommend &lt;a href="https://atom.io/" target="_blank"&gt;Atom&lt;/a&gt;. You can set your preferred default editor with `$ git config --global core.editor "PREFERRED_EDITOR"`.]
+.footnote[&lt;sup&gt;1&lt;/sup&gt; Other good choices are &lt;a href="https://code.visualstudio.com/" target="_blank"&gt;VS Code&lt;/a&gt; or &lt;a href="https://atom.io/" target="_blank"&gt;Atom&lt;/a&gt;, which both support native Git(Hub) integration. You can set your preferred default editor with `$ git config --global core.editor "PREFERRED_EDITOR"`.]
 
 ---
 
@@ -584,6 +584,10 @@ Branches are one of Git's coolest features.
 
 .footnote[&lt;sup&gt;1&lt;/sup&gt; You can actually have branches of branches (of branches). But let's not get ahead of ourselves.]
 
+--
+
+I use branches all the time for my own research projects.
+
 ---
 
 # Create a new branch in RStudio
@@ -638,7 +642,36 @@ You have two options:
 - PRs are a way to notify collaborators — or yourself! — that you have completed a feature.
 - You write a summary of all the changes contained in the branch.
 - You then assign suggested reviewers of your code — including yourself potentially — who are then able to approve these changes ("Merge pull request") on GitHub.
-- Let's practice this in class: See &lt;a href="https://help.github.com/articles/creating-a-pull-request/" target="_blank"&gt;here&lt;/a&gt; for instructions.
+- Let's practice this now in class...
+
+---
+
+# Your first pull request
+
+You know that "new-idea" branch we just created a few slides back? Switch over to it if you haven't already.
+- Remember: `$ git checkout new-idea` (or just click on the branches tab in RStudio)
+
+Make some local changes and then commit + push them to GitHub.
+- The changes themselves don't really matter. Add text to the README, add some new files, whatever.
+
+After pushing these changes, head over to your repo on GitHub.
+- You should see a new green button with "Compare &amp; pull request". Click it.
+- Add a meta description of what this PR accomplishes. You can also change the title if you want.
+- Click "Create pull request".
+- (Here's where you or your collaborators would review all the changes.)
+- Once satisfied, click "Merge pull request" and then confirm.
+
+???
+
+See instructions &lt;a href="https://help.github.com/articles/creating-a-pull-request/" target="_blank"&gt;here&lt;/a&gt;.
+
+---
+
+# Your first pull request (cont.)
+
+&lt;div align="center"&gt;
+&lt;img src="pics/git-pr.gif" height=500&gt;
+&lt;/div&gt;
 
 ---
 
@@ -665,9 +698,9 @@ Creating forks is super easy as we've just seen. However, maintaining them invol
 
 --
 
-### Peer-review
+### OSS contribution
 
-Remember that peer-review component of the course (i.e. 10% of your final grade)? Well, now is a good time to tell you that forks, branches, and pull requests are effectively what I will be expecting of you.
+Remember that "OSS contribution" component of the course (i.e. 10% of your final grade)? Well, now is a good time to tell you that forks, branches, and pull requests are effectively what I will be expecting of you.
 - Grades aside, I want to encourage you to start thinking about contributing to software projects in general.
 - Seriously, it can be something as simple as correcting typos or language. Many great programmers and data scientists are not English first-language speakers. Helping to improve package documentation is a small way to say thanks. (More [here](https://yihui.name/en/2013/06/fix-typo-in-documentation).)
 
@@ -694,7 +727,7 @@ READMEs should be written in Markdown, which GH automatically renders.
 
 ---
 
-# .gitgnore
+# .gitignore
 
 A .gitignore file tells Git what to — *wait for it* — ignore.
 
@@ -708,7 +741,7 @@ I typically add compiled datasets to my .gitignore in the early stages of a proj
   
 ---
 
-# .gitgnore (cont.)
+# .gitignore (cont.)
 
 You can create a .gitignore file in multiple ways.
 
@@ -742,7 +775,7 @@ name: summary
 
 # Recipe (shell commands in grey)
 
-1. Create a repo on GitHub and initiaize with a README.
+1. Create a repo on GitHub and initialize with a README.
 
 2. Clone the repo to your local machine. Preferably using an RStudio Project, but as you wish. (E.g. Shell command: `$ git clone REPOSITORY-URL`)
 

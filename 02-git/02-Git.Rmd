@@ -669,6 +669,14 @@ See instructions <a href="https://help.github.com/articles/creating-a-pull-reque
 
 ---
 
+# Your first pull request (cont.)
+
+<div align="center">
+<img src="pics/git-pr.gif" height=500>
+</div>
+
+---
+
 # Forks
 
 Git forks lie somewhere between cloning a repo and and branching from it.
