@@ -175,7 +175,7 @@ name: started
 3. Download [Git](https://git-scm.com/downloads).
 
 4. Create an account on [GitHub](https://github.com/) and register for a student/educator [discount](https://education.github.com/discount_requests/new).
-  - You will soon receive an invitation to the [course organization](https://github.com/UO-EC607-2019Winter) and [GitHub classroom](https://classroom.github.com), which is how we'll disseminate and submit assignments, receive feedback and grading, etc. 
+  - You will soon receive an invitation to the quarter-specific course org. on GitHub, as well as [GitHub classroom](https://classroom.github.com), which is how we'll disseminate and submit assignments, receive feedback and grading, etc. 
 
 --
 
@@ -523,7 +523,7 @@ Note that I've dropped the "mapping =" part of the ggplot call. Most people just
 
 # 1. Aesthetic mappings (cont.)
 
-Note that we can assign the aesthetic mappings in the geom layer too.
+We can specify aesthetic mappings in the geom layer too.
 
 ```r
 ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) + ## Applicable to all geoms
@@ -645,7 +645,7 @@ We've already seen how we can chain (or "layer") consecutive plot elements using
 - The fact that we can create and then re-use an intermediate plot object (e.g. "p") is testament to this.
 
 But it bears repeating: You can build out some truly impressive complexity and transformation of your visualization through this simple layering process.
-- Note that you don't have to touch your original data; ggplot2 takes care of all of that.
+- You don't have to transform your original data; ggplot2 takes care of all of that.
 - For example (see next slide for figure).
 
 
@@ -654,10 +654,10 @@ p2 =
   p + 
   geom_point(aes(size = pop, col = continent), alpha = 0.3) +
   scale_color_brewer(name = "Continent", palette = "Set1") + ## Different colour scale
+  scale_size(name = "Population", labels = scales::comma) + ## Different point (i.e. legend) scale
   scale_x_log10(labels = scales::dollar) + ## Switch to logarithmic scale on x-axis. Use dollar units.
-  scale_size(name = "Population", labels = scales::comma) +
   labs(x = "Log (GDP per capita)", y = "Life Expectancy") + ## Better axis titles
-  theme_bw() ## Try a black and white plot theme
+  theme_minimal() ## Try a minimal (b&amp;w) plot theme
 ```
 
 ---
@@ -691,10 +691,10 @@ Simple extension: Use an external package theme.
 
 ```r
 # library(hrbrthemes)
-p2 + theme_ipsum()
+p2 + theme_modern_rc() + geom_point(aes(size = pop, col = continent), alpha = 0.3)
 ```
 
-&lt;img src="01-Intro_files/figure-html/ipsum_theme-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="01-Intro_files/figure-html/modern_rc_theme-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -722,6 +722,9 @@ ggplot(gapminder, aes(gdpPercap, lifeExp, size = pop, colour = country)) +
 
 &lt;img src="01-Intro_files/figure-html/ggamin2-1.gif" style="display: block; margin: auto;" /&gt;
 
+--
+
+Note that this animated plot provides a much more intuitive understanding of the underlying data. Just as [Hans Rosling](https://www.ted.com/talks/hans_rosling_the_best_stats_you_ve_ever_seen) intended.
 
 ---
 # What else? (cont.)
