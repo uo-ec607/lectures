@@ -1,8 +1,9 @@
 ---
-title: "Lecture 3: Learning to love the shell"
-subtitle: "<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
-author: Grant McDermott | University of Oregon
-date: EC 607 #"`r format(Sys.time(), '%d %B %Y')`"
+title: "Data Science for Economists"
+# subtitle: "<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
+subtitle: "Lecture 3: Learning to love the shell"
+author: "Grant McDermott"
+date: "University of Oregon | [EC 607](https://github.com/uo-ec607)" #"`r format(Sys.time(), '%d %B %Y')`"
 output:
   xaringan::moon_reader:
     css: [default, metropolis, metropolis-fonts] 
@@ -62,6 +63,19 @@ name: prologue
 # Prologue
 
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+
+# Student presentation: Git GUI
+
+As I said in our previous lecture, I think the Git + RStudio (and/or the shell) workflow will be optimal for most of you. 
+
+But here are some nice standalone Git GUIs that you might want to consider:
+- [Gitkraken](https://www.gitkraken.com/)
+- [SourceTree](https://www.sourcetreeapp.com/)
+- [GitHub Desktop](https://desktop.github.com/)
+- [Atom](https://github.atom.io/)
+- [VS Code](https://code.visualstudio.com/docs/introvideos/versioncontrol)
 
 ---
 
@@ -150,6 +164,29 @@ There are many shell variants, but we're going to focus on [**Bash**](https://ww
 
 We're going to focus on 1, 2 and 3 in this course. That's not to say that 4 is unimportant (far from it), but we just won't have time to cover it. 
 - [Here](http://stat545.com/Classroom/notes/cm109.nb.html), [here](https://ropenscilabs.github.io/drake-manual/index.html), and [here](https://web.stanford.edu/~gentzkow/research/CodeAndData.pdf) are great places to start learning about automation on your own.
+
+---
+
+# Things that I use the shell for
+
+- Git
+- Renaming and moving files *en masse*
+- Finding things on my computer
+- Combining and manipulating PDFs
+- Installing and updating software
+- Monitoring system resources
+- Connecting to cloud environments
+- Running analyses ("jobs") on super computers
+- etc.
+
+--
+
+</br>
+
+<i>
+Personal aside: One of the (many) nice things about being a Linux user is that it demystifies the shell. You end up using the shell for various day-to-day operations and so inevitably become very comfortable using it. Maybe try a Linux distro yourself? ;-)
+- I recommend [Endeavour OS](https://endeavouros.com/), although [Ubuntu](https://ubuntu.com/) and [Elementary](https://elementary.io/) are good places to start too.
+</i>
 
 ---
 class: inverse, center, middle
@@ -789,7 +826,7 @@ PS — You couldn't tell here, but the character count is actually higher than w
 The simplest way to read in text is with the `cat` ("concatenate") command. Note that `cat` will read in *all* of the text. You can scroll back up in your shell window, but this can still be a pain.
 
 Again, let's demonstrate using Shakespeare's Sonnets. (This will overflow the slide.)
-- I'm going to use the `-n` ("number") flag because I want to show line numbers.
+- I'm also going to use the `-n` flag because I want to show line numbers.
 
 --
 
@@ -822,7 +859,7 @@ head -n 3 examples/sonnets.txt ## First 3 rows
 
 ### Preview: head and tail (cont.)
 
-The `tail` works very similarly to `head`, but starting from the bottom. For example, we can see the very last row of a file as follows
+`tail` works very similarly to `head`, but starting from the bottom. For example, we can see the very last row of a file as follows
 
 ```{bash tail1}
 tail -n 1 examples/sonnets.txt ## Last row
