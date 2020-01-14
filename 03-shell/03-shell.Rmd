@@ -162,7 +162,7 @@ There are many shell variants, but we're going to focus on [**Bash**](https://ww
 
 --
 
-We're going to focus on 1, 2 and 3 in this course. That's not to say that 4 is unimportant (far from it), but we just won't have time to cover it. 
+We're going to focus on 1, 2 and 3 in this course. That's not to say that 4 is unimportant (far from it!), but we just won't have time to cover it. 
 - [Here](http://stat545.com/Classroom/notes/cm109.nb.html), [here](https://ropenscilabs.github.io/drake-manual/index.html), and [here](https://web.stanford.edu/~gentzkow/research/CodeAndData.pdf) are great places to start learning about automation on your own.
 
 ---
@@ -174,6 +174,7 @@ We're going to focus on 1, 2 and 3 in this course. That's not to say that 4 is u
 - Finding things on my computer
 - Combining and manipulating PDFs
 - Installing and updating software
+- Scheduling tasks
 - Monitoring system resources
 - Connecting to cloud environments
 - Running analyses ("jobs") on super computers
@@ -181,11 +182,9 @@ We're going to focus on 1, 2 and 3 in this course. That's not to say that 4 is u
 
 --
 
-</br>
-
 <i>
-Personal aside: One of the (many) nice things about being a Linux user is that it demystifies the shell. You end up using the shell for various day-to-day operations and so inevitably become very comfortable using it. Maybe try a Linux distro yourself? ;-)
-- I recommend [Endeavour OS](https://endeavouros.com/), although [Ubuntu](https://ubuntu.com/) and [Elementary](https://elementary.io/) are good places to start too.
+Personal aside: One of the (many) nice things about being a Linux user is that it demystifies the shell. You end up using the shell for various day-to-day operations and so inevitably become very comfortable using it. Every year I manage to convince at least one student to switch...
+- I recommend [Endeavour OS](https://endeavouros.com/), though [Ubuntu](https://ubuntu.com/) and [Elementary](https://elementary.io/) are good places to start too.
 </i>
 
 ---
@@ -780,6 +779,22 @@ rm -rf examples/copies
 We've already seen one wildcard in the form of the backlash (`\`) that was used to escape spaces in file and folder names, e.g. `$ cd My\ Documents`.
 
 ---
+
+# Find
+
+The last command that I want to mention w.r.t. navigation is `find`.
+- This can be used to locate files and directories based on a variety of criteria; from pattern matching to object properties.
+
+```{bash find1}
+find examples -iname "monday.csv" ## will automatically do recursive
+```
+```{bash find2}
+find . -iname "*.txt" ## must use "." to indicate pwd
+```
+```{bash find3}
+find . -size +100k ## find files larger than 100 KB
+```
+---
 class: inverse, center, middle
 name: text
 
@@ -882,7 +897,7 @@ To find patterns in text, we can use regular expression-type matching with `grep
 For example, say we want to find the famous opening line to Shakespeare's [Sonnet 18](https://en.wikipedia.org/wiki/Sonnet_18).
 - I'm going to include the `-n` ("number") flag to get the line that it occurs on. 
 
-```{bash grep}
+```{bash grep1}
 grep -n "Shall I compare thee" examples/sonnets.txt
 ```
 
@@ -891,6 +906,32 @@ grep -n "Shall I compare thee" examples/sonnets.txt
 By default, `grep` returns all matching patterns. 
 - What happens if you run `$ grep -n "summer" examples/sonnets.txt`?
 - Or, for that matter, `$ grep -n "the" examples/sonnets.txt`?
+
+
+---
+
+# Find patterns: grep (cont.)
+
+Note that `grep` can be used to identify patterns in a group files (e.g. within a directory) too.
+ - This is particularly useful if you are trying to identify a file that contain, say, a function name. 
+ 
+Here's a simple example: Which days will I eat pasta this week? 
+ - I'm using the `R` (recursive) and `l` (just list the files; don't print the output) flags.
+
+```{bash grep2}
+grep -Rl "pasta" examples/meals
+```
+
+--
+
+What about muesli? And pizza?
+
+--
+
+Take a look at the `grep` man or cheat file for other useful examples and flags
+(e.g. `-i` for ignore case).
+
+PS &mdash; Another cool (and very fast) shell utility along these lines is [the silver searcher](https://github.com/ggreer/the_silver_searcher). Check it out.
 
 ---
 
