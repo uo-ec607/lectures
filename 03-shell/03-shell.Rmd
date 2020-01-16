@@ -1161,7 +1161,7 @@ name: iteration
 
 # _for_ loop syntax
 
-_for_ loops in Bash work similarly to other programming languages that you are probably familiar. 
+_for_ loops in Bash work similarly to other programming languages that you are probably familiar with. 
 
 The basic syntax is 
 
@@ -1263,7 +1263,7 @@ rm -f examples/meals/mealplan.csv ## delete old file
 --
 
 Here's our adapted gameplan:
-- First, create the new file by grapping the header (i.e. top line) from any of the input files and redirecting it. No need for `touch` this time.
+- First, create the new file by grabbing the header (i.e. top line) from any of the input files and redirecting it. No need for `touch` this time.
 - Next, loop over all the input files as before, but this time only append everything _after_ the top line.
 
 ```{bash for2d, echo = FALSE}
