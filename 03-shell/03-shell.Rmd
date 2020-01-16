@@ -1252,8 +1252,10 @@ Let's try again. First delete the old file so we can start afresh.
 rm -f examples/meals/mealplan.csv ## delete old file
 ```
 
-Here's the adapted gameplan:
-- First, create the new file by grapping the header (i.e. top line) of any of the input files and redirecting it. No need for `touch` this time.
+--
+
+Here's our adapted gameplan:
+- First, create the new file by grapping the header (i.e. top line) from any of the input files and redirecting it. No need for `touch` this time.
 - Next, loop over all the input files as before, but this time only append everything _after_ the top line.
 
 ```{bash for2d, echo = FALSE}
@@ -1569,11 +1571,11 @@ name: steps
 
 # Things we didn't cover today
 
-I know we covered a _lot_ of ground today. I hope that I've given you a sense of how Bash works and how useful it can be.
-- My main goal is to help "demystify" it, so that you aren't intimidated when you need to use shell commands later on.
+I know we covered a _lot_ of ground today. I hope that I've given you a sense of how Bash works and how powerful it is.
+- My main goal has been to "demystify" the shell, so that you aren't intimidated when we use shell commands later on.
 
 At the same time, there's loads that we didn't cover.
-- Environment variables, SSH, memory management (e.g. [top](https://ss64.com/bash/top.html) and [htop](https://hisham.hm/htop/)), etc.
+- Environment variables, SSH, memory management (e.g. [top](https://ss64.com/bash/top.html) and [htop](https://hisham.hm/htop/)), GNU parallel, etc.
 - We'll get to some of these topics in the later lectures, but please try to work some of the suggested exercises on the next slide and make use of the recommended readings.
  
 
@@ -1583,7 +1585,7 @@ At the same time, there's loads that we didn't cover.
 
 ### Exercises
 
-Navigate to the `examples/` sub-directory associated with this lecture. I want you to try and play around with the contents using some of the different Bash commands we've practiced today.
+Navigate to the `examples/` sub-directory associated with this lecture. I want you to play around with the contents using some of the different Bash commands we practiced today.
 - Change the permissions on an indivdual file or a whole directory.
 - Read in (or fix) some lines of text from one file and pipe them to another file.
 - Count the number of times Shakespeare refers to "mistress" or "love" in his Sonnets.
@@ -1594,6 +1596,8 @@ Navigate to the `examples/` sub-directory associated with this lecture. I want y
 
 - [The Unix Shell](http://swcarpentry.github.io/shell-novice/) (Software Carpentery)
 - [The Unix Workbench](https://seankross.com/the-unix-workbench/) (Sean Kross)
+- [Data Science at the Command Line](https://www.datascienceatthecommandline.com/) (Jeroen Janssens)
+- [Using AWK and R to parse 25tb](https://livefreeordichotomize.com/2019/06/04/using_awk_and_r_to_parse_25tb/) (Nick Strayer)
 
 
 ---
