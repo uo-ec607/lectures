@@ -49,11 +49,13 @@ knit_hooks$set(
 
 6. [Redirecting and pipes](#pipes)
 
-7. [Scripting](#scripting)
+7. [Iteration (for loops)](#iteration)
 
-8. [User roles and file permissions](#permissions)
+8. [Scripting](#scripting)
 
-9. [Next steps](#steps)
+9. [User roles and file permissions](#permissions)
+
+10. [Next steps](#steps)
 
 
 ---
@@ -713,8 +715,8 @@ rm -rf testing ## Success
 
 # Copy: cp
 
-The syntax for copying is `$ cp objectname (copyname)`
-- If you don't provide a name for the copied object, it will just take the old name.
+The syntax for copying is `$ cp object path/copyname`
+- If you don't provide a new name for the copied object, it will just take the old name.
 - However, if there is already an object with the same name in the target destination, then you'll have to use `-f` to force an overwrite.
 
 ```{bash cp}
@@ -733,20 +735,66 @@ You can use `cp` to copy directories, although you'll need the `-r` (or `-R`) fl
 
 ---
 
-# Move and rename: mv 
+# Move (and rename): mv 
 
-The syntax for moving is `$ mv object (newobjectname)` 
-- Note that moving an object with the "newobjectname" option is a convenient<sup>1</sup> way to rename it.
+The syntax for moving is `$ mv object path/newobjectname` 
 
-```{bash mv}
- ## Rename reps-copy to reps2 by moving it with a new name
+```{bash mv1}
+ ## Move the abc.txt file and show that it worked
+mv examples/ABC/abc.txt examples
+ls examples/ABC ## empty
+```
+```{bash mv2}
+## Move it back again
+mv examples/abc.txt examples/ABC
+ls examples/ABC ## not empty
+```
+
+--
+
+Note that "moving" an object within the same directory, but with the (newobjectname) option, is effectively the same as renaming it.
+
+```{bash mv3}
+ ## Rename reps-copy to reps2 by "moving" it with a new name
 mv examples/copies/reps-copy.txt examples/copies/reps2.txt
 ls examples/copies
 ```
 
-.footnote[
-<sup>1</sup> Your convenience mileage may vary.
-]
+---
+
+# Rename _en masse_: rename
+
+Speaking of renaming, a more convenient way to do this is with `rename`. 
+- The syntax is `pattern replacement file(s)`
+
+For example, say we want to change the file type (i.e. extension) of a particular file in the `examples/meals` directory.
+
+```{bash rename1}
+rename csv TXT examples/meals/monday.csv
+ls examples/meals
+```
+
+---
+
+# Rename _en masse_: rename (cont.)
+
+Where `rename` really shines, however, is in conjunction with regular expressions and wildcards (more on the next slide).
+- This works especially well for dealing with a whole list of files or folders.
+
+For example, let's change _all_ of the file extensions in the `examples/meals` directory.
+
+```{bash rename2}
+rename csv TXT examples/meals/*
+ls examples/meals
+```
+
+--
+
+Better change them back before we continue. (Confirm that this worked for yourself.)
+
+```{bash rename3}
+rename TXT csv examples/meals/*
+```
 
 ---
 
@@ -1066,13 +1114,183 @@ cat -n examples/sonnets.txt | head -n100 | tail -n10
 # Pipes: | (cont.)
 
 An exercise: Say I want to pull out all of text from (but limited to) Sonnet 18. 
-- How might you go about this using the Bash pipe and other commands?
+- How might you go about this task using the pipe and other Bash commands?
 - Tip: Use your knowledge of the starting line (i.e. 336) and the fact that sonnets are 14 lines long.
 
 --
 
 ```{bash pipe2}
 tail -n +336 examples/sonnets.txt | head -n14
+```
+
+---
+
+# Pipes: | (cont.)
+
+A final aside about pipe the friends: You can use it to search through your Bash command history. 
+- Every shell command you type is stored in a `~/.bash_history` file.<sup>1</sup>
+
+What happens if you type `$ cat ~/.bash_history | grep head`?
+
+.footnote[
+<sup>1</sup> The file might change depending on your preferred shell. E.g. For Zsh it's `~/.zhistory`.
+]
+
+--
+
+</br>
+
+FWIW, I use this approach often to remind myself of certain shell commands that I tend to forget.
+
+---
+class: inverse, center, middle
+name: iteration
+
+# Iteration (_for_ loops)
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+
+# _for_ loop syntax
+
+_for_ loops in Bash work similarly to other programming languages that you are probably familiar. 
+
+The basic syntax is 
+
+```bash
+for i in LIST
+do 
+  OPERATION $i ## the $ sign indicates a variable in bash
+done
+```
+
+--
+
+We can also condense things into a single line by using ";" appropriately. 
+
+```bash
+for i in LIST; do OPERATION $i; done
+```
+
+--
+
+I find the top approach more readable, but I may use single line approach in these slides to save vertical space.
+- Note: Using ";" isn't limited to _for loops_. Semicolons are a standard way to denote line endings in Bash.
+
+---
+
+# Example 1: Print a sequence of numbers
+
+To help make things concrete, here's a simple _for_ loop in action.
+
+```{bash for1a}
+for i in 1 2 3 4 5; do echo $i; done
+```
+
+--
+
+FWIW, we can use bash's brace expansion (`{1..n}`) to save us from having to write out a long sequence of numbers.
+
+```{bash for1b}
+for i in {1..5}; do echo $i; done
+```
+
+---
+
+# Example 2: Combine CSVs
+
+Here's a more realistic _for_ loop use-case that I use quite often: Combining (i.e. concatenating) multiple CSVs. 
+
+--
+
+Say we want to combine all the "daily" files in the `examples/meals` directory into a single CSV, which I'll call `mealplan.csv`. Here's one attempt that incorporates various bash commands and tricks that we've learned so far. The basic idea is:
+1. Create a new (empty) CSV
+2. Then, loop over the relevant input files, appending their contents to our new CSV
+
+```{bash for2a, echo = FALSE}
+touch examples/meals/mealplan.csv 
+for i in $(ls examples/meals/*day.csv)
+do 
+  cat $i >> examples/meals/mealplan.csv
+done
+```
+```bash
+## create an empty CSV
+$ touch examples/meals/mealplan.csv
+## loop over the input files and append their contents to our new CSV
+$ for i in $(ls examples/meals/*day.csv)
+> do 
+>   cat $i >> examples/meals/mealplan.csv
+> done
+```
+
+--
+
+Did it work? (See next slide.)
+
+---
+
+# Example 2: Combine CSVs (cont.)
+
+Hmmm. Sort of, but we need to get rid of the repeating header. 
+
+```{bash for2b}
+cat examples/meals/mealplan.csv
+```
+
+--
+
+Can you think of a way? 
+ - Answer on the next slide. (_Hint:_ `tail` and `head`...) 
+
+---
+
+# Example 2: Combine CSVs (cont.)
+
+Let's try again. First delete the old file so we can start afresh.
+```{bash for2c}
+rm -f examples/meals/mealplan.csv ## delete old file
+```
+
+Here's the adapted gameplan:
+- First, create the new file by grapping the header (i.e. top line) of any of the input files and redirecting it. No need for `touch` this time.
+- Next, loop over all the input files as before, but this time only append everything _after_ the top line.
+
+```{bash for2d, echo = FALSE}
+head -1 examples/meals/monday.csv > examples/meals/mealplan.csv
+for i in $(ls examples/meals/*day.csv)
+do 
+  tail -n +2 $i >> examples/meals/mealplan.csv
+done
+```
+```bash
+## create a new CSV by redirecting the top line of any file
+$ head -1 examples/meals/monday.csv > examples/meals/mealplan.csv
+## loop over the input files, appending everything after the top line
+$ for i in $(ls examples/meals/*day.csv)
+> do 
+>   tail -n +2 $i >> examples/meals/mealplan.csv
+> done
+```
+
+---
+
+# Example 2: Combine CSVs (cont.)
+
+It worked!
+
+```{bash for2e}
+cat examples/meals/mealplan.csv
+```
+
+--
+
+We still have to sort the correct week order, but that's an easy job in R (or Stata, Python, etc.)
+- The explicit benefit of doing the concatenating in the shell is it is _much_ more efficient, since all the files don't simultaneously have to be held in memory (i.e RAM). 
+- This doesn't matter here, but can make a dramatic difference once we start working with lots of files (or even a few really big ones). We'll revisit this idea later in the big data section of the course.
+
+```{bash for2f, echo = FALSE}
+rm -f examples/meals/mealplan.csv ## Silently remove to avoid errors with later re-knits
 ```
 
 ---
@@ -1351,14 +1569,12 @@ name: steps
 
 # Things we didn't cover today
 
-I know we covered a lot of ground today and I hope that I've given you a sense of how Bash works and how useful it can be.
+I know we covered a _lot_ of ground today. I hope that I've given you a sense of how Bash works and how useful it can be.
 - My main goal is to help "demystify" it, so that you aren't intimidated when you need to use shell commands later on.
 
-At the same time, there's a lot that we didn't cover today.
-- For loops, variables and functions, SSH, memory management (e.g. [top](https://ss64.com/bash/top.html) and [htop](https://hisham.hm/htop/)), etc.
+At the same time, there's loads that we didn't cover.
+- Environment variables, SSH, memory management (e.g. [top](https://ss64.com/bash/top.html) and [htop](https://hisham.hm/htop/)), etc.
 - We'll get to some of these topics in the later lectures, but please try to work some of the suggested exercises on the next slide and make use of the recommended readings.
-
-
  
 
 ---
@@ -1371,7 +1587,6 @@ Navigate to the `examples/` sub-directory associated with this lecture. I want y
 - Change the permissions on an indivdual file or a whole directory.
 - Read in (or fix) some lines of text from one file and pipe them to another file.
 - Count the number of times Shakespeare refers to "mistress" or "love" in his Sonnets.
-- Merge the separate CSVs in the "meals" subfolder into one document.
 - Write a new bash script and execute it.
 - Etc.
 
