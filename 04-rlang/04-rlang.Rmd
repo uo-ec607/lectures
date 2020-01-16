@@ -1,8 +1,9 @@
 ---
-title: "Lecture 4: R language basics"
-subtitle: "<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
-author: Grant McDermott | University of Oregon
-date: EC 607 #"`r format(Sys.time(), '%d %B %Y')`"
+title: "Data Science for Economists"
+# subtitle: "<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
+subtitle: "Lecture 4: R language basics"
+author: "Grant McDermott"
+date: "University of Oregon | [EC 607](https://github.com/uo-ec607)" #"`r format(Sys.time(), '%d %B %Y')`"
 output:
   xaringan::moon_reader:
     css: [default, metropolis, metropolis-fonts] 
@@ -12,6 +13,7 @@ output:
       highlightLines: true
       countIncrementalSlides: false
 ---
+name: toc
 
 ```{r setup, include=FALSE}
 options(htmltools.dir.version = FALSE)
@@ -54,16 +56,16 @@ name: prologue
 
 ☑ Pull from the lecture repo to get the latest slides.
 
-☑ Did everyone submit Assignment 1?
+☑ Did everyone manage to try the simple shell exercises at the back of our last lecture?
 
-☑ Did everyone (anyone?) manage take a look at some of the simple shell exercises that I mentioned at the end of the last lecture?
+☑ Update your R packages. Do this regularly as a matter of good habit.
 
 --
 
 ### New package(s) you will need for today.
 
-We're going to focus specifically on the [tidyverse](https://www.tidyverse.org/) next class. However, I'll use some functions (and datasets) from it today to illustrate a few general principles.
-- Install it now from your R console: `install.packages("tidyverse")` 
+Next class is when we're specifically going to focus on the [tidyverse](https://www.tidyverse.org/). However, I'll be using some functions and datasets from it today to illustrate a few general principles.
+- Install it now, either through RStudio (recommended) or directly from your R console (`install.packages("tidyverse"), dependencies = TRUE`). 
 - (It may take a while.)
 
 ---
@@ -189,7 +191,7 @@ We'll get to assignment next. However, to preempt it somewhat, we always use two
 In R, we can use either `=` or `<-` to handle assignment.<sup>1</sup>
 
 .footnote[
-<sup>1</sup> The `<-` is really a `<` followed by a `-`. It just looks like one thing here b/c of the [font I'm using](https://github.com/tonsky/FiraCode).
+<sup>1</sup> The `<-` is really a `<` followed by a `-`. It just looks like one thing b/c of the [font](https://github.com/tonsky/FiraCode) I'm using here.
 ]
 
 --
@@ -229,7 +231,7 @@ b
 
 Most R users (purists?) seem to prefer `<-` for assignment, since `=` also has specific role for evaluation *within* functions. 
 - We'll see lots of examples of this later.
-- However, I don't think it matters. E.g. `=` is quicker to type and makes more sense if you're coming from another programming language. (More discussion [here](https://github.com/Robinlovelace/geocompr/issues/319#issuecomment-427376764).)
+- However, I don't think it matters. E.g. `=` is quicker to type and makes more sense if you're coming from another programming language. (More discussion [here](https://github.com/Robinlovelace/geocompr/issues/319#issuecomment-427376764) and [here](https://www.separatinghyperplanes.com/2018/02/why-you-should-use-and-never.html).)
 
 **Bottom line:** Use whichever you prefer. Just be consistent.
 
@@ -692,7 +694,7 @@ my_list[[2]][3] ## Return the 3rd element of the 2nd list object
 
 
 Lists provide a nice segue to our other indexing operator: `$`.
-- Let's continue with our `my_list` example from the previous slide.
+- Let's continue with the `my_list` example from the previous slide.
 
 ```{r}
 my_list
@@ -705,7 +707,7 @@ count: false
 
 
 Lists provide a nice segue to our other indexing operator: `$`.
-- Let's continue with our `my_list` example from the previous slide.
+- Let's continue with the `my_list` example from the previous slide.
 
 ```{r, eval=F}
 my_list

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
   <head>
-    <title>Lecture 4: R language basics</title>
-    <meta charset="utf-8">
-    <meta name="author" content="Grant McDermott | University of Oregon" />
+    <title>Data Science for Economists</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Grant McDermott" />
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
     <link href="libs/remark-css/metropolis-fonts.css" rel="stylesheet" />
@@ -12,18 +12,14 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# Lecture 4: R language basics
-## <html>
-<div style="float:left">
-
-</div>
-<hr color='#EB811B' size=1px width=796px>
-</html>
-### Grant McDermott | University of Oregon
-### EC 607
+# Data Science for Economists
+## Lecture 4: R language basics
+### Grant McDermott
+### University of Oregon | <a href="https://github.com/uo-ec607">EC 607</a>
 
 ---
 
+name: toc
 
 
 
@@ -57,16 +53,16 @@ name: prologue
 
 ☑ Pull from the lecture repo to get the latest slides.
 
-☑ Did everyone submit Assignment 1?
+☑ Did everyone manage to try the simple shell exercises at the back of our last lecture?
 
-☑ Did everyone (anyone?) manage take a look at some of the simple shell exercises that I mentioned at the end of the last lecture?
+☑ Update your R packages. Do this regularly as a matter of good habit.
 
 --
 
 ### New package(s) you will need for today.
 
-We're going to focus specifically on the [tidyverse](https://www.tidyverse.org/) next class. However, I'll use some functions (and datasets) from it today to illustrate a few general principles.
-- Install it now from your R console: `install.packages("tidyverse")` 
+Next class is when we're specifically going to focus on the [tidyverse](https://www.tidyverse.org/). However, I'll be using some functions and datasets from it today to illustrate a few general principles.
+- Install it now, either through RStudio (recommended) or directly from your R console (`install.packages("tidyverse"), dependencies = TRUE`). 
 - (It may take a while.)
 
 ---
@@ -307,7 +303,7 @@ We'll get to assignment next. However, to preempt it somewhat, we always use two
 In R, we can use either `=` or `&lt;-` to handle assignment.&lt;sup&gt;1&lt;/sup&gt;
 
 .footnote[
-&lt;sup&gt;1&lt;/sup&gt; The `&lt;-` is really a `&lt;` followed by a `-`. It just looks like one thing here b/c of the [font I'm using](https://github.com/tonsky/FiraCode).
+&lt;sup&gt;1&lt;/sup&gt; The `&lt;-` is really a `&lt;` followed by a `-`. It just looks like one thing b/c of the [font](https://github.com/tonsky/FiraCode) I'm using here.
 ]
 
 --
@@ -358,7 +354,7 @@ b
 
 Most R users (purists?) seem to prefer `&lt;-` for assignment, since `=` also has specific role for evaluation *within* functions. 
 - We'll see lots of examples of this later.
-- However, I don't think it matters. E.g. `=` is quicker to type and makes more sense if you're coming from another programming language. (More discussion [here](https://github.com/Robinlovelace/geocompr/issues/319#issuecomment-427376764).)
+- However, I don't think it matters. E.g. `=` is quicker to type and makes more sense if you're coming from another programming language. (More discussion [here](https://github.com/Robinlovelace/geocompr/issues/319#issuecomment-427376764) and [here](https://www.separatinghyperplanes.com/2018/02/why-you-should-use-and-never.html).)
 
 **Bottom line:** Use whichever you prefer. Just be consistent.
 
@@ -963,7 +959,7 @@ my_list[[2]][3] ## Return the 3rd element of the 2nd list object
 
 
 Lists provide a nice segue to our other indexing operator: `$`.
-- Let's continue with our `my_list` example from the previous slide.
+- Let's continue with the `my_list` example from the previous slide.
 
 
 ```r
@@ -993,7 +989,7 @@ count: false
 
 
 Lists provide a nice segue to our other indexing operator: `$`.
-- Let's continue with our `my_list` example from the previous slide.
+- Let's continue with the `my_list` example from the previous slide.
 
 
 ```r
@@ -1151,6 +1147,7 @@ class: inverse, center, middle
 
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
     </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({
 "highlightStyle": "github",
@@ -1160,16 +1157,74 @@ class: inverse, center, middle
 if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   window.dispatchEvent(new Event('resize'));
 });
-(function() {
-  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
   if (!r) return;
   s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
   d.head.appendChild(s);
-})();</script>
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
 
 <script>
 (function() {
-  var i, text, code, codes = document.getElementsByTagName('code');
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
   for (i = 0; i < codes.length;) {
     code = codes[i];
     if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
@@ -1183,7 +1238,8 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
     }
     i++;
   }
-})();
+};
+slideshow._releaseMath(document);
 </script>
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
