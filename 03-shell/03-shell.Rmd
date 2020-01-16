@@ -86,7 +86,7 @@ But here are some nice standalone Git GUIs that you might want to consider:
 
 # Checklist
 
-☑ Have you cloned the course lecture repo to your local machine?
+☑ Have you cloned the [course lecture repo](https://github.com/uo-ec607/lectures) to your local machine?
 
 ☑ Once that's done, pull to get the latest lecture slides.
 
