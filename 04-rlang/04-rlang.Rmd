@@ -305,6 +305,20 @@ The good news, as well see, is that avoiding and solving these issues is pretty 
 - Not to mention: A very small price to pay for the freedom and control that R offers us.
 
 ---
+
+# Disclaimer
+
+Okay, this slide is just to let you know that I'm being a little fast and loose with terms.
+
+Most obviously, there are actually _multiple_ OOP frameworks in R.
+- **S3**, **S4**, **R6**...
+- Hadley Wickham's "Advanced R" provides a [very thorough overview](https://adv-r.hadley.nz/oo.html) of the main ones.
+
+But for our purposes, I think it is much more helpful to think about (a) the shared characteristics of these different systems and (b) the broad implications of OOP in R.
+- What we lose in detail, we hopefully gain in perspective.
+- But do read Hadley's book if you get the chance. It's incredibly helpful (as are all his books).
+
+---
 class: inverse, center, middle
 name: eobject
 
