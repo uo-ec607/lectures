@@ -16,28 +16,19 @@
   text-shadow: none;
 }
 
-.remark-slide-content > h1 {
-  font-family: 'Fira Sans';
-  font-weight: normal;
-  font-size: 45px;
-  margin-top: -95px;
-  margin-left: -00px;
-  color: #FAFAFA;
-}
-
-.remark-slide-content > inverse {
-width: 112px;
-height: 47px;
-border-bottom: 1px solid black;
-position: absolute;
-}
-
 /* Removes colored bar from top of the slide resulting in a clear slide */
 .clear{
   border-top: 0px solid #FAFAFA;
 }
 
-.remark-slide-content > h2, h3, h4 {
+h1 {
+  font-weight: normal;
+  margin-top: -95px;
+  margin-left: -00px;
+  color: #FAFAFA;
+}
+
+h2, h3, h4 {
   padding-top: -15px;
   padding-bottom: 00px;
   color: #1A292C;
@@ -48,13 +39,24 @@ position: absolute;
   margin-bottom: -10px;
 }
 
-.remark-slide-content > h2, .pull-left > h2, .pull-right > h2 {
+.remark-slide-content h1 {
+  font-size: 45px;
+}
+
+.remark-slide-content h2 {
   font-size: 35px;
 }
 
-.remark-slide-content > h3, .remark-slide-content > h4,
-.pull-left > h3, .pull-left > h4, .pull-right > h3, .pull-right > h4 {
+.remark-slide-content h3 {
   font-size: 30px;
+}
+
+.left-column h2, .left-column h3, .left-column h4 {
+  color: #777;
+}
+
+.left-column h2:last-of-type, .left-column h3:last-child {
+  color: #1A292C;
 }
 
 .title-slide {
@@ -62,7 +64,7 @@ position: absolute;
   border-top: 80px solid #FAFAFA;
 }
 
-.title-slide > h1  {
+.title-slide h1  {
   color: #1A292C;
   font-size: 40px;
   text-shadow: none;
@@ -71,7 +73,7 @@ position: absolute;
   margin-left: 15px;
   padding-top: 80px;
 }
-.title-slide > h2  {
+.title-slide h2  {
   margin-top: -25px;
   padding-bottom: -20px;
   color: #1A292C;
@@ -81,7 +83,7 @@ position: absolute;
   text-align: left;
   margin-left: 15px;
 }
-.title-slide > h3  {
+.title-slide h3  {
   color: #1A292C;
   text-shadow: none;
   font-weight: 300;
@@ -91,15 +93,34 @@ position: absolute;
   margin-bottom: -30px;
 }
 
+hr, .title-slide h2::after, .mline h1::after {
+  content: '';
+  display: block;
+  border: none;
+  background-color: #EB811B;
+  color: #EB811B;
+  height: 1px;
+}
+
+hr, .mline h1::after {
+  margin: 1em 15px 0 15px;
+}
+
+.title-slide h2::after {
+  margin: 10px 15px 35px 0;
+}
+
+.mline h1::after {
+  margin: 10px 15px 0 15px;
+}
+
 .remark-slide-number {
   font-size: 13pt;
-  font-family: 'Fira Sans';
   color: #272822;
   opacity: 1;
 }
 .inverse .remark-slide-number {
   font-size: 13pt;
-  font-family: 'Fira Sans';
   color: #FAFAFA;
   opacity: 1;
 }

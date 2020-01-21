@@ -1,8 +1,9 @@
 ---
-title: 'Lecture 5: Data work in the "tidyverse"'
-subtitle: "<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
-author: Grant McDermott | University of Oregon
-date: EC 607 #"`r format(Sys.time(), '%d %B %Y')`"
+title: "Data Science for Economists"
+# subtitle: "<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
+subtitle: 'Lecture 5: Data work in the "tidyverse"'
+author: "Grant McDermott"
+date: "University of Oregon | [EC 607](https://github.com/uo-ec607)" #"`r format(Sys.time(), '%d %B %Y')`"
 output:
   xaringan::moon_reader:
     css: [default, metropolis, metropolis-fonts] 
@@ -107,7 +108,7 @@ I won't delve into this debate here, because I think the answer is [obvious](htt
 - For data cleaning, wrangling and plotting... the tidyverse is really a no-brainer.<sup>1</sup>
 
 .footnote[
-<sup>1</sup> I should say that I'm also a fan of the [data.table](https://github.com/Rdatatable/data.table/wiki) package for data work. I may come back to this package once we reach the big data section of the course.
+<sup>1</sup> I'm also a huge fan of the [data.table](http://r-datatable.com/) package. This package will be the subject of our next student presentation.
 ]
 
 --

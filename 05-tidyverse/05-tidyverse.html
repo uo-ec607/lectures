@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
   <head>
-    <title>Lecture 5: Data work in the “tidyverse”</title>
-    <meta charset="utf-8">
-    <meta name="author" content="Grant McDermott | University of Oregon" />
+    <title>Data Science for Economists</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Grant McDermott" />
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
     <link href="libs/remark-css/metropolis-fonts.css" rel="stylesheet" />
@@ -12,15 +12,10 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# Lecture 5: Data work in the “tidyverse”
-## <html>
-<div style="float:left">
-
-</div>
-<hr color='#EB811B' size=1px width=796px>
-</html>
-### Grant McDermott | University of Oregon
-### EC 607
+# Data Science for Economists
+## Lecture 5: Data work in the “tidyverse”
+### Grant McDermott
+### University of Oregon | <a href="https://github.com/uo-ec607">EC 607</a>
 
 ---
 
@@ -110,7 +105,7 @@ I won't delve into this debate here, because I think the answer is [obvious](htt
 - For data cleaning, wrangling and plotting... the tidyverse is really a no-brainer.&lt;sup&gt;1&lt;/sup&gt;
 
 .footnote[
-&lt;sup&gt;1&lt;/sup&gt; I should say that I'm also a fan of the [data.table](https://github.com/Rdatatable/data.table/wiki) package for data work. I may come back to this package once we reach the big data section of the course.
+&lt;sup&gt;1&lt;/sup&gt; I'm also a huge fan of the [data.table](http://r-datatable.com/) package. This package will be the subject of our next student presentation.
 ]
 
 --
@@ -145,23 +140,6 @@ Let's load the tidyverse meta-package and check the output.
 library(tidyverse)
 ```
 
-```
-## ── Attaching packages ───────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──
-```
-
-```
-## ✔ ggplot2 3.1.0     ✔ purrr   0.2.5
-## ✔ tibble  2.0.1     ✔ dplyr   0.7.8
-## ✔ tidyr   0.8.2     ✔ stringr 1.3.1
-## ✔ readr   1.3.1     ✔ forcats 0.3.0
-```
-
-```
-## ── Conflicts ──────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
-## ✖ dplyr::filter() masks stats::filter()
-## ✖ dplyr::lag()    masks stats::lag()
-```
-
 --
 
 We see that we have actually loaded a number of packages (which could also be loaded individually): `ggplot2`, `tibble`, `dplyr`, etc.
@@ -178,12 +156,12 @@ tidyverse_packages()
 ```
 
 ```
-##  [1] "broom"       "cli"         "crayon"      "dplyr"       "dbplyr"     
-##  [6] "forcats"     "ggplot2"     "haven"       "hms"         "httr"       
-## [11] "jsonlite"    "lubridate"   "magrittr"    "modelr"      "purrr"      
-## [16] "readr"       "readxl\n(&gt;=" "reprex"      "rlang"       "rstudioapi" 
-## [21] "rvest"       "stringr"     "tibble"      "tidyr"       "xml2"       
-## [26] "tidyverse"
+##  [1] "broom"      "cli"        "crayon"     "dbplyr"     "dplyr"     
+##  [6] "forcats"    "ggplot2"    "haven"      "hms"        "httr"      
+## [11] "jsonlite"   "lubridate"  "magrittr"   "modelr"     "pillar"    
+## [16] "purrr"      "readr"      "readxl"     "reprex"     "rlang"     
+## [21] "rstudioapi" "rvest"      "stringr"    "tibble"     "tidyr"     
+## [26] "xml2"       "tidyverse"
 ```
 
 We'll use several of these additional packages during the remainder of this course.
@@ -310,14 +288,14 @@ starwars %&gt;%
 
 ```
 ## # A tibble: 4 x 13
-##   name  height  mass hair_color skin_color eye_color birth_year gender
-##   &lt;chr&gt;  &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt; 
-## 1 Dart…    202   136 none       white      yellow          41.9 male  
-## 2 Qui-…    193    89 brown      fair       blue            92   male  
-## 3 Dooku    193    80 white      fair       brown          102   male  
-## 4 Bail…    191    NA black      tan        brown           67   male  
-## # … with 5 more variables: homeworld &lt;chr&gt;, species &lt;chr&gt;, films &lt;list&gt;,
-## #   vehicles &lt;list&gt;, starships &lt;list&gt;
+##   name  height  mass hair_color skin_color eye_color birth_year gender homeworld
+##   &lt;chr&gt;  &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
+## 1 Dart…    202   136 none       white      yellow          41.9 male   Tatooine 
+## 2 Qui-…    193    89 brown      fair       blue            92   male   &lt;NA&gt;     
+## 3 Dooku    193    80 white      fair       brown          102   male   Serenno  
+## 4 Bail…    191    NA black      tan        brown           67   male   Alderaan 
+## # … with 4 more variables: species &lt;chr&gt;, films &lt;list&gt;, vehicles &lt;list&gt;,
+## #   starships &lt;list&gt;
 ```
 
 ---
@@ -333,13 +311,13 @@ starwars %&gt;%
 
 ```
 ## # A tibble: 3 x 13
-##   name  height  mass hair_color skin_color eye_color birth_year gender
-##   &lt;chr&gt;  &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt; 
-## 1 Luke…    172    77 blond      fair       blue            19   male  
-## 2 Anak…    188    84 blond      fair       blue            41.9 male  
-## 3 Shmi…    163    NA black      fair       brown           72   female
-## # … with 5 more variables: homeworld &lt;chr&gt;, species &lt;chr&gt;, films &lt;list&gt;,
-## #   vehicles &lt;list&gt;, starships &lt;list&gt;
+##   name  height  mass hair_color skin_color eye_color birth_year gender homeworld
+##   &lt;chr&gt;  &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
+## 1 Luke…    172    77 blond      fair       blue            19   male   Tatooine 
+## 2 Anak…    188    84 blond      fair       blue            41.9 male   Tatooine 
+## 3 Shmi…    163    NA black      fair       brown           72   female Tatooine 
+## # … with 4 more variables: species &lt;chr&gt;, films &lt;list&gt;, vehicles &lt;list&gt;,
+## #   starships &lt;list&gt;
 ```
 
 ---
@@ -355,16 +333,16 @@ starwars %&gt;%
 
 ```
 ## # A tibble: 6 x 13
-##   name  height  mass hair_color skin_color eye_color birth_year gender
-##   &lt;chr&gt;  &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt; 
-## 1 Arve…     NA    NA brown      fair       brown             NA male  
-## 2 Finn      NA    NA black      dark       dark              NA male  
-## 3 Rey       NA    NA brown      light      hazel             NA female
-## 4 Poe …     NA    NA brown      light      brown             NA male  
-## 5 BB8       NA    NA none       none       black             NA none  
-## 6 Capt…     NA    NA unknown    unknown    unknown           NA female
-## # … with 5 more variables: homeworld &lt;chr&gt;, species &lt;chr&gt;, films &lt;list&gt;,
-## #   vehicles &lt;list&gt;, starships &lt;list&gt;
+##   name  height  mass hair_color skin_color eye_color birth_year gender homeworld
+##   &lt;chr&gt;  &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
+## 1 Arve…     NA    NA brown      fair       brown             NA male   &lt;NA&gt;     
+## 2 Finn      NA    NA black      dark       dark              NA male   &lt;NA&gt;     
+## 3 Rey       NA    NA brown      light      hazel             NA female &lt;NA&gt;     
+## 4 Poe …     NA    NA brown      light      brown             NA male   &lt;NA&gt;     
+## 5 BB8       NA    NA none       none       black             NA none   &lt;NA&gt;     
+## 6 Capt…     NA    NA unknown    unknown    unknown           NA female &lt;NA&gt;     
+## # … with 4 more variables: species &lt;chr&gt;, films &lt;list&gt;, vehicles &lt;list&gt;,
+## #   starships &lt;list&gt;
 ```
 
 --
@@ -397,8 +375,8 @@ starwars %&gt;%
 ##  8 Han …    180  80   brown      fair       brown           29   male  
 ##  9 Land…    177  79   black      dark       brown           31   male  
 ## 10 Boba…    183  78.2 black      fair       brown           31.5 male  
-## # … with 77 more rows, and 5 more variables: homeworld &lt;chr&gt;,
-## #   species &lt;chr&gt;, films &lt;list&gt;, vehicles &lt;list&gt;, starships &lt;list&gt;
+## # … with 77 more rows, and 5 more variables: homeworld &lt;chr&gt;, species &lt;chr&gt;,
+## #   films &lt;list&gt;, vehicles &lt;list&gt;, starships &lt;list&gt;
 ```
 
 --
@@ -430,8 +408,8 @@ starwars %&gt;%
 ##  8 Fini…    170    NA blond      fair       blue              91 male  
 ##  9 Palp…    170    75 grey       pale       yellow            82 male  
 ## 10 Clie…    183    NA brown      fair       blue              82 male  
-## # … with 77 more rows, and 5 more variables: homeworld &lt;chr&gt;,
-## #   species &lt;chr&gt;, films &lt;list&gt;, vehicles &lt;list&gt;, starships &lt;list&gt;
+## # … with 77 more rows, and 5 more variables: homeworld &lt;chr&gt;, species &lt;chr&gt;,
+## #   films &lt;list&gt;, vehicles &lt;list&gt;, starships &lt;list&gt;
 ```
 
 ---
@@ -544,8 +522,8 @@ starwars %&gt;%
 ##  8 Droid   Tatooine  R5-D4     97    32 &lt;NA&gt;       white, red red      
 ##  9 Human   Tatooine  Bigg…    183    84 black      light      brown    
 ## 10 Human   Stewjon   Obi-…    182    77 auburn, w… fair       blue-gray
-## # … with 77 more rows, and 5 more variables: birth_year &lt;dbl&gt;,
-## #   gender &lt;chr&gt;, films &lt;list&gt;, vehicles &lt;list&gt;, starships &lt;list&gt;
+## # … with 77 more rows, and 5 more variables: birth_year &lt;dbl&gt;, gender &lt;chr&gt;,
+## #   films &lt;list&gt;, vehicles &lt;list&gt;, starships &lt;list&gt;
 ```
 
 ---
@@ -563,18 +541,18 @@ starwars %&gt;%
 
 ```
 ## # A tibble: 87 x 4
-##    name             birth_year dog_years comment                           
-##    &lt;chr&gt;                 &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;                             
-##  1 Luke Skywalker         19        133  Luke Skywalker is 133 in dog year…
-##  2 C-3PO                 112        784  C-3PO is 784 in dog years.        
-##  3 R2-D2                  33        231  R2-D2 is 231 in dog years.        
-##  4 Darth Vader            41.9      293. Darth Vader is 293.3 in dog years.
-##  5 Leia Organa            19        133  Leia Organa is 133 in dog years.  
-##  6 Owen Lars              52        364  Owen Lars is 364 in dog years.    
-##  7 Beru Whitesun l…       47        329  Beru Whitesun lars is 329 in dog …
-##  8 R5-D4                  NA         NA  R5-D4 is NA in dog years.         
-##  9 Biggs Darklight…       24        168  Biggs Darklighter is 168 in dog y…
-## 10 Obi-Wan Kenobi         57        399  Obi-Wan Kenobi is 399 in dog year…
+##    name               birth_year dog_years comment                              
+##    &lt;chr&gt;                   &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;                                
+##  1 Luke Skywalker           19        133  Luke Skywalker is 133 in dog years.  
+##  2 C-3PO                   112        784  C-3PO is 784 in dog years.           
+##  3 R2-D2                    33        231  R2-D2 is 231 in dog years.           
+##  4 Darth Vader              41.9      293. Darth Vader is 293.3 in dog years.   
+##  5 Leia Organa              19        133  Leia Organa is 133 in dog years.     
+##  6 Owen Lars                52        364  Owen Lars is 364 in dog years.       
+##  7 Beru Whitesun lars       47        329  Beru Whitesun lars is 329 in dog yea…
+##  8 R5-D4                    NA         NA  R5-D4 is NA in dog years.            
+##  9 Biggs Darklighter        24        168  Biggs Darklighter is 168 in dog year…
+## 10 Obi-Wan Kenobi           57        399  Obi-Wan Kenobi is 399 in dog years.  
 ## # … with 77 more rows
 ```
 
@@ -596,18 +574,18 @@ starwars %&gt;%
 
 ```
 ## # A tibble: 87 x 4
-##    name             birth_year dog_years comment                           
-##    &lt;chr&gt;                 &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;                             
-##  1 Luke Skywalker         19        133  Luke Skywalker is 133 in dog year…
-##  2 C-3PO                 112        784  C-3PO is 784 in dog years.        
-##  3 R2-D2                  33        231  R2-D2 is 231 in dog years.        
-##  4 Darth Vader            41.9      293. Darth Vader is 293.3 in dog years.
-##  5 Leia Organa            19        133  Leia Organa is 133 in dog years.  
-##  6 Owen Lars              52        364  Owen Lars is 364 in dog years.    
-##  7 Beru Whitesun l…       47        329  Beru Whitesun lars is 329 in dog …
-##  8 R5-D4                  NA         NA  R5-D4 is NA in dog years.         
-##  9 Biggs Darklight…       24        168  Biggs Darklighter is 168 in dog y…
-## 10 Obi-Wan Kenobi         57        399  Obi-Wan Kenobi is 399 in dog year…
+##    name               birth_year dog_years comment                              
+##    &lt;chr&gt;                   &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;                                
+##  1 Luke Skywalker           19        133  Luke Skywalker is 133 in dog years.  
+##  2 C-3PO                   112        784  C-3PO is 784 in dog years.           
+##  3 R2-D2                    33        231  R2-D2 is 231 in dog years.           
+##  4 Darth Vader              41.9      293. Darth Vader is 293.3 in dog years.   
+##  5 Leia Organa              19        133  Leia Organa is 133 in dog years.     
+##  6 Owen Lars                52        364  Owen Lars is 364 in dog years.       
+##  7 Beru Whitesun lars       47        329  Beru Whitesun lars is 329 in dog yea…
+##  8 R5-D4                    NA         NA  R5-D4 is NA in dog years.            
+##  9 Biggs Darklighter        24        168  Biggs Darklighter is 168 in dog year…
+## 10 Obi-Wan Kenobi           57        399  Obi-Wan Kenobi is 399 in dog years.  
 ## # … with 77 more rows
 ```
 
@@ -678,7 +656,7 @@ starwars %&gt;%
 
 ```
 ## # A tibble: 43 x 3
-## # Groups:   species [?]
+## # Groups:   species [38]
 ##    species   gender mean_height
 ##    &lt;chr&gt;     &lt;chr&gt;        &lt;dbl&gt;
 ##  1 Aleena    male            79
@@ -740,6 +718,21 @@ An example using the latter:
 
 ```r
 starwars %&gt;% group_by(species, gender) %&gt;% summarise_if(is.numeric, funs(avg=mean), na.rm=T) %&gt;% head(5)
+```
+
+```
+## Warning: funs() is soft deprecated as of dplyr 0.8.0
+## Please use a list of either functions or lambdas: 
+## 
+##   # Simple named list: 
+##   list(mean = mean, median = median)
+## 
+##   # Auto named with `tibble::lst()`: 
+##   tibble::lst(mean, median)
+## 
+##   # Using lambdas
+##   list(~ mean(., trim = .2), ~ median(., na.rm = TRUE))
+## This warning is displayed once per session.
 ```
 
 ```
@@ -900,12 +893,12 @@ left_join(
 
 ```
 ## # A tibble: 3 x 11
-##    year month   day dep_time arr_time carrier flight tailnum year_built
-##   &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;    &lt;int&gt; &lt;chr&gt;    &lt;int&gt; &lt;chr&gt;        &lt;int&gt;
-## 1  2013     1     1      517      830 UA        1545 N14228        1999
-## 2  2013     1     1      533      850 UA        1714 N24211        1998
-## 3  2013     1     1      542      923 AA        1141 N619AA        1990
-## # … with 2 more variables: type &lt;chr&gt;, model &lt;chr&gt;
+##    year month   day dep_time arr_time carrier flight tailnum year_built type 
+##   &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;    &lt;int&gt; &lt;chr&gt;    &lt;int&gt; &lt;chr&gt;        &lt;int&gt; &lt;chr&gt;
+## 1  2013     1     1      517      830 UA        1545 N14228        1999 Fixe…
+## 2  2013     1     1      533      850 UA        1714 N24211        1998 Fixe…
+## 3  2013     1     1      542      923 AA        1141 N619AA        1990 Fixe…
+## # … with 1 more variable: model &lt;chr&gt;
 ```
 
 ---
@@ -928,12 +921,11 @@ left_join(
 
 ```
 ## # A tibble: 3 x 11
-##   year.x year.y month   day dep_time arr_time carrier flight tailnum type 
-##    &lt;int&gt;  &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;    &lt;int&gt; &lt;chr&gt;    &lt;int&gt; &lt;chr&gt;   &lt;chr&gt;
-## 1   2013   1999     1     1      517      830 UA        1545 N14228  Fixe…
-## 2   2013   1998     1     1      533      850 UA        1714 N24211  Fixe…
-## 3   2013   1990     1     1      542      923 AA        1141 N619AA  Fixe…
-## # … with 1 more variable: model &lt;chr&gt;
+##   year.x year.y month   day dep_time arr_time carrier flight tailnum type  model
+##    &lt;int&gt;  &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;    &lt;int&gt; &lt;chr&gt;    &lt;int&gt; &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt;
+## 1   2013   1999     1     1      517      830 UA        1545 N14228  Fixe… 737-…
+## 2   2013   1998     1     1      533      850 UA        1714 N24211  Fixe… 737-…
+## 3   2013   1990     1     1      542      923 AA        1141 N619AA  Fixe… 757-…
 ```
 
 --
@@ -983,9 +975,9 @@ stocks
 ```
 
 ```
-##         time           X          Y        Z
-## 1 2009-01-01 -1.34777502 -0.7847447 2.051529
-## 2 2009-01-02 -0.05228657  1.6026408 3.063534
+##         time          X          Y        Z
+## 1 2009-01-01  1.3709157 -3.6558402 -2.47504
+## 2 2009-01-02 -0.1614063 -0.4497988  3.08098
 ```
 
 ```r
@@ -994,13 +986,13 @@ tidy_stocks
 ```
 
 ```
-##         time stock       price
-## 1 2009-01-01     X -1.34777502
-## 2 2009-01-02     X -0.05228657
-## 3 2009-01-01     Y -0.78474465
-## 4 2009-01-02     Y  1.60264082
-## 5 2009-01-01     Z  2.05152928
-## 6 2009-01-02     Z  3.06353440
+##         time stock      price
+## 1 2009-01-01     X  1.3709157
+## 2 2009-01-02     X -0.1614063
+## 3 2009-01-01     Y -3.6558402
+## 4 2009-01-02     Y -0.4497988
+## 5 2009-01-01     Z -2.4750402
+## 6 2009-01-02     Z  3.0809804
 ```
 
 ---
@@ -1020,13 +1012,13 @@ stocks %&gt;% gather(key=stock, value=price, -time)
 ```
 
 ```
-##         time stock       price
-## 1 2009-01-01     X -1.34777502
-## 2 2009-01-02     X -0.05228657
-## 3 2009-01-01     Y -0.78474465
-## 4 2009-01-02     Y  1.60264082
-## 5 2009-01-01     Z  2.05152928
-## 6 2009-01-02     Z  3.06353440
+##         time stock      price
+## 1 2009-01-01     X  1.3709157
+## 2 2009-01-02     X -0.1614063
+## 3 2009-01-01     Y -3.6558402
+## 4 2009-01-02     Y -0.4497988
+## 5 2009-01-01     Z -2.4750402
+## 6 2009-01-02     Z  3.0809804
 ```
 
 ---
@@ -1039,9 +1031,9 @@ tidy_stocks %&gt;% spread(stock, price)
 ```
 
 ```
-##         time           X          Y        Z
-## 1 2009-01-01 -1.34777502 -0.7847447 2.051529
-## 2 2009-01-02 -0.05228657  1.6026408 3.063534
+##         time          X          Y        Z
+## 1 2009-01-01  1.3709157 -3.6558402 -2.47504
+## 2 2009-01-02 -0.1614063 -0.4497988  3.08098
 ```
 
 ```r
@@ -1049,10 +1041,10 @@ tidy_stocks %&gt;% spread(time, price)
 ```
 
 ```
-##   stock 2009-01-01  2009-01-02
-## 1     X -1.3477750 -0.05228657
-## 2     Y -0.7847447  1.60264082
-## 3     Z  2.0515293  3.06353440
+##   stock 2009-01-01 2009-01-02
+## 1     X   1.370916 -0.1614063
+## 2     Y  -3.655840 -0.4497988
+## 3     Z  -2.475040  3.0809804
 ```
 
 ---
@@ -1137,11 +1129,11 @@ gdp
 ```
 
 ```
-##     yr mnth dy      gdp
-## 1 2016    1  1 100.0749
-## 2 2016    1  2  97.7829
-## 3 2016    1  3 102.0789
-## 4 2016    1  4 101.0906
+##     yr mnth dy       gdp
+## 1 2016    1  1 102.84566
+## 2 2016    1  2 100.24384
+## 3 2016    1  3 100.75385
+## 4 2016    1  4  99.91788
 ```
 
 ```r
@@ -1150,11 +1142,11 @@ gdp %&gt;% unite(date, c("yr", "mnth", "dy"), sep = "-")
 ```
 
 ```
-##       date      gdp
-## 1 2016-1-1 100.0749
-## 2 2016-1-2  97.7829
-## 3 2016-1-3 102.0789
-## 4 2016-1-4 101.0906
+##       date       gdp
+## 1 2016-1-1 102.84566
+## 2 2016-1-2 100.24384
+## 3 2016-1-3 100.75385
+## 4 2016-1-4  99.91788
 ```
 
 ---
@@ -1172,10 +1164,10 @@ gdp_u
 ## # A tibble: 4 x 2
 ##   date       gdp
 ##   &lt;chr&gt;    &lt;dbl&gt;
-## 1 2016-1-1 100. 
-## 2 2016-1-2  97.8
-## 3 2016-1-3 102. 
-## 4 2016-1-4 101.
+## 1 2016-1-1 103. 
+## 2 2016-1-2 100. 
+## 3 2016-1-3 101. 
+## 4 2016-1-4  99.9
 ```
 
 --
@@ -1198,10 +1190,10 @@ gdp_u %&gt;% mutate(date = ymd(date))
 ## # A tibble: 4 x 2
 ##   date         gdp
 ##   &lt;date&gt;     &lt;dbl&gt;
-## 1 2016-01-01 100. 
-## 2 2016-01-02  97.8
-## 3 2016-01-03 102. 
-## 4 2016-01-04 101.
+## 1 2016-01-01 103. 
+## 2 2016-01-02 100. 
+## 3 2016-01-03 101. 
+## 4 2016-01-04  99.9
 ```
 
 ---
@@ -1277,6 +1269,7 @@ class: inverse, center, middle
 # Next lecture: Webscraping (1)
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
     </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({
 "highlightStyle": "github",
@@ -1286,16 +1279,74 @@ class: inverse, center, middle
 if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   window.dispatchEvent(new Event('resize'));
 });
-(function() {
-  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
   if (!r) return;
   s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
   d.head.appendChild(s);
-})();</script>
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
 
 <script>
 (function() {
-  var i, text, code, codes = document.getElementsByTagName('code');
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
   for (i = 0; i < codes.length;) {
     code = codes[i];
     if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
@@ -1309,7 +1360,8 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
     }
     i++;
   }
-})();
+};
+slideshow._releaseMath(document);
 </script>
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
