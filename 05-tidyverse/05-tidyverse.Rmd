@@ -138,7 +138,7 @@ If you call up the above examples, you'll see that the tidyverse alternative typ
 # Tidyverse packages
 
 Let's load the tidyverse meta-package and check the output.
-```{r tverse}
+```{r tverse, cache = F}
 library(tidyverse)
 ```
 
@@ -453,7 +453,7 @@ The "scoped" variants that we saw earlier also work with `summarise()`
 An example using the latter:
 
 ```{r, summ4}
-starwars %>% group_by(species, gender) %>% summarise_if(is.numeric, funs(avg=mean), na.rm=T) %>% head(5)
+starwars %>% group_by(species, gender) %>% summarise_if(is.numeric, mean, na.rm=T) %>% head(5)
 ```
 
 --
@@ -644,23 +644,29 @@ stocks <- data.frame( ## Could use "tibble" instead of "data.frame" if you prefe
   Z = rnorm(2, 0, 4)
   )
 stocks
-stocks %>% pivot_longer(-time, "stock", "price")
+stocks %>% pivot_longer(-time, names_to="stock", values_to="price")
 ```
 
 ---
 
 # 1) tidyr::pivot_longer() *cont.*
 
+Let's quickly save the "tidy" (i.e. long) stocks data frame for use on the next slide. 
+
+```{r pivot_longer2}
+## Write out the argument names this time: i.e. "names_to=" and "values_to="
+tidy_stocks <- 
+  stocks %>% 
+  pivot_longer(-time, names_to="stock", values_to="price")
+```
+
+--
+
 ### Aside: Remembering the pivot_longer() syntax 
 
 There's a long-running joke about no-one being able to remember Stata's "reshape" command. ([Exhibit A](https://twitter.com/scottimberman/status/1036801308785864704).)
 
 It's easy to see this happening with `pivot_wider()` too. However, I find that I never forget the command as long as I remember the argument order is *"names"* then *"values"*.
-
-```{r pivot_longer2}
-## Write out the argument names this time: i.e. "names_to=" and "values_to="
-tidy_stocks <- stocks %>% pivot_longer(-time, names_to="stock", values_to="price")
-```
 
 ---
 
@@ -670,6 +676,11 @@ tidy_stocks <- stocks %>% pivot_longer(-time, names_to="stock", values_to="price
 tidy_stocks %>% pivot_wider(names_from=stock, values_from=price)
 tidy_stocks %>% pivot_wider(names_from=time, values_from=price)
 ```
+
+--
+
+</br>
+Note that the second example &mdash; which has combined different pivoting arguments &mdash; has effectively transposed the data.
 
 ---
 
