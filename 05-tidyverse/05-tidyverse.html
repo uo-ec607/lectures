@@ -179,8 +179,8 @@ We'll use several of these additional packages during the remainder of this cour
 I hope to cover most of the tidyverse packages over the length of this course.
 
 Today, however, I'm only really going to focus on two packages: 
-1. `dplyr`
-2. `tidyr`
+1. [**dplyr**](https://dplyr.tidyverse.org/)
+2. [**tidyr**](https://tidyr.tidyverse.org/)
 
 These are the workhorse packages for cleaning and wrangling data. They are thus the ones that you will likely make the most use of (alongside `ggplot2`, which we already met back in Lecture 1).
 - Data cleaning and wrangling occupies an inordinate amount of time, no matter where you are in your research career.
@@ -787,7 +787,7 @@ There are also a whole class of [window functions](https://cran.r-project.org/we
 &lt;/br&gt;
 
 The final set of dplyr "goodies" are the family of join operations. However, these are important enough that I want to go over some concepts in a bit more depth...
-- We encounter and practice these many more times as the course progresses.
+- We will encounter and practice these many more times as the course progresses.
 
 
 ---
@@ -944,9 +944,9 @@ name: tidyr
 
 # Key tidyr verbs
 
-1. `gather()`: Gather (or "melt") wide data into long format
+1. `pivot_longer()`: Pivot wide data into long format (i.e. "melt"). 
 
-2. `spread()`: Spread (or "cast") long data into wide format. 
+2. `pivot_wider()`: Pivot long data into wide format (i.e. "cast"). 
 
 3. `separate()`: Separate (i.e. split) one column into multiple columns.
 
@@ -957,11 +957,11 @@ name: tidyr
 &lt;/br&gt;
 
 Let's practice these verbs together in class.
-- Side question: Which of `gather()` vs `spread()` produces "tidy" data?
+- Side question: Which of `pivot_longer()` vs `pivot_wider()` produces "tidy" data?
   
 ---
 
-# 1) tidyr::gather()
+# 1) tidyr::pivot_longer()
 
 
 ```r
@@ -981,70 +981,65 @@ stocks
 ```
 
 ```r
-tidy_stocks &lt;- stocks %&gt;% gather(stock, price, -time)
-tidy_stocks
+stocks %&gt;% pivot_longer(-time, "stock", "price")
 ```
 
 ```
-##         time stock      price
-## 1 2009-01-01     X  1.3709157
-## 2 2009-01-02     X -0.1614063
-## 3 2009-01-01     Y -3.6558402
-## 4 2009-01-02     Y -0.4497988
-## 5 2009-01-01     Z -2.4750402
-## 6 2009-01-02     Z  3.0809804
+## # A tibble: 6 x 3
+##   time       stock  value
+##   &lt;date&gt;     &lt;chr&gt;  &lt;dbl&gt;
+## 1 2009-01-01 X      1.37 
+## 2 2009-01-01 Y     -3.66 
+## 3 2009-01-01 Z     -2.48 
+## 4 2009-01-02 X     -0.161
+## 5 2009-01-02 Y     -0.450
+## 6 2009-01-02 Z      3.08
 ```
 
 ---
 
-# 1) tidyr::gather() *cont.*
+# 1) tidyr::pivot_longer() *cont.*
 
-### Aside: Remembering the gather() syntax 
+### Aside: Remembering the pivot_longer() syntax 
 
 There's a long-running joke about no-one being able to remember Stata's "reshape" command. ([Exhibit A](https://twitter.com/scottimberman/status/1036801308785864704).)
 
-It's easy to see this happening with `gather()` too. However, I find that I never forget the command as long as I remember the argument order is *"key"* then *"value"*.
+It's easy to see this happening with `pivot_wider()` too. However, I find that I never forget the command as long as I remember the argument order is *"names"* then *"values"*.
 
 
 ```r
-## Write out the argument names this time: i.e. "key=" and "value="
-stocks %&gt;% gather(key=stock, value=price, -time)
-```
-
-```
-##         time stock      price
-## 1 2009-01-01     X  1.3709157
-## 2 2009-01-02     X -0.1614063
-## 3 2009-01-01     Y -3.6558402
-## 4 2009-01-02     Y -0.4497988
-## 5 2009-01-01     Z -2.4750402
-## 6 2009-01-02     Z  3.0809804
+## Write out the argument names this time: i.e. "names_to=" and "values_to="
+tidy_stocks &lt;- stocks %&gt;% pivot_longer(-time, names_to="stock", values_to="price")
 ```
 
 ---
 
-# 2) tidyr::spread()
+# 2) tidyr::pivot_wider()
 
 
 ```r
-tidy_stocks %&gt;% spread(stock, price)
+tidy_stocks %&gt;% pivot_wider(names_from=stock, values_from=price)
 ```
 
 ```
-##         time          X          Y        Z
-## 1 2009-01-01  1.3709157 -3.6558402 -2.47504
-## 2 2009-01-02 -0.1614063 -0.4497988  3.08098
+## # A tibble: 2 x 4
+##   time            X      Y     Z
+##   &lt;date&gt;      &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;
+## 1 2009-01-01  1.37  -3.66  -2.48
+## 2 2009-01-02 -0.161 -0.450  3.08
 ```
 
 ```r
-tidy_stocks %&gt;% spread(time, price)
+tidy_stocks %&gt;% pivot_wider(names_from=time, values_from=price)
 ```
 
 ```
-##   stock 2009-01-01 2009-01-02
-## 1     X   1.370916 -0.1614063
-## 2     Y  -3.655840 -0.4497988
-## 3     Z  -2.475040  3.0809804
+## # A tibble: 3 x 3
+##   stock `2009-01-01` `2009-01-02`
+##   &lt;chr&gt;        &lt;dbl&gt;        &lt;dbl&gt;
+## 1 X             1.37       -0.161
+## 2 Y            -3.66       -0.450
+## 3 Z            -2.48        3.08
 ```
 
 ---
@@ -1245,8 +1240,8 @@ name: summary
 5. `summarise()`
 
 ### tidyr
-1. `gather()`
-2. `spread()`
+1. `pivot_longer()`
+2. `pivot_wider()`
 3. `separate()`
 4. `unite()`
 

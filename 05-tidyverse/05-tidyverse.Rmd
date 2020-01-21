@@ -171,8 +171,8 @@ We'll use several of these additional packages during the remainder of this cour
 I hope to cover most of the tidyverse packages over the length of this course.
 
 Today, however, I'm only really going to focus on two packages: 
-1. `dplyr`
-2. `tidyr`
+1. [**dplyr**](https://dplyr.tidyverse.org/)
+2. [**tidyr**](https://tidyr.tidyverse.org/)
 
 These are the workhorse packages for cleaning and wrangling data. They are thus the ones that you will likely make the most use of (alongside `ggplot2`, which we already met back in Lecture 1).
 - Data cleaning and wrangling occupies an inordinate amount of time, no matter where you are in your research career.
@@ -496,7 +496,7 @@ There are also a whole class of [window functions](https://cran.r-project.org/we
 </br>
 
 The final set of dplyr "goodies" are the family of join operations. However, these are important enough that I want to go over some concepts in a bit more depth...
-- We encounter and practice these many more times as the course progresses.
+- We will encounter and practice these many more times as the course progresses.
 
 
 ---
@@ -611,9 +611,9 @@ name: tidyr
 
 # Key tidyr verbs
 
-1. `gather()`: Gather (or "melt") wide data into long format
+1. `pivot_longer()`: Pivot wide data into long format (i.e. "melt"). 
 
-2. `spread()`: Spread (or "cast") long data into wide format. 
+2. `pivot_wider()`: Pivot long data into wide format (i.e. "cast"). 
 
 3. `separate()`: Separate (i.e. split) one column into multiple columns.
 
@@ -624,13 +624,13 @@ name: tidyr
 </br>
 
 Let's practice these verbs together in class.
-- Side question: Which of `gather()` vs `spread()` produces "tidy" data?
+- Side question: Which of `pivot_longer()` vs `pivot_wider()` produces "tidy" data?
   
 ---
 
-# 1) tidyr::gather()
+# 1) tidyr::pivot_longer()
 
-```{r gather1}
+```{r pivot_longer1}
 stocks <- data.frame( ## Could use "tibble" instead of "data.frame" if you prefer
   time = as.Date('2009-01-01') + 0:1,
   X = rnorm(2, 0, 1),
@@ -638,32 +638,31 @@ stocks <- data.frame( ## Could use "tibble" instead of "data.frame" if you prefe
   Z = rnorm(2, 0, 4)
   )
 stocks
-tidy_stocks <- stocks %>% gather(stock, price, -time)
-tidy_stocks
+stocks %>% pivot_longer(-time, "stock", "price")
 ```
 
 ---
 
-# 1) tidyr::gather() *cont.*
+# 1) tidyr::pivot_longer() *cont.*
 
-### Aside: Remembering the gather() syntax 
+### Aside: Remembering the pivot_longer() syntax 
 
 There's a long-running joke about no-one being able to remember Stata's "reshape" command. ([Exhibit A](https://twitter.com/scottimberman/status/1036801308785864704).)
 
-It's easy to see this happening with `gather()` too. However, I find that I never forget the command as long as I remember the argument order is *"key"* then *"value"*.
+It's easy to see this happening with `pivot_wider()` too. However, I find that I never forget the command as long as I remember the argument order is *"names"* then *"values"*.
 
-```{r gather2}
-## Write out the argument names this time: i.e. "key=" and "value="
-stocks %>% gather(key=stock, value=price, -time)
+```{r pivot_longer2}
+## Write out the argument names this time: i.e. "names_to=" and "values_to="
+tidy_stocks <- stocks %>% pivot_longer(-time, names_to="stock", values_to="price")
 ```
 
 ---
 
-# 2) tidyr::spread()
+# 2) tidyr::pivot_wider()
 
-```{r spread1}
-tidy_stocks %>% spread(stock, price)
-tidy_stocks %>% spread(time, price)
+```{r pivot_wider1, dependson=tidy_stocks}
+tidy_stocks %>% pivot_wider(names_from=stock, values_from=price)
+tidy_stocks %>% pivot_wider(names_from=time, values_from=price)
 ```
 
 ---
@@ -775,8 +774,8 @@ name: summary
 5. `summarise()`
 
 ### tidyr
-1. `gather()`
-2. `spread()`
+1. `pivot_longer()`
+2. `pivot_wider()`
 3. `separate()`
 4. `unite()`
 
