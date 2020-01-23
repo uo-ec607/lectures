@@ -269,7 +269,7 @@ There's no equivalent "not in" command, but how might we go about creating one?
 
 ### Evaluation
 
-We'll get to assignment next. However, to preempt it somewhat, we always use two equal signs for logical evaluation.
+We'll get to assignment shortly. However, to preempt it somewhat, we always use two equal signs for logical evaluation.
 
 
 ```r
@@ -290,6 +290,45 @@ We'll get to assignment next. However, to preempt it somewhat, we always use two
 
 ```r
 1 != 2 ## Note the single equal sign when combined with a negation.
+```
+
+```
+## [1] TRUE
+```
+
+---
+
+# Logical operators (cont.)
+
+### Evaluation caveat: Floating-point numbers
+
+What do you think will happen if we evaluate `0.1 + 0.2 == 0.3`?
+
+--
+
+
+```r
+0.1 + 0.2 == 0.3
+```
+
+```
+## [1] FALSE
+```
+Uh-oh! (Or, maybe you're thinking: Huh??)
+
+--
+
+**Problem:** Computers represent numbers as binary (i.e. base 2) floating-points. More [here](https://floating-point-gui.de/basic/).
+- Fast and memory efficient, but can lead to unexpected behaviour. 
+- Similar to the way that standard decimal (i.e. base 10) representation can't precisely represent certain fractions (e.g. `\(\frac{1}{3} = 0.3333...\)`). 
+
+--
+
+**Solution:** Use `all.equal()` for evaluating floats (i.e  fractions).
+
+
+```r
+all.equal(0.1 + 0.2, 0.3)
 ```
 
 ```
