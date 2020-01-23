@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott
   affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: Lecture 6  #"12 February 2019"
+date: Lecture 6  #"22 January 2020"
 output: 
   html_document:
     theme: flatly
@@ -117,7 +117,7 @@ As you can see, this is an [XML](https://en.wikipedia.org/wiki/XML) document^[XM
 
 #### Table 1: Pre-IAAF (1881--1912)
 
-Let's try to isolate the first table on the page, which documents the [unofficial progression before the IAAF](https://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression#Unofficial_progression_before_the_IAAF). As per the rvest vignette, we can use `rvest::html_nodes()` to isolate and extract this table from the rest of the HTML document by providing the relevant CSS selector. We should then be able to convert it into a data frame using `rvest::html_table()`. I also recommend using the `fill=TRUE` option here, because otherwise we'll run into formatting problems because of row spans in the Wiki table.
+Let's try to isolate the first table on the page, which documents the [unofficial progression before the IAAF](https://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression#Unofficial_progression_before_the_IAAF). As per the rvest vignette, we can use `rvest::html_nodes()` to isolate and extract this table from the rest of the HTML document by providing the relevant CSS selector. We should then be able to convert it into a data frame using `rvest::html_table()`. I also recommend using the `fill=TRUE` option here, because otherwise we'll run into formatting problems due to row spans in the Wiki table.
 
 I'll use [SelectorGadget](http://selectorgadget.com/) to identify the CSS selector. In this case, I get "div+ .wikitable :nth-child(1)", so let's check if that works.
 
@@ -134,11 +134,11 @@ m100 %>%
 
 Uh-oh! It seems that we immediately run into an error. I won't go into details here, but we have to be cautious with SelectorGadget sometimes. It's a great tool and usually works perfectly. However, occasionally what looks like the right selection (i.e. the highlighted stuff in yellow) is not exactly what we're looking for. I deliberately chose this Wikipedia 100m example because I wanted to showcase this potential pitfall.  Again: Webscraping is as much art as it is science.
 
-Fortunately, there's a more precise way of determing the right selectors using the "inspect web element" feature that [available in all modern browsers](https://www.lifewire.com/get-inspect-element-tool-for-browser-756549). In this case, I'm going to use Google Chrome (either right click and then "Inspect", or **Ctrl+Shift+I**). I proceed by scrolling over the source elements until Chrome highlights the table of interest. Then right click and **Copy -> Copy selector**. Here's a GIF animation of these steps:
+Fortunately, there's a more precise way of determing the right selectors using the "inspect web element" feature that is [available in all modern browsers](https://www.lifewire.com/get-inspect-element-tool-for-browser-756549). In this case, I'm going to use Google Chrome (**Ctrl+Shift+I**, or right-click and choose "Inspect"). I proceed by scrolling over the source elements until Chrome highlights the table of interest. Then right-click again and choose **Copy -> Copy selector**. Here's a GIF animation of these steps:
 
 ![](pics/inspect100m.gif)
 
-Using this method, I got "#mw-content-text > div > table:nth-child(8)". Let's see whether it works this time. Again, I'll be using the `rvest::html_table(fill=TRUE)` function to coerce the resulting table into a data frame.
+Using this method, I get "#mw-content-text > div > table:nth-child(8)". Let's see whether it works this time. Again, I'll be using the `rvest::html_table(fill=TRUE)` function to coerce the resulting table into a data frame.
 
 
 ```r
@@ -242,7 +242,7 @@ pre_iaaf
 ## # … with 11 more rows
 ```
 
-Let' fix the column names to get rid of spaces, etc. I'm going to use the janitor package's `clean_names()`, which is expressly built for the purpose of cleaning object names. (How else could we have done this?)
+Let's fix the column names to get rid of spaces, etc. I'm going to use the `janitor::clean_names()` function, which is expressly built for the purpose of cleaning object names. (Q: How else could we have done this?)
 
 
 ```r
@@ -271,7 +271,7 @@ pre_iaaf
 ## # … with 11 more rows
 ```
 
-Hmmm. There are some potential problems for a duplicate (i.e. repeated) record for Isaac Westergren in Gävle, Sweden. One way to ID and fix these cases is to see if we can convert "athlete" into a numeric and, if so, replace these cases with the previous value.
+Hmmm. There are is a slight misread due to a rowspan associated with the back-to-back records of Isaac Westergren in Gävle, Sweden. We could ID and fix cases like this in several ways. The approach that I'm going to use here is to see if we can convert the "athlete" column into a numeric and, if so, replace these cells with the preceding value.
 
 
 ```r
@@ -615,7 +615,7 @@ wr100 %>%
   - A typical workflow is: `read_html(URL) %>% html_nodes(CSS_SELECTORS) %>% html_table()`.
   - You might need other functions depending on the content type (e.g. see `?html_text`).
 - Just because you *can* scrape something doesn't mean you *should* (i.e. ethical and legal restrictions).
-- Webscraping involves as much as it does science. Be prepared to do a lot of experimenting and data cleaning.
+- Webscraping involves as much art as it does science. Be prepared to do a lot of experimenting and data cleaning.
 - Next lecture: Webscraping: (2) Client-side and APIs.
 
 
