@@ -8,7 +8,7 @@ author:
 output: 
   html_document:
     theme: flatly
-    highlight: haddock 
+    highlight: haddock
     # code_folding: show
     toc: yes
     toc_depth: 4
@@ -26,18 +26,21 @@ Today we'll be using [SelectorGadget](https://selectorgadget.com/), which is a C
 
 ### R packages 
 
-- **New:** `rvest`, `janitor`
-- **Already used:** `tidyverse`, `lubridate`, `hrbrthemes`
+- New: **rvest**, **janitor**
+- Already used: **tidyverse**, **lubridate**, **hrbrthemes**
 
-Recall that `rvest` was automatically installed with the rest of the tidyverse. So you only need to install the small `janitor` package:
+Recall that **rvest** was automatically installed with the rest of the tidyverse. Still, here is a convenient way to install (if necessary) and load all of the above packages.
 
 
 ```r
-## Not run. (Run this manually yourself if you haven't installed the package yet.)
-install.packages("janitor")
+## Load and install the packages that we'll be using today
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, rvest, lubridate, janitor, hrbrthemes)
+## My preferred ggplot2 plotting theme (optional)
+theme_set(hrbrthemes::theme_ipsum())
 ```
 
-## Server-side vs. Client-side
+## Webscraping basics
 
 The next two lectures are about getting data, or "content", off the web and onto our computers. We're all used to seeing this content in our browers (Chrome, Firefox, etc.). So we know that it must exist somewhere. However, it's important to realise that there are actually two ways that web content gets rendered in a browser: 
 
@@ -68,20 +71,11 @@ The good news is that both server-side and client-side websites allow for webscr
 
 ### Caveat: Ethical and legal limitations
 
-The previous sentence elides some important ethical and legal considerations. Just because you *can* scrape it, doesn't mean you *should*. It is ultimately your responsibility to determine whether a website maintains legal restrictions on the content that it provides. Similarly, the tools that we'll be using are very powerful. It's fairly easy to write up a function or program that can overwhelm a host server or application through the sheer weight of requests. A computer can process commands much, much faster than we can ever type them up manually. We'll come back to the "be nice" motif in the next lecture. 
+The previous sentence elides some important ethical and legal considerations. Just because you *can* scrape it, doesn't mean you *should*. It is ultimately your responsibility to determine whether a website maintains legal restrictions on the content that it provides. Similarly, the tools that we'll be using are very powerful. It's fairly easy to write up a function or program that can overwhelm a host server or application through the sheer weight of requests. A computer can process commands much, much faster than we can ever type them up manually. We'll return to the "be nice" mantra at the end of this lecture, as well as in the next lecture. 
 
-There's also new package called [polite](https://github.com/dmi3kno/polite), which aims to improve web etiquette. I'll come back to it again briefly in the [Further resources and exercises] section at the bottom of this document.
+## Webscraping with **rvest** (server-side)
 
-## Webscraping with `rvest` (server-side)
-
-The primary R package that we'll be using today is Hadley Wickham's [rvest](https://github.com/hadley/rvest). Let's load it now.
-
-
-```r
-library(rvest)
-```
-
-`rvest` is a simple webscraping package inspired by Python's [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/), but with extra tidyverse functionality. It is also designed to work with webpages that are built server-side and thus requires knowledge of the relevant CSS selectors... Which means that now is probably a good time for us to cover what these are.
+The primary R package that we'll be using today is **rvest** ([link](https://rvest.tidyverse.org/)), a simple webscraping library inspired by Python's **Beautiful Soup** ([link](https://www.crummy.com/software/BeautifulSoup/)), but with extra tidyverse functionality. **rvest** is designed to work with webpages that are built server-side and thus requires knowledge of the relevant CSS selectors... Which means that now is probably a good time for us to cover what these are.
 
 ### Student presentation: CSS and SelectorGadget
 
@@ -90,7 +84,7 @@ Time for a student presentation on [CSS](https://developer.mozilla.org/en-US/doc
 1. _Properties._ CSS properties are the "how" of the display rules. These are things like which font family, styles and colours to use, page width, etc.
 2. _Selectors._ CSS selectors are the "what" of the display rules. They identify which rules should be applied to which elements. E.g. Text elements that are selected as ".h1" (i.e. top line headers) are usually larger and displayed more prominently than text elements selected as ".h2" (i.e. sub-headers).
 
-The key point is that if you can identify the CSS selector(s) of the content you want, then you can isolate it from the rest of the webpage content that you don't want. This where SelectorGadget comes in. We'll work through an extended example (with a twist!) below, but I highly recommend looking over this [quick vignette](https://cran.r-project.org/web/packages/rvest/vignettes/selectorgadget.html) from Hadley before proceding.
+The key point is that if you can identify the CSS selector(s) of the content you want, then you can isolate it from the rest of the webpage content that you don't want. This where SelectorGadget comes in. We'll work through an extended example (with a twist!) below, but I highly recommend looking over this [quick vignette](https://cran.r-project.org/web/packages/rvest/vignettes/selectorgadget.html) before proceding.
 
 ## Application: Mens 100 meters (Wikipedia)
 
@@ -102,15 +96,17 @@ Once you've familised yourself with the structure, read the whole page into R us
 
 
 ```r
+# library(rvest) ## Already loaded
+
 m100 <- read_html("http://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression") 
 m100
 ```
 
 ```
-## {xml_document}
+## {html_document}
 ## <html class="client-nojs" lang="en" dir="ltr">
-## [1] <head>\n<meta http-equiv="Content-Type" content="text/html; charset= ...
-## [2] <body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-sub ...
+## [1] <head>\n<meta http-equiv="Content-Type" content="text/html; charset=UTF-8 ...
+## [2] <body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject  ...
 ```
 
 As you can see, this is an [XML](https://en.wikipedia.org/wiki/XML) document^[XML stands for Extensible Markup Language and is one of the primary languages used for encoding and formatting web pages.] that contains *everything* needed to render the Wikipedia page. It's kind of like viewing someone's entire LaTeX document (preamble, syntax, etc.) when all we want are the data from some tables in their paper.
@@ -152,7 +148,7 @@ m100 %>%
 ##    Time               Athlete    Nationality           Location of races
 ## 1  10.8           Luther Cary  United States               Paris, France
 ## 2  10.8             Cecil Lee United Kingdom           Brussels, Belgium
-## 3  10.8         Etienne De Re        Belgium           Brussels, Belgium
+## 3  10.8         Étienne De Ré        Belgium           Brussels, Belgium
 ## 4  10.8          L. Atcherley United Kingdom     Frankfurt/Main, Germany
 ## 5  10.8          Harry Beaton United Kingdom      Rotterdam, Netherlands
 ## 6  10.8 Harald Anderson-Arbin         Sweden         Helsingborg, Sweden
@@ -210,13 +206,14 @@ class(pre_iaaf)
 ## [1] "list"
 ```
 
-Hmmm... It turns out this is actually a list, so let's *really* convert it to a data frame. You can do this in multiple ways. I'm going to use dplyr's `bind_rows()` function, which is great for coercing (multiple) lists into a data frame.^[We'll see more examples of this once we get to the programming section of the course.] I also want to make some ggplot figures further below, so I'll just go ahead and load the whole tidyverse.
+Hmmm... It turns out this is actually a list, so let's *really* convert it to a data frame. You can do this in multiple ways. I'm going to use the `dplyr::bind_rows()` function, which is great for coercing (multiple) lists into a data frame.^[We'll see more examples of this once we get to the programming section of the course.]
 
 
 ```r
 ## Convert list to data_frame
 # pre_iaaf <- pre_iaaf[[1]] ## Would also work
-library(tidyverse)
+
+# library(tidyverse) ## Already loaded
 
 pre_iaaf <- 
   pre_iaaf %>%
@@ -227,18 +224,18 @@ pre_iaaf
 
 ```
 ## # A tibble: 21 x 5
-##     Time Athlete           Nationality   `Location of races`  Date         
-##    <dbl> <chr>             <chr>         <chr>                <chr>        
-##  1  10.8 Luther Cary       United States Paris, France        July 4, 1891 
-##  2  10.8 Cecil Lee         United Kingd… Brussels, Belgium    September 25…
-##  3  10.8 Etienne De Re     Belgium       Brussels, Belgium    August 4, 18…
-##  4  10.8 L. Atcherley      United Kingd… Frankfurt/Main, Ger… April 13, 18…
-##  5  10.8 Harry Beaton      United Kingd… Rotterdam, Netherla… August 28, 1…
-##  6  10.8 Harald Anderson-… Sweden        Helsingborg, Sweden  August 9, 18…
-##  7  10.8 Isaac Westergren  Sweden        Gävle, Sweden        September 11…
-##  8  10.8 10.8              Sweden        Gävle, Sweden        September 10…
-##  9  10.8 Frank Jarvis      United States Paris, France        July 14, 1900
-## 10  10.8 Walter Tewksbury  United States Paris, France        July 14, 1900
+##     Time Athlete            Nationality    `Location of races`   Date           
+##    <dbl> <chr>              <chr>          <chr>                 <chr>          
+##  1  10.8 Luther Cary        United States  Paris, France         July 4, 1891   
+##  2  10.8 Cecil Lee          United Kingdom Brussels, Belgium     September 25, …
+##  3  10.8 Étienne De Ré      Belgium        Brussels, Belgium     August 4, 1893 
+##  4  10.8 L. Atcherley       United Kingdom Frankfurt/Main, Germ… April 13, 1895 
+##  5  10.8 Harry Beaton       United Kingdom Rotterdam, Netherlan… August 28, 1895
+##  6  10.8 Harald Anderson-A… Sweden         Helsingborg, Sweden   August 9, 1896 
+##  7  10.8 Isaac Westergren   Sweden         Gävle, Sweden         September 11, …
+##  8  10.8 10.8               Sweden         Gävle, Sweden         September 10, …
+##  9  10.8 Frank Jarvis       United States  Paris, France         July 14, 1900  
+## 10  10.8 Walter Tewksbury   United States  Paris, France         July 14, 1900  
 ## # … with 11 more rows
 ```
 
@@ -246,7 +243,7 @@ Let's fix the column names to get rid of spaces, etc. I'm going to use the `jani
 
 
 ```r
-library(janitor)
+# library(janitor) ## ALready loaded
 
 pre_iaaf <-
   pre_iaaf %>%
@@ -256,18 +253,18 @@ pre_iaaf
 
 ```
 ## # A tibble: 21 x 5
-##     time athlete           nationality   location_of_races    date         
-##    <dbl> <chr>             <chr>         <chr>                <chr>        
-##  1  10.8 Luther Cary       United States Paris, France        July 4, 1891 
-##  2  10.8 Cecil Lee         United Kingd… Brussels, Belgium    September 25…
-##  3  10.8 Etienne De Re     Belgium       Brussels, Belgium    August 4, 18…
-##  4  10.8 L. Atcherley      United Kingd… Frankfurt/Main, Ger… April 13, 18…
-##  5  10.8 Harry Beaton      United Kingd… Rotterdam, Netherla… August 28, 1…
-##  6  10.8 Harald Anderson-… Sweden        Helsingborg, Sweden  August 9, 18…
-##  7  10.8 Isaac Westergren  Sweden        Gävle, Sweden        September 11…
-##  8  10.8 10.8              Sweden        Gävle, Sweden        September 10…
-##  9  10.8 Frank Jarvis      United States Paris, France        July 14, 1900
-## 10  10.8 Walter Tewksbury  United States Paris, France        July 14, 1900
+##     time athlete            nationality    location_of_races     date           
+##    <dbl> <chr>              <chr>          <chr>                 <chr>          
+##  1  10.8 Luther Cary        United States  Paris, France         July 4, 1891   
+##  2  10.8 Cecil Lee          United Kingdom Brussels, Belgium     September 25, …
+##  3  10.8 Étienne De Ré      Belgium        Brussels, Belgium     August 4, 1893 
+##  4  10.8 L. Atcherley       United Kingdom Frankfurt/Main, Germ… April 13, 1895 
+##  5  10.8 Harry Beaton       United Kingdom Rotterdam, Netherlan… August 28, 1895
+##  6  10.8 Harald Anderson-A… Sweden         Helsingborg, Sweden   August 9, 1896 
+##  7  10.8 Isaac Westergren   Sweden         Gävle, Sweden         September 11, …
+##  8  10.8 10.8               Sweden         Gävle, Sweden         September 10, …
+##  9  10.8 Frank Jarvis       United States  Paris, France         July 14, 1900  
+## 10  10.8 Walter Tewksbury   United States  Paris, France         July 14, 1900  
 ## # … with 11 more rows
 ```
 
@@ -281,15 +278,15 @@ pre_iaaf <-
 ```
 
 ```
-## Warning in ifelse(is.na(as.numeric(athlete)), athlete, c(NA, "Luther
-## Cary", : NAs introduced by coercion
+## Warning in ifelse(is.na(as.numeric(athlete)), athlete, lag(athlete)): NAs
+## introduced by coercion
 ```
 
 Lastly, let's fix the date column so that R recognises that the character string for what it actually is.
 
 
 ```r
-library(lubridate)
+# library(lubridate) ## Already loaded
 
 pre_iaaf <-
   pre_iaaf %>%
@@ -299,32 +296,22 @@ pre_iaaf
 
 ```
 ## # A tibble: 21 x 5
-##     time athlete             nationality   location_of_races     date      
-##    <dbl> <chr>               <chr>         <chr>                 <date>    
-##  1  10.8 Luther Cary         United States Paris, France         1891-07-04
-##  2  10.8 Cecil Lee           United Kingd… Brussels, Belgium     1892-09-25
-##  3  10.8 Etienne De Re       Belgium       Brussels, Belgium     1893-08-04
-##  4  10.8 L. Atcherley        United Kingd… Frankfurt/Main, Germ… 1895-04-13
-##  5  10.8 Harry Beaton        United Kingd… Rotterdam, Netherlan… 1895-08-28
-##  6  10.8 Harald Anderson-Ar… Sweden        Helsingborg, Sweden   1896-08-09
-##  7  10.8 Isaac Westergren    Sweden        Gävle, Sweden         1898-09-11
-##  8  10.8 Isaac Westergren    Sweden        Gävle, Sweden         1899-09-10
-##  9  10.8 Frank Jarvis        United States Paris, France         1900-07-14
-## 10  10.8 Walter Tewksbury    United States Paris, France         1900-07-14
+##     time athlete               nationality    location_of_races       date      
+##    <dbl> <chr>                 <chr>          <chr>                   <date>    
+##  1  10.8 Luther Cary           United States  Paris, France           1891-07-04
+##  2  10.8 Cecil Lee             United Kingdom Brussels, Belgium       1892-09-25
+##  3  10.8 Étienne De Ré         Belgium        Brussels, Belgium       1893-08-04
+##  4  10.8 L. Atcherley          United Kingdom Frankfurt/Main, Germany 1895-04-13
+##  5  10.8 Harry Beaton          United Kingdom Rotterdam, Netherlands  1895-08-28
+##  6  10.8 Harald Anderson-Arbin Sweden         Helsingborg, Sweden     1896-08-09
+##  7  10.8 Isaac Westergren      Sweden         Gävle, Sweden           1898-09-11
+##  8  10.8 Isaac Westergren      Sweden         Gävle, Sweden           1899-09-10
+##  9  10.8 Frank Jarvis          United States  Paris, France           1900-07-14
+## 10  10.8 Walter Tewksbury      United States  Paris, France           1900-07-14
 ## # … with 11 more rows
 ```
 
-Finally, we have our cleaned data frame. We can now easily plot the data if we wanted. I'm going to use (and set) the `theme_ipsum()` plotting theme from the [hrbrthemes package](https://github.com/hrbrmstr/hrbrthemes) because I like it, but this certainly isn't necessary.
-
-
-```r
-library(hrbrthemes) ## Just for the theme_ipsum() plot theme that I like
-theme_set(theme_ipsum()) ## Set the theme for the rest of this R session
-
-ggplot(pre_iaaf, aes(date, time)) + geom_point()
-```
-
-![](06-web-css_files/figure-html/pre_plot-1.png)<!-- -->
+Finally, we have our cleaned data frame. We could easily plot the pre-IAAF data if we so wished. However, I'm going to hold off doing that until we've scraped the rest of the WR data. Speaking of which...
 
 ### Challenge
 
@@ -401,28 +388,28 @@ iaaf_76 %>% tail(20)
 
 ```
 ## # A tibble: 20 x 8
-##     time  wind  auto athlete  nationality location_of_race date       ref  
-##    <dbl> <dbl> <dbl> <chr>    <chr>       <chr>            <date>     <chr>
-##  1  10     2   10.2  Jim Hin… United Sta… Modesto, USA     1967-05-27 [2]  
-##  2  10     1.8 NA    Enrique… Cuba        Budapest, Hunga… 1967-06-17 [2]  
-##  3  10     0   NA    Paul Na… South Afri… Krugersdorp, So… 1968-04-02 [2]  
-##  4  10     1.1 NA    Oliver … United Sta… Albuquerque, USA 1968-05-31 [2]  
-##  5  10     2   10.2  Oliver … Charles Gr… Sacramento, USA  1968-06-20 [2]  
-##  6  10     2   10.3  Oliver … Charles Gr… Roger Bambuck    NA         ""   
-##  7   9.9   0.8 10.0  Jim Hin… United Sta… Sacramento, USA  1968-06-20 [2]  
-##  8   9.9   0.9 10.1  Ronnie … United Sta… Sacramento, USA  1968-06-20 ""   
-##  9   9.9   0.9 10.1  Charles… United Sta… Sacramento, USA  1968-06-20 ""   
-## 10   9.9   0.3  9.95 Jim Hin… United Sta… Mexico City, Me… 1968-10-14 [2]  
-## 11   9.9   0   NA    Eddie H… United Sta… Eugene, USA      1972-07-01 [2]  
-## 12   9.9   0   NA    Eddie H… United Sta… United States    NA         ""   
-## 13   9.9   1.3 NA    Steve W… United Sta… Los Angeles, USA 1974-06-21 [2]  
-## 14   9.9   1.7 NA    Silvio … Cuba        Ostrava, Czecho… 1975-06-05 [2]  
-## 15   9.9   0   NA    Steve W… United Sta… Siena, Italy     1975-07-16 [2]  
-## 16   9.9  -0.2 NA    Steve W… ""          Berlin, Germany  1975-08-22 [2]  
-## 17   9.9   0.7 NA    Steve W… ""          Gainesville, USA 1976-03-27 [2]  
-## 18   9.9   0.7 NA    Steve W… Harvey Gla… Columbia, USA    1976-04-03 [2]  
-## 19   9.9  NA   NA    Steve W… ""          Baton Rouge, USA 1976-05-01 [2]  
-## 20   9.9   1.7 NA    Don Qua… Jamaica     Modesto, USA     1976-05-22 [2]
+##     time wind    auto athlete   nationality  location_of_race   date       ref  
+##    <dbl> <chr>  <dbl> <chr>     <chr>        <chr>              <date>     <chr>
+##  1  10   "2.0"  10.2  Jim Hines "United Sta… Modesto, USA       1967-05-27 "[2]"
+##  2  10   "1.8"  NA    Enrique … "Cuba"       Budapest, Hungary  1967-06-17 "[2]"
+##  3  10   "0.0"  NA    Paul Nash "South Afri… Krugersdorp, Sout… 1968-04-02 "[2]"
+##  4  10   "1.1"  NA    Oliver F… "United Sta… Albuquerque, USA   1968-05-31 "[2]"
+##  5  10   "2.0"  10.2  Oliver F… "Charles Gr… Sacramento, USA    1968-06-20 "[2]"
+##  6  10   "2.0"  10.3  Oliver F… "Charles Gr… Roger Bambuck      NA         ""   
+##  7   9.9 "0.8"  10.0  Jim Hines "United Sta… Sacramento, USA    1968-06-20 "[2]"
+##  8   9.9 "0.9"  10.1  Ronnie R… "United Sta… Sacramento, USA    1968-06-20 ""   
+##  9   9.9 "0.9"  10.1  Charles … "United Sta… Sacramento, USA    1968-06-20 ""   
+## 10   9.9 "0.3"   9.95 Jim Hines "United Sta… Mexico City, Mexi… 1968-10-14 "[2]"
+## 11   9.9 "0.0"  NA    Eddie Ha… "United Sta… Eugene, USA        1972-07-01 "[2]"
+## 12   9.9 "0.0"  NA    Eddie Ha… "United Sta… United States      NA         ""   
+## 13   9.9 "1.3"  NA    Steve Wi… "United Sta… Los Angeles, USA   1974-06-21 "[2]"
+## 14   9.9 "1.7"  NA    Silvio L… "Cuba"       Ostrava, Czechosl… 1975-06-05 "[2]"
+## 15   9.9 "0.0"  NA    Steve Wi… "United Sta… Siena, Italy       1975-07-16 "[2]"
+## 16   9.9 "−0.2" NA    Steve Wi… ""           Berlin, Germany    1975-08-22 "[2]"
+## 17   9.9 "0.7"  NA    Steve Wi… ""           Gainesville, USA   1976-03-27 "[2]"
+## 18   9.9 "0.7"  NA    Steve Wi… "Harvey Gla… Columbia, USA      1976-04-03 "[2]"
+## 19   9.9 ""     NA    Steve Wi… ""           Baton Rouge, USA   1976-05-01 "[2]"
+## 20   9.9 "1.7"  NA    Don Quar… "Jamaica"    Modesto, USA       1976-05-22 "[2]"
 ```
 
 We can try to fix these cases by using the previous value. Let's test it first:
@@ -435,18 +422,18 @@ iaaf_76 %>%
 
 ```
 ## # A tibble: 54 x 8
-##     time  wind  auto athlete    nationality  location_of_race    date ref  
-##    <dbl> <dbl> <dbl> <chr>      <chr>        <chr>              <dbl> <chr>
-##  1  10.6  NA    NA   Donald Li… United Stat… Stockholm, Sweden -20998 [2]  
-##  2  10.6  NA    NA   Jackson S… United Stat… Stockholm, Sweden -18004 [2]  
-##  3  10.4  NA    NA   Charley P… United Stat… Redlands, USA     -17785 [2]  
-##  4  10.4   0    NA   Eddie Tol… United Stat… Stockholm, Sweden -14756 [2]  
-##  5  10.4  NA    NA   Eddie Tol… United Stat… Copenhagen, Denm… -14739 [2]  
-##  6  10.3  NA    NA   Percy Wil… Canada       Toronto, Ontario… -14390 [2]  
-##  7  10.3   0.4  10.4 Eddie Tol… United Stat… Los Angeles, USA  -13667 [2]  
-##  8  10.3  NA    NA   Eddie Tol… Ralph Metca… Budapest, Hungary -13291 [2]  
-##  9  10.3  NA    NA   Eddie Tol… Eulace Peac… Oslo, Norway      -12932 [2]  
-## 10  10.3  NA    NA   Chris Ber… Netherlands  Amsterdam, Nethe… -12912 [2]  
+##     time wind   auto athlete      nationality   location_of_race      date ref  
+##    <dbl> <chr> <dbl> <chr>        <chr>         <chr>                <dbl> <chr>
+##  1  10.6 ""     NA   Donald Lipp… United States Stockholm, Sweden   -20998 [2]  
+##  2  10.6 ""     NA   Jackson Sch… United States Stockholm, Sweden   -18004 [2]  
+##  3  10.4 ""     NA   Charley Pad… United States Redlands, USA       -17785 [2]  
+##  4  10.4 "0.0"  NA   Eddie Tolan  United States Stockholm, Sweden   -14756 [2]  
+##  5  10.4 ""     NA   Eddie Tolan  United States Copenhagen, Denmark -14739 [2]  
+##  6  10.3 ""     NA   Percy Willi… Canada        Toronto, Ontario, … -14390 [2]  
+##  7  10.3 "0.4"  10.4 Eddie Tolan  United States Los Angeles, USA    -13667 [2]  
+##  8  10.3 ""     NA   Eddie Tolan  Ralph Metcal… Budapest, Hungary   -13291 [2]  
+##  9  10.3 ""     NA   Eddie Tolan  Eulace Peaco… Oslo, Norway        -12932 [2]  
+## 10  10.3 ""     NA   Chris Berger Netherlands   Amsterdam, Netherl… -12912 [2]  
 ## # … with 44 more rows
 ```
 
@@ -462,18 +449,18 @@ iaaf_76
 
 ```
 ## # A tibble: 54 x 8
-##     time  wind  auto athlete  nationality location_of_race date       ref  
-##    <dbl> <dbl> <dbl> <chr>    <chr>       <chr>            <date>     <chr>
-##  1  10.6  NA    NA   Donald … United Sta… Stockholm, Swed… 1912-07-06 [2]  
-##  2  10.6  NA    NA   Jackson… United Sta… Stockholm, Swed… 1920-09-16 [2]  
-##  3  10.4  NA    NA   Charley… United Sta… Redlands, USA    1921-04-23 [2]  
-##  4  10.4   0    NA   Eddie T… United Sta… Stockholm, Swed… 1929-08-08 [2]  
-##  5  10.4  NA    NA   Eddie T… United Sta… Copenhagen, Den… 1929-08-25 [2]  
-##  6  10.3  NA    NA   Percy W… Canada      Toronto, Ontari… 1930-08-09 [2]  
-##  7  10.3   0.4  10.4 Eddie T… United Sta… Los Angeles, USA 1932-08-01 [2]  
-##  8  10.3  NA    NA   Eddie T… Ralph Metc… Budapest, Hunga… 1933-08-12 [2]  
-##  9  10.3  NA    NA   Eddie T… Eulace Pea… Oslo, Norway     1934-08-06 [2]  
-## 10  10.3  NA    NA   Chris B… Netherlands Amsterdam, Neth… 1934-08-26 [2]  
+##     time wind   auto athlete    nationality  location_of_race   date       ref  
+##    <dbl> <chr> <dbl> <chr>      <chr>        <chr>              <date>     <chr>
+##  1  10.6 ""     NA   Donald Li… United Stat… Stockholm, Sweden  1912-07-06 [2]  
+##  2  10.6 ""     NA   Jackson S… United Stat… Stockholm, Sweden  1920-09-16 [2]  
+##  3  10.4 ""     NA   Charley P… United Stat… Redlands, USA      1921-04-23 [2]  
+##  4  10.4 "0.0"  NA   Eddie Tol… United Stat… Stockholm, Sweden  1929-08-08 [2]  
+##  5  10.4 ""     NA   Eddie Tol… United Stat… Copenhagen, Denma… 1929-08-25 [2]  
+##  6  10.3 ""     NA   Percy Wil… Canada       Toronto, Ontario,… 1930-08-09 [2]  
+##  7  10.3 "0.4"  10.4 Eddie Tol… United Stat… Los Angeles, USA   1932-08-01 [2]  
+##  8  10.3 ""     NA   Eddie Tol… Ralph Metca… Budapest, Hungary  1933-08-12 [2]  
+##  9  10.3 ""     NA   Eddie Tol… Eulace Peac… Oslo, Norway       1934-08-06 [2]  
+## 10  10.3 ""     NA   Chris Ber… Netherlands  Amsterdam, Nether… 1934-08-26 [2]  
 ## # … with 44 more rows
 ```
 
@@ -508,17 +495,16 @@ iaaf %>% tail(8)
 
 ```
 ## # A tibble: 8 x 8
-##    time wind   auto athlete nationality location_of_race date      
-##   <dbl> <chr> <dbl> <chr>   <chr>       <chr>            <date>    
-## 1  9.77 1.6    9.77 Asafa … Jamaica     Athens, Greece   2005-06-14
-## 2  9.77 1.7    9.77 Justin… United Sta… Doha, Qatar      2006-05-12
-## 3  9.77 1.5    9.76 Asafa … Jamaica     Gateshead, Engl… 2006-06-11
-## 4  9.77 1.0    9.76 Asafa … 9.762       Zürich, Switzer… 2006-08-18
-## 5  9.74 1.7    9.76 Asafa … 9.735       Rieti, Italy     2007-09-09
-## 6  9.72 1.7   NA    Asafa … Usain Bolt  New York, USA    2008-05-31
-## 7  9.69 0.0    9.68 Asafa … Asafa Powe… Beijing, China   2008-08-16
-## 8  9.58 0.9    9.57 Asafa … Asafa Powe… Berlin, Germany  2009-08-16
-## # … with 1 more variable: notes_note_2 <chr>
+##    time wind   auto athlete nationality location_of_race date       notes_note_2
+##   <dbl> <chr> <dbl> <chr>   <chr>       <chr>            <date>     <chr>       
+## 1  9.77 1.6    9.77 Asafa … Jamaica     Athens, Greece   2005-06-14 [2]         
+## 2  9.77 1.7    9.77 Justin… United Sta… Doha, Qatar      2006-05-12 [5][9][note…
+## 3  9.77 1.5    9.76 Asafa … Jamaica     Gateshead, Engl… 2006-06-11 [2]         
+## 4  9.77 1.0    9.76 Asafa … 9.762       Zürich, Switzer… 2006-08-18 [2]         
+## 5  9.74 1.7    9.76 Asafa … 9.735       Rieti, Italy     2007-09-09 [1][10]     
+## 6  9.72 1.7   NA    Asafa … Usain Bolt  New York, USA    2008-05-31 [2]         
+## 7  9.69 0.0    9.68 Asafa … Asafa Powe… Beijing, China   2008-08-16 OR[2]       
+## 8  9.58 0.9    9.57 Asafa … Asafa Powe… Berlin, Germany  2009-08-16 CR[1][11][1…
 ```
 
 ```r
@@ -536,8 +522,8 @@ iaaf <-
 ```
 
 ```
-## Warning in ifelse(!is.na(as.numeric(nationality)), NA, athlete): NAs
-## introduced by coercion
+## Warning in ifelse(!is.na(as.numeric(nationality)), NA, athlete): NAs introduced
+## by coercion
 ```
 
 ### Combined eras
@@ -557,19 +543,19 @@ wr100
 
 ```
 ## # A tibble: 99 x 7
-##     time athlete nationality location_of_rac… date       era  
-##    <dbl> <chr>   <chr>       <chr>            <date>     <chr>
-##  1  10.8 Luther… United Sta… Paris, France    1891-07-04 Pre-…
-##  2  10.8 Cecil … United Kin… Brussels, Belgi… 1892-09-25 Pre-…
-##  3  10.8 Etienn… Belgium     Brussels, Belgi… 1893-08-04 Pre-…
-##  4  10.8 L. Atc… United Kin… Frankfurt/Main,… 1895-04-13 Pre-…
-##  5  10.8 Harry … United Kin… Rotterdam, Neth… 1895-08-28 Pre-…
-##  6  10.8 Harald… Sweden      Helsingborg, Sw… 1896-08-09 Pre-…
-##  7  10.8 Isaac … Sweden      Gävle, Sweden    1898-09-11 Pre-…
-##  8  10.8 Isaac … Sweden      Gävle, Sweden    1899-09-10 Pre-…
-##  9  10.8 Frank … United Sta… Paris, France    1900-07-14 Pre-…
-## 10  10.8 Walter… United Sta… Paris, France    1900-07-14 Pre-…
-## # … with 89 more rows, and 1 more variable: location_of_race <chr>
+##     time athlete  nationality location_of_rac… date       era   location_of_race
+##    <dbl> <chr>    <chr>       <chr>            <date>     <chr> <chr>           
+##  1  10.8 Luther … United Sta… Paris, France    1891-07-04 Pre-… <NA>            
+##  2  10.8 Cecil L… United Kin… Brussels, Belgi… 1892-09-25 Pre-… <NA>            
+##  3  10.8 Étienne… Belgium     Brussels, Belgi… 1893-08-04 Pre-… <NA>            
+##  4  10.8 L. Atch… United Kin… Frankfurt/Main,… 1895-04-13 Pre-… <NA>            
+##  5  10.8 Harry B… United Kin… Rotterdam, Neth… 1895-08-28 Pre-… <NA>            
+##  6  10.8 Harald … Sweden      Helsingborg, Sw… 1896-08-09 Pre-… <NA>            
+##  7  10.8 Isaac W… Sweden      Gävle, Sweden    1898-09-11 Pre-… <NA>            
+##  8  10.8 Isaac W… Sweden      Gävle, Sweden    1899-09-10 Pre-… <NA>            
+##  9  10.8 Frank J… United Sta… Paris, France    1900-07-14 Pre-… <NA>            
+## 10  10.8 Walter … United Sta… Paris, France    1900-07-14 Pre-… <NA>            
+## # … with 89 more rows
 ```
 
 All that hard works deserves a nice plot, don't you think?
@@ -577,34 +563,18 @@ All that hard works deserves a nice plot, don't you think?
 
 ```r
 wr100 %>%
-  ggplot(aes(date, time)) + 
+  ggplot(aes(x=date, y=time, col=fct_reorder2(era, date, time))) + 
   geom_point(alpha = 0.7) +
   labs(
     title = "Men's 100m world record progression",
     x = "Date", y = "Time",
     caption = "Source: Wikipedia"
-    )
+    ) +
+  theme(legend.title = element_blank()) ## Switch off legend title
 ```
 
-![](06-web-css_files/figure-html/full_plot-1.png)<!-- -->
+![](06-web-css_files/figure-html/wr100_plot-1.png)<!-- -->
 
-
-Or, if we can just plot the modern IAFF era. 
-
-```r
-wr100 %>%
-  filter(era == "Modern") %>%
-  ggplot(aes(date, time)) + 
-  geom_point(alpha = 0.7) +
-  labs(
-    title = "Men's 100m world record progression",
-    subtitle = "Modern era only",
-    x = "Date", y = "Time",
-    caption = "Source: Wikipedia"
-    )
-```
-
-![](06-web-css_files/figure-html/modern_plot-1.png)<!-- -->
 
 ## Summary
 
@@ -623,9 +593,9 @@ wr100 %>%
 
 In the next lecture, we're going to focus on client-side web content and interacting with APIs. For the moment, you can practice your `rvest`-based scraping skills by following along with any of the many (many) tutorials available online. I want to make two particular suggestions, though:
 
-### Polite
+### More on web ettiquette
 
-I mentioned the [polite package](https://github.com/dmi3kno/polite) earlier in this lecture. It provides some helpful tools to maintain web etiquette, such as checking for permission and not hammering the host website with requests. It also plays very nicely with the `rvest` workflow that we covered today, so please take a look.
+We spoke a bit about the "be nice" scraping motto at the beginning of the lecture. I also wanted to point you to the **polite** package ([link](https://github.com/dmi3kno/polite)). It provides some helpful tools to maintain web etiquette, such as checking for permission and not hammering the host website with requests. It also plays very nicely with the **rvest** workflow that we covered today, so please take a look.
 
 ### Modeling and prediction
 

@@ -8,7 +8,7 @@ author:
 output: 
   html_document:
     theme: flatly
-    highlight: haddock 
+    highlight: haddock
     # code_folding: show
     toc: yes
     toc_depth: 4
@@ -28,17 +28,20 @@ Today we'll be using [SelectorGadget](https://selectorgadget.com/), which is a C
 
 ### R packages 
 
-- **New:** `rvest`, `janitor`
-- **Already used:** `tidyverse`, `lubridate`, `hrbrthemes`
+- New: **rvest**, **janitor**
+- Already used: **tidyverse**, **lubridate**, **hrbrthemes**
 
-Recall that `rvest` was automatically installed with the rest of the tidyverse. So you only need to install the small `janitor` package:
+Recall that **rvest** was automatically installed with the rest of the tidyverse. Still, here is a convenient way to install (if necessary) and load all of the above packages.
 
-```{r, eval = F}
-## Not run. (Run this manually yourself if you haven't installed the package yet.)
-install.packages("janitor")
+```{r libs, cache=F, message=F}
+## Load and install the packages that we'll be using today
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, rvest, lubridate, janitor, hrbrthemes)
+## My preferred ggplot2 plotting theme (optional)
+theme_set(hrbrthemes::theme_ipsum())
 ```
 
-## Server-side vs. Client-side
+## Webscraping basics
 
 The next two lectures are about getting data, or "content", off the web and onto our computers. We're all used to seeing this content in our browers (Chrome, Firefox, etc.). So we know that it must exist somewhere. However, it's important to realise that there are actually two ways that web content gets rendered in a browser: 
 
@@ -69,19 +72,11 @@ The good news is that both server-side and client-side websites allow for webscr
 
 ### Caveat: Ethical and legal limitations
 
-The previous sentence elides some important ethical and legal considerations. Just because you *can* scrape it, doesn't mean you *should*. It is ultimately your responsibility to determine whether a website maintains legal restrictions on the content that it provides. Similarly, the tools that we'll be using are very powerful. It's fairly easy to write up a function or program that can overwhelm a host server or application through the sheer weight of requests. A computer can process commands much, much faster than we can ever type them up manually. We'll come back to the "be nice" motif in the next lecture. 
+The previous sentence elides some important ethical and legal considerations. Just because you *can* scrape it, doesn't mean you *should*. It is ultimately your responsibility to determine whether a website maintains legal restrictions on the content that it provides. Similarly, the tools that we'll be using are very powerful. It's fairly easy to write up a function or program that can overwhelm a host server or application through the sheer weight of requests. A computer can process commands much, much faster than we can ever type them up manually. We'll return to the "be nice" mantra at the end of this lecture, as well as in the next lecture. 
 
-There's also new package called [polite](https://github.com/dmi3kno/polite), which aims to improve web etiquette. I'll come back to it again briefly in the [Further resources and exercises] section at the bottom of this document.
+## Webscraping with **rvest** (server-side)
 
-## Webscraping with `rvest` (server-side)
-
-The primary R package that we'll be using today is Hadley Wickham's [rvest](https://github.com/hadley/rvest). Let's load it now.
-
-```{r, message = F}
-library(rvest)
-```
-
-`rvest` is a simple webscraping package inspired by Python's [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/), but with extra tidyverse functionality. It is also designed to work with webpages that are built server-side and thus requires knowledge of the relevant CSS selectors... Which means that now is probably a good time for us to cover what these are.
+The primary R package that we'll be using today is **rvest** ([link](https://rvest.tidyverse.org/)), a simple webscraping library inspired by Python's **Beautiful Soup** ([link](https://www.crummy.com/software/BeautifulSoup/)), but with extra tidyverse functionality. **rvest** is designed to work with webpages that are built server-side and thus requires knowledge of the relevant CSS selectors... Which means that now is probably a good time for us to cover what these are.
 
 ### Student presentation: CSS and SelectorGadget
 
@@ -90,7 +85,7 @@ Time for a student presentation on [CSS](https://developer.mozilla.org/en-US/doc
 1. _Properties._ CSS properties are the "how" of the display rules. These are things like which font family, styles and colours to use, page width, etc.
 2. _Selectors._ CSS selectors are the "what" of the display rules. They identify which rules should be applied to which elements. E.g. Text elements that are selected as ".h1" (i.e. top line headers) are usually larger and displayed more prominently than text elements selected as ".h2" (i.e. sub-headers).
 
-The key point is that if you can identify the CSS selector(s) of the content you want, then you can isolate it from the rest of the webpage content that you don't want. This where SelectorGadget comes in. We'll work through an extended example (with a twist!) below, but I highly recommend looking over this [quick vignette](https://cran.r-project.org/web/packages/rvest/vignettes/selectorgadget.html) from Hadley before proceding.
+The key point is that if you can identify the CSS selector(s) of the content you want, then you can isolate it from the rest of the webpage content that you don't want. This where SelectorGadget comes in. We'll work through an extended example (with a twist!) below, but I highly recommend looking over this [quick vignette](https://cran.r-project.org/web/packages/rvest/vignettes/selectorgadget.html) before proceding.
 
 ## Application: Mens 100 meters (Wikipedia)
 
@@ -100,7 +95,9 @@ First, open up this page in your browser. Take a look at its structure: What typ
 
 Once you've familised yourself with the structure, read the whole page into R using the `rvest::read_html()` function.
 
-```{r}
+```{r m100_read_html}
+# library(rvest) ## Already loaded
+
 m100 <- read_html("http://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression") 
 m100
 ```
@@ -113,7 +110,7 @@ Let's try to isolate the first table on the page, which documents the [unofficia
 
 I'll use [SelectorGadget](http://selectorgadget.com/) to identify the CSS selector. In this case, I get "div+ .wikitable :nth-child(1)", so let's check if that works.
 
-```{r, error=TRUE}
+```{r m100_read_table_e, dependson=m100, error=TRUE}
 m100 %>%
   html_nodes("div+ .wikitable :nth-child(1)") %>%
   html_table(fill=TRUE) 
@@ -127,7 +124,7 @@ Fortunately, there's a more precise way of determing the right selectors using t
 
 Using this method, I get "#mw-content-text > div > table:nth-child(8)". Let's see whether it works this time. Again, I'll be using the `rvest::html_table(fill=TRUE)` function to coerce the resulting table into a data frame.
 
-```{r}
+```{r m100_read_table, dependson=m100}
 m100 %>%
   html_nodes("#mw-content-text > div > table:nth-child(8)") %>%
   html_table(fill=TRUE) 
@@ -135,7 +132,7 @@ m100 %>%
 
 Great, it worked! Let's assign it to an object that we'll call `pre_iaaf` and then check its class.
 
-```{r}
+```{r pre_iaaf_1, dependson=m100}
 pre_iaaf <-
   m100 %>%
   html_nodes("#mw-content-text > div > table:nth-child(8)") %>%
@@ -143,12 +140,13 @@ pre_iaaf <-
 class(pre_iaaf)
 ```
 
-Hmmm... It turns out this is actually a list, so let's *really* convert it to a data frame. You can do this in multiple ways. I'm going to use dplyr's `bind_rows()` function, which is great for coercing (multiple) lists into a data frame.^[We'll see more examples of this once we get to the programming section of the course.] I also want to make some ggplot figures further below, so I'll just go ahead and load the whole tidyverse.
+Hmmm... It turns out this is actually a list, so let's *really* convert it to a data frame. You can do this in multiple ways. I'm going to use the `dplyr::bind_rows()` function, which is great for coercing (multiple) lists into a data frame.^[We'll see more examples of this once we get to the programming section of the course.]
 
-```{r, message = F}
+```{r pre_iaaf_2, dependson=pre_iaaf, message = F}
 ## Convert list to data_frame
 # pre_iaaf <- pre_iaaf[[1]] ## Would also work
-library(tidyverse)
+
+# library(tidyverse) ## Already loaded
 
 pre_iaaf <- 
   pre_iaaf %>%
@@ -159,8 +157,8 @@ pre_iaaf
 
 Let's fix the column names to get rid of spaces, etc. I'm going to use the `janitor::clean_names()` function, which is expressly built for the purpose of cleaning object names. (Q: How else could we have done this?)
 
-```{r}
-library(janitor)
+```{r pre_iaaf_3, dependson=pre_iaaf}
+# library(janitor) ## ALready loaded
 
 pre_iaaf <-
   pre_iaaf %>%
@@ -170,7 +168,7 @@ pre_iaaf
 
 Hmmm. There are is a slight misread due to a rowspan associated with the back-to-back records of Isaac Westergren in Gävle, Sweden. We could ID and fix cases like this in several ways. The approach that I'm going to use here is to see if we can convert the "athlete" column into a numeric and, if so, replace these cells with the preceding value.
 
-```{r}
+```{r pre_iaaf_4, dependson=pre_iaaf}
 pre_iaaf <-
   pre_iaaf %>%
   mutate(athlete = ifelse(is.na(as.numeric(athlete)), athlete, lag(athlete)))
@@ -178,8 +176,8 @@ pre_iaaf <-
 
 Lastly, let's fix the date column so that R recognises that the character string for what it actually is.
 
-```{r, message=F}
-library(lubridate)
+```{r pre_iaaf_5, dependson=pre_iaaf, message=F}
+# library(lubridate) ## Already loaded
 
 pre_iaaf <-
   pre_iaaf %>%
@@ -187,14 +185,7 @@ pre_iaaf <-
 pre_iaaf
 ```
 
-Finally, we have our cleaned data frame. We can now easily plot the data if we wanted. I'm going to use (and set) the `theme_ipsum()` plotting theme from the [hrbrthemes package](https://github.com/hrbrmstr/hrbrthemes) because I like it, but this certainly isn't necessary.
-
-```{r pre_plot}
-library(hrbrthemes) ## Just for the theme_ipsum() plot theme that I like
-theme_set(theme_ipsum()) ## Set the theme for the rest of this R session
-
-ggplot(pre_iaaf, aes(date, time)) + geom_point()
-```
+Finally, we have our cleaned data frame. We could easily plot the pre-IAAF data if we so wished. However, I'm going to hold off doing that until we've scraped the rest of the WR data. Speaking of which...
 
 ### Challenge
 
@@ -233,7 +224,7 @@ Your turn: Download the next two tables from the same WR100m page. Combine these
 ### Table 2: Pre-automatic timing (1912--1976)
 
 Let's start with the second table.
-```{r}
+```{r iaaf_76_1, dependson=m100}
 iaaf_76 <-
   m100 %>%
   html_nodes("#mw-content-text > div > table:nth-child(14)") %>%
@@ -249,7 +240,7 @@ iaaf_76 <-
 
 Fill in any missing athlete data (note that we need slightly different procedure than last time --- Why?) and correct the date. 
 
-```{r}
+```{r iaaf_76_2, dependson=iaaf_76}
 iaaf_76 <-
   iaaf_76 %>%
   mutate(athlete = ifelse(athlete=="", lag(athlete), athlete)) %>%
@@ -258,20 +249,20 @@ iaaf_76 <-
 
 It looks like some dates failed to parse because a record was broken (equaled) on the same day. E.g.
 
-```{r}
+```{r iaaf_76_3, dependson=iaaf_76}
 iaaf_76 %>% tail(20)
 ```
 
 We can try to fix these cases by using the previous value. Let's test it first:
 
-```{r}
+```{r iaaf_76_4, dependson=iaaf_76}
 iaaf_76 %>%
   mutate(date = ifelse(is.na(date), lag(date), date))
 ```
 
 Whoops! Looks like all of our dates are getting converted to numbers. The reason (if you did a bit of Googling) actually has to do with the base `ifelse()` function. In this case, it's better to use the tidyverse equivalent, i.e. `if_else()`.
 
-```{r}
+```{r iaaf_76_5, dependson=iaaf_76}
 iaaf_76 <-
   iaaf_76 %>%
   mutate(date = if_else(is.na(date), lag(date), date))
@@ -283,7 +274,7 @@ iaaf_76
 
 The final table also has its share of unique complications due to row spans, etc. You can inspect the code to see what I'm doing, but I'm just going to run through it here in a single chunk.
 
-```{r}
+```{r iaaf, dependson=m100}
 iaaf <-
   m100 %>%
   html_nodes("#mw-content-text > div > table:nth-child(19)") %>%
@@ -321,7 +312,7 @@ iaaf <-
 
 Let's bind all these separate eras into a single data frame. I'll use `dplyr:: bind_rows()` again and select in the common variables only. I'll also add a new column describing which era an observation falls under.
 
-```{r}
+```{r wr100, dependson=pre_iaaf, dependson=iaaf_76, dependson=iaaf}
 wr100 <- 
   bind_rows(
     pre_iaaf %>% select(time, athlete, nationality:date) %>% mutate(era = "Pre-IAAF"),
@@ -333,31 +324,18 @@ wr100
 
 All that hard works deserves a nice plot, don't you think?
 
-```{r full_plot}
+```{r wr100_plot, dependson=wr100}
 wr100 %>%
-  ggplot(aes(date, time)) + 
+  ggplot(aes(x=date, y=time, col=fct_reorder2(era, date, time))) + 
   geom_point(alpha = 0.7) +
   labs(
     title = "Men's 100m world record progression",
     x = "Date", y = "Time",
     caption = "Source: Wikipedia"
-    )
+    ) +
+  theme(legend.title = element_blank()) ## Switch off legend title
 ```
 
-
-Or, if we can just plot the modern IAFF era. 
-```{r modern_plot}
-wr100 %>%
-  filter(era == "Modern") %>%
-  ggplot(aes(date, time)) + 
-  geom_point(alpha = 0.7) +
-  labs(
-    title = "Men's 100m world record progression",
-    subtitle = "Modern era only",
-    x = "Date", y = "Time",
-    caption = "Source: Wikipedia"
-    )
-```
 
 ## Summary
 
@@ -376,9 +354,9 @@ wr100 %>%
 
 In the next lecture, we're going to focus on client-side web content and interacting with APIs. For the moment, you can practice your `rvest`-based scraping skills by following along with any of the many (many) tutorials available online. I want to make two particular suggestions, though:
 
-### Polite
+### More on web ettiquette
 
-I mentioned the [polite package](https://github.com/dmi3kno/polite) earlier in this lecture. It provides some helpful tools to maintain web etiquette, such as checking for permission and not hammering the host website with requests. It also plays very nicely with the `rvest` workflow that we covered today, so please take a look.
+We spoke a bit about the "be nice" scraping motto at the beginning of the lecture. I also wanted to point you to the **polite** package ([link](https://github.com/dmi3kno/polite)). It provides some helpful tools to maintain web etiquette, such as checking for permission and not hammering the host website with requests. It also plays very nicely with the **rvest** workflow that we covered today, so please take a look.
 
 ### Modeling and prediction
 
