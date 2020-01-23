@@ -447,7 +447,7 @@ Examples:
 
 ---
 
-# Help
+# Help: man
 
 The `man` command ("manual pages") is your friend if you ever need help.
 - Tip: Hit spacebar to scroll down a page at a time, "h" to see the help notes of the `man` command itself and "q" to quit.
@@ -458,7 +458,20 @@ man ls
 
 ---
 
-# Help (cont.)
+# Help: man (cont.)
+
+A useful feature of `man` is quick pattern searching with "/pattern".
+- Try this now by running `$ man ls` again and then typing "/human" (and hitting the return key).
+
+--
+
+</br>
+
+Again, this and other `man` tricks tricks are detailed in the help pages (hit "h").
+
+---
+
+# Help: cheat
 
 I also like the [cheat](https://github.com/chrisallenlane/cheat) utility, which provides a more readable summary / cheatsheet of various command. You'll need to install it first. (Linux and MacOS only.)
 
@@ -886,7 +899,7 @@ wc examples/sonnets.txt
 
 </br> 
 
-PS — You couldn't tell here, but the character count is actually higher than we'd get if we (bothered) counting by hand, because `wc` counts the invisible newline character "/n".
+PS — You couldn't tell here, but the character count is actually higher than we'd get if we (bothered) counting by hand, because `wc` counts the invisible newline character "\n".
 
 ---
 
@@ -996,7 +1009,7 @@ PS &mdash; Another cool (and very fast) shell utility along these lines is [the 
 There are two main commands for manipulating text in the shell, namely `sed` and `awk`.
 - Both of these are very powerful and flexible (`awk` is particularly good with CSVs).
 
-I'm going to show two basic examples without going into depth, but I strongly encourage you to explore more on your own.
+I'm going to show two basic examples without going into depth, but I strongly encourage you to explore more on your own. (Mac users: See [here](https://unix.stackexchange.com/questions/13711/differences-between-sed-on-mac-osx-and-other-standard-sed).)
 
 --
 
@@ -1009,13 +1022,13 @@ cat examples/nursery.txt
 Now, change "Jack" to "Bill".
 
 ```{bash sed1a}
-sed -i "s/Jack/Bill/g" examples/nursery.txt
+sed -i 's/Jack/Bill/g' examples/nursery.txt
 cat examples/nursery.txt
 ```
 
 ```{bash, echo=F}
 ## Change it back for when we want to re-knit the file.
-sed -i "s/Bill/Jack/g" examples/nursery.txt
+sed -i 's/Bill/Jack/g' examples/nursery.txt
 ```
 
 ---
@@ -1028,6 +1041,12 @@ sed -i "s/Bill/Jack/g" examples/nursery.txt
 ```{bash sed2}
 sed -e 's/\s/\n/g' < examples/sonnets.txt | sort | uniq -c | sort -nr | head -10
 ```
+
+--
+
+</br>
+
+PS &mdash; You can also use double quotes (") instead of single ones (') for `sed` and `awk` commands. This can sometimes run you into trouble with special symbols or patterns in the text, though. (Mostly, I want you to be mindful of accidental matching or closing quotation mark pairs.)
 
 ---
 
