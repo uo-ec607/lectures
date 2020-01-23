@@ -1,10 +1,10 @@
 ---
-title: "Webscraping: (1) Server-side and CSS"
+title: "Data Science for Economists"
+subtitle: "Lecture 6: Webscraping: (1) Server-side and CSS"
 author:
   name: Grant R. McDermott
-  affiliation: University of Oregon | EC 607
-  # email: grantmcd@uoregon.edu
-date: Lecture 6  #"`r format(Sys.time(), '%d %B %Y')`"
+  affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
+# date: Lecture 6  #"`r format(Sys.time(), '%d %B %Y')`"
 output: 
   html_document:
     theme: flatly
@@ -92,7 +92,7 @@ Time for a student presentation on [CSS](https://developer.mozilla.org/en-US/doc
 
 The key point is that if you can identify the CSS selector(s) of the content you want, then you can isolate it from the rest of the webpage content that you don't want. This where SelectorGadget comes in. We'll work through an extended example (with a twist!) below, but I highly recommend looking over this [quick vignette](https://cran.r-project.org/web/packages/rvest/vignettes/selectorgadget.html) from Hadley before proceding.
 
-### Application: Mens 100 meters world record progression (Wikipedia)
+## Application: Mens 100 meters (Wikipedia)
 
 Okay, let's get to an application. Say that we want to scrape the Wikipedia page on the [**Men's 100 metres world record progression**](http://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression). 
 
@@ -107,7 +107,7 @@ m100
 
 As you can see, this is an [XML](https://en.wikipedia.org/wiki/XML) document^[XML stands for Extensible Markup Language and is one of the primary languages used for encoding and formatting web pages.] that contains *everything* needed to render the Wikipedia page. It's kind of like viewing someone's entire LaTeX document (preamble, syntax, etc.) when all we want are the data from some tables in their paper.
 
-#### Table 1: Pre-IAAF (1881--1912)
+### Table 1: Pre-IAAF (1881--1912)
 
 Let's try to isolate the first table on the page, which documents the [unofficial progression before the IAAF](https://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression#Unofficial_progression_before_the_IAAF). As per the rvest vignette, we can use `rvest::html_nodes()` to isolate and extract this table from the rest of the HTML document by providing the relevant CSS selector. We should then be able to convert it into a data frame using `rvest::html_table()`. I also recommend using the `fill=TRUE` option here, because otherwise we'll run into formatting problems due to row spans in the Wiki table.
 
@@ -196,7 +196,7 @@ theme_set(theme_ipsum()) ## Set the theme for the rest of this R session
 ggplot(pre_iaaf, aes(date, time)) + geom_point()
 ```
 
-#### Challenge
+### Challenge
 
 Your turn: Download the next two tables from the same WR100m page. Combine these two new tables with the one above into a single data frame and then plot the record progression. Answer below. (No peeking until you have tried yourself first.)
 
@@ -230,7 +230,7 @@ Your turn: Download the next two tables from the same WR100m page. Combine these
 
 .
 
-#### Table 2: Pre-automatic timing (1912--1976)
+### Table 2: Pre-automatic timing (1912--1976)
 
 Let's start with the second table.
 ```{r}
@@ -279,7 +279,7 @@ iaaf_76
 ```
 
 
-#### Table 3: Modern Era (1977 onwards)
+### Table 3: Modern Era (1977 onwards)
 
 The final table also has its share of unique complications due to row spans, etc. You can inspect the code to see what I'm doing, but I'm just going to run through it here in a single chunk.
 
@@ -317,7 +317,7 @@ iaaf <-
   fill(athlete, nationality)
 ```
 
-#### Combined eras
+### Combined eras
 
 Let's bind all these separate eras into a single data frame. I'll use `dplyr:: bind_rows()` again and select in the common variables only. I'll also add a new column describing which era an observation falls under.
 
