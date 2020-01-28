@@ -28,14 +28,14 @@ We're going to be downloading economic data from the FRED API. This will require
 
 ### External software
 
-Today I'll be using [JSONView](https://jsonview.com/), a browser extension that renders JSON output nicely in Chrome and Firefox. (Not needed, but recommended.)
+Today I'll be using [JSONView](https://jsonview.com/), a browser extension that renders JSON output nicely in Chrome and Firefox. (Not required, but recommended.)
 
 ### R packages 
 
-- **New:** `jsonlite`, `httr`, `listviewer`, `usethis`, `fredr`
-- **Already used:** `tidyverse`, `lubridate`, `hrbrthemes`, `janitor`
+- New: **jsonlite**, **httr**, **listviewer**, **usethis**, **fredr**
+- Already used: **tidyverse**, **lubridate**, **hrbrthemes**, **janitor**
 
-Here's a convenient way to install (if necessary) and load all of the above packages. I'll also go ahead and set my preferred plotting theme, but as you wish.
+Here's a convenient way to install (if necessary) and load all of the above packages.
 
 ```{r packages, cache=F, message=F}
 ## Load and install the packages that we'll be using today
@@ -48,7 +48,7 @@ theme_set(hrbrthemes::theme_ipsum())
 
 ## Recap from last time
 
-During the last lecture, we saw that websites and web applications fall into two categories: 1) Server-side and 2) Client-side. We then practised scraping data that falls into the first category --- i.e. rendered server-side --- using the `rvest` package. This technique focuses on CSS selectors (with help from [SelectorGadget](http://selectorgadget.com/)) and HTML tags. We also saw that webscraping often involves as much art as science. The plethora of CSS options and the flexibility of HTML itself means that steps which work perfectly well on one website can easily fail on another website.
+During the last lecture, we saw that websites and web applications fall into two categories: 1) Server-side and 2) Client-side. We then practised scraping data that falls into the first category --- i.e. rendered server-side --- using the **rvest** package. This technique focuses on CSS selectors (with help from [SelectorGadget](http://selectorgadget.com/)) and HTML tags. We also saw that webscraping often involves as much art as science. The plethora of CSS options and the flexibility of HTML itself means that steps which work perfectly well on one website can easily fail on another website.
 
 Today we focus on the second category: Scraping web data that is rendered **client-side**. The good news is that, when available, this approach typically makes it much easier to scrape data from the web. The downside is that, again, it can involve as much art as it does science. Moreover, as I emphasised last time, just because because we *can* scrape data, doesn't mean that we *should* (i.e. ethical, legal and other considerations). These admonishments aside, let's proceed...
 
@@ -65,7 +65,7 @@ All of this requesting, responding and rendering takes places through the host a
 
 ### Student presentation: APIs
 
-If you're new to APIs or reading this after the fact, then I recommend this excellent resource from Zapier: [An Introduction to APIs](https://zapier.com/learn/apis/). It's fairly in-depth, but you don't need to work through the whole thing to get the gist. The summary version is that an API is really just a collection of rules and methods that allow different software applications to interact and share information. This includes not only web servers and browsers, but also software packages like the R libraries we've been using.^[Fun fact: A number of R packages that we'll be using later in this course (e.g. `leaflet`, `plotly`, etc.) are really just a set of wrapper functions that interact with the underlying APIs and convert your R code into some other language (e.g. JavaScript).] Key concepts include:
+If you're new to APIs or reading this after the fact, then I recommend this excellent resource from Zapier: [An Introduction to APIs](https://zapier.com/learn/apis/). It's fairly in-depth, but you don't need to work through the whole thing to get the gist. The summary version is that an API is really just a collection of rules and methods that allow different software applications to interact and share information. This includes not only web servers and browsers, but also software packages like the R libraries we've been using.^[Fun fact: A number of R packages that we'll be using later in this course (e.g. **leaflet**, **plotly**, etc.) are really just a set of wrapper functions that interact with the underlying APIs and convert your R code into some other language (e.g. JavaScript).] Key concepts include:
 
 - **Server:** A powerful computer that runs an API.
 - **Client:** A program that exchanges data with a server through an API.
@@ -100,7 +100,7 @@ Here's a GIF of me completing these steps:
 
 ![](pics/trees.gif)
 
-Now that we've located the API endpoint, let's read the data into R. We'll do so using the `fromJSON()` function from the excellent [jsonlite package](https://cran.r-project.org/web/packages/jsonlite/index.html). This will automatically coerce the JSON array into a regular R data frame. However, I'll go that little bit further and convert it into a tibble, since the output is nicer to work with.
+Now that we've located the API endpoint, let's read the data into R. We'll do so using the `fromJSON()` function from the excellent **jsonlite** package ([link](https://cran.r-project.org/web/packages/jsonlite/index.html)). This will automatically coerce the JSON array into a regular R data frame. However, I'll go that little bit further and convert it into a tibble, since the output is nicer to work with.
 
 ```{r nyc1}
 # library(jsonlite) ## Already loaded
@@ -118,7 +118,7 @@ nyc_trees
 fromJSON("https://data.cityofnewyork.us/resource/nwxe-4ae8.json?$limit=5")
 ```
 
-Getting back on track, let's plot our tree data just to show it worked. One minor thing I want to point out is that `fromJSON()` automatically coerces everything into a character, so we'll also need to convert some columns to numeric before we plot.
+Getting back on track, let's plot our tree data just to show it worked. One minor thing I want to point out is that `jsonlite::fromJSON()` automatically coerces everything into a character, so we'll also need to convert some columns to numeric before we plot.
 
 ```{r nyc3}
 nyc_trees %>% 
@@ -162,7 +162,7 @@ Let's combine these parameters with the endpoint path to view the data directly 
 
 ![](pics/fred-redacted.png)
 
-At this point you're probably tempted to read the JSON object directly into your R environment using the `jsonlite::readJSON()` function. And this will work. However, that's not what we're going to here. Rather, we're going to go through the [**httr** package](https://httr.r-lib.org/). Why? Well, basically because `httr` comes with a variety of features that allow us to interact more flexibly and securely with web APIs. 
+At this point you're probably tempted to read the JSON object directly into your R environment using the `jsonlite::readJSON()` function. And this will work. However, that's not what we're going to here. Rather, we're going to go through the **httr** package ([link](https://httr.r-lib.org/)). Why? Well, basically because **httr** comes with a variety of features that allow us to interact more flexibly and securely with web APIs. 
 
 Let's start by defining some convenience variables such as the endpoint path and the parameters (which we'll store in a list).
 
@@ -182,7 +182,6 @@ params = list(
   series_id="GNPCA"
   )
 ```
-
 
 Next, we'll use the `httr::GET()` function to request (i.e. download) the data. I'll assign this to an object called `fred`.
 
@@ -207,7 +206,7 @@ Take a second to print the `fred` object in your console. What you'll see is pre
 ##   Size: 9.09 kB
 ```
 
-To extract the content (i.e. data) from of this response, I'll use the `httr::content()` function. Moreover, we know that this content is a JSON array, so we can convert it to an R object using `jsonlite::fromJSON()` as we did above. However, we don't yet know what format it will be in. Okay --- SPOILER --- it's going to be a list. I could use the base `str()` function to delve into the structure of this list. However, I want to introduce you to the `listviewer::jsonedit()` function, which allows for interactive inspection of list objects.^[Complex nested lists are the law of the land when it comes to JSON data. Don't worry too much about this now, but the good news is that R ideally suited to parse and handle these nested lists. We'll see more examples later in the course when we start working with programming and spatial data (e.g. geoJSON).]
+To extract the content (i.e. data) from of this response, I'll use the `httr::content()` function. Moreover, since we know that this content is a JSON array, we can convert it to an R object using `jsonlite::fromJSON()` as we did above. With that being said, we *don't* yet know what format the data will taken in R. (SPOILER: Okay, it will be a list.) I could use the base `str()` function to delve into the structure of the object. However, I want to take this opportunity to introduce you to the **listviewer** package ([link](https://github.com/timelyportfolio/listviewer)) ::jsonedit()`, which allows for interactive inspection of list objects.^[Complex nested lists are the law of the land when it comes to JSON data. Don't worry too much about this now, but the good news is that R ideally suited to parse and handle these nested lists. We'll see more examples later in the course when we start working with programming and spatial data.]
 
 ```{r fred3, cache=F, out.width="100%", out.height="10%"}
 fred %>% 
@@ -230,7 +229,7 @@ fred <-
 fred
 ```
 
-Okay! We've finally got our data and are nearly ready for some plotting. However, recall that `fromJSON()` automatically converts everything to characters so I'll quickly change some variables to dates (using `lubridate::ymd()`) and numeric.
+Okay! We've finally got our data and are nearly ready for some plotting. Recall that `jsonlite::fromJSON()` automatically converts everything to characters, so I'll quickly change some variables to dates (using `lubridate::ymd()`) and numeric.
 
 ```{r fred5, message=F}
 # library(lubridate) ## Already loaded above
@@ -257,10 +256,12 @@ fred %>%
 
 ### Aside: Safely store and use API keys as environment variables
 
-In the above example, I assumed that you would just replace "YOUR_FRED_KEY" with your actual API key. This is obviously not very secure or scalable, since it means that you can't share your R script without giving away your key. (The same is true for compiled R Markdown documents like these lecture notes.) Luckily, there's an easy way to safely store and use sensitive information like API keys or passwords: Simply save them as an R [**environment variables**](https://stat.ethz.ch/R-manual/R-devel/library/base/html/EnvVar.html). There are two, closely related approaches:
+In the above example, I assumed that you would just replace the "YOUR_FRED_KEY" holder text with your actual API key. This is obviously not very secure or scalable, since it means that you can't share your R script without giving away your key.^[The same is true for compiled R Markdown documents like these lecture notes.] Luckily, there's an easy way to safely store and use sensitive information like API keys or passwords: Simply save them as an R [**environment variables**](https://stat.ethz.ch/R-manual/R-devel/library/base/html/EnvVar.html). There are two, closely related approaches:
 
 1. Set an environment variable for the current R session only.
 2. Set an environment variable that persists across R sessions.
+
+Let's briefly review each in turn.
 
 #### 1) Set an environment variable for the current R session only
 
@@ -271,7 +272,7 @@ Defining an environment variable for the current R session is very straightforwa
 Sys.setenv(MY_API_KEY="abcdefghijklmnopqrstuvwxyz0123456789") 
 ```
 
-Once this is done, you can then safely assign your key to an object --- including within a R Markdown document that you're going to knit and share --- using the `Sys.getenv()` function. For example:
+Once this is done, you can then safely assign your key to an object --- including within an R Markdown document that you're going to knit and share --- using the `Sys.getenv()` function. For example:
 
 ```{r get_renviron_current}
 ## Assign the environment variable to an R object
@@ -284,14 +285,14 @@ my_api_key
 
 #### 2) Set an environment variable that persist across R sessions
 
-The trick to setting an R environment variable that is available across sessions is to add it to a special file call `.Renviron`. This is a text file that lives on your home directory, which R reads automatically upon startup. Because `~/.Renviron` is just a text file, you can edit it with whatever is your preferred text editor. However, you may need to create it first if it doesn't exist. A convenient way to do all of this from RStudio is with the `usethis::edit_r_environ()` function. You will need to run the next few lines interactively:
+The trick to setting an R environment variable that is available across sessions is to add it to a special file called `~/.Renviron`. This is a text file that lives on your home directory --- note the `~/` path --- which R automatically reads upon startup. Because `~/.Renviron` is just a text file, you can edit it with whatever is your preferred text editor. However, you may need to create it first if it doesn't exist. A convenient way to do all of this from RStudio is with the `usethis::edit_r_environ()` function. You will need to run the next few lines interactively:
 
 ```{r edit_r_environ, eval = F}
 ## Open your .Renviron file. Here we can add API keys that persist across R sessions.
 usethis::edit_r_environ() 
 ```
 
-This will open up your `~/.Renviron` file in a new RStudio window, which you can modify as needed. As an example, let's say that you want to add your FRED API key as an environment variable that persists across sessions. You can do this by simply adding a line like the below to your `~/.Renviron` file and saving.^[I suggest calling it something that easy to remember like "FRED_API_KEY", but as you wish.]
+This will open up your `~/.Renviron` file in a new RStudio window, which you can then modify as needed. As an example, let's say that you want to add your FRED API key as an environment variable that persists across sessions. You can do this by simply adding a line like the below to your `~/.Renviron` file and saving.^[I suggest calling it something that's easy to remember like "FRED_API_KEY", but as you wish.]
 
 ```
 FRED_API_KEY="abcdefghijklmnopqrstuvwxyz0123456789" ## Replace with your actual key
@@ -314,11 +315,11 @@ params = list(
   )
 ```
 
+We're going to be revisiting (and setting) environment variables once we get to the cloud computation part of the course. So please make sure that you've understood this section and that you're new FRED API key works.
 
 ### Use a package
 
-One of the great features about the R (and data science community in general) is that someone has probably written a package that does all the heavy API lifting for you. We'll come across many examples during the remainder of this course, but for the moment I want you to check out the [fredr package](http://sboysel.github.io/fredr/index.html). How would you access the same GDP data as above using this package? (Hint: See [here](https://cran.r-project.org/web/packages/fredr/vignettes/fredr.html).)
-
+One of the great features about the R (and data science community in general) is that someone has probably written a package that does all the heavy API lifting for you. We'll come across many examples during the remainder of this course, but for the moment I want to flag the **fredr** package ([link](http://sboysel.github.io/fredr/index.html)). Take a look at the "Get started" page to see how you could access the same GDP data as above, but this time going through a package.
 
 
 ## Application 3: World rugby rankings
