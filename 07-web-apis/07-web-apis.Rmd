@@ -1,10 +1,10 @@
 ---
-title: "Webscraping: (2) Client-side and APIs"
+title: "Data Science for Economists"
+subtitle: "Lecture 7: Webscraping: (2) Client-side and APIs"
 author:
   name: Grant R. McDermott
-  affiliation: University of Oregon | EC 607
-  # email: grantmcd@uoregon.edu
-date: Lecture 7  #"`r format(Sys.time(), '%d %B %Y')`"
+  affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
+# date: Lecture 6  #"`r format(Sys.time(), '%d %B %Y')`"
 output: 
   html_document:
     theme: flatly
@@ -155,7 +155,7 @@ For this second example application, I'm going to show you how to download the d
 As with all APIs, a good place to start is the [FRED API developer docs](https://research.stlouisfed.org/docs/api/fred/). If you read through these, you'd see that the endpoint path we're interested in is [**series/observations**](https://research.stlouisfed.org/docs/api/fred/series_observations.html). This endpoint "gets the observations or data values for an economic data series". The endpoint documentation gives a more in-depth discussion, including the various parameters that it accepts.^[Think of API *parameters* the same way that you think about function *arguments*. They are valid inputs (instructions) that modify the response to an API request.] However, the parameters that we'll be focused on here are simply:
 
 - **file_type:** "json" (Not required, but our preferred type of output.)
-- **series_id:** "GNPCA" (Required. The series data that we want.)
+- **series_id:** "GNPCA" (Required. The data series that we want.)
 - **api_key:** "YOUR_API_KEY" (Required. Go and fetch/copy your key now.)
 
 Let's combine these parameters with the endpoint path to view the data directly in our browser. Head over to [https://api.stlouisfed.org/fred/series/observations?series_id=GNPCA&api_key=<mark>YOUR_API_KEY</mark>&file_type=json](https://api.stlouisfed.org/fred/series/observations?series_id=GNPCA&api_key=YOUR_API_KEY&file_type=json), replacing "YOUR_API_KEY" with your actual key. You should see something like the following:
