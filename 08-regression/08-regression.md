@@ -1,10 +1,10 @@
 ---
-title: "Regression analysis in R"
+title: "Data Science for Economists"
+subtitle: "Lecture 8: Regression analysis in R"
 author:
   name: Grant R. McDermott
-  affiliation: University of Oregon | EC 607
-  # email: grantmcd@uoregon.edu
-date: Lecture 8  #"27 June 2019"
+  affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
+# date: Lecture 6  #"30 January 2020"
 output: 
   html_document:
     theme: flatly
