@@ -1,10 +1,10 @@
 ---
-title: "Functions in R: 1) Introductory concepts"
+title: "Data Science for Economists"
+subtitle: "Lecture 10: Functions in R: (1) Introductory concepts"
 author:
   name: Grant R. McDermott
-  affiliation: University of Oregon | EC 607
-  # email: grantmcd@uoregon.edu
-date: Lecture 10  #"`r format(Sys.time(), '%d %B %Y')`"
+  affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
+# date: Lecture 10  #"`r format(Sys.time(), '%d %B %Y')`"
 output: 
   html_document:
     theme: flatly

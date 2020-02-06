@@ -1,18 +1,31 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
 
-<title>Functions in R: 1) Introductory concepts</title>
+<title>Data Science for Economists</title>
 
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
 <script>/*! jQuery v1.11.3 | (c) 2005, 2015 jQuery Foundation, Inc. | jquery.org/license */
 !function(a,b){"object"==typeof module&&"object"==typeof module.exports?module.exports=a.document?b(a,!0):function(a){if(!a.document)throw new Error("jQuery requires a window with a document");return b(a)}:b(a)}("undefined"!=typeof window?window:this,function(a,b){var c=[],d=c.slice,e=c.concat,f=c.push,g=c.indexOf,h={},i=h.toString,j=h.hasOwnProperty,k={},l="1.11.3",m=function(a,b){return new m.fn.init(a,b)},n=/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g,o=/^-ms-/,p=/-([\da-z])/gi,q=function(a,b){return b.toUpperCase()};m.fn=m.prototype={jquery:l,constructor:m,selector:"",length:0,toArray:function(){return d.call(this)},get:function(a){return null!=a?0>a?this[a+this.length]:this[a]:d.call(this)},pushStack:function(a){var b=m.merge(this.constructor(),a);return b.prevObject=this,b.context=this.context,b},each:function(a,b){return m.each(this,a,b)},map:function(a){return this.pushStack(m.map(this,function(b,c){return a.call(b,c,b)}))},slice:function(){return this.pushStack(d.apply(this,arguments))},first:function(){return this.eq(0)},last:function(){return this.eq(-1)},eq:function(a){var b=this.length,c=+a+(0>a?b:0);return this.pushStack(c>=0&&b>c?[this[c]]:[])},end:function(){return this.prevObject||this.constructor(null)},push:f,sort:c.sort,splice:c.splice},m.extend=m.fn.extend=function(){var a,b,c,d,e,f,g=arguments[0]||{},h=1,i=arguments.length,j=!1;for("boolean"==typeof g&&(j=g,g=arguments[h]||{},h++),"object"==typeof g||m.isFunction(g)||(g={}),h===i&&(g=this,h--);i>h;h++)if(null!=(e=arguments[h]))for(d in e)a=g[d],c=e[d],g!==c&&(j&&c&&(m.isPlainObject(c)||(b=m.isArray(c)))?(b?(b=!1,f=a&&m.isArray(a)?a:[]):f=a&&m.isPlainObject(a)?a:{},g[d]=m.extend(j,f,c)):void 0!==c&&(g[d]=c));return g},m.extend({expando:"jQuery"+(l+Math.random()).replace(/\D/g,""),isReady:!0,error:function(a){throw new Error(a)},noop:function(){},isFunction:function(a){return"function"===m.type(a)},isArray:Array.isArray||function(a){return"array"===m.type(a)},isWindow:function(a){return null!=a&&a==a.window},isNumeric:function(a){return!m.isArray(a)&&a-parseFloat(a)+1>=0},isEmptyObject:function(a){var b;for(b in a)return!1;return!0},isPlainObject:function(a){var b;if(!a||"object"!==m.type(a)||a.nodeType||m.isWindow(a))return!1;try{if(a.constructor&&!j.call(a,"constructor")&&!j.call(a.constructor.prototype,"isPrototypeOf"))return!1}catch(c){return!1}if(k.ownLast)for(b in a)return j.call(a,b);for(b in a);return void 0===b||j.call(a,b)},type:function(a){return null==a?a+"":"object"==typeof a||"function"==typeof a?h[i.call(a)]||"object":typeof a},globalEval:function(b){b&&m.trim(b)&&(a.execScript||function(b){a.eval.call(a,b)})(b)},camelCase:function(a){return a.replace(o,"ms-").replace(p,q)},nodeName:function(a,b){return a.nodeName&&a.nodeName.toLowerCase()===b.toLowerCase()},each:function(a,b,c){var d,e=0,f=a.length,g=r(a);if(c){if(g){for(;f>e;e++)if(d=b.apply(a[e],c),d===!1)break}else for(e in a)if(d=b.apply(a[e],c),d===!1)break}else if(g){for(;f>e;e++)if(d=b.call(a[e],e,a[e]),d===!1)break}else for(e in a)if(d=b.call(a[e],e,a[e]),d===!1)break;return a},trim:function(a){return null==a?"":(a+"").replace(n,"")},makeArray:function(a,b){var c=b||[];return null!=a&&(r(Object(a))?m.merge(c,"string"==typeof a?[a]:a):f.call(c,a)),c},inArray:function(a,b,c){var d;if(b){if(g)return g.call(b,a,c);for(d=b.length,c=c?0>c?Math.max(0,d+c):c:0;d>c;c++)if(c in b&&b[c]===a)return c}return-1},merge:function(a,b){var c=+b.length,d=0,e=a.length;while(c>d)a[e++]=b[d++];if(c!==c)while(void 0!==b[d])a[e++]=b[d++];return a.length=e,a},grep:function(a,b,c){for(var d,e=[],f=0,g=a.length,h=!c;g>f;f++)d=!b(a[f],f),d!==h&&e.push(a[f]);return e},map:function(a,b,c){var d,f=0,g=a.length,h=r(a),i=[];if(h)for(;g>f;f++)d=b(a[f],f,c),null!=d&&i.push(d);else for(f in a)d=b(a[f],f,c),null!=d&&i.push(d);return e.apply([],i)},guid:1,proxy:function(a,b){var c,e,f;return"string"==typeof b&&(f=a[b],b=a,a=f),m.isFunction(a)?(c=d.call(arguments,2),e=function(){return a.apply(b||this,c.concat(d.call(arguments)))},e.guid=a.guid=a.guid||m.guid++,e):void 0},now:function(){return+new Date},support:k}),m.each("Boolean Number String Function Array Date RegExp Object Error".split(" "),function(a,b){h["[object "+b+"]"]=b.toLowerCase()});function r(a){var b="length"in a&&a.length,c=m.type(a);return"function"===c||m.isWindow(a)?!1:1===a.nodeType&&b?!0:"array"===c||0===b||"number"==typeof b&&b>0&&b-1 in a}var s=function(a){var b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u="sizzle"+1*new Date,v=a.document,w=0,x=0,y=ha(),z=ha(),A=ha(),B=function(a,b){return a===b&&(l=!0),0},C=1<<31,D={}.hasOwnProperty,E=[],F=E.pop,G=E.push,H=E.push,I=E.slice,J=function(a,b){for(var c=0,d=a.length;d>c;c++)if(a[c]===b)return c;return-1},K="checked|selected|async|autofocus|autoplay|controls|defer|disabled|hidden|ismap|loop|multiple|open|readonly|required|scoped",L="[\\x20\\t\\r\\n\\f]",M="(?:\\\\.|[\\w-]|[^\\x00-\\xa0])+",N=M.replace("w","w#"),O="\\["+L+"*("+M+")(?:"+L+"*([*^$|!~]?=)"+L+"*(?:'((?:\\\\.|[^\\\\'])*)'|\"((?:\\\\.|[^\\\\\"])*)\"|("+N+"))|)"+L+"*\\]",P=":("+M+")(?:\\((('((?:\\\\.|[^\\\\'])*)'|\"((?:\\\\.|[^\\\\\"])*)\")|((?:\\\\.|[^\\\\()[\\]]|"+O+")*)|.*)\\)|)",Q=new RegExp(L+"+","g"),R=new RegExp("^"+L+"+|((?:^|[^\\\\])(?:\\\\.)*)"+L+"+$","g"),S=new RegExp("^"+L+"*,"+L+"*"),T=new RegExp("^"+L+"*([>+~]|"+L+")"+L+"*"),U=new RegExp("="+L+"*([^\\]'\"]*?)"+L+"*\\]","g"),V=new RegExp(P),W=new RegExp("^"+N+"$"),X={ID:new RegExp("^#("+M+")"),CLASS:new RegExp("^\\.("+M+")"),TAG:new RegExp("^("+M.replace("w","w*")+")"),ATTR:new RegExp("^"+O),PSEUDO:new RegExp("^"+P),CHILD:new RegExp("^:(only|first|last|nth|nth-last)-(child|of-type)(?:\\("+L+"*(even|odd|(([+-]|)(\\d*)n|)"+L+"*(?:([+-]|)"+L+"*(\\d+)|))"+L+"*\\)|)","i"),bool:new RegExp("^(?:"+K+")$","i"),needsContext:new RegExp("^"+L+"*[>+~]|:(even|odd|eq|gt|lt|nth|first|last)(?:\\("+L+"*((?:-\\d)?\\d*)"+L+"*\\)|)(?=[^-]|$)","i")},Y=/^(?:input|select|textarea|button)$/i,Z=/^h\d$/i,$=/^[^{]+\{\s*\[native \w/,_=/^(?:#([\w-]+)|(\w+)|\.([\w-]+))$/,aa=/[+~]/,ba=/'|\\/g,ca=new RegExp("\\\\([\\da-f]{1,6}"+L+"?|("+L+")|.)","ig"),da=function(a,b,c){var d="0x"+b-65536;return d!==d||c?b:0>d?String.fromCharCode(d+65536):String.fromCharCode(d>>10|55296,1023&d|56320)},ea=function(){m()};try{H.apply(E=I.call(v.childNodes),v.childNodes),E[v.childNodes.length].nodeType}catch(fa){H={apply:E.length?function(a,b){G.apply(a,I.call(b))}:function(a,b){var c=a.length,d=0;while(a[c++]=b[d++]);a.length=c-1}}}function ga(a,b,d,e){var f,h,j,k,l,o,r,s,w,x;if((b?b.ownerDocument||b:v)!==n&&m(b),b=b||n,d=d||[],k=b.nodeType,"string"!=typeof a||!a||1!==k&&9!==k&&11!==k)return d;if(!e&&p){if(11!==k&&(f=_.exec(a)))if(j=f[1]){if(9===k){if(h=b.getElementById(j),!h||!h.parentNode)return d;if(h.id===j)return d.push(h),d}else if(b.ownerDocument&&(h=b.ownerDocument.getElementById(j))&&t(b,h)&&h.id===j)return d.push(h),d}else{if(f[2])return H.apply(d,b.getElementsByTagName(a)),d;if((j=f[3])&&c.getElementsByClassName)return H.apply(d,b.getElementsByClassName(j)),d}if(c.qsa&&(!q||!q.test(a))){if(s=r=u,w=b,x=1!==k&&a,1===k&&"object"!==b.nodeName.toLowerCase()){o=g(a),(r=b.getAttribute("id"))?s=r.replace(ba,"\\$&"):b.setAttribute("id",s),s="[id='"+s+"'] ",l=o.length;while(l--)o[l]=s+ra(o[l]);w=aa.test(a)&&pa(b.parentNode)||b,x=o.join(",")}if(x)try{return H.apply(d,w.querySelectorAll(x)),d}catch(y){}finally{r||b.removeAttribute("id")}}}return i(a.replace(R,"$1"),b,d,e)}function ha(){var a=[];function b(c,e){return a.push(c+" ")>d.cacheLength&&delete b[a.shift()],b[c+" "]=e}return b}function ia(a){return a[u]=!0,a}function ja(a){var b=n.createElement("div");try{return!!a(b)}catch(c){return!1}finally{b.parentNode&&b.parentNode.removeChild(b),b=null}}function ka(a,b){var c=a.split("|"),e=a.length;while(e--)d.attrHandle[c[e]]=b}function la(a,b){var c=b&&a,d=c&&1===a.nodeType&&1===b.nodeType&&(~b.sourceIndex||C)-(~a.sourceIndex||C);if(d)return d;if(c)while(c=c.nextSibling)if(c===b)return-1;return a?1:-1}function ma(a){return function(b){var c=b.nodeName.toLowerCase();return"input"===c&&b.type===a}}function na(a){return function(b){var c=b.nodeName.toLowerCase();return("input"===c||"button"===c)&&b.type===a}}function oa(a){return ia(function(b){return b=+b,ia(function(c,d){var e,f=a([],c.length,b),g=f.length;while(g--)c[e=f[g]]&&(c[e]=!(d[e]=c[e]))})})}function pa(a){return a&&"undefined"!=typeof a.getElementsByTagName&&a}c=ga.support={},f=ga.isXML=function(a){var b=a&&(a.ownerDocument||a).documentElement;return b?"HTML"!==b.nodeName:!1},m=ga.setDocument=function(a){var b,e,g=a?a.ownerDocument||a:v;return g!==n&&9===g.nodeType&&g.documentElement?(n=g,o=g.documentElement,e=g.defaultView,e&&e!==e.top&&(e.addEventListener?e.addEventListener("unload",ea,!1):e.attachEvent&&e.attachEvent("onunload",ea)),p=!f(g),c.attributes=ja(function(a){return a.className="i",!a.getAttribute("className")}),c.getElementsByTagName=ja(function(a){return a.appendChild(g.createComment("")),!a.getElementsByTagName("*").length}),c.getElementsByClassName=$.test(g.getElementsByClassName),c.getById=ja(function(a){return o.appendChild(a).id=u,!g.getElementsByName||!g.getElementsByName(u).length}),c.getById?(d.find.ID=function(a,b){if("undefined"!=typeof b.getElementById&&p){var c=b.getElementById(a);return c&&c.parentNode?[c]:[]}},d.filter.ID=function(a){var b=a.replace(ca,da);return function(a){return a.getAttribute("id")===b}}):(delete d.find.ID,d.filter.ID=function(a){var b=a.replace(ca,da);return function(a){var c="undefined"!=typeof a.getAttributeNode&&a.getAttributeNode("id");return c&&c.value===b}}),d.find.TAG=c.getElementsByTagName?function(a,b){return"undefined"!=typeof b.getElementsByTagName?b.getElementsByTagName(a):c.qsa?b.querySelectorAll(a):void 0}:function(a,b){var c,d=[],e=0,f=b.getElementsByTagName(a);if("*"===a){while(c=f[e++])1===c.nodeType&&d.push(c);return d}return f},d.find.CLASS=c.getElementsByClassName&&function(a,b){return p?b.getElementsByClassName(a):void 0},r=[],q=[],(c.qsa=$.test(g.querySelectorAll))&&(ja(function(a){o.appendChild(a).innerHTML="<a id='"+u+"'></a><select id='"+u+"-\f]' msallowcapture=''><option selected=''></option></select>",a.querySelectorAll("[msallowcapture^='']").length&&q.push("[*^$]="+L+"*(?:''|\"\")"),a.querySelectorAll("[selected]").length||q.push("\\["+L+"*(?:value|"+K+")"),a.querySelectorAll("[id~="+u+"-]").length||q.push("~="),a.querySelectorAll(":checked").length||q.push(":checked"),a.querySelectorAll("a#"+u+"+*").length||q.push(".#.+[+~]")}),ja(function(a){var b=g.createElement("input");b.setAttribute("type","hidden"),a.appendChild(b).setAttribute("name","D"),a.querySelectorAll("[name=d]").length&&q.push("name"+L+"*[*^$|!~]?="),a.querySelectorAll(":enabled").length||q.push(":enabled",":disabled"),a.querySelectorAll("*,:x"),q.push(",.*:")})),(c.matchesSelector=$.test(s=o.matches||o.webkitMatchesSelector||o.mozMatchesSelector||o.oMatchesSelector||o.msMatchesSelector))&&ja(function(a){c.disconnectedMatch=s.call(a,"div"),s.call(a,"[s!='']:x"),r.push("!=",P)}),q=q.length&&new RegExp(q.join("|")),r=r.length&&new RegExp(r.join("|")),b=$.test(o.compareDocumentPosition),t=b||$.test(o.contains)?function(a,b){var c=9===a.nodeType?a.documentElement:a,d=b&&b.parentNode;return a===d||!(!d||1!==d.nodeType||!(c.contains?c.contains(d):a.compareDocumentPosition&&16&a.compareDocumentPosition(d)))}:function(a,b){if(b)while(b=b.parentNode)if(b===a)return!0;return!1},B=b?function(a,b){if(a===b)return l=!0,0;var d=!a.compareDocumentPosition-!b.compareDocumentPosition;return d?d:(d=(a.ownerDocument||a)===(b.ownerDocument||b)?a.compareDocumentPosition(b):1,1&d||!c.sortDetached&&b.compareDocumentPosition(a)===d?a===g||a.ownerDocument===v&&t(v,a)?-1:b===g||b.ownerDocument===v&&t(v,b)?1:k?J(k,a)-J(k,b):0:4&d?-1:1)}:function(a,b){if(a===b)return l=!0,0;var c,d=0,e=a.parentNode,f=b.parentNode,h=[a],i=[b];if(!e||!f)return a===g?-1:b===g?1:e?-1:f?1:k?J(k,a)-J(k,b):0;if(e===f)return la(a,b);c=a;while(c=c.parentNode)h.unshift(c);c=b;while(c=c.parentNode)i.unshift(c);while(h[d]===i[d])d++;return d?la(h[d],i[d]):h[d]===v?-1:i[d]===v?1:0},g):n},ga.matches=function(a,b){return ga(a,null,null,b)},ga.matchesSelector=function(a,b){if((a.ownerDocument||a)!==n&&m(a),b=b.replace(U,"='$1']"),!(!c.matchesSelector||!p||r&&r.test(b)||q&&q.test(b)))try{var d=s.call(a,b);if(d||c.disconnectedMatch||a.document&&11!==a.document.nodeType)return d}catch(e){}return ga(b,n,null,[a]).length>0},ga.contains=function(a,b){return(a.ownerDocument||a)!==n&&m(a),t(a,b)},ga.attr=function(a,b){(a.ownerDocument||a)!==n&&m(a);var e=d.attrHandle[b.toLowerCase()],f=e&&D.call(d.attrHandle,b.toLowerCase())?e(a,b,!p):void 0;return void 0!==f?f:c.attributes||!p?a.getAttribute(b):(f=a.getAttributeNode(b))&&f.specified?f.value:null},ga.error=function(a){throw new Error("Syntax error, unrecognized expression: "+a)},ga.uniqueSort=function(a){var b,d=[],e=0,f=0;if(l=!c.detectDuplicates,k=!c.sortStable&&a.slice(0),a.sort(B),l){while(b=a[f++])b===a[f]&&(e=d.push(f));while(e--)a.splice(d[e],1)}return k=null,a},e=ga.getText=function(a){var b,c="",d=0,f=a.nodeType;if(f){if(1===f||9===f||11===f){if("string"==typeof a.textContent)return a.textContent;for(a=a.firstChild;a;a=a.nextSibling)c+=e(a)}else if(3===f||4===f)return a.nodeValue}else while(b=a[d++])c+=e(b);return c},d=ga.selectors={cacheLength:50,createPseudo:ia,match:X,attrHandle:{},find:{},relative:{">":{dir:"parentNode",first:!0}," ":{dir:"parentNode"},"+":{dir:"previousSibling",first:!0},"~":{dir:"previousSibling"}},preFilter:{ATTR:function(a){return a[1]=a[1].replace(ca,da),a[3]=(a[3]||a[4]||a[5]||"").replace(ca,da),"~="===a[2]&&(a[3]=" "+a[3]+" "),a.slice(0,4)},CHILD:function(a){return a[1]=a[1].toLowerCase(),"nth"===a[1].slice(0,3)?(a[3]||ga.error(a[0]),a[4]=+(a[4]?a[5]+(a[6]||1):2*("even"===a[3]||"odd"===a[3])),a[5]=+(a[7]+a[8]||"odd"===a[3])):a[3]&&ga.error(a[0]),a},PSEUDO:function(a){var b,c=!a[6]&&a[2];return X.CHILD.test(a[0])?null:(a[3]?a[2]=a[4]||a[5]||"":c&&V.test(c)&&(b=g(c,!0))&&(b=c.indexOf(")",c.length-b)-c.length)&&(a[0]=a[0].slice(0,b),a[2]=c.slice(0,b)),a.slice(0,3))}},filter:{TAG:function(a){var b=a.replace(ca,da).toLowerCase();return"*"===a?function(){return!0}:function(a){return a.nodeName&&a.nodeName.toLowerCase()===b}},CLASS:function(a){var b=y[a+" "];return b||(b=new RegExp("(^|"+L+")"+a+"("+L+"|$)"))&&y(a,function(a){return b.test("string"==typeof a.className&&a.className||"undefined"!=typeof a.getAttribute&&a.getAttribute("class")||"")})},ATTR:function(a,b,c){return function(d){var e=ga.attr(d,a);return null==e?"!="===b:b?(e+="","="===b?e===c:"!="===b?e!==c:"^="===b?c&&0===e.indexOf(c):"*="===b?c&&e.indexOf(c)>-1:"$="===b?c&&e.slice(-c.length)===c:"~="===b?(" "+e.replace(Q," ")+" ").indexOf(c)>-1:"|="===b?e===c||e.slice(0,c.length+1)===c+"-":!1):!0}},CHILD:function(a,b,c,d,e){var f="nth"!==a.slice(0,3),g="last"!==a.slice(-4),h="of-type"===b;return 1===d&&0===e?function(a){return!!a.parentNode}:function(b,c,i){var j,k,l,m,n,o,p=f!==g?"nextSibling":"previousSibling",q=b.parentNode,r=h&&b.nodeName.toLowerCase(),s=!i&&!h;if(q){if(f){while(p){l=b;while(l=l[p])if(h?l.nodeName.toLowerCase()===r:1===l.nodeType)return!1;o=p="only"===a&&!o&&"nextSibling"}return!0}if(o=[g?q.firstChild:q.lastChild],g&&s){k=q[u]||(q[u]={}),j=k[a]||[],n=j[0]===w&&j[1],m=j[0]===w&&j[2],l=n&&q.childNodes[n];while(l=++n&&l&&l[p]||(m=n=0)||o.pop())if(1===l.nodeType&&++m&&l===b){k[a]=[w,n,m];break}}else if(s&&(j=(b[u]||(b[u]={}))[a])&&j[0]===w)m=j[1];else while(l=++n&&l&&l[p]||(m=n=0)||o.pop())if((h?l.nodeName.toLowerCase()===r:1===l.nodeType)&&++m&&(s&&((l[u]||(l[u]={}))[a]=[w,m]),l===b))break;return m-=e,m===d||m%d===0&&m/d>=0}}},PSEUDO:function(a,b){var c,e=d.pseudos[a]||d.setFilters[a.toLowerCase()]||ga.error("unsupported pseudo: "+a);return e[u]?e(b):e.length>1?(c=[a,a,"",b],d.setFilters.hasOwnProperty(a.toLowerCase())?ia(function(a,c){var d,f=e(a,b),g=f.length;while(g--)d=J(a,f[g]),a[d]=!(c[d]=f[g])}):function(a){return e(a,0,c)}):e}},pseudos:{not:ia(function(a){var b=[],c=[],d=h(a.replace(R,"$1"));return d[u]?ia(function(a,b,c,e){var f,g=d(a,null,e,[]),h=a.length;while(h--)(f=g[h])&&(a[h]=!(b[h]=f))}):function(a,e,f){return b[0]=a,d(b,null,f,c),b[0]=null,!c.pop()}}),has:ia(function(a){return function(b){return ga(a,b).length>0}}),contains:ia(function(a){return a=a.replace(ca,da),function(b){return(b.textContent||b.innerText||e(b)).indexOf(a)>-1}}),lang:ia(function(a){return W.test(a||"")||ga.error("unsupported lang: "+a),a=a.replace(ca,da).toLowerCase(),function(b){var c;do if(c=p?b.lang:b.getAttribute("xml:lang")||b.getAttribute("lang"))return c=c.toLowerCase(),c===a||0===c.indexOf(a+"-");while((b=b.parentNode)&&1===b.nodeType);return!1}}),target:function(b){var c=a.location&&a.location.hash;return c&&c.slice(1)===b.id},root:function(a){return a===o},focus:function(a){return a===n.activeElement&&(!n.hasFocus||n.hasFocus())&&!!(a.type||a.href||~a.tabIndex)},enabled:function(a){return a.disabled===!1},disabled:function(a){return a.disabled===!0},checked:function(a){var b=a.nodeName.toLowerCase();return"input"===b&&!!a.checked||"option"===b&&!!a.selected},selected:function(a){return a.parentNode&&a.parentNode.selectedIndex,a.selected===!0},empty:function(a){for(a=a.firstChild;a;a=a.nextSibling)if(a.nodeType<6)return!1;return!0},parent:function(a){return!d.pseudos.empty(a)},header:function(a){return Z.test(a.nodeName)},input:function(a){return Y.test(a.nodeName)},button:function(a){var b=a.nodeName.toLowerCase();return"input"===b&&"button"===a.type||"button"===b},text:function(a){var b;return"input"===a.nodeName.toLowerCase()&&"text"===a.type&&(null==(b=a.getAttribute("type"))||"text"===b.toLowerCase())},first:oa(function(){return[0]}),last:oa(function(a,b){return[b-1]}),eq:oa(function(a,b,c){return[0>c?c+b:c]}),even:oa(function(a,b){for(var c=0;b>c;c+=2)a.push(c);return a}),odd:oa(function(a,b){for(var c=1;b>c;c+=2)a.push(c);return a}),lt:oa(function(a,b,c){for(var d=0>c?c+b:c;--d>=0;)a.push(d);return a}),gt:oa(function(a,b,c){for(var d=0>c?c+b:c;++d<b;)a.push(d);return a})}},d.pseudos.nth=d.pseudos.eq;for(b in{radio:!0,checkbox:!0,file:!0,password:!0,image:!0})d.pseudos[b]=ma(b);for(b in{submit:!0,reset:!0})d.pseudos[b]=na(b);function qa(){}qa.prototype=d.filters=d.pseudos,d.setFilters=new qa,g=ga.tokenize=function(a,b){var c,e,f,g,h,i,j,k=z[a+" "];if(k)return b?0:k.slice(0);h=a,i=[],j=d.preFilter;while(h){(!c||(e=S.exec(h)))&&(e&&(h=h.slice(e[0].length)||h),i.push(f=[])),c=!1,(e=T.exec(h))&&(c=e.shift(),f.push({value:c,type:e[0].replace(R," ")}),h=h.slice(c.length));for(g in d.filter)!(e=X[g].exec(h))||j[g]&&!(e=j[g](e))||(c=e.shift(),f.push({value:c,type:g,matches:e}),h=h.slice(c.length));if(!c)break}return b?h.length:h?ga.error(a):z(a,i).slice(0)};function ra(a){for(var b=0,c=a.length,d="";c>b;b++)d+=a[b].value;return d}function sa(a,b,c){var d=b.dir,e=c&&"parentNode"===d,f=x++;return b.first?function(b,c,f){while(b=b[d])if(1===b.nodeType||e)return a(b,c,f)}:function(b,c,g){var h,i,j=[w,f];if(g){while(b=b[d])if((1===b.nodeType||e)&&a(b,c,g))return!0}else while(b=b[d])if(1===b.nodeType||e){if(i=b[u]||(b[u]={}),(h=i[d])&&h[0]===w&&h[1]===f)return j[2]=h[2];if(i[d]=j,j[2]=a(b,c,g))return!0}}}function ta(a){return a.length>1?function(b,c,d){var e=a.length;while(e--)if(!a[e](b,c,d))return!1;return!0}:a[0]}function ua(a,b,c){for(var d=0,e=b.length;e>d;d++)ga(a,b[d],c);return c}function va(a,b,c,d,e){for(var f,g=[],h=0,i=a.length,j=null!=b;i>h;h++)(f=a[h])&&(!c||c(f,d,e))&&(g.push(f),j&&b.push(h));return g}function wa(a,b,c,d,e,f){return d&&!d[u]&&(d=wa(d)),e&&!e[u]&&(e=wa(e,f)),ia(function(f,g,h,i){var j,k,l,m=[],n=[],o=g.length,p=f||ua(b||"*",h.nodeType?[h]:h,[]),q=!a||!f&&b?p:va(p,m,a,h,i),r=c?e||(f?a:o||d)?[]:g:q;if(c&&c(q,r,h,i),d){j=va(r,n),d(j,[],h,i),k=j.length;while(k--)(l=j[k])&&(r[n[k]]=!(q[n[k]]=l))}if(f){if(e||a){if(e){j=[],k=r.length;while(k--)(l=r[k])&&j.push(q[k]=l);e(null,r=[],j,i)}k=r.length;while(k--)(l=r[k])&&(j=e?J(f,l):m[k])>-1&&(f[j]=!(g[j]=l))}}else r=va(r===g?r.splice(o,r.length):r),e?e(null,g,r,i):H.apply(g,r)})}function xa(a){for(var b,c,e,f=a.length,g=d.relative[a[0].type],h=g||d.relative[" "],i=g?1:0,k=sa(function(a){return a===b},h,!0),l=sa(function(a){return J(b,a)>-1},h,!0),m=[function(a,c,d){var e=!g&&(d||c!==j)||((b=c).nodeType?k(a,c,d):l(a,c,d));return b=null,e}];f>i;i++)if(c=d.relative[a[i].type])m=[sa(ta(m),c)];else{if(c=d.filter[a[i].type].apply(null,a[i].matches),c[u]){for(e=++i;f>e;e++)if(d.relative[a[e].type])break;return wa(i>1&&ta(m),i>1&&ra(a.slice(0,i-1).concat({value:" "===a[i-2].type?"*":""})).replace(R,"$1"),c,e>i&&xa(a.slice(i,e)),f>e&&xa(a=a.slice(e)),f>e&&ra(a))}m.push(c)}return ta(m)}function ya(a,b){var c=b.length>0,e=a.length>0,f=function(f,g,h,i,k){var l,m,o,p=0,q="0",r=f&&[],s=[],t=j,u=f||e&&d.find.TAG("*",k),v=w+=null==t?1:Math.random()||.1,x=u.length;for(k&&(j=g!==n&&g);q!==x&&null!=(l=u[q]);q++){if(e&&l){m=0;while(o=a[m++])if(o(l,g,h)){i.push(l);break}k&&(w=v)}c&&((l=!o&&l)&&p--,f&&r.push(l))}if(p+=q,c&&q!==p){m=0;while(o=b[m++])o(r,s,g,h);if(f){if(p>0)while(q--)r[q]||s[q]||(s[q]=F.call(i));s=va(s)}H.apply(i,s),k&&!f&&s.length>0&&p+b.length>1&&ga.uniqueSort(i)}return k&&(w=v,j=t),r};return c?ia(f):f}return h=ga.compile=function(a,b){var c,d=[],e=[],f=A[a+" "];if(!f){b||(b=g(a)),c=b.length;while(c--)f=xa(b[c]),f[u]?d.push(f):e.push(f);f=A(a,ya(e,d)),f.selector=a}return f},i=ga.select=function(a,b,e,f){var i,j,k,l,m,n="function"==typeof a&&a,o=!f&&g(a=n.selector||a);if(e=e||[],1===o.length){if(j=o[0]=o[0].slice(0),j.length>2&&"ID"===(k=j[0]).type&&c.getById&&9===b.nodeType&&p&&d.relative[j[1].type]){if(b=(d.find.ID(k.matches[0].replace(ca,da),b)||[])[0],!b)return e;n&&(b=b.parentNode),a=a.slice(j.shift().value.length)}i=X.needsContext.test(a)?0:j.length;while(i--){if(k=j[i],d.relative[l=k.type])break;if((m=d.find[l])&&(f=m(k.matches[0].replace(ca,da),aa.test(j[0].type)&&pa(b.parentNode)||b))){if(j.splice(i,1),a=f.length&&ra(j),!a)return H.apply(e,f),e;break}}}return(n||h(a,o))(f,b,!p,e,aa.test(a)&&pa(b.parentNode)||b),e},c.sortStable=u.split("").sort(B).join("")===u,c.detectDuplicates=!!l,m(),c.sortDetached=ja(function(a){return 1&a.compareDocumentPosition(n.createElement("div"))}),ja(function(a){return a.innerHTML="<a href='#'></a>","#"===a.firstChild.getAttribute("href")})||ka("type|href|height|width",function(a,b,c){return c?void 0:a.getAttribute(b,"type"===b.toLowerCase()?1:2)}),c.attributes&&ja(function(a){return a.innerHTML="<input/>",a.firstChild.setAttribute("value",""),""===a.firstChild.getAttribute("value")})||ka("value",function(a,b,c){return c||"input"!==a.nodeName.toLowerCase()?void 0:a.defaultValue}),ja(function(a){return null==a.getAttribute("disabled")})||ka(K,function(a,b,c){var d;return c?void 0:a[b]===!0?b.toLowerCase():(d=a.getAttributeNode(b))&&d.specified?d.value:null}),ga}(a);m.find=s,m.expr=s.selectors,m.expr[":"]=m.expr.pseudos,m.unique=s.uniqueSort,m.text=s.getText,m.isXMLDoc=s.isXML,m.contains=s.contains;var t=m.expr.match.needsContext,u=/^<(\w+)\s*\/?>(?:<\/\1>|)$/,v=/^.[^:#\[\.,]*$/;function w(a,b,c){if(m.isFunction(b))return m.grep(a,function(a,d){return!!b.call(a,d,a)!==c});if(b.nodeType)return m.grep(a,function(a){return a===b!==c});if("string"==typeof b){if(v.test(b))return m.filter(b,a,c);b=m.filter(b,a)}return m.grep(a,function(a){return m.inArray(a,b)>=0!==c})}m.filter=function(a,b,c){var d=b[0];return c&&(a=":not("+a+")"),1===b.length&&1===d.nodeType?m.find.matchesSelector(d,a)?[d]:[]:m.find.matches(a,m.grep(b,function(a){return 1===a.nodeType}))},m.fn.extend({find:function(a){var b,c=[],d=this,e=d.length;if("string"!=typeof a)return this.pushStack(m(a).filter(function(){for(b=0;e>b;b++)if(m.contains(d[b],this))return!0}));for(b=0;e>b;b++)m.find(a,d[b],c);return c=this.pushStack(e>1?m.unique(c):c),c.selector=this.selector?this.selector+" "+a:a,c},filter:function(a){return this.pushStack(w(this,a||[],!1))},not:function(a){return this.pushStack(w(this,a||[],!0))},is:function(a){return!!w(this,"string"==typeof a&&t.test(a)?m(a):a||[],!1).length}});var x,y=a.document,z=/^(?:\s*(<[\w\W]+>)[^>]*|#([\w-]*))$/,A=m.fn.init=function(a,b){var c,d;if(!a)return this;if("string"==typeof a){if(c="<"===a.charAt(0)&&">"===a.charAt(a.length-1)&&a.length>=3?[null,a,null]:z.exec(a),!c||!c[1]&&b)return!b||b.jquery?(b||x).find(a):this.constructor(b).find(a);if(c[1]){if(b=b instanceof m?b[0]:b,m.merge(this,m.parseHTML(c[1],b&&b.nodeType?b.ownerDocument||b:y,!0)),u.test(c[1])&&m.isPlainObject(b))for(c in b)m.isFunction(this[c])?this[c](b[c]):this.attr(c,b[c]);return this}if(d=y.getElementById(c[2]),d&&d.parentNode){if(d.id!==c[2])return x.find(a);this.length=1,this[0]=d}return this.context=y,this.selector=a,this}return a.nodeType?(this.context=this[0]=a,this.length=1,this):m.isFunction(a)?"undefined"!=typeof x.ready?x.ready(a):a(m):(void 0!==a.selector&&(this.selector=a.selector,this.context=a.context),m.makeArray(a,this))};A.prototype=m.fn,x=m(y);var B=/^(?:parents|prev(?:Until|All))/,C={children:!0,contents:!0,next:!0,prev:!0};m.extend({dir:function(a,b,c){var d=[],e=a[b];while(e&&9!==e.nodeType&&(void 0===c||1!==e.nodeType||!m(e).is(c)))1===e.nodeType&&d.push(e),e=e[b];return d},sibling:function(a,b){for(var c=[];a;a=a.nextSibling)1===a.nodeType&&a!==b&&c.push(a);return c}}),m.fn.extend({has:function(a){var b,c=m(a,this),d=c.length;return this.filter(function(){for(b=0;d>b;b++)if(m.contains(this,c[b]))return!0})},closest:function(a,b){for(var c,d=0,e=this.length,f=[],g=t.test(a)||"string"!=typeof a?m(a,b||this.context):0;e>d;d++)for(c=this[d];c&&c!==b;c=c.parentNode)if(c.nodeType<11&&(g?g.index(c)>-1:1===c.nodeType&&m.find.matchesSelector(c,a))){f.push(c);break}return this.pushStack(f.length>1?m.unique(f):f)},index:function(a){return a?"string"==typeof a?m.inArray(this[0],m(a)):m.inArray(a.jquery?a[0]:a,this):this[0]&&this[0].parentNode?this.first().prevAll().length:-1},add:function(a,b){return this.pushStack(m.unique(m.merge(this.get(),m(a,b))))},addBack:function(a){return this.add(null==a?this.prevObject:this.prevObject.filter(a))}});function D(a,b){do a=a[b];while(a&&1!==a.nodeType);return a}m.each({parent:function(a){var b=a.parentNode;return b&&11!==b.nodeType?b:null},parents:function(a){return m.dir(a,"parentNode")},parentsUntil:function(a,b,c){return m.dir(a,"parentNode",c)},next:function(a){return D(a,"nextSibling")},prev:function(a){return D(a,"previousSibling")},nextAll:function(a){return m.dir(a,"nextSibling")},prevAll:function(a){return m.dir(a,"previousSibling")},nextUntil:function(a,b,c){return m.dir(a,"nextSibling",c)},prevUntil:function(a,b,c){return m.dir(a,"previousSibling",c)},siblings:function(a){return m.sibling((a.parentNode||{}).firstChild,a)},children:function(a){return m.sibling(a.firstChild)},contents:function(a){return m.nodeName(a,"iframe")?a.contentDocument||a.contentWindow.document:m.merge([],a.childNodes)}},function(a,b){m.fn[a]=function(c,d){var e=m.map(this,b,c);return"Until"!==a.slice(-5)&&(d=c),d&&"string"==typeof d&&(e=m.filter(d,e)),this.length>1&&(C[a]||(e=m.unique(e)),B.test(a)&&(e=e.reverse())),this.pushStack(e)}});var E=/\S+/g,F={};function G(a){var b=F[a]={};return m.each(a.match(E)||[],function(a,c){b[c]=!0}),b}m.Callbacks=function(a){a="string"==typeof a?F[a]||G(a):m.extend({},a);var b,c,d,e,f,g,h=[],i=!a.once&&[],j=function(l){for(c=a.memory&&l,d=!0,f=g||0,g=0,e=h.length,b=!0;h&&e>f;f++)if(h[f].apply(l[0],l[1])===!1&&a.stopOnFalse){c=!1;break}b=!1,h&&(i?i.length&&j(i.shift()):c?h=[]:k.disable())},k={add:function(){if(h){var d=h.length;!function f(b){m.each(b,function(b,c){var d=m.type(c);"function"===d?a.unique&&k.has(c)||h.push(c):c&&c.length&&"string"!==d&&f(c)})}(arguments),b?e=h.length:c&&(g=d,j(c))}return this},remove:function(){return h&&m.each(arguments,function(a,c){var d;while((d=m.inArray(c,h,d))>-1)h.splice(d,1),b&&(e>=d&&e--,f>=d&&f--)}),this},has:function(a){return a?m.inArray(a,h)>-1:!(!h||!h.length)},empty:function(){return h=[],e=0,this},disable:function(){return h=i=c=void 0,this},disabled:function(){return!h},lock:function(){return i=void 0,c||k.disable(),this},locked:function(){return!i},fireWith:function(a,c){return!h||d&&!i||(c=c||[],c=[a,c.slice?c.slice():c],b?i.push(c):j(c)),this},fire:function(){return k.fireWith(this,arguments),this},fired:function(){return!!d}};return k},m.extend({Deferred:function(a){var b=[["resolve","done",m.Callbacks("once memory"),"resolved"],["reject","fail",m.Callbacks("once memory"),"rejected"],["notify","progress",m.Callbacks("memory")]],c="pending",d={state:function(){return c},always:function(){return e.done(arguments).fail(arguments),this},then:function(){var a=arguments;return m.Deferred(function(c){m.each(b,function(b,f){var g=m.isFunction(a[b])&&a[b];e[f[1]](function(){var a=g&&g.apply(this,arguments);a&&m.isFunction(a.promise)?a.promise().done(c.resolve).fail(c.reject).progress(c.notify):c[f[0]+"With"](this===d?c.promise():this,g?[a]:arguments)})}),a=null}).promise()},promise:function(a){return null!=a?m.extend(a,d):d}},e={};return d.pipe=d.then,m.each(b,function(a,f){var g=f[2],h=f[3];d[f[1]]=g.add,h&&g.add(function(){c=h},b[1^a][2].disable,b[2][2].lock),e[f[0]]=function(){return e[f[0]+"With"](this===e?d:this,arguments),this},e[f[0]+"With"]=g.fireWith}),d.promise(e),a&&a.call(e,e),e},when:function(a){var b=0,c=d.call(arguments),e=c.length,f=1!==e||a&&m.isFunction(a.promise)?e:0,g=1===f?a:m.Deferred(),h=function(a,b,c){return function(e){b[a]=this,c[a]=arguments.length>1?d.call(arguments):e,c===i?g.notifyWith(b,c):--f||g.resolveWith(b,c)}},i,j,k;if(e>1)for(i=new Array(e),j=new Array(e),k=new Array(e);e>b;b++)c[b]&&m.isFunction(c[b].promise)?c[b].promise().done(h(b,k,c)).fail(g.reject).progress(h(b,j,i)):--f;return f||g.resolveWith(k,c),g.promise()}});var H;m.fn.ready=function(a){return m.ready.promise().done(a),this},m.extend({isReady:!1,readyWait:1,holdReady:function(a){a?m.readyWait++:m.ready(!0)},ready:function(a){if(a===!0?!--m.readyWait:!m.isReady){if(!y.body)return setTimeout(m.ready);m.isReady=!0,a!==!0&&--m.readyWait>0||(H.resolveWith(y,[m]),m.fn.triggerHandler&&(m(y).triggerHandler("ready"),m(y).off("ready")))}}});function I(){y.addEventListener?(y.removeEventListener("DOMContentLoaded",J,!1),a.removeEventListener("load",J,!1)):(y.detachEvent("onreadystatechange",J),a.detachEvent("onload",J))}function J(){(y.addEventListener||"load"===event.type||"complete"===y.readyState)&&(I(),m.ready())}m.ready.promise=function(b){if(!H)if(H=m.Deferred(),"complete"===y.readyState)setTimeout(m.ready);else if(y.addEventListener)y.addEventListener("DOMContentLoaded",J,!1),a.addEventListener("load",J,!1);else{y.attachEvent("onreadystatechange",J),a.attachEvent("onload",J);var c=!1;try{c=null==a.frameElement&&y.documentElement}catch(d){}c&&c.doScroll&&!function e(){if(!m.isReady){try{c.doScroll("left")}catch(a){return setTimeout(e,50)}I(),m.ready()}}()}return H.promise(b)};var K="undefined",L;for(L in m(k))break;k.ownLast="0"!==L,k.inlineBlockNeedsLayout=!1,m(function(){var a,b,c,d;c=y.getElementsByTagName("body")[0],c&&c.style&&(b=y.createElement("div"),d=y.createElement("div"),d.style.cssText="position:absolute;border:0;width:0;height:0;top:0;left:-9999px",c.appendChild(d).appendChild(b),typeof b.style.zoom!==K&&(b.style.cssText="display:inline;margin:0;border:0;padding:1px;width:1px;zoom:1",k.inlineBlockNeedsLayout=a=3===b.offsetWidth,a&&(c.style.zoom=1)),c.removeChild(d))}),function(){var a=y.createElement("div");if(null==k.deleteExpando){k.deleteExpando=!0;try{delete a.test}catch(b){k.deleteExpando=!1}}a=null}(),m.acceptData=function(a){var b=m.noData[(a.nodeName+" ").toLowerCase()],c=+a.nodeType||1;return 1!==c&&9!==c?!1:!b||b!==!0&&a.getAttribute("classid")===b};var M=/^(?:\{[\w\W]*\}|\[[\w\W]*\])$/,N=/([A-Z])/g;function O(a,b,c){if(void 0===c&&1===a.nodeType){var d="data-"+b.replace(N,"-$1").toLowerCase();if(c=a.getAttribute(d),"string"==typeof c){try{c="true"===c?!0:"false"===c?!1:"null"===c?null:+c+""===c?+c:M.test(c)?m.parseJSON(c):c}catch(e){}m.data(a,b,c)}else c=void 0}return c}function P(a){var b;for(b in a)if(("data"!==b||!m.isEmptyObject(a[b]))&&"toJSON"!==b)return!1;
 
@@ -85,8 +98,6 @@ overflow: auto;
 margin-left: 2%;
 position: fixed;
 border: 1px solid #ccc;
-webkit-border-radius: 6px;
-moz-border-radius: 6px;
 border-radius: 6px;
 }
 
@@ -114,9 +125,14 @@ font-size: 12px;
 .tocify-subheader .tocify-subheader {
 text-indent: 30px;
 }
-
 .tocify-subheader .tocify-subheader .tocify-subheader {
 text-indent: 40px;
+}
+.tocify-subheader .tocify-subheader .tocify-subheader .tocify-subheader {
+text-indent: 50px;
+}
+.tocify-subheader .tocify-subheader .tocify-subheader .tocify-subheader .tocify-subheader {
+text-indent: 60px;
 }
 
 .tocify .tocify-item > a, .tocify .nav-list .nav-header {
@@ -520,13 +536,13 @@ float: none;
 
           item.append($("<a/>", {
 
-            "text": self.text()
+            "html": self.html()
 
           }));
 
         } else {
 
-          item.text(self.text());
+          item.html(self.html());
 
         }
 
@@ -1281,26 +1297,27 @@ window.buildTabsets = function(tocID) {
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-pre.numberSource a.sourceLine
-  { position: relative; left: -4em; }
-pre.numberSource a.sourceLine::before
-  { content: attr(title);
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
     position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all; display: inline-block;
+    border: none; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -1309,9 +1326,9 @@ pre.numberSource a.sourceLine::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {  }
+  {   }
 @media screen {
-a.sourceLine::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; } /* Alert */
 code span.an { color: #008000; } /* Annotation */
@@ -1352,7 +1369,7 @@ code span.wa { color: #008000; font-weight: bold; } /* Warning */
       if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -1409,7 +1426,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -1471,6 +1487,7 @@ summary {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -1483,48 +1500,9 @@ summary {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 
 
-
-<script>
-$(document).ready(function ()  {
-
-    // move toc-ignore selectors from section div to header
-    $('div.section.toc-ignore')
-        .removeClass('toc-ignore')
-        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
-
-    // establish options
-    var options = {
-      selectors: "h1,h2,h3,h4",
-      theme: "bootstrap3",
-      context: '.toc-content',
-      hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
-      },
-      ignoreSelector: ".toc-ignore",
-      scrollTo: 0
-    };
-    options.showAndHide = true;
-    options.smoothScroll = true;
-
-    // tocify
-    var toc = $("#TOC").tocify(options).data("toc-tocify");
-});
-</script>
 
 <style type="text/css">
 
@@ -1538,6 +1516,12 @@ $(document).ready(function ()  {
 }
 }
 
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
 
 .toc-content {
   padding-left: 30px;
@@ -1573,8 +1557,6 @@ div.tocify {
 
 .tocify-subheader .tocify-item {
   font-size: 0.90em;
-  padding-left: 25px;
-  text-indent: 0;
 }
 
 .tocify .list-group-item {
@@ -1610,11 +1592,11 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Functions in R: 1) Introductory concepts</h1>
+<h1 class="title toc-ignore">Data Science for Economists</h1>
+<h3 class="subtitle">Lecture 10: Functions in R: (1) Introductory concepts</h3>
 <h4 class="author">Grant R. McDermott</h4>
 <address class="author_afil">
-University of Oregon | EC 607<br><h4 class="date">Lecture 10</h4>
-
+University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a><br>
 </div>
 
 
@@ -1628,73 +1610,73 @@ University of Oregon | EC 607<br><h4 class="date">Lecture 10</h4>
 <li><strong>Already used:</strong> <code>tidyverse</code></li>
 </ul>
 <p>We’ll mostly be using the tidyverse to access the <a href="https://purrr.tidyverse.org/">purrr package</a>. Let’s install (if necessary) and load everything:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="cf">if</span> (<span class="op">!</span><span class="kw">require</span>(<span class="st">&quot;pacman&quot;</span>)) <span class="kw">install.packages</span>(<span class="st">&quot;pacman&quot;</span>)</a>
-<a class="sourceLine" id="cb1-2" title="2">pacman<span class="op">::</span><span class="kw">p_load</span>(pbapply, tidyverse)</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="cf">if</span> (<span class="op">!</span><span class="kw">require</span>(<span class="st">&quot;pacman&quot;</span>)) <span class="kw">install.packages</span>(<span class="st">&quot;pacman&quot;</span>)</span>
+<span id="cb1-2"><a href="#cb1-2"></a>pacman<span class="op">::</span><span class="kw">p_load</span>(pbapply, tidyverse)</span></code></pre></div>
 </div>
 </div>
 <div id="basic-syntax" class="section level2">
 <h2>Basic syntax</h2>
 <p>We have already seen and used a multitude of functions in R. Some of these functions come pre-packaged with base R (e.g. <code>mean()</code>), while others are from external packages (e.g. <code>dplyr::filter()</code>). Regardless of where they come from, functions in R all adopt the same basic syntax:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">function_name</span>(ARGUMENTS)</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">function_name</span>(ARGUMENTS)</span></code></pre></div>
 <p>For much of the time, we will rely on functions that other people have written for us. However, you can — and should! — write your own functions too. This is easy to do with the generic <strong><code>function()</code></strong> function.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> The syntax will again look familiar to you:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1"><span class="cf">function</span>(ARGUMENTS) {</a>
-<a class="sourceLine" id="cb3-2" title="2">  OPERATIONS</a>
-<a class="sourceLine" id="cb3-3" title="3">  <span class="kw">return</span>(VALUE)</a>
-<a class="sourceLine" id="cb3-4" title="4">}</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="cf">function</span>(ARGUMENTS) {</span>
+<span id="cb3-2"><a href="#cb3-2"></a>  OPERATIONS</span>
+<span id="cb3-3"><a href="#cb3-3"></a>  <span class="kw">return</span>(VALUE)</span>
+<span id="cb3-4"><a href="#cb3-4"></a>}</span></code></pre></div>
 <p>While it’s possible and reasonably common to write anonymous functions like the above, we typically write functions because we want to reuse code. For this typical use-case it makes sense to name our functions.<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a></p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">my_func &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb4-2" title="2"><span class="st">  </span><span class="cf">function</span>(ARGUMENTS) {</a>
-<a class="sourceLine" id="cb4-3" title="3">    OPERATIONS</a>
-<a class="sourceLine" id="cb4-4" title="4">    <span class="kw">return</span>(VALUE)</a>
-<a class="sourceLine" id="cb4-5" title="5">  }</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>my_func &lt;-<span class="st"> </span></span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="st">  </span><span class="cf">function</span>(ARGUMENTS) {</span>
+<span id="cb4-3"><a href="#cb4-3"></a>    OPERATIONS</span>
+<span id="cb4-4"><a href="#cb4-4"></a>    <span class="kw">return</span>(VALUE)</span>
+<span id="cb4-5"><a href="#cb4-5"></a>  }</span></code></pre></div>
 <p>For some short functions, you don’t need to invoke the curly brackets or assign an explicit return object (more on this below). In these cases, you can just write your function on a single line:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">my_short_func &lt;-<span class="st"> </span><span class="cf">function</span>(ARGUMENTS) OPERATION</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>my_short_func &lt;-<span class="st"> </span><span class="cf">function</span>(ARGUMENTS) OPERATION</span></code></pre></div>
 <p>Try to give your functions short, pithy names that are informative to both you and anyone else reading your code. This is harder than it sounds, but will pay off down the road.</p>
 </div>
 <div id="a-simple-example" class="section level2">
 <h2>A simple example</h2>
 <p>Let’s write out a simple example function, which gives the square of an input number.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">square &lt;-<span class="st">       </span><span class="co">## Our function name</span></a>
-<a class="sourceLine" id="cb6-2" title="2"><span class="st">  </span><span class="cf">function</span>(x) { <span class="co">## The argument(s) that our function takes as an input</span></a>
-<a class="sourceLine" id="cb6-3" title="3">    x<span class="op">^</span><span class="dv">2</span>         <span class="co">## The operation(s) that our function performs</span></a>
-<a class="sourceLine" id="cb6-4" title="4">  }</a></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>square &lt;-<span class="st">       </span><span class="co">## Our function name</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="st">  </span><span class="cf">function</span>(x) { <span class="co">## The argument(s) that our function takes as an input</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a>    x<span class="op">^</span><span class="dv">2</span>         <span class="co">## The operation(s) that our function performs</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a>  }</span></code></pre></div>
 <p>Test it.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1"><span class="kw">square</span>(<span class="dv">3</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">square</span>(<span class="dv">3</span>)</span></code></pre></div>
 <pre><code>## [1] 9</code></pre>
 <p>Great, it works. Note that for this simple example we could have written everything on a single line; i.e. <code>square &lt;- function(x) x^2</code> would work just as well. (Confirm this for yourself.) However, we’re about to add some extra conditions and options to our function, which will strongly favour the multi-line format.</p>
 <p><em><b>Aside:</b> I want to stress that our new <code>square()</code> function is not particularly exciting… or, indeed, useful. R’s built-in arithmetic functions already take care of (vectorised) exponentiation and do so very efficiently. (See <code>?Arithmetic</code>.) However, we’re going to continue with this conceptually simple example, since it will provide a clear framework for demonstrating some general principles about functions in R.</em></p>
 <div id="specifying-return-values" class="section level3">
 <h3>Specifying return values</h3>
 <p>Notice that we didn’t specify a return value for our function. This will work in many cases because R’s default behaviour is to automatically return the final object that you created within the function. However, this won’t always be the case. I thus advise that you get into the habit of assigning the return object(s) explicitly. Let’s modify our function to do exactly that.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">square &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb9-2" title="2"><span class="st">  </span><span class="cf">function</span>(x) { </a>
-<a class="sourceLine" id="cb9-3" title="3">    x_sq &lt;-<span class="st"> </span>x<span class="op">^</span><span class="dv">2</span>   <span class="co">## Create an intermediary object (that will be returned)</span></a>
-<a class="sourceLine" id="cb9-4" title="4">    <span class="kw">return</span>(x_sq)  <span class="co">## The value(s) or object(s) that we want returned.</span></a>
-<a class="sourceLine" id="cb9-5" title="5">  }</a></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>square &lt;-<span class="st"> </span></span>
+<span id="cb9-2"><a href="#cb9-2"></a><span class="st">  </span><span class="cf">function</span>(x) { </span>
+<span id="cb9-3"><a href="#cb9-3"></a>    x_sq &lt;-<span class="st"> </span>x<span class="op">^</span><span class="dv">2</span>   <span class="co">## Create an intermediary object (that will be returned)</span></span>
+<span id="cb9-4"><a href="#cb9-4"></a>    <span class="kw">return</span>(x_sq)  <span class="co">## The value(s) or object(s) that we want returned.</span></span>
+<span id="cb9-5"><a href="#cb9-5"></a>  }</span></code></pre></div>
 <p>Again, test that it works.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1"><span class="kw">square</span>(<span class="dv">5</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="kw">square</span>(<span class="dv">5</span>)</span></code></pre></div>
 <pre><code>## [1] 25</code></pre>
 <p>Specifying an explicit return value is also helpful when we want to return more than one object. For example, let’s say that we want to remind our user what variable they used as an argument in our function:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1">square &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb12-2" title="2"><span class="st">  </span><span class="cf">function</span>(x) { <span class="co">## The argument(s) that our function takes as an input</span></a>
-<a class="sourceLine" id="cb12-3" title="3">    x_sq &lt;-<span class="st"> </span>x<span class="op">^</span><span class="dv">2</span> <span class="co">## The operation(s) that our function performs</span></a>
-<a class="sourceLine" id="cb12-4" title="4">    <span class="kw">return</span>(<span class="kw">list</span>(<span class="dt">value=</span>x, <span class="dt">value_squared=</span>x_sq)) <span class="co">## The list of object(s) that we want returned.</span></a>
-<a class="sourceLine" id="cb12-5" title="5">  }</a></code></pre></div>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1"><span class="kw">square</span>(<span class="dv">3</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>square &lt;-<span class="st"> </span></span>
+<span id="cb12-2"><a href="#cb12-2"></a><span class="st">  </span><span class="cf">function</span>(x) { <span class="co">## The argument(s) that our function takes as an input</span></span>
+<span id="cb12-3"><a href="#cb12-3"></a>    x_sq &lt;-<span class="st"> </span>x<span class="op">^</span><span class="dv">2</span> <span class="co">## The operation(s) that our function performs</span></span>
+<span id="cb12-4"><a href="#cb12-4"></a>    <span class="kw">return</span>(<span class="kw">list</span>(<span class="dt">value=</span>x, <span class="dt">value_squared=</span>x_sq)) <span class="co">## The list of object(s) that we want returned.</span></span>
+<span id="cb12-5"><a href="#cb12-5"></a>  }</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">square</span>(<span class="dv">3</span>)</span></code></pre></div>
 <pre><code>## $value
 ## [1] 3
 ## 
 ## $value_squared
 ## [1] 9</code></pre>
 <p>Note that multiple return objects have to be combined in a list. I didn’t have to name these separate list elements — i.e. “value” and “value_squared” — but it will be helpful for users of our function. Nevertheless, remember that many objects in R contain multiple elements (vectors, data frames, and lists are all good examples of this). So we can also specify one of these “array”-type objects within the function itself if that provides a more convenient form of output. For example, we could combine the input and output values into a data frame:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" title="1">square &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb15-2" title="2"><span class="st">  </span><span class="cf">function</span>(x) { </a>
-<a class="sourceLine" id="cb15-3" title="3">    x_sq &lt;-<span class="st"> </span>x<span class="op">^</span><span class="dv">2</span> </a>
-<a class="sourceLine" id="cb15-4" title="4">    df &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">value=</span>x, <span class="dt">value_squared=</span>x_sq) <span class="co">## Bundle up our input and output values into a convenient dataframe.</span></a>
-<a class="sourceLine" id="cb15-5" title="5">    <span class="kw">return</span>(df)</a>
-<a class="sourceLine" id="cb15-6" title="6">  }</a></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a>square &lt;-<span class="st"> </span></span>
+<span id="cb15-2"><a href="#cb15-2"></a><span class="st">  </span><span class="cf">function</span>(x) { </span>
+<span id="cb15-3"><a href="#cb15-3"></a>    x_sq &lt;-<span class="st"> </span>x<span class="op">^</span><span class="dv">2</span> </span>
+<span id="cb15-4"><a href="#cb15-4"></a>    df &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">value=</span>x, <span class="dt">value_squared=</span>x_sq) <span class="co">## Bundle up our input and output values into a convenient dataframe.</span></span>
+<span id="cb15-5"><a href="#cb15-5"></a>    <span class="kw">return</span>(df)</span>
+<span id="cb15-6"><a href="#cb15-6"></a>  }</span></code></pre></div>
 <p>Test.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1"><span class="kw">square</span>(<span class="dv">12</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="kw">square</span>(<span class="dv">12</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 1 x 2
 ##   value value_squared
 ##   &lt;dbl&gt;         &lt;dbl&gt;
@@ -1703,18 +1685,18 @@ University of Oregon | EC 607<br><h4 class="date">Lecture 10</h4>
 <div id="specifying-default-argument-values" class="section level3">
 <h3>Specifying default argument values</h3>
 <p>Another thing worth noting about R functions is that you can assign default argument values. You have already encountered some examples of this in action.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> We can add a default option to our own function pretty easily.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1">square &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb18-2" title="2"><span class="st">  </span><span class="cf">function</span>(<span class="dt">x =</span> <span class="dv">1</span>) { <span class="co">## Setting the default argument value </span></a>
-<a class="sourceLine" id="cb18-3" title="3">    x_sq &lt;-<span class="st"> </span>x<span class="op">^</span><span class="dv">2</span> </a>
-<a class="sourceLine" id="cb18-4" title="4">    df &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">value=</span>x, <span class="dt">value_squared=</span>x_sq)</a>
-<a class="sourceLine" id="cb18-5" title="5">    <span class="kw">return</span>(df)</a>
-<a class="sourceLine" id="cb18-6" title="6">  }</a></code></pre></div>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" title="1"><span class="kw">square</span>() <span class="co">## Will take the default value of 1 since we didn&#39;t provide an alternative.</span></a></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>square &lt;-<span class="st"> </span></span>
+<span id="cb18-2"><a href="#cb18-2"></a><span class="st">  </span><span class="cf">function</span>(<span class="dt">x =</span> <span class="dv">1</span>) { <span class="co">## Setting the default argument value </span></span>
+<span id="cb18-3"><a href="#cb18-3"></a>    x_sq &lt;-<span class="st"> </span>x<span class="op">^</span><span class="dv">2</span> </span>
+<span id="cb18-4"><a href="#cb18-4"></a>    df &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">value=</span>x, <span class="dt">value_squared=</span>x_sq)</span>
+<span id="cb18-5"><a href="#cb18-5"></a>    <span class="kw">return</span>(df)</span>
+<span id="cb18-6"><a href="#cb18-6"></a>  }</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="kw">square</span>() <span class="co">## Will take the default value of 1 since we didn&#39;t provide an alternative.</span></span></code></pre></div>
 <pre><code>## # A tibble: 1 x 2
 ##   value value_squared
 ##   &lt;dbl&gt;         &lt;dbl&gt;
 ## 1     1             1</code></pre>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" title="1"><span class="kw">square</span>(<span class="dv">2</span>) <span class="co">## Now takes the explicit value that we give it.</span></a></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="kw">square</span>(<span class="dv">2</span>) <span class="co">## Now takes the explicit value that we give it.</span></span></code></pre></div>
 <pre><code>## # A tibble: 1 x 2
 ##   value value_squared
 ##   &lt;dbl&gt;         &lt;dbl&gt;
@@ -1735,14 +1717,14 @@ University of Oregon | EC 607<br><h4 class="date">Lecture 10</h4>
 <div id="vectorisation" class="section level3">
 <h3>Vectorisation</h3>
 <p>The first question you need to ask is: “Do I need to iterate at all?” You may remember from a previous lecture that I spoke about R being <em>vectorised</em>. Which is to say that you can apply a function to every element of a vector at once, rather than one at a time. Let’s demonstrate this property with our <code>square</code> function:</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" title="1"><span class="kw">square</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="kw">square</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>)</span></code></pre></div>
 <pre><code>##   value value_squared
 ## 1     1             1
 ## 2     2             4
 ## 3     3             9
 ## 4     4            16
 ## 5     5            25</code></pre>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" title="1"><span class="kw">square</span>(<span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">4</span>))</a></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="kw">square</span>(<span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">4</span>))</span></code></pre></div>
 <pre><code>##   value value_squared
 ## 1     2             4
 ## 2     4            16</code></pre>
@@ -1751,7 +1733,7 @@ University of Oregon | EC 607<br><h4 class="date">Lecture 10</h4>
 <div id="for-loops.-simple-but-limited-and-sometimes-dangerous" class="section level3">
 <h3>For-loops. Simple, but limited (and sometimes dangerous)</h3>
 <p>In R, standard for-loops take a pretty intuitive form. For example:</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb27-1" title="1"><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">10</span>) <span class="kw">print</span>(LETTERS[i])</a></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">10</span>) <span class="kw">print</span>(LETTERS[i])</span></code></pre></div>
 <pre><code>## [1] &quot;A&quot;
 ## [1] &quot;B&quot;
 ## [1] &quot;C&quot;
@@ -1763,13 +1745,13 @@ University of Oregon | EC 607<br><h4 class="date">Lecture 10</h4>
 ## [1] &quot;I&quot;
 ## [1] &quot;J&quot;</code></pre>
 <p>Note that in cases where we want to “grow” an object via a for-loop, we first have to create an empty (or NULL) object.</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" title="1">kelvin &lt;-<span class="st"> </span><span class="dv">300</span><span class="op">:</span><span class="dv">305</span></a>
-<a class="sourceLine" id="cb29-2" title="2">fahrenheit &lt;-<span class="st"> </span><span class="ot">NULL</span></a>
-<a class="sourceLine" id="cb29-3" title="3"><span class="co"># fahrenheit &lt;- vector(&quot;double&quot;, length(kelvin)) ## Better than the above. Why?</span></a>
-<a class="sourceLine" id="cb29-4" title="4"><span class="cf">for</span>(k <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(kelvin)) {</a>
-<a class="sourceLine" id="cb29-5" title="5">  fahrenheit[k] &lt;-<span class="st"> </span>kelvin[k] <span class="op">*</span><span class="st"> </span><span class="dv">9</span><span class="op">/</span><span class="dv">5</span> <span class="op">-</span><span class="st"> </span><span class="fl">459.67</span></a>
-<a class="sourceLine" id="cb29-6" title="6">}</a>
-<a class="sourceLine" id="cb29-7" title="7">fahrenheit</a></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a>kelvin &lt;-<span class="st"> </span><span class="dv">300</span><span class="op">:</span><span class="dv">305</span></span>
+<span id="cb29-2"><a href="#cb29-2"></a>fahrenheit &lt;-<span class="st"> </span><span class="ot">NULL</span></span>
+<span id="cb29-3"><a href="#cb29-3"></a><span class="co"># fahrenheit &lt;- vector(&quot;double&quot;, length(kelvin)) ## Better than the above. Why?</span></span>
+<span id="cb29-4"><a href="#cb29-4"></a><span class="cf">for</span>(k <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(kelvin)) {</span>
+<span id="cb29-5"><a href="#cb29-5"></a>  fahrenheit[k] &lt;-<span class="st"> </span>kelvin[k] <span class="op">*</span><span class="st"> </span><span class="dv">9</span><span class="op">/</span><span class="dv">5</span> <span class="op">-</span><span class="st"> </span><span class="fl">459.67</span></span>
+<span id="cb29-6"><a href="#cb29-6"></a>}</span>
+<span id="cb29-7"><a href="#cb29-7"></a>fahrenheit</span></code></pre></div>
 <pre><code>## [1] 80.33 82.13 83.93 85.73 87.53 89.33</code></pre>
 <p>Unfortunately, basic for-loops in R also come with some downsides. Historically, they used to be much slower than alternative methods (see below). This has largely been resolved, but I’ve still run into cases where an inconspicuous for-loop has brought an entire analysis crashing to its knees.<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a> The bigger problem with for-loops, however, is that they deviate from the norms and best practices of <strong>functional programming</strong>.</p>
 </div>
@@ -1789,7 +1771,7 @@ University of Oregon | EC 607<br><h4 class="date">Lecture 10</h4>
 <p></br></p>
 <p><strong>Summary:</strong> For-loops tend to emphasise the <em>objects</em> that we’re working with (say, a vector of numbers) rather than the <em>operations</em> that we want to apply to them (say, get the mean or median or whatever). This is inefficient because it requires us to continually write out the for-loops by hand rather than getting an R function to create the for-loop for us.</p>
 <p>As a corollary, for-loops also pollute our global environment with the variables that are used as counting variables. Take a look at your “Environment” pane in RStudio. What do you see? In addition to the <code>kelvin</code> and <code>fahrenheit</code> vectors that we created, we also see two variables <code>i</code> and <code>k</code> (equal to the last value of their respective loops). Creating these auxilliary variables is almost certainly not an intended outcome when your write a for-loop.<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a> More worringly, they can cause programming errors when we inadvertently refer to a similarly-named variable elsewhere in our script. So we best remove them manually as soon as we’re finished with a loop.</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb31-1" title="1"><span class="kw">rm</span>(i,k)</a></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a><span class="kw">rm</span>(i,k)</span></code></pre></div>
 <p>Another annoyance arrived in cases where we want to “grow” an object as we iterate over it (e.g. the <code>fahrenheit</code> object in our second example). In order to do this with a for-loop, we had to go through the rigmarole of creating an empty object first.</p>
 <p>FP allows to avoid the explicit use of loop constructs and its associated downsides. In practice, there are two ways to implement FP in R:</p>
 <ol style="list-style-type: decimal">
@@ -1801,8 +1783,8 @@ University of Oregon | EC 607<br><h4 class="date">Lecture 10</h4>
 <div id="lapply-and-co." class="section level3">
 <h3>1) <code>lapply()</code> and co.</h3>
 <p>Base R contains a very useful family of <code>*apply</code> functions. I won’t go through all of these here — see <code>?apply</code> or <a href="https://nsaunders.wordpress.com/2010/08/20/a-brief-introduction-to-apply-in-r/">this blog post</a> among numerous excellent resources — but they all follow a similar philosophy and syntax. The good news is that this syntax very closely mimics the syntax of basic for-loops. For example, consider the code below, which is analgous to our first for-loop above, but now invokes a <strong><code>base::lapply()</code></strong> call instead.</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb32-1" title="1"><span class="co"># for(i in 1:10) print(LETTERS[i]) ## Our original for-loop (for comparison)</span></a>
-<a class="sourceLine" id="cb32-2" title="2"><span class="kw">lapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, <span class="cf">function</span>(i) LETTERS[i])</a></code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a><span class="co"># for(i in 1:10) print(LETTERS[i]) ## Our original for-loop (for comparison)</span></span>
+<span id="cb32-2"><a href="#cb32-2"></a><span class="kw">lapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, <span class="cf">function</span>(i) LETTERS[i])</span></code></pre></div>
 <pre><code>## [[1]]
 ## [1] &quot;A&quot;
 ## 
@@ -1837,13 +1819,13 @@ University of Oregon | EC 607<br><h4 class="date">Lecture 10</h4>
 <p>Second, notice how little the basic syntax changed when switching over from <code>for()</code> to <code>lapply()</code>. Yes, there are some differences, but the essential structure remains the same: We first provide the iteration list (<code>1:10</code>) and then specify the desired function or operation (<code>LETTERS[i]</code>).</p>
 <p>Third, notice that the returned object is a <em>list</em>. The <code>lapply()</code> function can take various input types as arguments — vectors, data frames, lists — but always returns a list, where each element of the returned list is the result from one iteration of the loop. (So now you know where the “l” in “<strong>l</strong>apply” comes from.)</p>
 <p>Okay, but what if you don’t want the output in list form? There several options here.<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a> However, the method that I use most commonly is to bind the different list elements into a single data frame with <code>dplyr::bind_rows()</code>. For example, here’s a a slightly modified version of our function that now yields a data frame:</p>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb34-1" title="1"><span class="co"># library(tidyverse) ## Already loaded</span></a>
-<a class="sourceLine" id="cb34-2" title="2"></a>
-<a class="sourceLine" id="cb34-3" title="3"><span class="kw">lapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, <span class="cf">function</span>(i) {</a>
-<a class="sourceLine" id="cb34-4" title="4">  df &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">num =</span> i, <span class="dt">let =</span> LETTERS[i])</a>
-<a class="sourceLine" id="cb34-5" title="5">  <span class="kw">return</span>(df)</a>
-<a class="sourceLine" id="cb34-6" title="6">  }) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb34-7" title="7"><span class="st">  </span><span class="kw">bind_rows</span>()</a></code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1"></a><span class="co"># library(tidyverse) ## Already loaded</span></span>
+<span id="cb34-2"><a href="#cb34-2"></a></span>
+<span id="cb34-3"><a href="#cb34-3"></a><span class="kw">lapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, <span class="cf">function</span>(i) {</span>
+<span id="cb34-4"><a href="#cb34-4"></a>  df &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">num =</span> i, <span class="dt">let =</span> LETTERS[i])</span>
+<span id="cb34-5"><a href="#cb34-5"></a>  <span class="kw">return</span>(df)</span>
+<span id="cb34-6"><a href="#cb34-6"></a>  }) <span class="op">%&gt;%</span></span>
+<span id="cb34-7"><a href="#cb34-7"></a><span class="st">  </span><span class="kw">bind_rows</span>()</span></code></pre></div>
 <pre><code>## # A tibble: 10 x 2
 ##      num let  
 ##    &lt;int&gt; &lt;chr&gt;
@@ -1861,21 +1843,21 @@ University of Oregon | EC 607<br><h4 class="date">Lecture 10</h4>
 <div id="aside-quick-look-at-sapply" class="section level4">
 <h4>Aside: quick look at <code>sapply()</code></h4>
 <p>Another option that would work well in the this particular case is <code>sapply()</code>, which stands for “<strong>s</strong>implify apply”. This is essentially a wrapper around <code>lapply</code> that tries to return simplified output that matches the input type. If you feed the function a vector, it will try to return a vector, etc.</p>
-<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb36-1" title="1"><span class="kw">sapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, <span class="cf">function</span>(i) LETTERS[i]) </a></code></pre></div>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1"></a><span class="kw">sapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, <span class="cf">function</span>(i) LETTERS[i]) </span></code></pre></div>
 <pre><code>##  [1] &quot;A&quot; &quot;B&quot; &quot;C&quot; &quot;D&quot; &quot;E&quot; &quot;F&quot; &quot;G&quot; &quot;H&quot; &quot;I&quot; &quot;J&quot;</code></pre>
 </div>
 </div>
 <div id="create-and-iterate-over-named-functions" class="section level3">
 <h3>Create and iterate over named functions</h3>
 <p>As you may have guessed already, we can split the function and the iteration (and binding) into separate steps. This is generally a good idea, since you typically create (named) functions with the goal of reusing them.</p>
-<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb38-1" title="1"><span class="co">## Create a named function</span></a>
-<a class="sourceLine" id="cb38-2" title="2">num_to_alpha &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb38-3" title="3"><span class="st">  </span><span class="cf">function</span>(i) {</a>
-<a class="sourceLine" id="cb38-4" title="4">  df &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">num =</span> i, <span class="dt">let =</span> LETTERS[i])</a>
-<a class="sourceLine" id="cb38-5" title="5">  <span class="kw">return</span>(df)</a>
-<a class="sourceLine" id="cb38-6" title="6">  }</a></code></pre></div>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1"></a><span class="co">## Create a named function</span></span>
+<span id="cb38-2"><a href="#cb38-2"></a>num_to_alpha &lt;-<span class="st"> </span></span>
+<span id="cb38-3"><a href="#cb38-3"></a><span class="st">  </span><span class="cf">function</span>(i) {</span>
+<span id="cb38-4"><a href="#cb38-4"></a>  df &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">num =</span> i, <span class="dt">let =</span> LETTERS[i])</span>
+<span id="cb38-5"><a href="#cb38-5"></a>  <span class="kw">return</span>(df)</span>
+<span id="cb38-6"><a href="#cb38-6"></a>  }</span></code></pre></div>
 <p>Now, we can easily iterate over our function using different input values. For example,</p>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb39-1" title="1"><span class="kw">lapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, num_to_alpha) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">bind_rows</span>()</a></code></pre></div>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1"></a><span class="kw">lapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, num_to_alpha) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">bind_rows</span>()</span></code></pre></div>
 <pre><code>## # A tibble: 10 x 2
 ##      num let  
 ##    &lt;int&gt; &lt;chr&gt;
@@ -1890,7 +1872,7 @@ University of Oregon | EC 607<br><h4 class="date">Lecture 10</h4>
 ##  9     9 I    
 ## 10    10 J</code></pre>
 <p>Or,</p>
-<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb41-1" title="1"><span class="kw">lapply</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">26</span>, <span class="dv">3</span>), num_to_alpha) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">bind_rows</span>()</a></code></pre></div>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1"></a><span class="kw">lapply</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">26</span>, <span class="dv">3</span>), num_to_alpha) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">bind_rows</span>()</span></code></pre></div>
 <pre><code>## # A tibble: 4 x 2
 ##     num let  
 ##   &lt;dbl&gt; &lt;chr&gt;
@@ -1902,14 +1884,14 @@ University of Oregon | EC 607<br><h4 class="date">Lecture 10</h4>
 <h4>Progress bars with the <code>pbapply</code> package!</h4>
 <p>I’m a big fan of the <a href="https://github.com/psolymos/pbapply"><strong>pbapply</strong> package</a>, which is a lightweight wrapper around the <code>*apply</code> functions that adds a progress bar. And who doesn’t like progress bars? Personally, I find it incredibly helpful to see how a function is progressing, or get a sense of how much longer I can expect to wait before completion. <code>pbapply</code> offers versions for all of the <code>*apply</code> family, but the one that I use the most is (unsuprisingly) <strong><code>pbapply::pblapply()</code></strong>.</p>
 <p><em>Note: You will need to run this next example interactively to see the effect properly.</em></p>
-<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb43-1" title="1"><span class="co"># library(pbapply) ## Already loaded</span></a>
-<a class="sourceLine" id="cb43-2" title="2"></a>
-<a class="sourceLine" id="cb43-3" title="3"><span class="kw">pblapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, <span class="cf">function</span>(i) {</a>
-<a class="sourceLine" id="cb43-4" title="4">  df &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">num =</span> i, <span class="dt">let =</span> LETTERS[i])</a>
-<a class="sourceLine" id="cb43-5" title="5">  <span class="kw">Sys.sleep</span>(<span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb43-6" title="6">  <span class="kw">return</span>(df)</a>
-<a class="sourceLine" id="cb43-7" title="7">  }) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb43-8" title="8"><span class="st">  </span><span class="kw">bind_rows</span>()</a></code></pre></div>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1"></a><span class="co"># library(pbapply) ## Already loaded</span></span>
+<span id="cb43-2"><a href="#cb43-2"></a></span>
+<span id="cb43-3"><a href="#cb43-3"></a><span class="kw">pblapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, <span class="cf">function</span>(i) {</span>
+<span id="cb43-4"><a href="#cb43-4"></a>  df &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">num =</span> i, <span class="dt">let =</span> LETTERS[i])</span>
+<span id="cb43-5"><a href="#cb43-5"></a>  <span class="kw">Sys.sleep</span>(<span class="dv">1</span>)</span>
+<span id="cb43-6"><a href="#cb43-6"></a>  <span class="kw">return</span>(df)</span>
+<span id="cb43-7"><a href="#cb43-7"></a>  }) <span class="op">%&gt;%</span></span>
+<span id="cb43-8"><a href="#cb43-8"></a><span class="st">  </span><span class="kw">bind_rows</span>()</span></code></pre></div>
 <pre><code>## # A tibble: 10 x 2
 ##      num let  
 ##    &lt;int&gt; &lt;chr&gt;
@@ -1929,8 +1911,8 @@ University of Oregon | EC 607<br><h4 class="date">Lecture 10</h4>
 <div id="purrr-package" class="section level3">
 <h3>2) purrr package</h3>
 <p>The tidyverse offers its own enhanced implementation of the base <code>*apply()</code> functions through the <a href="https://purrr.tidyverse.org/"><strong>purrr</strong> package</a>.<a href="#fn7" class="footnote-ref" id="fnref7"><sup>7</sup></a> The key function to remember here is <strong><code>purrr::map()</code></strong>. And, indeed, the syntax and output of this command are effectively identical to <code>base::lapply()</code>:</p>
-<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb45-1" title="1"><span class="co"># lapply(1:10, num_to_alpha) ## lapply version from earlier</span></a>
-<a class="sourceLine" id="cb45-2" title="2"><span class="kw">map</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, num_to_alpha)</a></code></pre></div>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1"></a><span class="co"># lapply(1:10, num_to_alpha) ## lapply version from earlier</span></span>
+<span id="cb45-2"><a href="#cb45-2"></a><span class="kw">map</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, num_to_alpha)</span></code></pre></div>
 <pre><code>## [[1]]
 ## # A tibble: 1 x 2
 ##     num let  
@@ -1991,8 +1973,8 @@ University of Oregon | EC 607<br><h4 class="date">Lecture 10</h4>
 ##   &lt;int&gt; &lt;chr&gt;
 ## 1    10 J</code></pre>
 <p>Given these similarities, I won’t spend much time on the purrr package. Although, I do think it will be the optimal entry point for many you when it comes to programming and iteration. You have already learned the syntax, so it should be very easy to switch over. However, one additional thing I wanted to flag for today is that <code>map()</code> also comes with its own variants, which are useful for returning objects of a desired type. For example, we can use <strong><code>purrr::map_df()</code></strong> to return a data frame.</p>
-<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb47-1" title="1"><span class="co"># lapply(1:10, num_to_alpha) %&gt;% bind_rows() ## lapply version from earlier.</span></a>
-<a class="sourceLine" id="cb47-2" title="2"><span class="kw">map_df</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, num_to_alpha)</a></code></pre></div>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1"></a><span class="co"># lapply(1:10, num_to_alpha) %&gt;% bind_rows() ## lapply version from earlier.</span></span>
+<span id="cb47-2"><a href="#cb47-2"></a><span class="kw">map_df</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, num_to_alpha)</span></code></pre></div>
 <pre><code>## # A tibble: 10 x 2
 ##      num let  
 ##    &lt;int&gt; &lt;chr&gt;
@@ -2012,16 +1994,16 @@ University of Oregon | EC 607<br><h4 class="date">Lecture 10</h4>
 <h3>Iterate over multiple inputs</h3>
 <p>Thus far, we have only been working with functions that take a single input when iterating. For example, we feed them a single vector (even though that vector contains many elements that drive the iteration process). But what if we want to iterate over multiple inputs? Consider the following function, which takes two separate variables <code>x</code> and <code>y</code> as inputs, combines them in a data frame, and then uses them to create a third variable <code>z</code>.</p>
 <p><em>Note: Again, this is a rather silly function that we could easily improve upon using standard (vectorised) tidyverse tools. But the principle carries over to more complicated cases.</em></p>
-<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb49-1" title="1"><span class="co">## Create a named function</span></a>
-<a class="sourceLine" id="cb49-2" title="2">multi_func &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb49-3" title="3"><span class="st">  </span><span class="cf">function</span>(x, y) {</a>
-<a class="sourceLine" id="cb49-4" title="4">  df &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb49-5" title="5"><span class="st">    </span><span class="kw">tibble</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb49-6" title="6"><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">z =</span> (x <span class="op">+</span><span class="st"> </span>y)<span class="op">/</span><span class="kw">sqrt</span>(x))</a>
-<a class="sourceLine" id="cb49-7" title="7">  <span class="kw">return</span>(df)</a>
-<a class="sourceLine" id="cb49-8" title="8">  }</a></code></pre></div>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1"></a><span class="co">## Create a named function</span></span>
+<span id="cb49-2"><a href="#cb49-2"></a>multi_func &lt;-<span class="st"> </span></span>
+<span id="cb49-3"><a href="#cb49-3"></a><span class="st">  </span><span class="cf">function</span>(x, y) {</span>
+<span id="cb49-4"><a href="#cb49-4"></a>  df &lt;-<span class="st"> </span></span>
+<span id="cb49-5"><a href="#cb49-5"></a><span class="st">    </span><span class="kw">tibble</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y) <span class="op">%&gt;%</span></span>
+<span id="cb49-6"><a href="#cb49-6"></a><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">z =</span> (x <span class="op">+</span><span class="st"> </span>y)<span class="op">/</span><span class="kw">sqrt</span>(x))</span>
+<span id="cb49-7"><a href="#cb49-7"></a>  <span class="kw">return</span>(df)</span>
+<span id="cb49-8"><a href="#cb49-8"></a>  }</span></code></pre></div>
 <p>Before continuing, quickly test that it works using non-iterated inputs.</p>
-<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb50-1" title="1"><span class="kw">multi_func</span>(<span class="dv">1</span>, <span class="dv">6</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1"></a><span class="kw">multi_func</span>(<span class="dv">1</span>, <span class="dv">6</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 1 x 3
 ##       x     y     z
 ##   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
@@ -2036,15 +2018,15 @@ University of Oregon | EC 607<br><h4 class="date">Lecture 10</h4>
 <h4>1) Use <code>mapply()</code> or <code>pmap()</code></h4>
 <p>Both base R — through <code>mapply()</code> — and purrr — through <code>pmap</code> — can handle multiple input cases for iteration. The latter is easier to work with in my opinion, since the syntax is closer (nearly identical) to the single input case. Still, here is a demonstration using both versions.</p>
 <p>First, <code>base::mapply()</code>:</p>
-<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb52-1" title="1"><span class="co">## Note that the inputs are now moved to the *end* of the call. </span></a>
-<a class="sourceLine" id="cb52-2" title="2"><span class="co">## mapply is based on sapply, so we also have to tell it not to simplify if we want to keep the list structure.</span></a>
-<a class="sourceLine" id="cb52-3" title="3"><span class="kw">mapply</span>(</a>
-<a class="sourceLine" id="cb52-4" title="4">  multi_func,</a>
-<a class="sourceLine" id="cb52-5" title="5">  <span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="co">## Our &quot;x&quot; vector input</span></a>
-<a class="sourceLine" id="cb52-6" title="6">  <span class="dt">y=</span><span class="dv">6</span><span class="op">:</span><span class="dv">10</span>, <span class="co">## Our &quot;y&quot; vector input</span></a>
-<a class="sourceLine" id="cb52-7" title="7">  <span class="dt">SIMPLIFY =</span> F <span class="co">## Tell it not to simplify to keep the list structure</span></a>
-<a class="sourceLine" id="cb52-8" title="8">  ) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb52-9" title="9"><span class="st">  </span><span class="kw">bind_rows</span>()</a></code></pre></div>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1"></a><span class="co">## Note that the inputs are now moved to the *end* of the call. </span></span>
+<span id="cb52-2"><a href="#cb52-2"></a><span class="co">## mapply is based on sapply, so we also have to tell it not to simplify if we want to keep the list structure.</span></span>
+<span id="cb52-3"><a href="#cb52-3"></a><span class="kw">mapply</span>(</span>
+<span id="cb52-4"><a href="#cb52-4"></a>  multi_func,</span>
+<span id="cb52-5"><a href="#cb52-5"></a>  <span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="co">## Our &quot;x&quot; vector input</span></span>
+<span id="cb52-6"><a href="#cb52-6"></a>  <span class="dt">y=</span><span class="dv">6</span><span class="op">:</span><span class="dv">10</span>, <span class="co">## Our &quot;y&quot; vector input</span></span>
+<span id="cb52-7"><a href="#cb52-7"></a>  <span class="dt">SIMPLIFY =</span> F <span class="co">## Tell it not to simplify to keep the list structure</span></span>
+<span id="cb52-8"><a href="#cb52-8"></a>  ) <span class="op">%&gt;%</span></span>
+<span id="cb52-9"><a href="#cb52-9"></a><span class="st">  </span><span class="kw">bind_rows</span>()</span></code></pre></div>
 <pre><code>## # A tibble: 5 x 3
 ##       x     y     z
 ##   &lt;int&gt; &lt;int&gt; &lt;dbl&gt;
@@ -2054,8 +2036,8 @@ University of Oregon | EC 607<br><h4 class="date">Lecture 10</h4>
 ## 4     4     9  6.5 
 ## 5     5    10  6.71</code></pre>
 <p>Second, <code>purrr::pmap()</code>:</p>
-<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb54-1" title="1"><span class="co">## Note that the inputs are combined in a list.</span></a>
-<a class="sourceLine" id="cb54-2" title="2"><span class="kw">pmap_df</span>(<span class="kw">list</span>(<span class="dt">x=</span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">y=</span><span class="dv">6</span><span class="op">:</span><span class="dv">10</span>), multi_func)</a></code></pre></div>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1"></a><span class="co">## Note that the inputs are combined in a list.</span></span>
+<span id="cb54-2"><a href="#cb54-2"></a><span class="kw">pmap_df</span>(<span class="kw">list</span>(<span class="dt">x=</span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">y=</span><span class="dv">6</span><span class="op">:</span><span class="dv">10</span>), multi_func)</span></code></pre></div>
 <pre><code>## # A tibble: 5 x 3
 ##       x     y     z
 ##   &lt;int&gt; &lt;int&gt; &lt;dbl&gt;
@@ -2074,23 +2056,23 @@ University of Oregon | EC 607<br><h4 class="date">Lecture 10</h4>
 <li>In my view, it’s just simpler and cleaner to keep things down to a single input. This will be harder to see in the simple example that I’m going to present next, but I’ve found that it can make a big difference with complicated functions that have a lot of nesting (i.e. functions of functions) and/or parallelization.</li>
 </ul>
 <p>Those justifications aside, let’s see how this might work with an example. Consider the following function:</p>
-<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb56-1" title="1">parent_func &lt;-</a>
-<a class="sourceLine" id="cb56-2" title="2"><span class="st">  </span><span class="co">## Main function: Takes a single data frame as an input</span></a>
-<a class="sourceLine" id="cb56-3" title="3"><span class="st">  </span><span class="cf">function</span>(input_df) {</a>
-<a class="sourceLine" id="cb56-4" title="4">    df &lt;-</a>
-<a class="sourceLine" id="cb56-5" title="5"><span class="st">      </span><span class="co">## Nested iteration function</span></a>
-<a class="sourceLine" id="cb56-6" title="6"><span class="st">      </span><span class="kw">map_df</span>(</a>
-<a class="sourceLine" id="cb56-7" title="7">      <span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(input_df), <span class="co">## i.e. Iterate (map) over each row of the input data frame</span></a>
-<a class="sourceLine" id="cb56-8" title="8">      <span class="cf">function</span>(n) {</a>
-<a class="sourceLine" id="cb56-9" title="9">        <span class="co">## Extract the `x` and `y` values from row &quot;n&quot; of the data frame</span></a>
-<a class="sourceLine" id="cb56-10" title="10">        x &lt;-<span class="st"> </span>input_df<span class="op">$</span>x[n]</a>
-<a class="sourceLine" id="cb56-11" title="11">        y &lt;-<span class="st"> </span>input_df<span class="op">$</span>y[n]</a>
-<a class="sourceLine" id="cb56-12" title="12">        <span class="co">## Use the extracted </span></a>
-<a class="sourceLine" id="cb56-13" title="13">        df &lt;-<span class="st"> </span><span class="kw">multi_func</span>(x, y)</a>
-<a class="sourceLine" id="cb56-14" title="14">        <span class="kw">return</span>(df)</a>
-<a class="sourceLine" id="cb56-15" title="15">      })</a>
-<a class="sourceLine" id="cb56-16" title="16">    <span class="kw">return</span>(df)</a>
-<a class="sourceLine" id="cb56-17" title="17">    }</a></code></pre></div>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1"></a>parent_func &lt;-</span>
+<span id="cb56-2"><a href="#cb56-2"></a><span class="st">  </span><span class="co">## Main function: Takes a single data frame as an input</span></span>
+<span id="cb56-3"><a href="#cb56-3"></a><span class="st">  </span><span class="cf">function</span>(input_df) {</span>
+<span id="cb56-4"><a href="#cb56-4"></a>    df &lt;-</span>
+<span id="cb56-5"><a href="#cb56-5"></a><span class="st">      </span><span class="co">## Nested iteration function</span></span>
+<span id="cb56-6"><a href="#cb56-6"></a><span class="st">      </span><span class="kw">map_df</span>(</span>
+<span id="cb56-7"><a href="#cb56-7"></a>      <span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(input_df), <span class="co">## i.e. Iterate (map) over each row of the input data frame</span></span>
+<span id="cb56-8"><a href="#cb56-8"></a>      <span class="cf">function</span>(n) {</span>
+<span id="cb56-9"><a href="#cb56-9"></a>        <span class="co">## Extract the `x` and `y` values from row &quot;n&quot; of the data frame</span></span>
+<span id="cb56-10"><a href="#cb56-10"></a>        x &lt;-<span class="st"> </span>input_df<span class="op">$</span>x[n]</span>
+<span id="cb56-11"><a href="#cb56-11"></a>        y &lt;-<span class="st"> </span>input_df<span class="op">$</span>y[n]</span>
+<span id="cb56-12"><a href="#cb56-12"></a>        <span class="co">## Use the extracted </span></span>
+<span id="cb56-13"><a href="#cb56-13"></a>        df &lt;-<span class="st"> </span><span class="kw">multi_func</span>(x, y)</span>
+<span id="cb56-14"><a href="#cb56-14"></a>        <span class="kw">return</span>(df)</span>
+<span id="cb56-15"><a href="#cb56-15"></a>      })</span>
+<span id="cb56-16"><a href="#cb56-16"></a>    <span class="kw">return</span>(df)</span>
+<span id="cb56-17"><a href="#cb56-17"></a>    }</span></code></pre></div>
 <p>There are three conceptual steps to the above code chunk:</p>
 <ol style="list-style-type: decimal">
 <li>First, I create a new function called <code>parent_func()</code>, which takes a single input: a data frame containing <code>x</code> and <code>y</code> columns (and potentially other columns too).</li>
@@ -2098,9 +2080,9 @@ University of Oregon | EC 607<br><h4 class="date">Lecture 10</h4>
 <li>During each iteration, the <code>x</code> and <code>y</code> values for that row are passed to our original <code>multi_func()</code> function. This will return a data frame containing the desired output.</li>
 </ol>
 <p>Let’s test that it worked using two different input data frames.</p>
-<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb57-1" title="1"><span class="co">## Case 1: Iterate over x=1:5 and y=6:10</span></a>
-<a class="sourceLine" id="cb57-2" title="2">input_df1 &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">x=</span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">y=</span><span class="dv">6</span><span class="op">:</span><span class="dv">10</span>)</a>
-<a class="sourceLine" id="cb57-3" title="3"><span class="kw">parent_func</span>(input_df1)</a></code></pre></div>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1"></a><span class="co">## Case 1: Iterate over x=1:5 and y=6:10</span></span>
+<span id="cb57-2"><a href="#cb57-2"></a>input_df1 &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">x=</span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">y=</span><span class="dv">6</span><span class="op">:</span><span class="dv">10</span>)</span>
+<span id="cb57-3"><a href="#cb57-3"></a><span class="kw">parent_func</span>(input_df1)</span></code></pre></div>
 <pre><code>## # A tibble: 5 x 3
 ##       x     y     z
 ##   &lt;int&gt; &lt;int&gt; &lt;dbl&gt;
@@ -2109,10 +2091,10 @@ University of Oregon | EC 607<br><h4 class="date">Lecture 10</h4>
 ## 3     3     8  6.35
 ## 4     4     9  6.5 
 ## 5     5    10  6.71</code></pre>
-<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb59-1" title="1"><span class="co">## Case 2: Iterate over *all possible combinations* of x=1:5 and y=6:10</span></a>
-<a class="sourceLine" id="cb59-2" title="2">input_df2 &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">x=</span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">y=</span><span class="dv">6</span><span class="op">:</span><span class="dv">10</span>)</a>
-<a class="sourceLine" id="cb59-3" title="3"><span class="co"># input_df2 &lt;- expand(input_df1, x, y) ## Also works</span></a>
-<a class="sourceLine" id="cb59-4" title="4"><span class="kw">parent_func</span>(input_df2)</a></code></pre></div>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1"></a><span class="co">## Case 2: Iterate over *all possible combinations* of x=1:5 and y=6:10</span></span>
+<span id="cb59-2"><a href="#cb59-2"></a>input_df2 &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">x=</span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">y=</span><span class="dv">6</span><span class="op">:</span><span class="dv">10</span>)</span>
+<span id="cb59-3"><a href="#cb59-3"></a><span class="co"># input_df2 &lt;- expand(input_df1, x, y) ## Also works</span></span>
+<span id="cb59-4"><a href="#cb59-4"></a><span class="kw">parent_func</span>(input_df2)</span></code></pre></div>
 <pre><code>## # A tibble: 25 x 3
 ##        x     y     z
 ##    &lt;int&gt; &lt;int&gt; &lt;dbl&gt;
@@ -2143,14 +2125,14 @@ University of Oregon | EC 607<br><h4 class="date">Lecture 10</h4>
 <div class="footnotes">
 <hr />
 <ol>
-<li id="fn1"><p>Yes, it’s a function that let’s you write functions. Very meta.<a href="#fnref1" class="footnote-back">↩</a></p></li>
-<li id="fn2"><p>Remember: “In R, everything is an object and everything has a name.”<a href="#fnref2" class="footnote-back">↩</a></p></li>
-<li id="fn3"><p>E.g. Type <code>?rnorm</code> and see that it provides a default mean and standard deviation of 0 and 1, respectively.<a href="#fnref3" class="footnote-back">↩</a></p></li>
-<li id="fn4"><p><a href="https://github.com/grantmcdermott/bycatch/commit/18dbed157f0762bf4b44dfee437d6f319561c160">Exhibit A</a>. Trust me: debugging these cases is not much fun.<a href="#fnref4" class="footnote-back">↩</a></p></li>
-<li id="fn5"><p>The best case I can think of is when you are trying to keep track of the number of loops, but even then there are much better ways of doing this.<a href="#fnref5" class="footnote-back">↩</a></p></li>
-<li id="fn6"><p>For example, we could pipe the output to <code>unlist()</code> if you wanted a vector. Or you could use use <code>sapply()</code> instead, which I’ll cover shortly.<a href="#fnref6" class="footnote-back">↩</a></p></li>
-<li id="fn7"><p>In their <a href="https://r4ds.had.co.nz/iteration.html">words</a>: “The apply family of functions in base R solve a similar problem <em>[i.e. to purrr]</em>, but purrr is more consistent and thus is easier to learn.”<a href="#fnref7" class="footnote-back">↩</a></p></li>
-<li id="fn8"><p>We encountered some related tidyverse functions (<code>tidyr::expand()</code> and <code>tidyr::complete()</code>) in an earlier lecture, as well as your second assignment. Of course, you could could also extract the columns of the data frame as separate vectors and then feed these into <code>pmap()</code>/<code>mapply()</code> if you prefer.<a href="#fnref8" class="footnote-back">↩</a></p></li>
+<li id="fn1"><p>Yes, it’s a function that let’s you write functions. Very meta.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p>Remember: “In R, everything is an object and everything has a name.”<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+<li id="fn3"><p>E.g. Type <code>?rnorm</code> and see that it provides a default mean and standard deviation of 0 and 1, respectively.<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
+<li id="fn4"><p><a href="https://github.com/grantmcdermott/bycatch/commit/18dbed157f0762bf4b44dfee437d6f319561c160">Exhibit A</a>. Trust me: debugging these cases is not much fun.<a href="#fnref4" class="footnote-back">↩︎</a></p></li>
+<li id="fn5"><p>The best case I can think of is when you are trying to keep track of the number of loops, but even then there are much better ways of doing this.<a href="#fnref5" class="footnote-back">↩︎</a></p></li>
+<li id="fn6"><p>For example, we could pipe the output to <code>unlist()</code> if you wanted a vector. Or you could use use <code>sapply()</code> instead, which I’ll cover shortly.<a href="#fnref6" class="footnote-back">↩︎</a></p></li>
+<li id="fn7"><p>In their <a href="https://r4ds.had.co.nz/iteration.html">words</a>: “The apply family of functions in base R solve a similar problem <em>[i.e. to purrr]</em>, but purrr is more consistent and thus is easier to learn.”<a href="#fnref7" class="footnote-back">↩︎</a></p></li>
+<li id="fn8"><p>We encountered some related tidyverse functions (<code>tidyr::expand()</code> and <code>tidyr::complete()</code>) in an earlier lecture, as well as your second assignment. Of course, you could could also extract the columns of the data frame as separate vectors and then feed these into <code>pmap()</code>/<code>mapply()</code> if you prefer.<a href="#fnref8" class="footnote-back">↩︎</a></p></li>
 </ol>
 </div>
 
@@ -2172,6 +2154,49 @@ $(document).ready(function () {
 });
 
 
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3,h4",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
 </script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
