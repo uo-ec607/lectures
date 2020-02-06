@@ -24,10 +24,10 @@ output:
 
 ### R packages 
 
-- **New:** `pbapply`
-- **Already used:** `tidyverse` 
+- New: **pbapply**
+- Already used: **tidyverse** 
 
-We'll mostly be using the tidyverse to access the [purrr package](https://purrr.tidyverse.org/). Let's install (if necessary) and load everything:
+We'll mostly be using the tidyverse to access the [**purrr**](https://purrr.tidyverse.org/) package. Let's install (if necessary) and load everything:
 
 
 ```r
@@ -212,7 +212,7 @@ We'll return the issue of specifying default values (and handling invalid inputs
 
 Before continuing, I want to highlight the fact that none of the intermediate objects that we created within the above functions (`x_sq`, `df`, etc.) have made their way into our global environment. Take a moment to confirm this for yourself by looking in the "Environment" pane of your RStudio session.
 
-R has a set of so-called [*lexical scoping*](http://adv-r.had.co.nz/Functions.html#lexical-scoping) rules, which  govern where it stores and evaluates the values of different objects. Without going into too much depth, the practical implication of lexical scoping is that functions operate in a quasi-sandboxed [*environment*](http://adv-r.had.co.nz/Environments.html). They don't return or use objects in the global environment unless they are forced to (e.g. with a `return()` command). Similarly, a function will only look to outside environments (e.g. a level "up") to find an object if it doesn't see the object named within itself.
+R has a set of so-called [*lexical scoping*](https://adv-r.hadley.nz/functions.html#lexical-scoping) rules, which  govern where it stores and evaluates the values of different objects. Without going into too much depth, the practical implication of lexical scoping is that functions operate in a quasi-sandboxed [*environment*](https://adv-r.hadley.nz/environments.html). They don't return or use objects in the global environment unless they are forced to (e.g. with a `return()` command). Similarly, a function will only look to outside environments (e.g. a level "up") to find an object if it doesn't see the object named within itself.
 
 We'll explore the ideas of separate environments and lexical scoping a bit further when we get to the [Functional programming] section below. We'll also go into more depth during the next lecture on debugging.
 
@@ -779,7 +779,7 @@ parent_func(input_df2)
 
 In the next two lectures, we'll dive into more advanced programming and function topics (debugging, parallel implementation, etc.). However, I hope that today has given you solid grasp of the fundamentals. I highly encourage you to start writing some of your own functions. You will be doing this a *lot* as your career progresses. Establishing an early mastery of function writing will put you on the road to awesome data science success<sup>TM</sup>. Here are some additional resources for both inspiration and reference:
 
-- [Chapter 19 ("Functions)")](http://r4ds.had.co.nz/functions.html) and [Chapter 21 ("Iteration)")](http://r4ds.had.co.nz/iteration.html) of *R4DS* (Grolemund and Wickham) cover much of the same ground as we have here, with particular emphasis on the `purrr` package for iteration.
-- [Chapter 10 ("Functional programming)")](http://adv-r.had.co.nz/Functional-programming.html) and [Chapter 11 ("Functionals)")](http://adv-r.had.co.nz/Functionals.html) of *Advanced R* (Wickham) goes into more depth, especially on the philosophy of functional programming. It also emphasises the `*apply()` family of functions, although that is at least partly (entirely?) due to the fact that `purrr` was introduced after its publication.
+- Garrett Grolemund and Hadley Wickham's [*<b>R for Data Science</b>*](http://r4ds.had.co.nz) book --- esp. chapters [19 ("Functions)")](http://r4ds.had.co.nz/functions.html) and [21 ("Iteration)")](http://r4ds.had.co.nz/iteration.html) --- covers much of the same ground as we have here, with particular emphasis on the **purrr** package for iteration.
+- If you're looking for an in-depth treatment, then I can highly recommend Hadley's [*<b>Advanced R</b>*](https://adv-r.hadley.nz) (2nd ed.) He provides a detailed yet readable overview of all the concepts that we touched on today, including more on his (and R's) philospohy regarding functional programming (see [Section ||](https://adv-r.hadley.nz/fp.html)). 
 - If you're in the market for a more concise overview of the different `*apply()` functions, then I recommend [this blog post](https://nsaunders.wordpress.com/2010/08/20/a-brief-introduction-to-apply-in-r/) by Neil Saunders.
 - On the other end of the scale, Jenny Bryan (all hail) has created a fairly epic [purrr tutorial](https://jennybc.github.io/purrr-tutorial) mini-website. (Bonus: She goes into more depth about working with lists and list columns.)

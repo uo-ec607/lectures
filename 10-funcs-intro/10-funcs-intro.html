@@ -1606,10 +1606,10 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <div id="r-packages" class="section level3">
 <h3>R packages</h3>
 <ul>
-<li><strong>New:</strong> <code>pbapply</code></li>
-<li><strong>Already used:</strong> <code>tidyverse</code></li>
+<li>New: <strong>pbapply</strong></li>
+<li>Already used: <strong>tidyverse</strong></li>
 </ul>
-<p>We’ll mostly be using the tidyverse to access the <a href="https://purrr.tidyverse.org/">purrr package</a>. Let’s install (if necessary) and load everything:</p>
+<p>We’ll mostly be using the tidyverse to access the <a href="https://purrr.tidyverse.org/"><strong>purrr</strong></a> package. Let’s install (if necessary) and load everything:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="cf">if</span> (<span class="op">!</span><span class="kw">require</span>(<span class="st">&quot;pacman&quot;</span>)) <span class="kw">install.packages</span>(<span class="st">&quot;pacman&quot;</span>)</span>
 <span id="cb1-2"><a href="#cb1-2"></a>pacman<span class="op">::</span><span class="kw">p_load</span>(pbapply, tidyverse)</span></code></pre></div>
 </div>
@@ -1706,7 +1706,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <div id="environments-and-lexical-scoping" class="section level3">
 <h3>Environments and lexical scoping</h3>
 <p>Before continuing, I want to highlight the fact that none of the intermediate objects that we created within the above functions (<code>x_sq</code>, <code>df</code>, etc.) have made their way into our global environment. Take a moment to confirm this for yourself by looking in the “Environment” pane of your RStudio session.</p>
-<p>R has a set of so-called <a href="http://adv-r.had.co.nz/Functions.html#lexical-scoping"><em>lexical scoping</em></a> rules, which govern where it stores and evaluates the values of different objects. Without going into too much depth, the practical implication of lexical scoping is that functions operate in a quasi-sandboxed <a href="http://adv-r.had.co.nz/Environments.html"><em>environment</em></a>. They don’t return or use objects in the global environment unless they are forced to (e.g. with a <code>return()</code> command). Similarly, a function will only look to outside environments (e.g. a level “up”) to find an object if it doesn’t see the object named within itself.</p>
+<p>R has a set of so-called <a href="https://adv-r.hadley.nz/functions.html#lexical-scoping"><em>lexical scoping</em></a> rules, which govern where it stores and evaluates the values of different objects. Without going into too much depth, the practical implication of lexical scoping is that functions operate in a quasi-sandboxed <a href="https://adv-r.hadley.nz/environments.html"><em>environment</em></a>. They don’t return or use objects in the global environment unless they are forced to (e.g. with a <code>return()</code> command). Similarly, a function will only look to outside environments (e.g. a level “up”) to find an object if it doesn’t see the object named within itself.</p>
 <p>We’ll explore the ideas of separate environments and lexical scoping a bit further when we get to the <a href="#functional-programming">Functional programming</a> section below. We’ll also go into more depth during the next lecture on debugging.</p>
 </div>
 </div>
@@ -2116,8 +2116,8 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <h2>Further resources</h2>
 <p>In the next two lectures, we’ll dive into more advanced programming and function topics (debugging, parallel implementation, etc.). However, I hope that today has given you solid grasp of the fundamentals. I highly encourage you to start writing some of your own functions. You will be doing this a <em>lot</em> as your career progresses. Establishing an early mastery of function writing will put you on the road to awesome data science success<sup>TM</sup>. Here are some additional resources for both inspiration and reference:</p>
 <ul>
-<li><a href="http://r4ds.had.co.nz/functions.html">Chapter 19 (“Functions)”)</a> and <a href="http://r4ds.had.co.nz/iteration.html">Chapter 21 (“Iteration)”)</a> of <em>R4DS</em> (Grolemund and Wickham) cover much of the same ground as we have here, with particular emphasis on the <code>purrr</code> package for iteration.</li>
-<li><a href="http://adv-r.had.co.nz/Functional-programming.html">Chapter 10 (“Functional programming)”)</a> and <a href="http://adv-r.had.co.nz/Functionals.html">Chapter 11 (“Functionals)”)</a> of <em>Advanced R</em> (Wickham) goes into more depth, especially on the philosophy of functional programming. It also emphasises the <code>*apply()</code> family of functions, although that is at least partly (entirely?) due to the fact that <code>purrr</code> was introduced after its publication.</li>
+<li>Garrett Grolemund and Hadley Wickham’s <a href="http://r4ds.had.co.nz"><em><b>R for Data Science</b></em></a> book — esp. chapters <a href="http://r4ds.had.co.nz/functions.html">19 (“Functions)”)</a> and <a href="http://r4ds.had.co.nz/iteration.html">21 (“Iteration)”)</a> — covers much of the same ground as we have here, with particular emphasis on the <strong>purrr</strong> package for iteration.</li>
+<li>If you’re looking for an in-depth treatment, then I can highly recommend Hadley’s <a href="https://adv-r.hadley.nz"><em><b>Advanced R</b></em></a> (2nd ed.) He provides a detailed yet readable overview of all the concepts that we touched on today, including more on his (and R’s) philospohy regarding functional programming (see <a href="https://adv-r.hadley.nz/fp.html">Section ||</a>).</li>
 <li>If you’re in the market for a more concise overview of the different <code>*apply()</code> functions, then I recommend <a href="https://nsaunders.wordpress.com/2010/08/20/a-brief-introduction-to-apply-in-r/">this blog post</a> by Neil Saunders.</li>
 <li>On the other end of the scale, Jenny Bryan (all hail) has created a fairly epic <a href="https://jennybc.github.io/purrr-tutorial">purrr tutorial</a> mini-website. (Bonus: She goes into more depth about working with lists and list columns.)</li>
 </ul>
