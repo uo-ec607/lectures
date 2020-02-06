@@ -4,7 +4,7 @@ subtitle: "Lecture 7: Webscraping: (2) Client-side and APIs"
 author:
   name: Grant R. McDermott
   affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
-# date: Lecture 6  #"`r format(Sys.time(), '%d %B %Y')`"
+# date: Lecture 7  #"`r format(Sys.time(), '%d %B %Y')`"
 output: 
   html_document:
     theme: flatly
