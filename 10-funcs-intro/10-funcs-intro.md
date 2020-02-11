@@ -4,7 +4,7 @@ subtitle: "Lecture 10: Functions in R: (1) Introductory concepts"
 author:
   name: Grant R. McDermott
   affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
-# date: Lecture 10  #"06 February 2020"
+# date: Lecture 10  #"10 February 2020"
 output: 
   html_document:
     theme: flatly
@@ -208,7 +208,7 @@ square(2) ## Now takes the explicit value that we give it.
 
 We'll return the issue of specifying default values (and handling invalid inputs) in the next lecture on function debugging. 
 
-### Environments and lexical scoping
+### Aside: Environments and lexical scoping
 
 Before continuing, I want to highlight the fact that none of the intermediate objects that we created within the above functions (`x_sq`, `df`, etc.) have made their way into our global environment. Take a moment to confirm this for yourself by looking in the "Environment" pane of your RStudio session.
 
@@ -216,11 +216,94 @@ R has a set of so-called [*lexical scoping*](https://adv-r.hadley.nz/functions.h
 
 We'll explore the ideas of separate environments and lexical scoping a bit further when we get to the [Functional programming] section below. We'll also go into more depth during the next lecture on debugging.
 
+## Control flow
+
+Now that we've got a good sense of the basic function syntax, it's time to learn control flow. That is, we want to control the order (or "flow") of statements and operations that our functions evaluate. 
+
+### if and ifelse
+
+We've already encountered conditional statements like `if()` and `ifelse()` numerous times in the course thus far.^[E.g Conditional mutation in the tidyverse lecture (see [here](https://raw.githack.com/uo-ec607/lectures/master/05-tidyverse/05-tidyverse.html#38).] However, let's see how they can work in our own bespoke functions by slightly modifying our previous square function. This time, instead of specifying a default input value of 1 in the function argument itself, we'll specify a value of `NULL`. Then we'll use an `if()` statement to reassign this default to one.
+
+
+```r
+square <- 
+  function(x = NULL) { ## Default value of NULL
+    if (is.null(x)) x=1 ## Re-assign default to 1
+    x_sq <- x^2 
+    df <- tibble(value=x, value_squared=x_sq)
+    return(df)
+  }
+square()
+```
+
+```
+## # A tibble: 1 x 2
+##   value value_squared
+##   <dbl>         <dbl>
+## 1     1             1
+```
+
+Why go through the rigmarole of specifying a NULL default inpute if we're going to change it to 1 anyway? Admittedly, this is a pretty silly thing to do in the above example. However, consider what it buys us in the next code chunk:
+
+
+```r
+square <- 
+  function(x = NULL) {
+    if (is.null(x)) { ## Start multiline if statement with `{`
+      x=1
+      message("No input value provided. Using default value of 1.") ## Message to users
+      } ## Close multiline if statement with `}`
+    x_sq <- x^2 
+    df <- tibble(value=x, value_squared=x_sq)
+    return(df)
+  }
+square()
+```
+
+```
+## No input value provided. Using default value of 1.
+```
+
+```
+## # A tibble: 1 x 2
+##   value value_squared
+##   <dbl>         <dbl>
+## 1     1             1
+```
+
+This time, by specifying NULL in the argument --- alongside the expanded `if()` statement --- our function now both takes a default value *and* generates a helpful message.^[Think about how you might have tried to achieve this if we'd assigned the `x = 1` default directly in function argument as before. It quickly gets complicated, because how can your message discriminate whether a user left the argument blank or deliberately entered `square(1)`?] Note too the use of curly brackets for conditional operations that span multiple lines after an `if()` statement. 
+This provides a nice segue to `ifelse()` statements. As we've already seen , these be written as a single conditional call where the format is:
+
+
+```r
+ifelse(CONDITION, DO IF TRUE, DO IF FALSE)
+```
+
+Within our own functions, though we're more likely to write them over several lines. Consider, for example a new function that evaluates whether our `square()` function is doing its job properly.
+
+
+```r
+eval_square <-
+  function(x) {
+    if (square(x)$value_squared == x*x) { ## condition
+      ## What to do if the condition is TRUE 
+      message("Nailed it.")
+    } else {
+      ## What to do if the condition is FALSE
+      message("Dude, your function sucks.")
+    }
+  }
+eval_square(64)
+```
+
+```
+## Nailed it.
+```
+
+
 ## Iteration
 
-After learning the basic function syntax, arguably the most important early programming skill to master is writing (for) loops. These allow us to iterate over --- or *map* --- a set of inputs to a variety of functions. In so doing, loops provide the underlying power to a bewildering array of software applications and scientific analyses. 
-
-However, as we'll see, writing loops in R require a bit more nuance because of limitations of the standard for-loop approach. Instead, I advocate that you adopt what is known as a "functional programming" approach to writing loops. Let's dive into the reasons why and how these approaches differ.
+Alongside control flow, the most important early programming skill to master is iteration. In particular, we want to write functions that can iterate --- or *map* --- over a set of inputs.^[Our focus today will only be on sequential iteration, but we'll return to parallel iteration in the lecture after next.] By far the most common way to iterate across different programming languages is *for* loops. Indeed, we already saw some examples of *for* loops back in the shell lecture (see [here](https://raw.githack.com/uo-ec607/lectures/master/03-shell/03-shell.html#95)). However, while R certainly accepts standard *for* loops, I'm going to advocate that you adopt what is known as a "functional programming" approach to writing loops. Let's dive into the reasons why and how these approaches differ.
 
 ### Vectorisation
 
@@ -251,9 +334,9 @@ square(c(2, 4))
 
 So you may not need to worry about explicit iteration at all. That being said, there are certainly cases where you will need to worry about it. Let's explore with some simple examples (some of which are already vectorised) that provide a mental springboard for thinking about more complex cases.
 
-### For-loops. Simple, but limited (and sometimes dangerous)
+### *for* loops. Simple, but limited (and sometimes dangerous)
 
-In R, standard for-loops take a pretty intuitive form. For example:
+In R, standard *for* loops take a pretty intuitive form. For example:
 
 
 ```r
@@ -273,7 +356,7 @@ for(i in 1:10) print(LETTERS[i])
 ## [1] "J"
 ```
 
-Note that in cases where we want to "grow" an object via a for-loop, we first have to create an empty (or NULL) object.
+Note that in cases where we want to "grow" an object via a *for* loop, we first have to create an empty (or NULL) object.
 
 
 ```r
@@ -290,7 +373,7 @@ fahrenheit
 ## [1] 80.33 82.13 83.93 85.73 87.53 89.33
 ```
 
-Unfortunately, basic for-loops in R also come with some downsides. Historically, they used to be much slower than alternative methods (see below). This has largely been resolved, but I've still run into cases where an inconspicuous for-loop has brought an entire analysis crashing to its knees.^[[Exhibit A](https://github.com/grantmcdermott/bycatch/commit/18dbed157f0762bf4b44dfee437d6f319561c160). Trust me: debugging these cases is not much fun.] The bigger problem with for-loops, however, is that they deviate from the norms and best practices of **functional programming**. 
+Unfortunately, basic *for* loops in R also come with some downsides. Historically, they used to be significantly slower and memory consumptive than alternative methods (see below). This has largely been resolved, but I've still run into cases where an inconspicuous *for* loop has brought an entire analysis crashing to its knees.^[[Exhibit A](https://github.com/grantmcdermott/bycatch/commit/18dbed157f0762bf4b44dfee437d6f319561c160). Trust me: debugging these cases is not much fun.] The bigger problem with *for* loops, however, is that they deviate from the norms and best practices of **functional programming**. 
 
 ## Functional programming
 
@@ -308,31 +391,31 @@ That may seem a little abstract, so here is video of Hadley giving a much more i
 
 </br>
 
-**Summary:** For-loops tend to emphasise the *objects* that we're working with (say, a vector of numbers) rather than the *operations* that we want to apply to them (say, get the mean or median or whatever). This is inefficient because it requires us to continually write out the for-loops by hand rather than getting an R function to create the for-loop for us. 
+**Summary:** *for* loops tend to emphasise the *objects* that we're working with (say, a vector of numbers) rather than the *operations* that we want to apply to them (say, get the mean or median or whatever). This is inefficient because it requires us to continually write out the *for* loops by hand rather than getting an R function to create the for-loop for us. 
 
-As a corollary, for-loops also pollute our global environment with the variables that are used as counting variables. Take a look at your "Environment" pane in RStudio. What do you see? In addition to the `kelvin` and `fahrenheit` vectors that we created, we also see two variables `i` and `k` (equal to the last value of their respective loops). Creating these auxilliary variables is almost certainly not an intended outcome when your write a for-loop.^[The best case I can think of is when you are trying to keep track of the number of loops, but even then there are much better ways of doing this.] More worringly, they can cause programming errors when we inadvertently refer to a similarly-named variable elsewhere in our script. So we best remove them manually as soon as we're finished with a loop. 
+As a corollary, *for* loops also pollute our global environment with the variables that are used as counting variables. Take a look at your "Environment" pane in RStudio. What do you see? In addition to the `kelvin` and `fahrenheit` vectors that we created, we also see two variables `i` and `k` (equal to the last value of their respective loops). Creating these auxilliary variables is almost certainly not an intended outcome when your write a for-loop.^[The best case I can think of is when you are trying to keep track of the number of loops, but even then there are much better ways of doing this.] More worringly, they can cause programming errors when we inadvertently refer to a similarly-named variable elsewhere in our script. So we best remove them manually as soon as we're finished with a loop. 
 
 
 ```r
 rm(i,k)
 ```
 
-Another annoyance arrived in cases where we want to "grow" an object as we iterate over it (e.g. the `fahrenheit` object in our second example). In order to do this with a for-loop, we had to go through the rigmarole of creating an empty object first.
+Another annoyance arrived in cases where we want to "grow" an object as we iterate over it (e.g. the `fahrenheit` object in our second example). In order to do this with a *for* loop, we had to go through the rigmarole of creating an empty object first.
 
 FP allows to avoid the explicit use of loop constructs and its associated downsides. In practice, there are two ways to implement FP in R: 
 
 1. The `*apply` family of functions in base R.
-2. The `map*()` family of functions from the [purrr package](https://purrr.tidyverse.org/).
+2. The `map*()` family of functions from the [**purrr**](https://purrr.tidyverse.org/).
 
 Let's explore these in more depth.
 
 ### 1) `lapply()` and co.
 
-Base R contains a very useful family of `*apply` functions. I won't go through all of these here --- see `?apply` or [this blog post](https://nsaunders.wordpress.com/2010/08/20/a-brief-introduction-to-apply-in-r/) among numerous excellent resources --- but they all follow a similar philosophy and syntax. The good news is that this syntax very closely mimics the syntax of basic for-loops. For example, consider the code below, which is analgous to our first for-loop above, but now invokes a **`base::lapply()`** call instead. 
+Base R contains a very useful family of `*apply` functions. I won't go through all of these here --- see `?apply` or [this blog post](https://nsaunders.wordpress.com/2010/08/20/a-brief-introduction-to-apply-in-r/) among numerous excellent resources --- but they all follow a similar philosophy and syntax. The good news is that this syntax very closely mimics the syntax of basic for-loops. For example, consider the code below, which is analgous to our first *for* loop above, but now invokes a **`base::lapply()`** call instead. 
 
 
 ```r
-# for(i in 1:10) print(LETTERS[i]) ## Our original for-loop (for comparison)
+# for(i in 1:10) print(LETTERS[i]) ## Our original for loop (for comparison)
 lapply(1:10, function(i) LETTERS[i])
 ```
 
@@ -472,9 +555,9 @@ lapply(c(1, 5, 26, 3), num_to_alpha) %>% bind_rows()
 ## 4     3 C
 ```
 
-#### Progress bars with the `pbapply` package!
+#### Progress bars with the **pbapply** package!
 
-I'm a big fan of the [**pbapply** package](https://github.com/psolymos/pbapply), which is a lightweight wrapper around the `*apply` functions that adds a progress bar. And who doesn't like progress bars? Personally, I find it incredibly helpful to see how a function is progressing, or get a sense of how much longer I can expect to wait before completion. `pbapply` offers versions for all of the `*apply` family, but the one that I use the most is (unsuprisingly) **`pbapply::pblapply()`**. 
+I'm a big fan of the [**pbapply**](https://github.com/psolymos/pbapply) package, which is a lightweight wrapper around the `*apply` functions that adds a progress bar. And who doesn't like progress bars? Personally, I find it incredibly helpful to see how a function is progressing, or get a sense of how much longer I can expect to wait before completion. `pbapply` offers versions for all of the `*apply` family, but the one that I use the most is (unsuprisingly) `pbapply::pblapply()`. 
 
 *Note: You will need to run this next example interactively to see the effect properly.*
 
@@ -510,7 +593,7 @@ Another thing that I really like about the `pblapply()` function is that it allo
 
 ### 2) purrr package
 
-The tidyverse offers its own enhanced implementation of the base `*apply()` functions through the [**purrr** package](https://purrr.tidyverse.org/).^[In their [words](https://r4ds.had.co.nz/iteration.html): "The apply family of functions in base R solve a similar problem *[i.e. to purrr]*, but purrr is more consistent and thus is easier to learn."] The key function to remember here is **`purrr::map()`**. And, indeed, the syntax and output of this command are effectively identical to `base::lapply()`:
+The tidyverse offers its own enhanced implementation of the base `*apply()` functions through the [**purrr**](https://purrr.tidyverse.org/) package.^[In their [words](https://r4ds.had.co.nz/iteration.html): "The apply family of functions in base R solve a similar problem *[i.e. to purrr]*, but purrr is more consistent and thus is easier to learn."] The key function to remember here is `purrr::map()`. And, indeed, the syntax and output of this command are effectively identical to `base::lapply()`:
 
 
 ```r
@@ -580,7 +663,7 @@ map(1:10, num_to_alpha)
 ## 1    10 J
 ```
 
-Given these similarities, I won't spend much time on the purrr package. Although, I do think it will be the optimal entry point for many you when it comes to programming and iteration. You have already learned the syntax, so it should be very easy to switch over. However, one additional thing I wanted to flag for today is that `map()` also comes with its own variants, which are useful for returning objects of a desired type. For example, we can use **`purrr::map_df()`** to return a data frame.
+Given these similarities, I won't spend much time on **purrr**. Although, I do think it will be the optimal entry point for many you when it comes to programming and iteration. You have already learned the syntax, so it should be very easy to switch over. However, one additional thing I wanted to flag for today is that `map()` also comes with its own variants, which are useful for returning objects of a desired type. For example, we can use `purrr::map_df()` to return a data frame.
 
 
 ```r
