@@ -26,8 +26,8 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
 
 ### R packages 
 
-- **New:** `R.cache`, `tictoc`
-- **Already used:** `tidyverse`
+- New: **R.cache**, **tictoc**
+- Already used: **tidyverse**
 
 Install (if necessary) and load these packages now:
 
@@ -119,13 +119,13 @@ This may just seem like a case of particularly dumb user error. However --- trus
 
 Luckily, there are several approaches to guarding against these kind of mistakes. I'll briefly run through what I see as the three main options below. 
 
-1. Function-specific `ifelse` statements
+1. Function-specific control flow
 2. Use `base::tryCatch()`
 3. Use `purrr::safely()` and family
 
-### Option 1: Function-specific `ifelse` statements
+### Option 1: Function-specific control flow
 
-In this particular example, we can check whether the input argument is a numeric and use an `ifelse` statement to produce a warning/error message if it fails this test. Let's demonstrate how this might work in practice by defining a slightly modified version of our function, which I'll call `square_ifelse`.
+We covered the basics of control flow in the previous lecture ([here](https://raw.githack.com/uo-ec607/lectures/master/10-funcs-intro/10-funcs-intro.html#control_flow)). Let's put the same concepts to use for debugging. In this particular function, for example, we know that our function requires a numeric input. So we can check whether the input argument is a numeric and use an `ifelse` statement to produce a warning/error message if it fails this test. Consider, then, a slightly modified version of our function, which I'll call `square_ifelse`.
 ```{r square_ifelse}
 square_ifelse <- 
   function (x = 1) { 
@@ -144,6 +144,21 @@ Test it.
 square_ifelse("one") ## Will trigger our warning message.
 square_ifelse(1) ## Works.
 ```
+
+We can achieve a very similar result, but with less code, using the generic `stop()` function. 
+
+```{r square_stop, error=TRUE}
+square_stop <- 
+  function (x = 1) { 
+    if (!is.numeric(x)) stop("Sorry, you need to provide a numeric input variable.")
+    x_sq <- x^2 
+    df <- tibble(value=x, value_squared=x_sq)
+    return(df) 
+  }
+square_stop("one") ## Triggers a stop error and warning
+square_stop(1) ## Works
+```
+
 
 ### Option 2: Use `base::tryCatch()`
 

@@ -1,10 +1,10 @@
 ---
-title: "Functions in R: 2) Advanced concepts"
+title: "Data Science for Economists"
+subtitle: "Lecture 11: Functions in R: (2) Advanced concepts"
 author:
   name: Grant R. McDermott
-  affiliation: University of Oregon | EC 607
-  # email: grantmcd@uoregon.edu
-date: Lecture 11  #"15 February 2019"
+  affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
+# date: Lecture 11  #"11 February 2020"
 output: 
   html_document:
     theme: flatly
@@ -24,8 +24,8 @@ output:
 
 ### R packages 
 
-- **New:** `R.cache`, `tictoc`
-- **Already used:** `tidyverse`
+- New: **R.cache**, **tictoc**
+- Already used: **tidyverse**
 
 Install (if necessary) and load these packages now:
 
@@ -130,13 +130,13 @@ This may just seem like a case of particularly dumb user error. However --- trus
 
 Luckily, there are several approaches to guarding against these kind of mistakes. I'll briefly run through what I see as the three main options below. 
 
-1. Function-specific `ifelse` statements
+1. Function-specific control flow
 2. Use `base::tryCatch()`
 3. Use `purrr::safely()` and family
 
-### Option 1: Function-specific `ifelse` statements
+### Option 1: Function-specific control flow
 
-In this particular example, we can check whether the input argument is a numeric and use an `ifelse` statement to produce a warning/error message if it fails this test. Let's demonstrate how this might work in practice by defining a slightly modified version of our function, which I'll call `square_ifelse`.
+We covered the basics of control flow in the previous lecture ([here](https://raw.githack.com/uo-ec607/lectures/master/10-funcs-intro/10-funcs-intro.html#control_flow)). Let's put the same concepts to use for debugging. In this particular function, for example, we know that our function requires a numeric input. So we can check whether the input argument is a numeric and use an `ifelse` statement to produce a warning/error message if it fails this test. Consider, then, a slightly modified version of our function, which I'll call `square_ifelse`.
 
 ```r
 square_ifelse <- 
@@ -171,6 +171,36 @@ square_ifelse(1) ## Works.
 ##   <dbl>         <dbl>
 ## 1     1             1
 ```
+
+We can achieve a very similar result, but with less code, using the generic `stop()` function. 
+
+
+```r
+square_stop <- 
+  function (x = 1) { 
+    if (!is.numeric(x)) stop("Sorry, you need to provide a numeric input variable.")
+    x_sq <- x^2 
+    df <- tibble(value=x, value_squared=x_sq)
+    return(df) 
+  }
+square_stop("one") ## Triggers a stop error and warning
+```
+
+```
+## Error in square_stop("one"): Sorry, you need to provide a numeric input variable.
+```
+
+```r
+square_stop(1) ## Works
+```
+
+```
+## # A tibble: 1 x 2
+##   value value_squared
+##   <dbl>         <dbl>
+## 1     1             1
+```
+
 
 ### Option 2: Use `base::tryCatch()`
 
