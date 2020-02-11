@@ -4,7 +4,7 @@ subtitle: "Lecture 10: Functions in R: (1) Introductory concepts"
 author:
   name: Grant R. McDermott
   affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
-# date: Lecture 10  #"10 February 2020"
+# date: Lecture 10  #"11 February 2020"
 output: 
   html_document:
     theme: flatly
@@ -25,14 +25,14 @@ output:
 ### R packages 
 
 - New: **pbapply**
-- Already used: **tidyverse** 
+- Already used: **tidyverse**, **data.table** 
 
 We'll mostly be using the tidyverse to access the [**purrr**](https://purrr.tidyverse.org/) package. Let's install (if necessary) and load everything:
 
 
 ```r
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(pbapply, tidyverse)
+pacman::p_load(pbapply, data.table, tidyverse)
 ```
 
 ## Basic syntax
@@ -300,6 +300,48 @@ eval_square(64)
 ## Nailed it.
 ```
 
+#### Aside: ifelse gotchas and alternatives
+
+The base R `ifelse()` function normally works great and I use it all the time. However, there are a couple of "gotcha" cases that you should be aware of. Consider the following (silly) function which is designed to return either today's date, or the day before.^[The dots (`...`) argument is a convenient way to allow for unspecified arguments to be used in our functions. This is beyond the scope of our current lecture, but can prove to be an incredibly useful and flexible programming strategy. I highly encourage you to look at the [relevant section](https://adv-r.hadley.nz/functions.html#fun-dot-dot-dot) in *Advanced R* to get a better idea.]
+
+
+```r
+today <- function(...) ifelse(..., Sys.Date(), Sys.Date()-1)
+today(TRUE)
+```
+
+```
+## [1] 18303
+```
+
+You are no doubt surprised to find that our function returns a number instead of a date. This is because `ifelse()` automatically converts date objects to numeric as a way to get around some other type conversion strictures. Confirm for yourself by converting it back the other way around with: `as.Date(today(TRUE), origin = "1970-01-01")`. 
+
+To guard against this type of unexpected behaviour, as well as incorporate some other optimisations, both the tidyverse (through **dplyr**) and **data.table** offer their own versions of ifelse statements. I won't explain these next code chunks in depth (consult the relevant help pages if needed), but here are adapated versions of our `today()` function based on these alternatives.
+
+First, `dplyr::if_else()`:
+
+
+```r
+today2 <- function(...) dplyr::if_else(..., Sys.Date(), Sys.Date()-1)
+today2(TRUE)
+```
+
+```
+## [1] "2020-02-11"
+```
+
+Second, `data.table::fifelse()`:
+
+
+```r
+today3 <- function(...) data.table::fifelse(..., Sys.Date(), Sys.Date()-1)
+today3(TRUE)
+```
+
+```
+## [1] "2020-02-11"
+```
+
 
 ## Iteration
 
@@ -409,7 +451,7 @@ FP allows to avoid the explicit use of loop constructs and its associated downsi
 
 Let's explore these in more depth.
 
-### 1) `lapply()` and co.
+### 1) lapply and co.
 
 Base R contains a very useful family of `*apply` functions. I won't go through all of these here --- see `?apply` or [this blog post](https://nsaunders.wordpress.com/2010/08/20/a-brief-introduction-to-apply-in-r/) among numerous excellent resources --- but they all follow a similar philosophy and syntax. The good news is that this syntax very closely mimics the syntax of basic for-loops. For example, consider the code below, which is analgous to our first *for* loop above, but now invokes a **`base::lapply()`** call instead. 
 
@@ -490,7 +532,7 @@ lapply(1:10, function(i) {
 
 Taking a step back, while the default list-return behaviour may not sound ideal at first, I've found that I use `lapply()` more frequently than any of the other `apply` family members. A key reason is that my functions normally return multiple objects of different type (which makes lists the only sensible format)... or a single data frame (which is where bind `dplyr::bind_rows()` comes in). 
 
-#### Aside: quick look at `sapply()`
+#### Aside: quick look at sapply()
 
 Another option that would work well in the this particular case is `sapply()`, which stands for "**s**implify apply". This is essentially a wrapper around `lapply` that tries to return simplified output that matches the input type. If you feed the function a vector, it will try to return a vector, etc.
 
