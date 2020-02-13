@@ -4,7 +4,7 @@ subtitle: "Lecture 11: Functions in R: (2) Advanced concepts"
 author:
   name: Grant R. McDermott
   affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
-# date: Lecture 11  #"11 February 2020"
+# date: Lecture 11  #"12 February 2020"
 output: 
   html_document:
     theme: flatly
@@ -24,18 +24,16 @@ output:
 
 ### R packages 
 
-- New: **R.cache**, **tictoc**
-- Already used: **tidyverse**
+- New: **memoise**
+- Already used: **tidyverse**, **here**
 
 Install (if necessary) and load these packages now:
 
 
 ```r
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(R.cache, tictoc, tidyverse)
+pacman::p_load(memoise, tidyverse, here)
 ```
-
-Note that when you first install the [R.cache package](https://cran.r-project.org/web/packages/R.cache/index.html), it will ask you if you wish to create a default `~/.Rcache` directory that will hold all of your cache files. I recommend that you say yes by entering "y".^[The alternative is create a temporary directory for this session only. This is okay for experimentation, but decidedly unhelpful when the goal caching is to persist output and evaluated code across sessions.]
 
 We will also be working with our simple `square()` function from the previous lecture. Let's create it again quickly.
 
@@ -381,82 +379,78 @@ square_safely("three")
 ```
 
 
-## Caching (memoization)
+## Caching (memoisation)
 
-We've already experienced the benefits (and occasional frustrations) of caching with R Markdown documents.^[Like all of my notes for the course, this lecture is written in R Markdown and then "knitted" to HTML. If you look at the .Rmd source file, you'll see a code chunk with `knitr::opts_chunk$set(echo=TRUE, cache=TRUE, dpi=300)` right at the top. The `cache=TRUE` bit causes each subsequent code chunk to be cached, so that they don't have to be re-run every time I recompile the document (unless something changes).] Caching can also be extremely useful for regular R scripts and analyses. For example, we may wish to save some computationally-expensive output so that we don't have to run it again. On a related (but more sinister) note, programs and functions can crash midway through completion. This can happen for a variety of reasons: invalid function arguments buried in iterated input, computer malfunction, memory limits, power outtages, timeouts, etc. Regardless, it can be a fairly soul-splintering experience to lose all of your work if you're working on a particularly lengthy simulation or computation problem. 
+We've already experienced the benefits (and occasional frustrations) of caching with R Markdown documents.^[Like all of my notes for the course, this lecture is written in R Markdown and then "knitted" to HTML. If you look at the .Rmd source file, you'll see a code chunk with `knitr::opts_chunk$set(echo=TRUE, cache=TRUE, dpi=300)` right at the top. The `cache=TRUE` bit causes each subsequent code chunk to be cached, so that they don't have to be re-run every time I recompile the document (unless something changes).] Caching can also be extremely useful for regular R scripts and analyses. For example, we may wish to save some computationally-expensive output so that we don't have to run it again. On a related but more sinister note, programs and functions can crash midway through completion. This can happen for a variety of reasons: invalid function arguments buried in iterated input, computer malfunction, memory limits, power outtages, timeouts, etc. Regardless, it can be a fairly soul-splintering experience to lose all of your work if you're working on a particularly lengthy simulation or computation problem. Lastly, we'll get to parallel computation in the next lecture, but the problem is *even worse* there. What typically happens with a parallelized program is that the entire run will complete (potentially taking many hours or days) and only reveal an error right at the end... with no saved output! 
 
-We'll get to parallel computation in next lecture, but the problem is *even worse* there. What typically happens with a parallelized program is that the entire run will complete (potentially taking many hours or days) and only reveal an error right at the end... with no saved output! 
+Fortunately, R has our back with several caching tools. Here I'm going to focus on the [**memoise**](https://github.com/r-lib/memoise) package. Note that [memoisation/memoization](https://en.wikipedia.org/wiki/Memoization) refers to a particular form of caching where we save (i.e. "remember") the results of expensive functions calls, so that we don't have to repeat them in the future.
 
-<div align="center"><iframe src="https://giphy.com/embed/fVfnOJ0oLb87m" width="480" height="359" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></p></div>
-
-</br>
-
-Fortunately, R has our back with several caching tools. I'm going to focus on the [R.cache package](https://cran.r-project.org/web/packages/R.cache/index.html) from [Henrik Bengtsson](https://twitter.com/henrikbengtsson). I should perhaps also clarify that there are various forms of caching, but we're going to be practicing here is technically known as [memoization](https://en.wikipedia.org/wiki/Memoization).
-
-Let's start by creating a "slow" version of our simple square function, `slow_func()`, which will sleep for two seconds at the end of every iteration. Of course, this is just meant to emulate a computationally-intensive function, but the basic ideas will carry through entirely intact.
+Let's start by creating a "slow" version of our simple square function --- that waits for two seconds before doing anything --- which I'll creatively call `slow_square()`. Of course, this is just meant to emulate a computationally-expensive operation, but the basic principles will carry through intact.
 
 
 ```r
 ## Emulate slow function
-slow_func <- 
-  function(x = 1) {
-    x_sq <- x^2 
-    df <- tibble(value=x, value_squared=x_sq)
-    Sys.sleep(2)
-    return(df)
-    }
-```
-
-Now we layer on the caching functionality. To do this, we're going to wrap our slow function in a parent function, which I'll creatively call `cached_func()`. This parent function has two primary sections:
-
-1. First, it tries to load previously cached data (if it exists) using `R.cache::loadCache()`. This works by recognising a unique file cache for a given set of input parameters, which we would have generated previously. Speaking of which...
-2. Second, it runs our slow function on any inputs that have not already been evaluated. During each iteration, we generate a new cache file using `R.cache::saveCache()`. This will save the compressed output from that iteration to disk (i.e. in our `~/.Rcache` directory) and automatically append a unique ID (hexadecimal hash code) to the file name, for convenient recall later.
-
-
-```r
-# library(R.cache) ## Already loaded
-
-cached_func <- 
+slow_square <- 
   function(x) {
-    
-    ## 1. Try to load cached data, if already generated
-    key <- list(x)
-    my_data <- loadCache(key)
-    if (!is.null(my_data)) {
-      cat("Loaded cached data\n")
-      return(my_data)
+    Sys.sleep(2)
+    square(x)
     }
-    
-    ## 2. If not available, generate it.
-    cat("Generating data from scratch...")
-    my_data <- slow_func(x)
-    cat("ok\n")
-    saveCache(my_data, key=key, comment="slow_func()")
-    
-    return(my_data)
-  }
 ```
 
-There are obviously a couple of other things happening in the function (e.g. writing helpful messages to ourselves with `cat()`), but hopefully you've understood the main points. Now let's iterate over our function using a particular set of inputs (i.e. the numbers 1 through 10). Note that I'm going to use the lightweight [tictoc package](https://cran.r-project.org/web/packages/tictoc/) to record timing.
+Enabling caching (i.e. memoisation) of our slow function is a simple matter of feeding it to `memoise::memoise()`.
 
 
 ```r
-# library(tictoc) ## Already loaded
-tic()
-map_df(1:10, cached_func)
+# library(memoise) ## Already loaded
+
+mem_square <- memoise(slow_square)
+```
+
+*Note: I've assigned the memoised version as its own function here (i.e. `mem_square()`). However, it's no problem to recycle the original function name if you prefer (i.e. `slow_square < - memoise(slow_square)`).*
+
+The first time we execute our memoised `slow_square_mem()` function, it won't be able to draw on any saved results. This means that it will have to run through all of the underlying computation. In the process of doing so, however, it will save both the inputs and results for immediate retrieval later on.
+
+Let's run some examples and compare actual timings. For the first run, I'll iterate over our function using the numbers 1 through 10 and save the resulting data frame to an object called `m1`.
+
+
+```r
+system.time(
+  m1 <- map_df(1:10, mem_square)
+)
 ```
 
 ```
-## Generating data from scratch...ok
-## Generating data from scratch...ok
-## Generating data from scratch...ok
-## Generating data from scratch...ok
-## Generating data from scratch...ok
-## Generating data from scratch...ok
-## Generating data from scratch...ok
-## Generating data from scratch...ok
-## Generating data from scratch...ok
-## Generating data from scratch...ok
+##    user  system elapsed 
+##   0.091   0.003  20.114
+```
+
+As expected this took 20 seconds because of the enforced two second wait during each iteration. Now, we try calling the function a second time --- iterating over the exact same inputs and saving to a new `m2` object --- to see if caching makes a difference...
+
+
+```r
+system.time(
+  m2 <- map_df(1:10, mem_square)
+)
+```
+
+```
+##    user  system elapsed 
+##   0.000   0.003   0.003
+```
+
+And does it ever! We're down to a fraction of a second, since we didn't need to run at all again. Rather, we simply recalled the previously saved (i.e. memoised) results. And just to prove that we're really saving meaningful output, here is a comparison of the two data frames, as well as the printed output of `df2`.
+
+
+```r
+all.equal(m1, m2)
+```
+
+```
+## [1] TRUE
+```
+
+```r
+m2
 ```
 
 ```
@@ -474,122 +468,110 @@ map_df(1:10, cached_func)
 ##  9     9            81
 ## 10    10           100
 ```
-
-```r
-toc()
-```
-
-```
-## 20.261 sec elapsed
-```
-
-As expected, this produced exactly the same output as our regular `square()` function, but it just took longer (20 seconds to be precise). The function produced some real-time feedback for us with the "Generating data from scratch... ok" message, because we asked it to. This is probably less impressive in a knitted R Markdown document, but I've found it can be very informative in a live coding session.^[**Challenge:** I usually include the input or iteration run in my message, so that I know where I am in the sequence. How would you do this?]
-
-Okay, now let's try running the function for a second time to see if caching makes a difference...
-
-
-```r
-tic()
-map_df(1:10, cached_func)
-```
-
-```
-## Loaded cached data
-## Loaded cached data
-## Loaded cached data
-## Loaded cached data
-## Loaded cached data
-## Loaded cached data
-## Loaded cached data
-## Loaded cached data
-## Loaded cached data
-## Loaded cached data
-```
-
-```
-## # A tibble: 10 x 2
-##    value value_squared
-##    <int>         <dbl>
-##  1     1             1
-##  2     2             4
-##  3     3             9
-##  4     4            16
-##  5     5            25
-##  6     6            36
-##  7     7            49
-##  8     8            64
-##  9     9            81
-## 10    10           100
-```
-
-```r
-toc()
-```
-
-```
-## 0.033 sec elapsed
-```
-
-And does it ever! We're down to a fraction of a second, since we didn't need to run at all again. Rather, we simply read in the previously saved (i.e. cached) results.
 
 Finally, note that our caching function is smart enough to disguish between previously cached and non-cached results. For example, consider what happens if I include five more numbers in the `x` input vector.
 
 
 ```r
-tic()
-map_df(1:15, cached_func)
+system.time(
+  m3 <- map_df(1:15, mem_square)
+)
 ```
 
 ```
-## Loaded cached data
-## Loaded cached data
-## Loaded cached data
-## Loaded cached data
-## Loaded cached data
-## Loaded cached data
-## Loaded cached data
-## Loaded cached data
-## Loaded cached data
-## Loaded cached data
-## Generating data from scratch...ok
-## Generating data from scratch...ok
-## Generating data from scratch...ok
-## Generating data from scratch...ok
-## Generating data from scratch...ok
+##    user  system elapsed 
+##   0.016   0.000  10.027
 ```
 
-```
-## # A tibble: 15 x 2
-##    value value_squared
-##    <int>         <dbl>
-##  1     1             1
-##  2     2             4
-##  3     3             9
-##  4     4            16
-##  5     5            25
-##  6     6            36
-##  7     7            49
-##  8     8            64
-##  9     9            81
-## 10    10           100
-## 11    11           121
-## 12    12           144
-## 13    13           169
-## 14    14           196
-## 15    15           225
-```
+As expected, this only took (5 $\times$ 2 = ) 10 seconds to generate the new results from scratch, with the previous results being called up from the cache. You can think of preceding example as approximating a real-life scenario, where your program crashes or halts midway through its run, yet you don't need to restart all the way at the beginning. These kinds of interuptions happen more frequently than you might expect, especially if you're working with complex analyses and high-performance computing tools (e.g. preemptible nodes or VM instances). Being smart about caching has saved me *many* lost hours and it could do the same for you.
+
+
+### Aside 1: Caching across R sessions
+
+The previous paragraph elides an important caveat: The default `memoise()` cache is only valid for the current R session. You can see this more clearly by exploring the help documentation of the function, where you will note the internal `cache = cache_memory()` argument. To enable caching that persists across sessions --- including when your computer crashes --- you need to specify a dedicated cache directory with `cache = cache_filesystem(PATH)`. This directory can be located anywhere on your system (or, indeed, on a linked cloud storage service) and you can even have multiple cache directories for different projects. My only modest recommendation is that you use a `.rcache/` naming pattern to keep things orderly. 
+
+For example, we can specify a new, persistent memoise cache location for our `slow_square()` function within this lecture sub-directory as follows.
+
 
 ```r
-toc()
+## Cache directory path (which I've already created)
+cache_dir <- here("11-funcs-adv/.rcache")
+
+## (Re-)memoise our function with the persistent cache location
+mem_square_persistent <- memoise(slow_square, cache = cache_filesystem(cache_dir))
+```
+
+Run our new memoised function and check that it saved the cached output to the specified directory.
+
+
+```r
+m4 <- map_df(1:7, mem_square_persistent)
+list.files(cache_dir)
 ```
 
 ```
-## 10.246 sec elapsed
+## [1] "0d9118eb4c2100ab" "2420ab9f806ae0bc" "5c801aa15f7f06d0" "6678f42ceacfa6ff"
+## [5] "b2de53c69cdcc075" "dd812dbc4c2dc231" "ea8f81859aed374d"
 ```
 
-As expected, our function only generated the five new observations from scratch. The remaining inputs were loaded from the cache. You can think of this as approximating a real-life case, where your program crashes/halts midway through its run, and you don't need to restart all the way at the beginning. This happens more frequently than you might expect, especially when you're working with complex analyses and certain high-performance computing tools (e.g. preemptible nodes or VM instances). Caching has saved me *many* lost hours and it could do the same for you.
+**Bottom line:** Specify a dedicated cache directory for complex or time-consuming analyses that you want to be able to access across R sessions.
+
+### Aside 2: Verbose output
+
+It's possible (and often very helpful) to add verbose prompts to our memoised functions. Consider the code below, which which folds our `mem_square_persistent()` function into two sections:
+
+1. Check for and load previously cached results. Print the results to screen.
+2. Run our memoised function on any inputs that have not already been evaluated.( These results will be cached in turn for future use.) Again, print the results to screen.
+
+
+```r
+mem_square_verbose <- 
+  function(x) {
+    ## 1. Load cached data if already generated
+    if (has_cache(mem_square_persistent)(x)) {
+      cat("Loading cached data for x =", x, "\n")
+      my_data <- mem_square_persistent(x)
+      return(my_data)
+    }
+    
+    ## 2. Generate new data if cache not available
+    cat("Generating data from scratch for x =", x, "...")
+    my_data <- mem_square_persistent(x)
+    cat("ok\n")
+    
+    return(my_data)
+  }
+```
+
+And here's an example of the vebose function in action. The output is probably less impressive in a knitted R Markdown document, but I find the real-time feedback to be very informative in a live session. (Try it yourself.)
+
+
+```r
+system.time(
+  m5 <- map_df(1:10, mem_square_verbose)
+)
+```
+
+```
+## Loading cached data for x = 1 
+## Loading cached data for x = 2 
+## Loading cached data for x = 3 
+## Loading cached data for x = 4 
+## Loading cached data for x = 5 
+## Loading cached data for x = 6 
+## Loading cached data for x = 7 
+## Generating data from scratch for x = 8 ...ok
+## Generating data from scratch for x = 9 ...ok
+## Generating data from scratch for x = 10 ...ok
+```
+
+```
+##    user  system elapsed 
+##   0.018   0.001   6.023
+```
+
 
 ## Further resources
 
 - RStudio have a number of great debugging resources. I recommend [*Debugging techniques in RStudio*](https://www.rstudio.com/resources/videos/debugging-techniques-in-rstudio/) (a recorded talk by Amanda Gadrow) and [Debugging with RStudio](https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-RStudio) (Jonathan McPherson).
-- The [Exceptions and debugging](http://adv-r.had.co.nz/Exceptions-Debugging.html) chapter of Hadley Wickham's [*Advanced R*](http://adv-r.had.co.nz/) provides a very thorough treatment. In fact, the whole book is fantastic. If you're looking to scale up your understanding of how R works underneath the hood and implement some truly high-performance code, then I can think of no better reference.
+- The [Debugging](https://adv-r.hadley.nz/debugging.html) chapter of Hadley Wickham's [*Advanced R*](https://adv-r.hadley.nz) provides a very thorough treatment. In fact, the whole book is fantastic. If you're looking to scale up your understanding of how R works underneath the hood and implement some truly high-performance code, then I can think of no better reference.
