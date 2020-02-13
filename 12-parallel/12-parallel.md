@@ -31,9 +31,11 @@ The code chunk below will install (if necessary) and load all of these packages 
 
 
 ```r
-## Load/install packages
+## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(tictoc, parallel, pbapply, future, future.apply, tidyverse, hrbrthemes, furrr, RhpcBLASctl, memoise, here)
+## My preferred ggplot2 plotting theme (optional)
+theme_set(hrbrthemes::theme_ipsum())
 
 ## Set future::plan() resolution strategy
 plan(multiprocess)
@@ -91,7 +93,7 @@ toc()
 ```
 
 ```
-## 24.069 sec elapsed
+## 24.053 sec elapsed
 ```
 
 As expected, the iteration took about 24 seconds to run because of the enforced break after every sequential iteration (i.e. `Sys.sleep(2)`). On the other hand, this means that we can easily speed things up by iterating in *parallel*.
@@ -123,7 +125,7 @@ toc()
 ```
 
 ```
-## 2.492 sec elapsed
+## 2.337 sec elapsed
 ```
 
 Woah, the execution time was 12 times faster! Even more impressively, look at how little the syntax changed. I basically just had to tell R that I wanted to implement the iteration in parallel (i.e. <code>**plan(multiprocess)**</code>) and slightly amend my lapply call (i.e. <code>**future_**lapply()</code>). 
@@ -152,7 +154,7 @@ toc()
 ```
 
 ```
-## 2.316 sec elapsed
+## 2.193 sec elapsed
 ```
 
 How easy was that? We hardly had to change our original code and didn't have to pay a cent for all that extra performance.^[Not to flog a dead horse, but as I pointed out in the very [first lecture](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.html#26) of this course: Have you seen the price of a [Stata/MP](https://www.stata.com/statamp/) license recently? Not to mention the fact that you effectively pay *per* core...] Congratulate yourself on already being such an expert at parallel programming.
@@ -202,14 +204,14 @@ set.seed(123L) ## Optional to ensure that the results are the same
 ## 10,000-iteration simulation
 tic()
 sim_serial <- lapply(1:1e4, bootstrp) %>% bind_rows()
-toc()
+toc(log = TRUE)
 ```
 
 ```
-## 24.265 sec elapsed
+## 19.987 sec elapsed
 ```
 
-So that took about 18 seconds on my system. Not a huge pain, but let's see if we can do better by switching to a parallel (multicore) implementation. For the record, though here is a screenshot of my system monitor, showing that only one core was being used during this serial version.
+So that took about 20 seconds on my system. Not a huge pain, but let's see if we can do better by switching to a parallel (multicore) implementation. For the record, though here is a screenshot of my system monitor, showing that only one core was being used during this serial version.
 
 ![](pics/serial.png)
 
@@ -246,7 +248,7 @@ toc()
 ```
 
 ```
-## 6.178 sec elapsed
+## 5.176 sec elapsed
 ```
 
 #### 2) furrr
@@ -265,7 +267,7 @@ toc()
 ```
 
 ```
-## 6.76 sec elapsed
+## 5.254 sec elapsed
 ```
 
 ### Results
@@ -286,8 +288,7 @@ sim_furrr %>%
     title = "Bootstrapping example",
     x="Coefficient values", y="Density",
     caption = "Notes: Density based on 10,000 draws with sample size of 10,000 each."
-    ) +
-  hrbrthemes::theme_ipsum()
+    )
 ```
 
 ![](12-parallel_files/figure-html/x_coef-1.png)<!-- -->
@@ -312,7 +313,7 @@ toc()
 ```
 
 ```
-## 5.752 sec elapsed
+## 5.042 sec elapsed
 ```
 
 ## General parallel programming topics
@@ -344,10 +345,10 @@ $ lscpu | grep -E '^Thread|^Core|^Socket|^CPU\('
 ```
 
 ```
-## CPU(s):              12
-## Thread(s) per core:  2
-## Core(s) per socket:  6
-## Socket(s):           1
+## CPU(s):                          12
+## Thread(s) per core:              2
+## Core(s) per socket:              6
+## Socket(s):                       1
 ```
 
 Note that the headline "CPU(s)" number is the same that I got from running `parallel::detectCores()` earlier (i.e. 12). 
@@ -417,10 +418,10 @@ sessionInfo()[c("BLAS", "LAPACK")]
 
 ```
 ## $BLAS
-## [1] "/usr/lib/libopenblas_haswellp-r0.3.5.so"
+## [1] "/usr/lib/libopenblas_haswellp-r0.3.8.so"
 ## 
 ## $LAPACK
-## [1] "/usr/lib/libopenblas_haswellp-r0.3.5.so"
+## [1] "/usr/lib/libopenblas_haswellp-r0.3.8.so"
 ```
 
 ### Beware resource competition

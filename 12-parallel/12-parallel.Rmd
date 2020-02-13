@@ -40,9 +40,11 @@ knitr::knit_hooks$set(
 The code chunk below will install (if necessary) and load all of these packages for you. Note that the **parallel** package is bundled together with the base R installation and should already be on your system. I'm also going to call the `future::plan()` function and set the resolution to "multiprocess". Don't worry what this means right now --- I'll explain in due course --- just think of it as a convenient way to set our desired parallel programming behaviour for the rest of this document.
 
 ```{r, cache=FALSE, message=FALSE, warning=FALSE}
-## Load/install packages
+## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(tictoc, parallel, pbapply, future, future.apply, tidyverse, hrbrthemes, furrr, RhpcBLASctl, memoise, here)
+## My preferred ggplot2 plotting theme (optional)
+theme_set(hrbrthemes::theme_ipsum())
 
 ## Set future::plan() resolution strategy
 plan(multiprocess)
@@ -183,10 +185,10 @@ set.seed(123L) ## Optional to ensure that the results are the same
 ## 10,000-iteration simulation
 tic()
 sim_serial <- lapply(1:1e4, bootstrp) %>% bind_rows()
-toc()
+toc(log = TRUE)
 ```
 
-So that took about 18 seconds on my system. Not a huge pain, but let's see if we can do better by switching to a parallel (multicore) implementation. For the record, though here is a screenshot of my system monitor, showing that only one core was being used during this serial version.
+So that took about `r round(as.numeric(gsub(" sec elapsed", "", (tic.log()[[1]]))), 0)` seconds on my system. Not a huge pain, but let's see if we can do better by switching to a parallel (multicore) implementation. For the record, though here is a screenshot of my system monitor, showing that only one core was being used during this serial version.
 
 ![](pics/serial.png)
 
@@ -252,8 +254,7 @@ sim_furrr %>%
     title = "Bootstrapping example",
     x="Coefficient values", y="Density",
     caption = "Notes: Density based on 10,000 draws with sample size of 10,000 each."
-    ) +
-  hrbrthemes::theme_ipsum()
+    )
 ```
 
 
@@ -393,8 +394,7 @@ expand.grid(num_cores=1:2048, par_prop=c(0.5,0.75,0.9,0.95)) %>%
     title = "Amdahl's law",
     x = "No. of cores", y = "Theoretical speedup"
     ) +
-  guides(colour = guide_legend(reverse=T)) + 
-  hrbrthemes::theme_ipsum()
+  guides(colour = guide_legend(reverse=T))
 ```
 
 ### How many cores should I use?
