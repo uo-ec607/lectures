@@ -1,10 +1,10 @@
 ---
-title: "Parallel programming"
+title: "Data Science for Economists"
+subtitle: "Lecture 12: Parallel programming"
 author:
   name: Grant R. McDermott
-  affiliation: University of Oregon | EC 607
-  # email: grantmcd@uoregon.edu
-date: Lecture 12  #"28 June 2019"
+  affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
+# date: Lecture 12  #"13 February 2020"
 output: 
   html_document:
     theme: flatly
@@ -24,20 +24,34 @@ output:
 
 ### R packages 
 
-- **New:** `parallel`, `future`, `future.apply`, `furrr`, `RhpcBLASctl`
-- **Already used:** `tidyverse`, `pbapply`, `tictoc`, `hrbrthemes`
+- New: **parallel**, **future**, **future.apply**, **furrr**, **RhpcBLASctl**, **tictoc**
+- Already used: **tidyverse**, **pbapply**, **memoise**, **here**, **hrbrthemes**
 
-The code chunk below will install (if necessary) and load all of these packages for you. Note that the `parallel` package is bundled together with the base R installation and should already be on your system. I'm also going to call the `future::plan()` function and set the resolution to "multiprocess". Don't worry what this means right now --- I'll explain in due course --- just think of it as a convenient way to set our desired parallel programming behaviour for the rest of this document.
+The code chunk below will install (if necessary) and load all of these packages for you. Note that the **parallel** package is bundled together with the base R installation and should already be on your system. I'm also going to call the `future::plan()` function and set the resolution to "multiprocess". Don't worry what this means right now --- I'll explain in due course --- just think of it as a convenient way to set our desired parallel programming behaviour for the rest of this document.
 
 
 ```r
 ## Load/install packages
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(tictoc, parallel, pbapply, future, future.apply, tidyverse, hrbrthemes, furrr, RhpcBLASctl)
+pacman::p_load(tictoc, parallel, pbapply, future, future.apply, tidyverse, hrbrthemes, furrr, RhpcBLASctl, memoise, here)
 
 ## Set future::plan() resolution strategy
 plan(multiprocess)
 ```
+
+*Note: If you run the above code chunk in RStudio, then you will get a warning message to the effect of:*
+
+```
+## Warning: [ONE-TIME WARNING] Forked processing ('multicore') is disabled
+## in future (>= 1.13.0) when running R from RStudio, because it is
+## considered unstable. Because of this, plan("multicore") will fall
+## back to plan("sequential"), and plan("multiprocess") will fall back to
+## plan("multisession") - not plan("multicore") as in the past. For more details,
+## how to control forked processing or not, and how to silence this warning in
+## future R sessions, see ?future::supportsMulticore
+```
+
+*Again, don't worry about this now. I'll explain in due course.*
 
 ## Prologue
 
@@ -49,14 +63,14 @@ Ready? Let's go.
 
 ## Example 1
 
-Our first motivating example is going to involve the same `slow_func()` function that we saw in the previous lecture:
+Our first motivating example is going to involve the same `slow_square()` function that we saw in the previous lecture:
 
 
 ```r
 # library(tidyverse) ## Already loaded
 
 ## Emulate slow function
-slow_func <- 
+slow_square <- 
   function(x = 1) {
     x_sq <- x^2 
     df <- tibble(value=x, value_squared=x_sq)
@@ -65,19 +79,19 @@ slow_func <-
     }
 ```
 
-Let's iterate over this function using the standard `lapply()` method that we're all familar with by now. Note that this iteration will be executed in *serial*. I'll use the [tictoc package](https://cran.r-project.org/web/packages/tictoc/) to record timing.
+Let's iterate over this function using the standard `lapply()` method that we're all familar with by now. Note that this iteration will be executed in *serial*. I'll use the [**tictoc**](https://cran.r-project.org/web/packages/tictoc/) package to record timing.
 
 
 ```r
 # library(tictoc) ## Already loaded
 
 tic()
-serial_ex <- lapply(1:12, slow_func) %>% bind_rows()
+serial_ex <- lapply(1:12, slow_square) %>% bind_rows()
 toc()
 ```
 
 ```
-## 24.068 sec elapsed
+## 24.069 sec elapsed
 ```
 
 As expected, the iteration took about 24 seconds to run because of the enforced break after every sequential iteration (i.e. `Sys.sleep(2)`). On the other hand, this means that we can easily speed things up by iterating in *parallel*.
@@ -96,7 +110,7 @@ detectCores()
 
 So, I have 12 cores to play with on my laptop.^[A Dell Precision 5530 running Arch Linux, if you're interested.] Adjust expectations for you own system accordingly.
 
-Okay, back to our example. I'm going to implement the parallel iteration using the [future.apply package](https://cran.r-project.org/web/packages/future.apply/index.html) (more on this later). Note that the parameters of the problem are otherwise unchanged.
+Okay, back to our example. I'm going to implement the parallel iteration using the [**future.apply**](https://cran.r-project.org/web/packages/future.apply/index.html) package (more on this later). Note that the parameters of the problem are otherwise unchanged.
 
 
 ```r
@@ -104,15 +118,15 @@ Okay, back to our example. I'm going to implement the parallel iteration using t
 # plan(multiprocess) ## Already set above
 
 tic()
-future_ex <- future_lapply(1:12, slow_func) %>% bind_rows()
+future_ex <- future_lapply(1:12, slow_square) %>% bind_rows()
 toc()
 ```
 
 ```
-## 2.243 sec elapsed
+## 2.492 sec elapsed
 ```
 
-Woah, the execution time was twelve times faster! Even more impressively, look at how little the syntax changed. I basically just had to tell R that I wanted to implement the iteration in parallel (i.e. <code>**plan(multiprocess)**</code>) and slightly amend my lapply call (i.e. <code>**future_**lapply()</code>). 
+Woah, the execution time was 12 times faster! Even more impressively, look at how little the syntax changed. I basically just had to tell R that I wanted to implement the iteration in parallel (i.e. <code>**plan(multiprocess)**</code>) and slightly amend my lapply call (i.e. <code>**future_**lapply()</code>). 
 
 Let's confirm that the output is the same.
 
@@ -125,7 +139,7 @@ all_equal(serial_ex, future_ex)
 ## [1] TRUE
 ```
 
-For those of you who prefer the `purrr::map()` family of functions for iteration and are feeling left out... don't worry. The [furrr package](https://davisvaughan.github.io/furrr/index.html) has you covered. Once again, the syntax for these parallel functions will be very little changed from their serial versions. We simply have to tell R that we want to run things in parallel with `plan(multiprocess)` and then slightly amend our map call to <code>**future_**map_df**r**()</code>.^[In this particular case, the extra "r" at the end tells future to concatenate the data frames from each iteration by *rows*.]
+For those of you who prefer the `purrr::map()` family of functions for iteration and are feeling left out; don't worry. The [**furrr**](https://davisvaughan.github.io/furrr/index.html) package has you covered. Once again, the syntax for these parallel functions will be very little changed from their serial versions. We simply have to tell R that we want to run things in parallel with `plan(multiprocess)` and then slightly amend our map call to <code>**future_**map_df**r**()</code>.^[In this particular case, the extra "r" at the end tells future to concatenate the data frames from each iteration by *rows*.]
 
 
 ```r
@@ -133,12 +147,12 @@ For those of you who prefer the `purrr::map()` family of functions for iteration
 # plan(multiprocess) ## Already set above
 
 tic()
-furrr_ex <- future_map_dfr(1:12, slow_func)
+furrr_ex <- future_map_dfr(1:12, slow_square)
 toc()
 ```
 
 ```
-## 2.23 sec elapsed
+## 2.316 sec elapsed
 ```
 
 How easy was that? We hardly had to change our original code and didn't have to pay a cent for all that extra performance.^[Not to flog a dead horse, but as I pointed out in the very [first lecture](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.html#26) of this course: Have you seen the price of a [Stata/MP](https://www.stata.com/statamp/) license recently? Not to mention the fact that you effectively pay *per* core...] Congratulate yourself on already being such an expert at parallel programming.
@@ -150,7 +164,7 @@ How easy was that? We hardly had to change our original code and didn't have to 
 
 Our second motivating example will involve a more realistic and slightly more computationally-intensive case: Bootstrapping coefficient values for hypothesis testing. I'll also spend a bit more time talking about the packages we're using and what they're doing.
 
-Start by creating a fake data set (`our_data`) and specifying a bootstrapping function (`reg_func()`). This function will draw a sample of 10,000 observations from the the data set (with replacement), fit a regression, and then extract the coefficient on the `x` variable. Note that this coefficient estimate is expected to be around 2 given how we generated the data in the first place.
+Start by creating a fake data set (`our_data`) and specifying a bootstrapping function (`bootstrp()`). This function will draw a sample of 10,000 observations from the the data set (with replacement), fit a regression, and then extract the coefficient on the `x` variable. Note that this coefficient estimate is expected to be around 2 given how we generated the data in the first place.
 
 
 ```r
@@ -166,7 +180,7 @@ our_data <-
 
 ## Function that draws a sample of 10,000 observations, runs a regression and extracts
 ## the coefficient value on the x variable (should be around 2).
-reg_func <- 
+bootstrp <- 
   function(i) {
   ## Sample the data
   sample_data <- sample_n(our_data, size = 1e4, replace = T)
@@ -187,32 +201,32 @@ set.seed(123L) ## Optional to ensure that the results are the same
 
 ## 10,000-iteration simulation
 tic()
-sim_serial <- lapply(1:1e4, reg_func) %>% bind_rows()
+sim_serial <- lapply(1:1e4, bootstrp) %>% bind_rows()
 toc()
 ```
 
 ```
-## 18.173 sec elapsed
+## 24.265 sec elapsed
 ```
 
-So that took about 19 seconds on my system. Not a huge pain, but let's see if we can do better by switching to a parallel (multicore) implementation. For the record, though here is a screenshot of my system monitor, showing that only one core was being used during this serial version.
+So that took about 18 seconds on my system. Not a huge pain, but let's see if we can do better by switching to a parallel (multicore) implementation. For the record, though here is a screenshot of my system monitor, showing that only one core was being used during this serial version.
 
 ![](pics/serial.png)
 
-### Parallel implemention using the `future` ecosystem
+### Parallel implemention using the **future** ecosystem
 
-All of the parallel programming that we've been doing so far is built on top of [Henrik Bengtsson's](https://twitter.com/henrikbengtsson) amazing [**future** package](https://cran.r-project.org/web/packages/future/index.html). A "future" is basically a very flexible way of evaluating code and output. Among other things, this allows you to switch effortlessly between evaluating code in _serial_ or _asynchronously_ (i.e. in parallel). You simply have to set your resolution _plan_ --- "sequential", "multiprocess", "cluster", etc. --- and let future handle the implementation for you.
+All of the parallel programming that we've been doing so far is built on top of [Henrik Bengtsson's](https://twitter.com/henrikbengtsson) amazing [**future**](https://cran.r-project.org/web/packages/future/index.html) package. A "future" is basically a very flexible way of evaluating code and output. Among other things, this allows you to switch effortlessly between evaluating code in _serial_ or _asynchronously_ (i.e. in parallel). You simply have to set your resolution _plan_ --- "sequential", "multiprocess", "cluster", etc. --- and let future handle the implementation for you.
 
 Here's Henrik [describing](https://cran.r-project.org/web/packages/future/vignettes/future-1-overview.html) the core idea in more technical terms:
 
 > In programming, a _future_ is an abstraction for a _value_ that may be available at some point in the future. The state of a future can either be unresolved or resolved... Exactly how and when futures are resolved depends on what strategy is used to evaluate them. For instance, a future can be resolved using a sequential strategy, which means it is resolved in the current R session. Other strategies may be to resolve futures asynchronously, for instance, by evaluating expressions in parallel on the current machine or concurrently on a compute cluster
 
-As I've tried to emphasise, `future` is relatively new on the scene. It is certainly not the first or only way to implement parallel processes in R. However, I think that it provides a simple and unified framework that makes it the preeminent choice. What's more, the same commands that we use here will carry over very neatly to more complicated settings involving high-performance computing clusters. We'll experience this first hand when we get to the big data section of the course.
+As I've tried to emphasise, **future** is relatively new on the scene. It is certainly not the first or only way to implement parallel processes in R. However, I think that it provides a simple and unified framework that makes it the preeminent choice. What's more, the same commands that we use here will carry over very neatly to more complicated settings involving high-performance computing clusters. We'll experience this first hand when we get to the big data section of the course.
 
-You've probably also noted that keep referring to the "future ecosystem". This is because `future` provides the framework for other packages to implement parallel versions of their functions. The two that I am focusing on today are
+You've probably also noted that keep referring to the "future ecosystem". This is because **future** provides the framework for other packages to implement parallel versions of their functions. The two that I am focusing on today are
 
-1. the [**future.apply** package](https://cran.r-project.org/web/packages/future.apply/index.html) (also by Henrik), and
-2. the [**furrr** package](https://davisvaughan.github.io/furrr/index.html) (an implementation for purrr by [Davis Vaughan](https://twitter.com/dvaughan32)).
+1. the [**future.apply**](https://cran.r-project.org/web/packages/future.apply/index.html) package (also by Henrik), and
+2. the [**furrr**](https://davisvaughan.github.io/furrr/index.html) package (an implementation for **purrr** by [Davis Vaughan](https://twitter.com/dvaughan32)).
 
 In both cases, we start by setting the plan for resolving the future evaluation. I recommend `plan(multiprocess)`, which is a convenient way of telling the package to choose the optimal parallel strategy for our particular system. We then call our functions --- which involve minor modifications of their serial equivalents --- and let future magic take care of everything else.
 
@@ -227,12 +241,12 @@ Here's the `future.apply::future_lapply()` parallel implementation. Note that I'
 
 ## 10,000-iteration simulation
 tic()
-sim_future <- future_lapply(1:1e4, reg_func, future.seed=123L) %>% bind_rows()
+sim_future <- future_lapply(1:1e4, bootstrp, future.seed=123L) %>% bind_rows()
 toc()
 ```
 
 ```
-## 4.981 sec elapsed
+## 6.178 sec elapsed
 ```
 
 #### 2) furrr
@@ -246,12 +260,12 @@ And here's the `furrr::future_map_dfr()` implementation. Similar to the above, n
 
 ## 10,000-iteration simulation
 tic()
-sim_furrr <- future_map_dfr(1:1e4, reg_func, .options=future_options(seed=123L))
+sim_furrr <- future_map_dfr(1:1e4, bootstrp, .options=future_options(seed=123L))
 toc()
 ```
 
 ```
-## 5.07 sec elapsed
+## 6.76 sec elapsed
 ```
 
 ### Results
@@ -281,7 +295,7 @@ sim_furrr %>%
 
 ### Other parallel options
 
-Futures are not the only game in town for parallel programming in R. One other option that I want to mention very briefly is the [**pbapply** package](https://github.com/psolymos/pbapply). As we saw during the first programming lecture, this package provides a lightweight wrapper on the *apply functions that adds a progress bar. However, the package also adds a very convenient option for multicore implementation. You basically just have to add <code>cl=CORES</code> to the call. While it doesn't rely on futures, `pbapply` also takes care of all the OS-specific overhead for you. See [here](http://peter.solymos.org/code/2016/09/11/what-is-the-cost-of-a-progress-bar-in-r.html) for an interesting discussion on what's happening behind the scenes.
+Futures are not the only game in town for parallel programming in R. One other option that I want to mention very briefly is the [**pbapply**](https://github.com/psolymos/pbapply) package. As we saw during the first programming lecture, this package provides a lightweight wrapper on the *apply functions that adds a progress bar. However, the package also adds a very convenient option for multicore implementation. You basically just have to add <code>cl=CORES</code> to the call. While it doesn't rely on futures, **pbapply** also takes care of all the OS-specific overhead for you. See [here](http://peter.solymos.org/code/2016/09/11/what-is-the-cost-of-a-progress-bar-in-r.html) for an interesting discussion on what's happening behind the scenes.
 
 *Note: You will need to run this next chunk interactively to see the progress bar. As an aside, [furrr also supports progress bars](https://github.com/DavisVaughan/furrr#progress-bars).*
 
@@ -293,19 +307,19 @@ set.seed(123) ## Optional to ensure results are exactly the same.
 
 ## 10,000-iteration simulation
 tic()
-sim_pblapply <- pblapply(1:1e4, reg_func, cl = parallel::detectCores()) %>% bind_rows()
+sim_pblapply <- pblapply(1:1e4, bootstrp, cl = parallel::detectCores()) %>% bind_rows()
 toc()
 ```
 
 ```
-## 5.644 sec elapsed
+## 5.752 sec elapsed
 ```
 
 ## General parallel programming topics
 
 Motivating examples out of the way, let's take a look underneath the hood. I want to emphasise that this section is more "good to know" than "need to know". Even if you take nothing else away from rest of this lecture, you are already well placed to begin implementing parallel functions at a much larger scale.
 
-And yet... while you don't *need* to know the next section in order to program in parallel in R, getting a solid grasp of the basics is valuable. It will give you a better understanding of how parallel programming works in general and help you to appreciate how much `future` and co. are doing behind the scenes for you. It will also help you to understand why the same code runs faster on some systems than others, and avoid some common pitfalls.
+And yet... while you don't *need* to know the next section in order to program in parallel in R, getting a solid grasp of the basics is valuable. It will give you a better understanding of how parallel programming works in general and help you to appreciate how much **future** and co. are doing behind the scenes for you. It will also help you to understand why the same code runs faster on some systems than others, and avoid some common pitfalls.
 
 ### Terminology
 
@@ -367,11 +381,11 @@ get_num_cores() ## No. of physical cores only
 
 As I keep saying, it's now incredibly easy to run parallel programs in R. The truth is that it has actually been easy to do so for a long time... but the implementation used to vary by operating system. In particular, simple parallel implementations that worked perfectly well on Linux or Mac didn't work on Windows (which required a lot more overhead). For example, take a look at the [help documentation](https://stat.ethz.ch/R-manual/R-devel/library/parallel/html/mclapply.html) for the `parallel::mclapply()` function, which has been around since 2011. If you did so, you would see a warning that `mclapply()` *"relies on forking and hence is not available on Windows"*.
 
-Now, we clearly didn't encounter any OS-specific problems when we ran the parallel versions of our motivating examples above. The same code worked for everyone, including anyone using Windows. ~~*Loud booing.*~~ What was happening behind the scenes is that the `future` (and `pbapply`) packages automatically handled any complications for us. The parallel functions were being executed in a way that was optimised for each person's OS.
+Now, we clearly didn't encounter any OS-specific problems when we ran the parallel versions of our motivating examples above. The same code worked for everyone, including anyone using Windows. ~~*Loud booing.*~~ What was happening behind the scenes is that the **future** (and **pbapply**) packages automatically handled any complications for us. The parallel functions were being executed in a way that was optimised for each person's OS.
 
 But what is "forking" and why does it matter what OS I am using anyway? Those are good questions that relate to the method of parallelization (i.e. type of cluster) that your system supports. The short version is that there are basically two ways that code can be parallelized:
 
-- **Forking** works by cloning your entire R environment to each separate core. This includes your data, loaded packages, functions, and any other objects in your current session. This is very efficient because you don't have to worry about reproducing your "master" environment in each "worker" node. Everything is already linked, which means that you aren't duplicating objects in memory. However, forking is not supported on Windows. 
+- **Forking** works by cloning your entire R environment to each separate core. This includes your data, loaded packages, functions, and any other objects in your current session. This is very efficient because you don't have to worry about reproducing your "master" environment in each "worker" node. Everything is already linked, which means that you aren't duplicating objects in memory. However, forking is not supported on Windows and can also cause problems in a GUI or IDE like RStudio. 
 - **Parallel sockets** (aka "PSOCKs") work by launching a new R session in each core. This means that your master environment has to be copied over and instantiated separately in each parallel node. This requires greater overhead and causes everything to run slower, since objects will be duplicated across each core. Technically, a PSOCK works by establishing a network (e.g. as if you were connected to a remote cluster), but everything is self-contained on your computer. This approach can be implemented on every system, including Windows. 
 
 I've summarised the differences between the two approaches in the table below. The general rule of thumb is that you should use forking if it is available to you. And, indeed, this is exactly the heuristic that the future ecosystem follows via the `plan(multiprocess)` function.
@@ -379,9 +393,9 @@ I've summarised the differences between the two approaches in the table below. T
 | Forking        | Parallel socket         |
 | ------------- |-------------|
 | ✓ Faster and more memory efficient than sockets. |  ×	Slower and more memory-intensive than forking. |
-| ✓️ Trivial to implement. | ×	Harder to implement. |
+| ✓️ Trivial to implement. | × Harder to implement. |
 | ×	Only available for Unix-based systems like Linux and Mac (not Windows). | ✓ Works on every operating system (including Windows). |
-| ×	Can occasionally cause problems when running through a GUI or IDE like RStudio.^[The reason is that shared GUI elements are being shared across child processes. (See the "GUI/embedded environments" section [here](https://stat.ethz.ch/R-manual/R-devel/library/parallel/html/mcfork.html).) To be fair, I've only ever run into a problem once or twice while running a forking process through RStudio. These have invariably involved very time-consuming functions that contain a bunch of nested while-loops. (I suspect the different worker processes began to move out of sync with one another.) However, I want you to be aware of it, so that you aren't caught by surprise if it ever happens to you. If it does, then the solution is simply to run your R script from the terminal using, say `$ Rscript myscript.R`.] | ✓ ️No risk of cross-contamination, since each process is run as a unique node. |
+| ×	Can cause problems when running through a GUI or IDE like RStudio.^[The reason is that shared GUI elements are being shared across child processes. (See the "GUI/embedded environments" section [here](https://stat.ethz.ch/R-manual/R-devel/library/parallel/html/mcfork.html).) To be fair, I've only ever run into a problem once or twice while running a forking process through RStudio. These have invariably involved very time-consuming functions that contain a bunch of nested while-loops. (I suspect the different worker processes began to move out of sync with one another.) However, I want you to be aware of it, so that you aren't caught by surprise if it ever happens to you. If it does, then the solution is simply to run your R script from the terminal using, say `$ Rscript myscript.R`.] | ✓ ️No risk of cross-contamination, since each process is run as a unique node. |
 
 
 ## Explicit vs implicit parallelization
@@ -421,7 +435,7 @@ Luckily, there's also an easy and relatively costless solution: Simply turn off 
 
 ```r
 # blas_get_num_procs() ## If you want to find the existing number of BLAS threads
-blas_set_num_threads(1) ## Set BLAS threads to 1 (i.e. turn off multithreading)
+RhpcBLASctl::blas_set_num_threads(1) ## Set BLAS threads to 1 (i.e. turn off multithreading)
 ```
 
 Since this is only in effect for the current R session, BLAS multithreading will be restored when I restart R.^[I could also reinstate the original behaviour in the same session by running `blas_set_num_threads(parallel::detectCores())`. You can turn off multithreading as the default mode by altering the configuration file when you first build/install your preferred BLAS library. However, that's both complicated and unecessarily restrictive in my view.] 
@@ -444,17 +458,17 @@ If you look this question up online, you'll find that most people recommend usin
 
 ### Fault tolerance (error catching, caching, etc.)
 
-In my experience, the worst thing about parallel computation is that it is very sensitive to failure in any one of its nodes. An especially frustrating example is the tendency of parallel functions to ignore/hide critical errors up until the very end when they are supposed to return output. ("Oh, so you encountered a critical error several hours ago, but just decided to continue for fun anyway? Thanks!") Luckily, all of the defensive programming tools that we practiced in the previous programming lecture --- catching user errors and caching intermediate results --- carry over perfectly to their parallel equivalents. 
+In my experience, the worst thing about parallel computation is that it is very sensitive to failure in any one of its nodes. An especially frustrating example is the tendency of parallel functions to ignore/hide critical errors up until the very end when they are supposed to return output. ("Oh, so you encountered a critical error several hours ago, but just decided to continue for fun anyway? Thanks!") Luckily, all of the defensive programming tools that we practiced in the [previous lecture](https://raw.githack.com/uo-ec607/lectures/master/11-funcs-adv/11-funcs-adv.html) --- catching user errors and caching intermediate results --- carry over perfectly to their parallel equivalents. Just make sure that you use a persistent cache.
 
-**Challenge:** Prove this to yourself by running a parallel version of the cached iteration that we [practiced last time](https://raw.githack.com/uo-ec607/lectures/master/11-funcs-adv/11-funcs-adv.html#caching_(memoization)). You will need to create the `cache_func()` function first, but then you should be able to run `furrr::future_map_dfr(1:10, cached_func)` and it will automatically return the previously cached results.
+**Challenge:** Prove this to yourself by running a parallel version of the cached iteration that we practiced last time. Specifically, you should [recreate](https://raw.githack.com/uo-ec607/lectures/master/11-funcs-adv/11-funcs-adv.html#aside_1:_caching_across_r_sessions) the `mem_square_verbose()` function, which in turn relies on the `mem_square_persistent()` function.^[To clarify: The verbose option simply provides helpful real-time feedback to us. However, the underlying persistent cache location --- provided in this case by `mem_square_persistent()` --- is necessary whenever you want to use a memoised function in the futures framework.] You should then be able to run `future_map_dfr(1:10, mem_square_verbose)` and it will automatically return the previously cached results. After that, try `future_map_dfr(1:24, mem_square_verbose)` and see what happens.
 
 ### Random number generation
 
-Random number generation (RNG) can become problematic in parallel computations (whether trying to ensure the same of different RNG across processes). R has various safeguards against this and future [automatically handles](https://www.jottr.org/2017/02/19/future-rng/) RNG for you. 
+Random number generation (RNG) can become problematic in parallel computations (whether trying to ensure the same of different RNG across processes). R has various safeguards against this and future [automatically handles](https://www.jottr.org/2017/02/19/future-rng/) RNG via the `future.seed` argument. We saw an explicit example of this in example 2 [above](#1)_futureapply).
 
 ### Parallel regression
 
-A number of regression packages in R are optimised to run in parallel. For example, the superb [lfe package](https://cran.r-project.org/web/packages/lfe/index.html) that we saw a few weeks ago in the lecture on regression analysis will automatically invoke multicore capabilities when fitting high dimensional fixed effects models.^[See [here](https://raw.githack.com/uo-ec607/lectures/master/08-regression/08-regression.html#fixed_effects_with_the_lfe_package).] The many Bayesian packages in R are also all capable of --- and, indeed, expected to --- fit regression models by running their MCMC chains in parallel (e.g. [Stan](https://cran.r-project.org/web/packages/rstan/vignettes/rstan.html#running-multiple-chains-in-parallel)). Finally, you may be interested in the [partools package](https://cran.r-project.org/web/packages/partools/index.html), which provides convenient aliases for running a variety of statistical models and algorithms in parallel.
+A number of regression packages in R are optimised to run in parallel. For example, the superb [**fixest**](https://github.com/lrberge/fixest/wiki) and [**lfe**](https://cran.r-project.org/web/packages/lfe/index.html) packages that we saw in the lecture on regression analysis will automatically invoke multicore capabilities when fitting high dimensional fixed effects models. The many Bayesian packages in R are also all capable of --- and, indeed, expected to --- fit regression models by running their MCMC chains in parallel (e.g. [**rStan**](https://cran.r-project.org/web/packages/rstan/vignettes/rstan.html#running-multiple-chains-in-parallel)). Finally, you may be interested in the [**partools**](https://cran.r-project.org/web/packages/partools/index.html) package, which provides convenient aliases for running a variety of statistical models and algorithms in parallel.
 
 ### CPUs vs GPUs
 
@@ -466,11 +480,12 @@ Still, that's about as much as I want to say about GPUs for now. Installing and 
 
 ### Monitoring multicore performance
 
-[**htop**](https://hisham.hm/htop/) is a shell-based process viewer available for Linux and Mac (sorry, Windows users). It's entirely up to you whether you want to install it. Your operating system almost certainly provides built-in tools for monitoring processes and resource useage (e.g. [System Monitor](https://wiki.gnome.org/Apps/SystemMonitor)). However, I wanted to flag `htop` before we get to the big data section of the course. We'll all be connecting to remote Linux servers at that point and a shell-based (i.e. non-GUI) process monitor will prove very handy for tracking resource use.
+Bash-compatible shells should come with the built-in `top` command, which provides a real-time view of running processes and resource consumption. (Pro-tip: Hit "1" to view processes across individual cores and "q" to quit.) An enhanced alternative that I really like and use all the time is [**htop**](https://hisham.hm/htop/), which is available on both Linux and Mac. (Windows users can install `htop` on the WSL that we covered way back in the [shell lecture](https://raw.githack.com/uo-ec607/lectures/master/03-shell/03-shell.html#windows).). It's entirely up to you whether you want to install it. Your operating system almost certainly provides built-in tools for monitoring processes and resource useage (e.g. [System Monitor](https://wiki.gnome.org/Apps/SystemMonitor)). However, I wanted to flag `htop` before we get to the big data section of the course. We'll all be connecting to remote Linux servers at that point and a shell-based (i.e. non-GUI) process monitor will prove very handy for tracking resource use.
 
 ## Further resources
 
-- The starting point for further reading should be the future package vignettes ([one](https://cran.r-project.org/web/packages/future/vignettes/future-1-overview.html), [two](https://cran.r-project.org/web/packages/future/vignettes/future-2-output.html), [three](https://cran.r-project.org/web/packages/future/vignettes/future-3-topologies.html), [four](https://cran.r-project.org/web/packages/future/vignettes/future-4-issues.html), [five](https://cran.r-project.org/web/packages/future/vignettes/future-5-startup.html)). There's a lot in there, so feel free to pick and choose.
+- Dirk Eddelbuettel provides a comprehensive overview of all things R parallel in his new working paper, [*Parallel Computing With R: A Brief Review*](https://arxiv.org/abs/1912.11144). I'm confident that this will become the authoritative reference once it is published.
+- Beyond Dirk's article, I'd argue that the starting point for further reading should be the future package vignettes ([one](https://cran.r-project.org/web/packages/future/vignettes/future-1-overview.html), [two](https://cran.r-project.org/web/packages/future/vignettes/future-2-output.html), [three](https://cran.r-project.org/web/packages/future/vignettes/future-3-topologies.html), [four](https://cran.r-project.org/web/packages/future/vignettes/future-4-issues.html), [five](https://cran.r-project.org/web/packages/future/vignettes/future-5-startup.html)). There's a lot in there, so feel free to pick and choose.
 - Similarly, the [furrr package vignette](https://davisvaughan.github.io/furrr/index.html) is very informative (and concise).
 - The [parallel package vignette](https://stat.ethz.ch/R-manual/R-devel/library/parallel/doc/parallel.pdf) provides a very good overview, not only its own purpose, but of parallel programming in general. Particular attention is paid to the steps needed to ensure a stable R environment (e.g. across operating systems).
-- There a number of resources online that detail older parallel programming methods in R (`foreach`, `mclapply`, `parLapply` `snow`, etc.). While these methods have clearly been superseded by the future package ecosystem in my mind, there is still a lot of valuable information to be gleaned from understanding them. Two of my favourite resources in this regard are: [How-to go parallel in R](http://gforge.se/2015/02/how-to-go-parallel-in-r-basics-tips/) (Max Gordon) and [Beyond Single-Core R](https://github.com/ljdursi/beyond-single-core-R) (Jonathan Dursi).
+- Finally, there a number of resources online that detail older parallel programming methods in R (`foreach`, `mclapply`, `parLapply` `snow`, etc.). While these methods have clearly been superseded by the future package ecosystem in my mind, there is still a lot of valuable information to be gleaned from understanding them. Two of my favourite resources in this regard are: [How-to go parallel in R](http://gforge.se/2015/02/how-to-go-parallel-in-r-basics-tips/) (Max Gordon) and [Beyond Single-Core R](https://github.com/ljdursi/beyond-single-core-R) (Jonathan Dursi).
