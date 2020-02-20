@@ -1703,7 +1703,7 @@ my-vm  us-west1-a  n1-standard-8               10.138.0.2   104.198.7.157  RUNNI
 <span id="cb8-3"><a href="#cb8-3"></a><span class="ex">grant@my-vm</span>:~$ sudo apt update <span class="kw">&amp;&amp;</span> <span class="fu">sudo</span> apt upgrade <span class="co">## Hit &quot;y&quot; when prompted</span></span>
 <span id="cb8-4"><a href="#cb8-4"></a><span class="ex">grant@my-vm</span>:~$ sudo apt install r-base r-base-dev <span class="co">## Again, hit &quot;y&quot; when prompted</span></span></code></pre></div>
 <p><strong>Aside:</strong> Those <code>apt</code> commands are referring to the <a href="https://wiki.debian.org/Aptitude">Aptitude</a> package management system. Think of it like of <a href="https://brew.sh/">Homebrew</a> for Ubuntu (and other Debian Linux distributions).</p>
-<p>In addition to the above, a number of important R packages require external Linux libraries that must be installed separately on your VM first. For Ubuntu, we can install these packages with the following commands. Again, hit “y” whenever you are prompted to confirm installation.</p>
+<p>In addition to the above, a number of important R packages require external Linux libraries that must be installed separately on your VM first. (<strong>Note:</strong> You can skip this step if you prefer to install R package binaries on Ubuntu. See <a href="#install_r_binaries_on_ubuntu">below</a>.) For Ubuntu, we can install these packages with the following commands. Again, hit “y” whenever you are prompted to confirm installation.</p>
 <ol style="list-style-type: decimal">
 <li>For the “<a href="http://tidyverse.org/">tidyverse</a>” suite of packages:</li>
 </ol>
@@ -2157,11 +2157,28 @@ my-vm  us-west1-a  n1-standard-8               10.138.0.2   104.198.7.157  RUNNI
 </div>
 </div>
 </div>
+<div id="install-r-binaries-on-ubuntu" class="section level3">
+<h3>Install R binaries on Ubuntu</h3>
+<p>Installing R packages on Linux system can come as a bit of shock for first-time users, because everything has to compiled from source. The good news is that pre-compiled binaries are available on Ubuntu thanks to Mark Rutter. This means we can greatly speed up package installation and reduce other complications related to external dependencies. More information <a href="https://twitter.com/grant_mcdermott/status/1174059096900718592">here</a>, but the short version is that you can open up your terminal and try out the following.</p>
+<div class="sourceCode" id="cb86"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb86-1"><a href="#cb86-1"></a><span class="co">#  Add the PPA</span></span>
+<span id="cb86-2"><a href="#cb86-2"></a><span class="ex">grant@my-vm</span>:~$ sudo add-apt-repository -y <span class="st">&quot;ppa:marutter/rrutter3.5&quot;</span></span>
+<span id="cb86-3"><a href="#cb86-3"></a><span class="ex">grant@my-vm</span>:~$ sudo add-apt-repository -y <span class="st">&quot;ppa:marutter/c2d4u3.5&quot;</span></span>
+<span id="cb86-4"><a href="#cb86-4"></a><span class="ex">grant@my-vm</span>:~$ sudo apt update</span>
+<span id="cb86-5"><a href="#cb86-5"></a></span>
+<span id="cb86-6"><a href="#cb86-6"></a><span class="co"># To list all of the available binaries:</span></span>
+<span id="cb86-7"><a href="#cb86-7"></a><span class="ex">grant@my-vm</span>:~$ apt-cache search r-cran- <span class="kw">|</span> <span class="fu">sort</span> <span class="kw">|</span> <span class="fu">less</span></span>
+<span id="cb86-8"><a href="#cb86-8"></a></span>
+<span id="cb86-9"><a href="#cb86-9"></a><span class="co"># Or, to see if a specific package is available:</span></span>
+<span id="cb86-10"><a href="#cb86-10"></a><span class="ex">grant@my-vm</span>:~$ apt-cache search r-cran <span class="kw">|</span> <span class="fu">grep</span> “tidy”</span>
+<span id="cb86-11"><a href="#cb86-11"></a></span>
+<span id="cb86-12"><a href="#cb86-12"></a><span class="co"># Install your package(s) of choice, e.g.:</span></span>
+<span id="cb86-13"><a href="#cb86-13"></a><span class="ex">grant@my-vm</span>:~$ sudo apt install -y r-cran-tidyverse r-cran-rstan</span></code></pre></div>
+</div>
 <div id="install-the-intel-math-kernel-library-mkl-or-openblaslapack" class="section level3">
 <h3>Install the Intel Math Kernel Library (MKL) or OpenBLAS/LAPACK</h3>
 <p>As we discussed in the previous lecture on <a href="https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html">parallel programming</a>, R ships with its own BLAS/LAPACK libraries by default. While this default works well enough, you can get <em>significant</em> speedups by switching to more optimized libraries such as the <a href="https://software.intel.com/en-us/mkl">Intel Math Kernel Library (MKL)</a> or <a href="https://www.openblas.net/">OpenBLAS</a>. The former is slightly faster according to the benchmark tests that I’ve seen, but was historically harder to install. However, thanks to <a href="https://github.com/eddelbuettel/mkl4deb">Dirk Eddelbuettel</a>, this is now very easily done:</p>
-<div class="sourceCode" id="cb86"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb86-1"><a href="#cb86-1"></a><span class="ex">grant@my-vm</span>:~$ git clone https://github.com/eddelbuettel/mkl4deb.git</span>
-<span id="cb86-2"><a href="#cb86-2"></a><span class="ex">grant@my-vm</span>:~$ sudo bash mkl4deb/script.sh</span></code></pre></div>
+<div class="sourceCode" id="cb87"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb87-1"><a href="#cb87-1"></a><span class="ex">grant@my-vm</span>:~$ git clone https://github.com/eddelbuettel/mkl4deb.git</span>
+<span id="cb87-2"><a href="#cb87-2"></a><span class="ex">grant@my-vm</span>:~$ sudo bash mkl4deb/script.sh</span></code></pre></div>
 <p>Wait for the script to finish running. Once it’s done, your R session should automatically be configured to use MKL by default. You can check yourself by opening up R and checking the <code>sessionInfo()</code> output, which should return something like:</p>
 <pre><code>Matrix products: default
 BLAS/LAPACK: /opt/intel/compilers_and_libraries_2018.2.199/linux/mkl/lib/intel64_lin/libmkl_rt.so</code></pre>
@@ -2170,10 +2187,10 @@ BLAS/LAPACK: /opt/intel/compilers_and_libraries_2018.2.199/linux/mkl/lib/intel64
 <div id="other-tips" class="section level3">
 <h3>Other tips</h3>
 <p>Remember to keep your VM system up to date (just like you would a normal computer).</p>
-<div class="sourceCode" id="cb88"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb88-1"><a href="#cb88-1"></a><span class="ex">grant@my-vm</span>:~$ sudo apt update</span>
-<span id="cb88-2"><a href="#cb88-2"></a><span class="ex">grant@my-vm</span>:~$ sudo apt upgrade</span></code></pre></div>
+<div class="sourceCode" id="cb89"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb89-1"><a href="#cb89-1"></a><span class="ex">grant@my-vm</span>:~$ sudo apt update</span>
+<span id="cb89-2"><a href="#cb89-2"></a><span class="ex">grant@my-vm</span>:~$ sudo apt upgrade</span></code></pre></div>
 <p>You can also update the <code>gcloud</code> utility components on your local computer (i.e. not your VM) with the following command:</p>
-<div class="sourceCode" id="cb89"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb89-1"><a href="#cb89-1"></a>$ <span class="ex">gcloud</span> components update</span></code></pre></div>
+<div class="sourceCode" id="cb90"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb90-1"><a href="#cb90-1"></a>$ <span class="ex">gcloud</span> components update</span></code></pre></div>
 </div>
 </div>
 <div id="further-resources" class="section level2">

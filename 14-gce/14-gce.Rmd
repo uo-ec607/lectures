@@ -169,7 +169,7 @@ grant@my-vm:~$ sudo apt install r-base r-base-dev ## Again, hit "y" when prompte
 
 **Aside:** Those `apt` commands are referring to the [Aptitude](https://wiki.debian.org/Aptitude) package management system. Think of it like of [Homebrew](https://brew.sh/) for Ubuntu (and other Debian Linux distributions).
 
-In addition to the above, a number of important R packages require external Linux libraries that must be installed separately on your VM first. For Ubuntu, we can install these packages with the following commands. Again, hit "y" whenever you are prompted to confirm installation.
+In addition to the above, a number of important R packages require external Linux libraries that must be installed separately on your VM first. (**Note:** You can skip this step if you prefer to install R package binaries on Ubuntu. See [below](#install_r_binaries_on_ubuntu).) For Ubuntu, we can install these packages with the following commands. Again, hit "y" whenever you are prompted to confirm installation.
 
 1) For the "[tidyverse](http://tidyverse.org/)" suite of packages:
 ```{bash, eval=F}
@@ -588,6 +588,7 @@ While I haven't tried it myself, you should also be able to install [Box](http:/
 
 Last, but not least, Google themselves encourage data synchronisation on GCE VMs using another product within their Cloud Platform, i.e. [Google Storage](https://cloud.google.com/storage/). This is especially useful for really big data files and folders, but beyond the scope of this lecture. (If you're interested in learning more, see [here](https://cloud.google.com/solutions/filers-on-compute-engine) and [here](https://cloud.google.com/compute/docs/disks/gcs-buckets).)
 
+
 ### Share files and libraries between multiple users on the same VM
 
 The default configuration that I have described above works perfectly well in cases where you are a single user and don't venture outside of your home directory (and its sub directories). Indeed, you can just add new folders within this user's home directory using [standard Linux commands](https://linuxjourney.com/lesson/make-directory-mkdir-command) and you will be able to access these from within RStudio Server when you log in as that user.
@@ -651,6 +652,26 @@ elvis@my-vm:~$ sudo echo 'export PATH="R_LIBS_USER=/usr/lib/R/library"' >> ~/.Re
 The R packages that Elvis installs should now be immediately available to Priscilla and vice versa.
 
 > **Tip:** If you've already installed some packages in a local (i.e. this-user-only) library path before creating the system-wide setup, you can just move them across with the ['mv'](https://linuxjourney.com/lesson/move-mv-command) command. Something like the following should work, but you'll need to check the appropriate paths yourself: `elvis@my-vm:~$ sudo mv "/home/elvis/R/x86_64-pc-linux-gnu-library/3.5/*" /usr/lib/R/library`.
+
+### Install R binaries on Ubuntu
+
+Installing R packages on Linux system can come as a bit of shock for first-time users, because everything has to compiled from source. The good news is that pre-compiled binaries are available on Ubuntu thanks to Mark Rutter. This means we can greatly speed up package installation and reduce other complications related to external dependencies. More information [here](https://twitter.com/grant_mcdermott/status/1174059096900718592), but the short version is that you can open up your terminal and try out the following.
+
+```sh
+#  Add the PPA
+grant@my-vm:~$ sudo add-apt-repository -y "ppa:marutter/rrutter3.5"
+grant@my-vm:~$ sudo add-apt-repository -y "ppa:marutter/c2d4u3.5"
+grant@my-vm:~$ sudo apt update
+
+# To list all of the available binaries:
+grant@my-vm:~$ apt-cache search r-cran- | sort | less
+
+# Or, to see if a specific package is available:
+grant@my-vm:~$ apt-cache search r-cran | grep “tidy”
+
+# Install your package(s) of choice, e.g.:
+grant@my-vm:~$ sudo apt install -y r-cran-tidyverse r-cran-rstan
+```
 
 ### Install the Intel Math Kernel Library (MKL) or OpenBLAS/LAPACK
 
