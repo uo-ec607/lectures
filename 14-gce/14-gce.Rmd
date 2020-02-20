@@ -1,10 +1,10 @@
 ---
-title: "Cloud computing with Google Compute Engine"
+title: "Data Science for Economists"
+subtitle: "Lecture 14: Cloud computing with Google Compute Engine"
 author:
   name: Grant R. McDermott
-  affiliation: University of Oregon | EC 607
-  # email: grantmcd@uoregon.edu
-date: Lecture 14  #"`r format(Sys.time(), '%d %B %Y')`"
+  affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
+# date: Lecture 14  #"`r format(Sys.time(), '%d %B %Y')`"
 output: 
   html_document:
     theme: flatly
