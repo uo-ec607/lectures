@@ -1,10 +1,10 @@
 ---
-title: "Cloud computing with Google Compute Engine"
+title: "Data Science for Economists"
+subtitle: "Lecture 14: Cloud computing with Google Compute Engine"
 author:
   name: Grant R. McDermott
-  affiliation: University of Oregon | EC 607
-  # email: grantmcd@uoregon.edu
-date: Lecture 14  #"24 October 2019"
+  affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
+# date: Lecture 14  #"20 February 2020"
 output: 
   html_document:
     theme: flatly
@@ -26,22 +26,22 @@ This is the first of several lectures on cloud and high-performance computing. T
 
 These next instructions are important, so please read carefully.
 
-1. Sign up for a [12-month ($300 credit) free trial](https://console.cloud.google.com/freetrial) with Google Cloud Platform. This requires an existing Google/Gmail acount.^[If you have multiple Gmail accounts, please pay attention to which one you are using. (E.g. You might have two Gmail accounts, where one is your personal Gmail and the other is linked to your university email.) Needless to say, you'll want to make sure that you use the *same* account when setting up the gloud utility in Step 2. This might all sound obvious, but it has been the primary sticking point during live tutorials, where people encounter a bunch of puzzling authentication errors simply because they aren't using a consistent account.] During the course of sign-up, you should [create a project](https://cloud.google.com/resource-manager/docs/creating-managing-projects) that will be associated with billing. This is purely ceremonial at present — we're using the free trial period after all — but a billable project ID is required before gaining access to the platform.
+1. Sign up for a [12-month ($300 credit) free trial](https://console.cloud.google.com/freetrial) with Google Cloud Platform. This requires an existing Google/Gmail account.^[If you have multiple Gmail accounts, please pay attention to which one you are using. (E.g. You might have two Gmail accounts, where one is your personal Gmail and the other is linked to your university email.) Needless to say, you'll want to make sure that you use the *same* account when setting up the gcloud utility in Step 2. This might all sound obvious, but it has been the primary sticking point during live tutorials, where people encounter a bunch of puzzling authentication errors simply because they aren't using a consistent account.] During the course of sign-up, you should [create a project](https://cloud.google.com/resource-manager/docs/creating-managing-projects) that will be associated with billing. This is purely ceremonial at present — we're using the free trial period after all — but a billable project ID is required before gaining access to the platform.
 2. Download and follow the installation instructions for the Google Cloud SDK command line utility, `gcloud` [here](https://cloud.google.com/sdk/).
 
 ### R packages 
 
-- **New:** `googleComputeEngineR`, `usethis`
-- **Already used:** `future.apply`, `data.table`, `tictoc`
+- New: **googleComputeEngineR**, **usethis**
+- Already used: **future.apply**, **data.table**, **tictoc**
 
-I don't think it's strictly necessary, but I'm going to install the development version of `googleComputeEngineR`. I'm also going to hold off loading it until I've enabled auto-authentication later in the lecture. Don't worry about that now. Just run the following code chunk to get started.
+I'm going to hold off loading **googleComputeEngineR** until I've enabled auto-authentication later in the lecture. Don't worry about that now. Just run the following code chunk to get started.
 
 
 ```r
 ## Load/install packages
 if (!require("pacman")) install.packages("pacman")
-pacman::p_install_gh("cloudyr/googleComputeEngineR") ## Use the development version of googleComputeEngineR
 pacman::p_load(future.apply, tictoc, data.table, usethis)
+pacman::p_install(googleComputeEngineR, force = FALSE) 
 ```
 
 ## Introduction
@@ -280,11 +280,11 @@ And, remember, if you really want to avoid the command line, then you can always
 
 I use the manual approach to creating VMs on GCE all the time. I feel that this works particularly well for projects that I'm going to be spending a lot of time (e.g. research papers), since it gives me a lot of flexibility and control. Spin up a dedicated VM for the duration of the project, install all of the libraries that I need, and sync the results to my local machine though GitHub (more [here](https://raw.githack.com/uo-ec607/lectures/master/13-gce/13-gce.html#3_sync_with_github_or_other_cloud_service)). Once the VM has been created, you switch it on and off as easily as you would any physical computer.
 
-Yet, for some cases this is overkill. In particular, you may be wondering: "Why don't we just follow our [previous lesson](http://ropenscilabs.github.io/r-docker-tutorial/) and use a Docker image to install RStudio and all of the necessary libraries on our VM?" And the good news is... you can! There are actually several ways to do this, but I am going to focus on [Mark Edmondson's](http://code.markedmondson.me/) very cool [**googleComputeEngineR** package](https://cloudyr.github.io/googleComputeEngineR/index.html).
+Yet, for some cases this is overkill. In particular, you may be wondering: "Why don't we just follow our [previous lesson](http://ropenscilabs.github.io/r-docker-tutorial/) and use a Docker image to install RStudio and all of the necessary libraries on our VM?" And the good news is... you can! There are actually several ways to do this, but I am going to focus on [Mark Edmondson's](http://code.markedmondson.me/) very cool [**googleComputeEngineR**](https://cloudyr.github.io/googleComputeEngineR/index.html) package.
 
 ### Setup
 
-I strongly recommend using `googleComputeEngineR` in conjunction with an API service account key. This will greatly reduce authentication overhead and follows exactly the same principles that I covered in the earlier [lecture on APIs](https://raw.githack.com/uo-ec607/lectures/master/07-web-apis/07-web-apis.html). 
+I strongly recommend using **googleComputeEngineR** in conjunction with an API service account key. This will greatly reduce authentication overhead and follows exactly the same principles that I covered in the earlier [lecture on APIs](https://raw.githack.com/uo-ec607/lectures/master/07-web-apis/07-web-apis.html). 
 
 You can click through to [this link](https://cloudyr.github.io/googleComputeEngineR/articles/installation-and-authentication.html) for a detailed description of how to access your service account key (including a helpful YouTube video walkthrough). Here is a quick summary, though:
 
@@ -314,11 +314,11 @@ library(googleComputeEngineR)
 ## Set default zone to 'your-preferred-zone-here'
 ```
 
-Nice. With that taken care of, let's look at some examples to see how easy `googleComputeEngineR` is to work with.
+Nice. With that taken care of, let's look at some examples to see how easy **googleComputeEngineR** is to work with.
 
 ### Single VM
 
-The workhorse `googleComputeEngineR` function to remember is **`gce_vm()`**. This will fetch (i.e. start) an instance if it already exists, and create a new instance from scratch if it doesn't. Let's practice an example of the latter, since it will demonstrate the package's integration of Docker images via the [Rocker Project](https://www.rocker-project.org/).^[You can test the former by running `my_vm <- gce_vm("my-vm")` in your R console. You can also get a list of all existing instances by running `gce_list_instances()`.]
+The workhorse **googleComputeEngineR** function to remember is `gce_vm()`. This will fetch (i.e. start) an instance if it already exists, and create a new instance from scratch if it doesn't. Let's practice an example of the latter, since it will demonstrate the package's integration of Docker images via the [Rocker Project](https://www.rocker-project.org/).^[You can test the former by running `my_vm <- gce_vm("my-vm")` in your R console. You can also get a list of all existing instances by running `gce_list_instances()`.]
 
 The below code chunk should hopefully be pretty self-explantory. Like we saw earlier, we can name our VM pretty much whatever we want and can choose from a list of predefined machine types. The key point that I want to draw your attention to here is the fact that we're using the `template = "rstudio"` option to automatically install [this Docker image](https://hub.docker.com/r/rocker/rstudio) on our VM. This means that the initial spin-up will take slightly longer (since the Docker image needs to be downloaded and installed), but RStudio Server will immediately be ready to go once that's done. You could also add your own Docker images to the `gve_vm()` call so that your entire environment is ready to go when the VM is instantiated (see [here](https://cloudyr.github.io/googleComputeEngineR/articles/docker.html). Finally, note that the `gce_vm` function provides convenient options for specifying a username and password that can be used to log into this RStudio instance.
 
@@ -486,7 +486,7 @@ vms <-
 
 And that's all it takes. We are ready to use our remote cluster. For this simple example, I'm going to loop `slow_func()` over the vector `1:15`. As a reference point, recall that the loop would take (15*5=) **75 seconds** to run sequentially.
 
-To run the parallelised version on our simple 3-CPU cluster, I'm going to use the amazing [future.apply package](https://github.com/HenrikBengtsson/future.apply) that we covered in the [lecture on parallel programming](https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html). As you can see, all I need to do is specify `plan(cluster)` and provide the location of the workers (here: the `vms` cluster that we just created). Everything else stays *exactly* the same, as if we were running the code on our local computer. It Just Works.<sup>TM</sup>
+To run the parallelised version on our simple 3-CPU cluster, I'm going to use the amazing [**future.apply**](https://github.com/HenrikBengtsson/future.apply) package that we covered in the [lecture on parallel programming](https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html). As you can see, all I need to do is specify `plan(cluster)` and provide the location of the workers (here: the `vms` cluster that we just created). Everything else stays *exactly* the same, as if we were running the code on our local computer. It Just Works.<sup>TM</sup>
 
 
 ```r
@@ -682,7 +682,7 @@ Normally, I would remind you to shut down your VM instances now. But first, let'
 
 #### One final example
 
-The final example that I'm going to show you is a slight adaptation of the nested cluster that we just covered.^[Indeed, we're going to be using the same three VMs. These should still be running in the background, unless you've taken a long time to get to this next section. Just spin them up again if you run into problems.] This time we're going to install and use an additional R package on our remote VMs that didn't come pre-installed on the "r-parallel" Docker image. (The package in question is going to be [data.table](http://rdatatable.gitlab.io/data.table/), but that's not really the point of the exercise.) I wanted to cover this kind of scenario because a) it's very likely that you'll want to do something similar if you start using remote clusters regularly, and b) the commands for doing so aren't obvious if you're not used to R scripting on Docker containers. The good news is that it's pretty easy once you've seen an example and that everything can be done through `plan()`. Let's proceed.
+The final example that I'm going to show you is a slight adaptation of the nested cluster that we just covered.^[Indeed, we're going to be using the same three VMs. These should still be running in the background, unless you've taken a long time to get to this next section. Just spin them up again if you run into problems.] This time we're going to install and use an additional R package on our remote VMs that didn't come pre-installed on the "r-parallel" Docker image. (The package in question is going to be [**data.table**](http://rdatatable.gitlab.io/data.table/), but that's not really the point of the exercise.) I wanted to cover this kind of scenario because a) it's very likely that you'll want to do something similar if you start using remote clusters regularly, and b) the commands for doing so aren't obvious if you're not used to R scripting on Docker containers. The good news is that it's pretty easy once you've seen an example and that everything can be done through `plan()`. Let's proceed.
 
 The [Rscript](https://linux.die.net/man/1/rscript) shell command is how we can install additional R packages on a remote VM (or cluster) that is busy running a Docker container. However, we first need to tell Docker to launch Rscript inside the container in question. That's what the `rscript = c(...)` line below is doing. Next we feed it the actual Rscript argument(s) to be run. In this case, it's going to be `Rscript -e install.packages(PACKAGE)`. Again, this looks a little abstruce here because it has to go through the `rscript_args = c(...)` argument, but hopefully you get the idea.
 
@@ -707,9 +707,9 @@ plan(list(
 ))
 ```
 
-(Note: I've hidden the output from the above code chunk, because takes up quite of vertical space with all of the installation messages, etc. You should see messages detailing data.table's installation progress across each of your VMs if you run this code on your own computer.)
+(Note: I've hidden the output from the above code chunk, because takes up quite of vertical space with all of the installation messages, etc. You should see messages detailing **data.table**'s installation progress across each of your VMs if you run this code on your own computer.)
 
-Let's prove to ourselves that the installation of `data.table` worked by running a very slightly modified version of our earlier code. This time we'll use `data.table::rbindList()` to coerce the resulting list objects from each `future_lapply()` call into a data table. Note that we'll need to do this twice: once for our inner loop(s) and once for the outer loop.
+Let's prove to ourselves that the installation of **data.table** worked by running a very slightly modified version of our earlier code. This time we'll use `data.table::rbindList()` to coerce the resulting list objects from each `future_lapply()` call into a data table. Note that we'll need to do this twice: once for our inner loop(s) and once for the outer loop.
 
 
 ```r
@@ -788,7 +788,7 @@ gce_vm_delete(vms_nested)
 
 ### Other topics
 
-The `googleComputeEngineR` package offers a lot more functionality than I can cover here. However, I wanted to briefly mention the fact that GCE offers GPU instances that are production-ready for training hardcore deep learning models. In my view, this is one of the most exciting developments of cloud-based computation services, as it puts the infrastructure necessary for advanced machine learning in the hands of just about everyone. See Mark's [introductory GPU tutorial](https://cloudyr.github.io/googleComputeEngineR/articles/gpu.html) on the `googleComputeEngineR` website. **Note:** These GPU instances are not available during the GCP free trial period, although users can always upgrade their account if they want.
+The **googleComputeEngineR** package offers a lot more functionality than I can cover here. However, I wanted to briefly mention the fact that GCE offers GPU instances that are production-ready for training hardcore deep learning models. In my view, this is one of the most exciting developments of cloud-based computation services, as it puts the infrastructure necessary for advanced machine learning in the hands of just about everyone. See Mark's [introductory GPU tutorial](https://cloudyr.github.io/googleComputeEngineR/articles/gpu.html) on the **googleComputeEngineR** website. *Note:* These GPU instances are not available during the GCP free trial period, although users can always upgrade their account if they want.
 
 ## BONUS: Getting the most out of your GCE + RStudio Server setup
 
