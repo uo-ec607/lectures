@@ -284,9 +284,7 @@ Yet, for some cases this is overkill. In particular, you may be wondering: "Why 
 
 ### Once-off setup
 
-I strongly recommend using **googleComputeEngineR** in conjunction with an API service account key. This involves some one-off setup pain, but will greatly reduce authentication overhead afterwards.
-
-You can click through to [this link](https://cloudyr.github.io/googleComputeEngineR/articles/installation-and-authentication.html) for a detailed description of how to access your service account key (including a helpful YouTube video walkthrough). However, ere is a quick summary:
+I strongly recommend using **googleComputeEngineR** in conjunction with an API service account key. This involves some one-off setup pain, but will greatly reduce authentication overhead afterwards. You can click through to [this link](https://cloudyr.github.io/googleComputeEngineR/articles/installation-and-authentication.html) for a detailed description of how to access your service account key (including a helpful YouTube video walkthrough). However, here is a quick summary:
 
 1. Navigate to the [APIs and Services Dashboard](https://console.cloud.google.com/apis/dashboard) of your GCP project.
 2. Click "Credentials" on the left-hand side of your screen. Then select `CREATE CREDENTIALS` > `Service Account`.
