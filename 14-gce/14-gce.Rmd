@@ -41,8 +41,8 @@ These next instructions are important, so please read carefully.
 
 ### R packages 
 
-- New: **googleComputeEngineR**, **usethis**
-- Already used: **future.apply**, **data.table**, **tictoc**
+- New: **googleComputeEngineR**
+- Already used: **usethis**, **future.apply**, **data.table**, **tictoc**
 
 I'm going to hold off loading **googleComputeEngineR** until I've enabled auto-authentication later in the lecture. Don't worry about that now. Just run the following code chunk to get started.
 
@@ -82,7 +82,7 @@ Now, with that background knowledge in mind, GCE delivers high-performance, rapi
 Our goal for today is to set up a VM (or cluster of VMs) on GCE. What's more, we want to install R and RStudio (Server) on these VMs, so that we can interact with them in exactly the same way that we're used to on our own computers. I'm going to show you two approaches:
 
 1. Manually configure GCE with RStudio Server
-2. Automate with `googleComputeEngineR` and friends
+2. Automate with **googleComputeEngineR** and friends
 
 Both approaches have their merits, but I think it's important to start with the manual configuration so that you get a good understanding of what's happening underneath the hood.
 
@@ -274,38 +274,57 @@ I use the manual approach to creating VMs on GCE all the time. I feel that this 
 
 Yet, for some cases this is overkill. In particular, you may be wondering: "Why don't we just follow our [previous lesson](http://ropenscilabs.github.io/r-docker-tutorial/) and use a Docker image to install RStudio and all of the necessary libraries on our VM?" And the good news is... you can! There are actually several ways to do this, but I am going to focus on [Mark Edmondson's](http://code.markedmondson.me/) very cool [**googleComputeEngineR**](https://cloudyr.github.io/googleComputeEngineR/index.html) package.
 
-### Setup
+### Once-off setup
 
-I strongly recommend using **googleComputeEngineR** in conjunction with an API service account key. This will greatly reduce authentication overhead and follows exactly the same principles that I covered in the earlier [lecture on APIs](https://raw.githack.com/uo-ec607/lectures/master/07-web-apis/07-web-apis.html). 
+I strongly recommend using **googleComputeEngineR** in conjunction with an API service account key. This involves some one-off setup pain, but will greatly reduce authentication overhead afterwards.
 
-You can click through to [this link](https://cloudyr.github.io/googleComputeEngineR/articles/installation-and-authentication.html) for a detailed description of how to access your service account key (including a helpful YouTube video walkthrough). Here is a quick summary, though:
+You can click through to [this link](https://cloudyr.github.io/googleComputeEngineR/articles/installation-and-authentication.html) for a detailed description of how to access your service account key (including a helpful YouTube video walkthrough). However, ere is a quick summary:
 
 1. Navigate to the [APIs and Services Dashboard](https://console.cloud.google.com/apis/dashboard) of your GCP project.
-2. Click "Credentials" on the left-hand side of your screen. Then select `Create credentials` > `Service Account key`.
-3. This will take you to a new page, where you should choose "Compute engine default service accout" (under `Service account`) and "JSON" (under `Key type`).
-4. Hit `Create` to generate the key, which will then be downloaded to your computer. **Important:** This key will only be generated once, so make sure you download it to a safe location. Feel free to rename the file to something easier to type or recognize if you want.
+2. Click "Credentials" on the left-hand side of your screen. Then select `CREATE CREDENTIALS` > `Service Account`.
+3. This will take you to a new page, where you should fill in the `Service account name` (I'd call it something like "gce", but it doesn't really matter) and, optionally, `Service account description` fields. Then hit `CREATE`.
+4. Select `Owner` as the user role on the next page. Then `CONTINUE`.
+5. Click `+CREATE KEY` on the next page. This will trigger a pop-up window where you should select `JSON` as the key type, followed by `CREATE`. (You can ignore the other stuff on the page about granting users access.) 
+6. The previous step would have generate a JSON file, which you should save to your computer. I recommend renaming it to something recognizable (e.g. `gce-key.json`) and saving it to your home directory for convenient access.
+7. At this point, you are free to click `DONE` on the Create Service Account webpage and minimize your browser.
 
-Now, just like we practiced in the API lecture, we can enable auto-authentication from R by calling these credentials via our `~/.Renviron` file.^[You should already have this file in your home directory based on our previous API authentication examples. If not, you'll need to create it.] Open up this file in your preferred text editor (RStudio is fine) and add the following lines to it. Obviously, adjust the path and names as required. 
+You know the JSON file (i.e. key) that we just downloaded in step 6? Good, because now we need to tell R where to find it so that we can automatically enable credential authentication. We're going to use the same approach that I showed you in our [API lecture](https://raw.githack.com/uo-ec607/lectures/master/07-web-apis/07-web-apis.html#aside:_safely_store_and_use_api_keys_as_environment_variables), which is to store and access sensitive credential information through our `~/.Renviron` file. Open up your .Renviron file by calling
+
+```r
+## Open your .Renviron file
+usethis::edit_r_environ()
+```
+in RStudio. (You can also open and edit it manually in your preferred text editor.) Now, add the following lines your file. Make sure you adjust the file path and variable strings as required. 
 
 ```bash
-GCE_AUTH_FILE="/fullpath-to-your-service-key/filename.json"
-GCE_DEFAULT_PROJECT_ID="your-project-id-here"
+GCE_AUTH_FILE="/fullpath-to-your-service-key/filename.json" ## Use full path
+GCE_DEFAULT_PROJECT_ID="your-project-id-here" ## Probably some random string like violet-ghost123
 GCE_DEFAULT_ZONE="your-preferred-zone-here" ## E.g. us-west1-a
 ```
+Save your updated .Renviron file. Then refresh your system: 
 
-Now, auto-authentication will automatically be enabled when you load `googleComputeEngineR` in R.
+```r
+## Refresh your .Renviron file for the current session.
+readRenviron("~/.Renviron") 
+```
+
+And that's the once-off setup pain complete! 
+
+### Load package and test
+
+Assuming everything went to plan during the initial setup above, Google Cloud authentication from R should automtically be enabled whenever you load the **googleComputeEngineR** package. That is, when you run
 
 ```{r, cache=F, message=F}
 library(googleComputeEngineR)
 ```
+then you should see something like the following:
 ```
 ## Setting scopes to https://www.googleapis.com/auth/cloud-platform
 ## Successfully auto-authenticated via /fullpath-to-your-service-key/filename.json
 ## Set default project ID to 'your-project-id-here'
 ## Set default zone to 'your-preferred-zone-here'
 ```
-
-Nice. With that taken care of, let's look at some examples to see how easy **googleComputeEngineR** is to work with.
+Now that the hard installation part is over, let's see how easy **googleComputeEngineR** is to work with.
 
 ### Single VM
 
