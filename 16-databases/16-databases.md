@@ -4,7 +4,7 @@ author:
   name: Grant R. McDermott
   affiliation: University of Oregon | EC 607
   # email: grantmcd@uoregon.edu
-date: Lecture 16  #"30 June 2019"
+date: Lecture 16  #"27 February 2020"
 output: 
   html_document:
     theme: flatly
@@ -341,7 +341,11 @@ tailnum_delay %>%
 
 ![](16-databases_files/figure-html/tailnum_delay_ggplot-1.png)<!-- -->
 
-### Using SQL directly
+Assuming that we're finished querying our SQLite database at this point, we'd normally disconnect from it by calling `DBI::dbDisconnect(con)`. However, I want to keep the connection open a bit longer, so that I can demonstrate how to execute raw (i.e. untranslated) SQL queries on a database from within R.
+
+## Using SQL directly in R
+
+### Translate with dplyr::show_query()
 
 Behind the scenes, `dplyr` is translating your R code into SQL. You can use the **`show_query()`** function to display the SQL code that was used to generate a queried table.
 
@@ -371,7 +375,40 @@ tailnum_delay_db %>% show_query()
 
 Note that the SQL call is much less appealing/intuitive our piped `dplyr` code. This results partly from the way that `dplyr` translated the code (e.g. those repeated `SELECT` commands at the top of the SQL string are redundant). However, it also reflects the simple fact that SQL is not an elegant language to work with. In particular, SQL imposes a **lexical** order of operations that doesn't necessarily preserve the **logical** order of operations.^[Which stands in direct contrast to our piped `dplyr` code, i.e. "take this object, do this, then do this", etc. I even made a meme about it for you: https://www.captiongenerator.com/1325222/Dimitri-doesnt-need-SQL] This lexical ordering is also known as "order of execution" and is strict in the sense that (nearly) every SQL query must follow the same hierarchy of commands. I don't want to go through this all now, but I did want to make you aware of it. While it can take a while to wrap your head around, the good news is that it is certainly learnable. ([Here](https://www.eversql.com/sql-order-of-operations-sql-query-order-of-execution/) and [here](https://blog.jooq.org/2016/12/09/a-beginners-guide-to-the-true-order-of-sql-operations/) are great places to start.) The even better news is that you may not even need SQL given how well the `dplyr` translation works. 
 
-And yet... At some point you may still find yourself wanting or needing to use SQL code to query a database from R (or directly within a database for that matter). Thankfully, this is easily done with the `DBI` package. The same `DBI::dbGetQuery()` function that we used earlier to establish the original database connection (i.e. `con`) also accepts "raw" SQL code.
+And yet... At some point you may still find yourself wanting or needing to use SQL code to query a database from R (or directly within a database for that matter). Thankfully, this is easily done with the `DBI` package. In fact, there are several ways as I'll demonstrate below.
+
+
+### Option 1: Use R Markdown `sql` chunks
+
+See the [R Markdown book](https://bookdown.org/yihui/rmarkdown/language-engines.html#sql).
+
+
+```sql
+SELECT *
+FROM flights
+WHERE dep_delay > 240
+LIMIT 5
+```
+
+
+<div class="knitsql-table">
+
+
+Table: 5 records
+
+ year   month   day   dep_time   sched_dep_time   dep_delay   arr_time   sched_arr_time   arr_delay  carrier    flight  tailnum   origin   dest    air_time   distance   hour   minute    time_hour
+-----  ------  ----  ---------  ---------------  ----------  ---------  ---------------  ----------  --------  -------  --------  -------  -----  ---------  ---------  -----  -------  -----------
+ 2013       1     1        848             1835         853       1001             1950         851  MQ           3944  N942MQ    JFK      BWI           41        184     18       35   1357081200
+ 2013       1     1       1815             1325         290       2120             1542         338  EV           4417  N17185    EWR      OMA          213       1134     13       25   1357063200
+ 2013       1     1       1842             1422         260       1958             1535         263  EV           4633  N18120    EWR      BTV           46        266     14       22   1357066800
+ 2013       1     1       2115             1700         255       2330             1920         250  9E           3347  N924XJ    JFK      CVG          115        589     17        0   1357077600
+ 2013       1     1       2205             1720         285         46             2040         246  AA           1999  N5DNAA    EWR      MIA          146       1085     17       20   1357077600
+
+</div>
+
+### Option 2: Use DBI:dbGetQuery()
+
+The same `DBI::dbGetQuery()` function that we used earlier to establish the original database connection (i.e. `con`) also accepts "raw" SQL code.
 
 
 ```r
@@ -388,7 +425,7 @@ flights_db %>% filter(dep_delay > 240) %>% head(5) %>% show_query()
 ```
 
 ```r
-## Run the query using SQL directly on the connnection.
+## Run the query using SQL directly on the connection.
 dbGetQuery(con, "SELECT * FROM `flights` WHERE (`dep_delay` > 240.0) LIMIT 5")
 ```
 
@@ -399,21 +436,31 @@ dbGetQuery(con, "SELECT * FROM `flights` WHERE (`dep_delay` > 240.0) LIMIT 5")
 ## 3 2013     1   1     1842           1422       260     1958           1535
 ## 4 2013     1   1     2115           1700       255     2330           1920
 ## 5 2013     1   1     2205           1720       285       46           2040
-##   arr_delay carrier flight tailnum origin dest air_time distance hour
-## 1       851      MQ   3944  N942MQ    JFK  BWI       41      184   18
-## 2       338      EV   4417  N17185    EWR  OMA      213     1134   13
-## 3       263      EV   4633  N18120    EWR  BTV       46      266   14
-## 4       250      9E   3347  N924XJ    JFK  CVG      115      589   17
-## 5       246      AA   1999  N5DNAA    EWR  MIA      146     1085   17
-##   minute  time_hour
-## 1     35 1357081200
-## 2     25 1357063200
-## 3     22 1357066800
-## 4      0 1357077600
-## 5     20 1357077600
+##   arr_delay carrier flight tailnum origin dest air_time distance hour minute
+## 1       851      MQ   3944  N942MQ    JFK  BWI       41      184   18     35
+## 2       338      EV   4417  N17185    EWR  OMA      213     1134   13     25
+## 3       263      EV   4633  N18120    EWR  BTV       46      266   14     22
+## 4       250      9E   3347  N924XJ    JFK  CVG      115      589   17      0
+## 5       246      AA   1999  N5DNAA    EWR  MIA      146     1085   17     20
+##    time_hour
+## 1 1357081200
+## 2 1357063200
+## 3 1357066800
+## 4 1357077600
+## 5 1357077600
 ```
 
-A safer and more integrated approach is to use the `glue::glue_sql()` function. This will allow you to 1) use local R variables in your SQL queries, and 2) divide long queries into sub-queries. Here's a simple example of the former.
+Note that the backticks around the object names (`dep_delay` and `flights`), as well as the parentheses around the `WHERE` filter, are not strictly needed here. Again, these are just extra safeguards that the dplyr translation uses to ensure compatibility across the various SQL backends and implementations. So you could have run the following instead (try it yourself).
+
+
+```r
+## Not run (try it yourself to confirm backticks and parentheses aren't needed here)
+dbGetQuery(con, "SELECT * FROM flights WHERE dep_delay > 240.0 LIMIT 5")
+```
+
+### Recommendation: Use glue::glue_sql()
+
+While we've just seen that it's possible to include raw SQL queries in R, a safer and more integrated approach is to use the `glue::glue_sql()` function. This will allow you to 1) use local R variables in your SQL queries, and 2) divide long queries into sub-queries. Here's a simple example of the former.
 
 
 ```r
@@ -645,25 +692,36 @@ All of these tables are interesting in their own right, but we're going to be qu
 
 ```r
 effort <- tbl(gfw_con, "fishing_effort")
+```
+
+```
+## Using an auto-discovered, cached token.
+## To suppress this message, modify your code or options to clearly consent to the use of a cached token.
+## See gargle's "Non-interactive auth" vignette for more details:
+## https://gargle.r-lib.org/articles/non-interactive-auth.html
+## The bigrquery package is using a cached token for grant.mcdermott@gmail.com.
+```
+
+```r
 effort
 ```
 
 ```
 ## # Source:   table<fishing_effort> [?? x 8]
 ## # Database: BigQueryConnection
-##    date  lat_bin lon_bin flag  geartype vessel_hours fishing_hours
-##    <chr>   <int>   <int> <chr> <chr>           <dbl>         <dbl>
-##  1 2012…    -879    1324 AGO   purse_s…        5.76          0    
-##  2 2012…   -5120   -6859 ARG   trawlers        1.57          1.57 
-##  3 2012…   -5120   -6854 ARG   purse_s…        3.05          3.05 
-##  4 2012…   -5119   -6858 ARG   purse_s…        2.40          2.40 
-##  5 2012…   -5119   -6854 ARG   trawlers        1.52          1.52 
-##  6 2012…   -5119   -6855 ARG   purse_s…        0.786         0.786
-##  7 2012…   -5119   -6853 ARG   trawlers        4.60          4.60 
-##  8 2012…   -5118   -6852 ARG   trawlers        1.56          1.56 
-##  9 2012…   -5118   -6850 ARG   trawlers        1.61          1.61 
-## 10 2012…   -5117   -6849 ARG   trawlers        0.797         0.797
-## # … with more rows, and 1 more variable: mmsi_present <int>
+##    date   lat_bin lon_bin flag  geartype vessel_hours fishing_hours mmsi_present
+##    <chr>    <int>   <int> <chr> <chr>           <dbl>         <dbl>        <int>
+##  1 2012-…    -879    1324 AGO   purse_s…        5.76          0                1
+##  2 2012-…   -5120   -6859 ARG   trawlers        1.57          1.57             1
+##  3 2012-…   -5120   -6854 ARG   purse_s…        3.05          3.05             1
+##  4 2012-…   -5119   -6858 ARG   purse_s…        2.40          2.40             1
+##  5 2012-…   -5119   -6854 ARG   trawlers        1.52          1.52             1
+##  6 2012-…   -5119   -6855 ARG   purse_s…        0.786         0.786            1
+##  7 2012-…   -5119   -6853 ARG   trawlers        4.60          4.60             1
+##  8 2012-…   -5118   -6852 ARG   trawlers        1.56          1.56             1
+##  9 2012-…   -5118   -6850 ARG   trawlers        1.61          1.61             1
+## 10 2012-…   -5117   -6849 ARG   trawlers        0.797         0.797            1
+## # … with more rows
 ```
 
 Now, we can do things like find out who are the top fishing nations by total number of hours fished. As we can see, China is by far the dominant player on the world stage:
@@ -701,7 +759,7 @@ One thing I wanted to flag quickly is that many tables and databases in BigQuery
 
 ```r
 effort %>%
-  ## Here comes the filtering on partion time
+  ## Here comes the filtering on partition time
   filter(
     `_PARTITIONTIME` >= "2016-01-01 00:00:00",
     `_PARTITIONTIME` <= "2016-12-31 00:00:00"
