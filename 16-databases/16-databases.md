@@ -1,10 +1,10 @@
 ---
-title: "Databases"
+title: "Data Science for Economists"
+subtitle: "Lecture 16: Databases"
 author:
   name: Grant R. McDermott
-  affiliation: University of Oregon | EC 607
-  # email: grantmcd@uoregon.edu
-date: Lecture 16  #"27 February 2020"
+  affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
+# date: Lecture 16  #"27 February 2020"
 output: 
   html_document:
     theme: flatly
@@ -119,23 +119,22 @@ flights_db
 
 ```
 ## # Source:   table<flights> [?? x 19]
-## # Database: sqlite 3.22.0 []
-##     year month   day dep_time sched_dep_time dep_delay arr_time
-##    <int> <int> <int>    <int>          <int>     <dbl>    <int>
-##  1  2013     1     1      517            515         2      830
-##  2  2013     1     1      533            529         4      850
-##  3  2013     1     1      542            540         2      923
-##  4  2013     1     1      544            545        -1     1004
-##  5  2013     1     1      554            600        -6      812
-##  6  2013     1     1      554            558        -4      740
-##  7  2013     1     1      555            600        -5      913
-##  8  2013     1     1      557            600        -3      709
-##  9  2013     1     1      557            600        -3      838
-## 10  2013     1     1      558            600        -2      753
-## # … with more rows, and 12 more variables: sched_arr_time <int>,
-## #   arr_delay <dbl>, carrier <chr>, flight <int>, tailnum <chr>,
-## #   origin <chr>, dest <chr>, air_time <dbl>, distance <dbl>, hour <dbl>,
-## #   minute <dbl>, time_hour <dbl>
+## # Database: sqlite 3.30.1 []
+##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
+##    <int> <int> <int>    <int>          <int>     <dbl>    <int>          <int>
+##  1  2013     1     1      517            515         2      830            819
+##  2  2013     1     1      533            529         4      850            830
+##  3  2013     1     1      542            540         2      923            850
+##  4  2013     1     1      544            545        -1     1004           1022
+##  5  2013     1     1      554            600        -6      812            837
+##  6  2013     1     1      554            558        -4      740            728
+##  7  2013     1     1      555            600        -5      913            854
+##  8  2013     1     1      557            600        -3      709            723
+##  9  2013     1     1      557            600        -3      838            846
+## 10  2013     1     1      558            600        -2      753            745
+## # … with more rows, and 11 more variables: arr_delay <dbl>, carrier <chr>,
+## #   flight <int>, tailnum <chr>, origin <chr>, dest <chr>, air_time <dbl>,
+## #   distance <dbl>, hour <dbl>, minute <dbl>, time_hour <dbl>
 ```
 
 It worked! Everything looks pretty good, although you may notice something slightly strange about the output. We'll get to that in a minute.
@@ -152,7 +151,7 @@ flights_db %>% select(year:day, dep_delay, arr_delay)
 
 ```
 ## # Source:   lazy query [?? x 5]
-## # Database: sqlite 3.22.0 []
+## # Database: sqlite 3.30.1 []
 ##     year month   day dep_delay arr_delay
 ##    <int> <int> <int>     <dbl>     <dbl>
 ##  1  2013     1     1         2        11
@@ -175,23 +174,22 @@ flights_db %>% filter(dep_delay > 240)
 
 ```
 ## # Source:   lazy query [?? x 19]
-## # Database: sqlite 3.22.0 []
-##     year month   day dep_time sched_dep_time dep_delay arr_time
-##    <int> <int> <int>    <int>          <int>     <dbl>    <int>
-##  1  2013     1     1      848           1835       853     1001
-##  2  2013     1     1     1815           1325       290     2120
-##  3  2013     1     1     1842           1422       260     1958
-##  4  2013     1     1     2115           1700       255     2330
-##  5  2013     1     1     2205           1720       285       46
-##  6  2013     1     1     2343           1724       379      314
-##  7  2013     1     2     1332            904       268     1616
-##  8  2013     1     2     1412            838       334     1710
-##  9  2013     1     2     1607           1030       337     2003
-## 10  2013     1     2     2131           1512       379     2340
-## # … with more rows, and 12 more variables: sched_arr_time <int>,
-## #   arr_delay <dbl>, carrier <chr>, flight <int>, tailnum <chr>,
-## #   origin <chr>, dest <chr>, air_time <dbl>, distance <dbl>, hour <dbl>,
-## #   minute <dbl>, time_hour <dbl>
+## # Database: sqlite 3.30.1 []
+##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
+##    <int> <int> <int>    <int>          <int>     <dbl>    <int>          <int>
+##  1  2013     1     1      848           1835       853     1001           1950
+##  2  2013     1     1     1815           1325       290     2120           1542
+##  3  2013     1     1     1842           1422       260     1958           1535
+##  4  2013     1     1     2115           1700       255     2330           1920
+##  5  2013     1     1     2205           1720       285       46           2040
+##  6  2013     1     1     2343           1724       379      314           1938
+##  7  2013     1     2     1332            904       268     1616           1128
+##  8  2013     1     2     1412            838       334     1710           1147
+##  9  2013     1     2     1607           1030       337     2003           1355
+## 10  2013     1     2     2131           1512       379     2340           1741
+## # … with more rows, and 11 more variables: arr_delay <dbl>, carrier <chr>,
+## #   flight <int>, tailnum <chr>, origin <chr>, dest <chr>, air_time <dbl>,
+## #   distance <dbl>, hour <dbl>, minute <dbl>, time_hour <dbl>
 ```
 
 ```r
@@ -203,12 +201,13 @@ flights_db %>%
 
 ```
 ## Warning: Missing values are always removed in SQL.
-## Use `AVG(x, na.rm = TRUE)` to silence this warning
+## Use `mean(x, na.rm = TRUE)` to silence this warning
+## This warning is displayed only once per session.
 ```
 
 ```
 ## # Source:   lazy query [?? x 2]
-## # Database: sqlite 3.22.0 []
+## # Database: sqlite 3.30.1 []
 ##    dest  delay
 ##    <chr> <dbl>
 ##  1 ABQ   2006.
@@ -257,16 +256,8 @@ tailnum_delay_db
 ```
 
 ```
-## Warning: Missing values are always removed in SQL.
-## Use `AVG(x, na.rm = TRUE)` to silence this warning
-
-## Warning: Missing values are always removed in SQL.
-## Use `AVG(x, na.rm = TRUE)` to silence this warning
-```
-
-```
 ## # Source:     lazy query [?? x 4]
-## # Database:   sqlite 3.22.0 []
+## # Database:   sqlite 3.30.1 []
 ## # Ordered by: desc(mean_arr_delay)
 ##    tailnum mean_dep_delay mean_arr_delay     n
 ##    <chr>            <dbl>          <dbl> <int>
@@ -293,17 +284,6 @@ Typically, you’ll iterate a few times before you figure out what data you need
 tailnum_delay <- 
   tailnum_delay_db %>% 
   collect()
-```
-
-```
-## Warning: Missing values are always removed in SQL.
-## Use `AVG(x, na.rm = TRUE)` to silence this warning
-
-## Warning: Missing values are always removed in SQL.
-## Use `AVG(x, na.rm = TRUE)` to silence this warning
-```
-
-```r
 tailnum_delay
 ```
 
@@ -352,14 +332,6 @@ Behind the scenes, `dplyr` is translating your R code into SQL. You can use the 
 
 ```r
 tailnum_delay_db %>% show_query()
-```
-
-```
-## Warning: Missing values are always removed in SQL.
-## Use `AVG(x, na.rm = TRUE)` to silence this warning
-
-## Warning: Missing values are always removed in SQL.
-## Use `AVG(x, na.rm = TRUE)` to silence this warning
 ```
 
 ```
@@ -493,18 +465,18 @@ dbGetQuery(con, sql_query)
 ## 3 2013     1   1     1842           1422       260     1958           1535
 ## 4 2013     1   1     2115           1700       255     2330           1920
 ## 5 2013     1   1     2205           1720       285       46           2040
-##   arr_delay carrier flight tailnum origin dest air_time distance hour
-## 1       851      MQ   3944  N942MQ    JFK  BWI       41      184   18
-## 2       338      EV   4417  N17185    EWR  OMA      213     1134   13
-## 3       263      EV   4633  N18120    EWR  BTV       46      266   14
-## 4       250      9E   3347  N924XJ    JFK  CVG      115      589   17
-## 5       246      AA   1999  N5DNAA    EWR  MIA      146     1085   17
-##   minute  time_hour
-## 1     35 1357081200
-## 2     25 1357063200
-## 3     22 1357066800
-## 4      0 1357077600
-## 5     20 1357077600
+##   arr_delay carrier flight tailnum origin dest air_time distance hour minute
+## 1       851      MQ   3944  N942MQ    JFK  BWI       41      184   18     35
+## 2       338      EV   4417  N17185    EWR  OMA      213     1134   13     25
+## 3       263      EV   4633  N18120    EWR  BTV       46      266   14     22
+## 4       250      9E   3347  N924XJ    JFK  CVG      115      589   17      0
+## 5       246      AA   1999  N5DNAA    EWR  MIA      146     1085   17     20
+##    time_hour
+## 1 1357081200
+## 2 1357063200
+## 3 1357066800
+## 4 1357077600
+## 5 1357077600
 ```
 
 I know this seems like more work (undeniably so for this simple example). However, the `glue::glue_sql()` approach really pays off when you start working with bigger, nested queries.
@@ -568,7 +540,11 @@ dbListTables(bq_con)
 ```
 
 ```
-## Auto-refreshing stale OAuth token.
+## Using an auto-discovered, cached token.
+## To suppress this message, modify your code or options to clearly consent to the use of a cached token.
+## See gargle's "Non-interactive auth" vignette for more details:
+## https://gargle.r-lib.org/articles/non-interactive-auth.html
+## The bigrquery package is using a cached token for grant.mcdermott@gmail.com.
 ```
 
 ```
@@ -692,17 +668,6 @@ All of these tables are interesting in their own right, but we're going to be qu
 
 ```r
 effort <- tbl(gfw_con, "fishing_effort")
-```
-
-```
-## Using an auto-discovered, cached token.
-## To suppress this message, modify your code or options to clearly consent to the use of a cached token.
-## See gargle's "Non-interactive auth" vignette for more details:
-## https://gargle.r-lib.org/articles/non-interactive-auth.html
-## The bigrquery package is using a cached token for grant.mcdermott@gmail.com.
-```
-
-```r
 effort
 ```
 

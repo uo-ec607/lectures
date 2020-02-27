@@ -1,10 +1,10 @@
 ---
-title: "Databases"
+title: "Data Science for Economists"
+subtitle: "Lecture 16: Databases"
 author:
   name: Grant R. McDermott
-  affiliation: University of Oregon | EC 607
-  # email: grantmcd@uoregon.edu
-date: Lecture 16  #"`r format(Sys.time(), '%d %B %Y')`"
+  affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
+# date: Lecture 16  #"`r format(Sys.time(), '%d %B %Y')`"
 output: 
   html_document:
     theme: flatly
@@ -86,7 +86,7 @@ This next section is largely inspired by Hadley Wickham's excellent tutorial on 
 Start by opening an (empty) database connection via the `DBI::dbConnect()` function, which we'll call `con`. Note that we are calling the `RSQLite` package in the background for the SQLite backend and telling R that this is a local connection that exists in memory.
 
 
-```{r con}
+```{r con, cache = FALSE}
 # library(DBI) ## Already loaded
 
 con <- dbConnect(RSQLite::SQLite(), path = ":memory:")
@@ -96,7 +96,7 @@ As Hadley [describes](https://db.rstudio.com/dplyr/#connecting-to-the-database),
 
 Our makeshift database, `con`, currently has no data in it. For this example, we'll use copy across the `nycflights13::flights` dataset using the `dplyr::copy_to()` convenience function. This just provides a simple way of getting data into our makeshift database, which can be used for demonstration purposes. Note that we are specifying the table name ("flights") that will exist within this database. You can also see that we're passing a list of indexes to the `copy_to()` function. Indexes enable efficient database performance, although you don't need to worry too much about that. These will be set by the database host platform or maintainer in normal applications.
 
-```{r copy_to}
+```{r copy_to, cache = FALSE}
 # if (!require("nycflights13")) install.packages("nycflights13") ## Already installed
 
 copy_to(
@@ -213,7 +213,6 @@ And yet... At some point you may still find yourself wanting or needing to use S
 
 See the [R Markdown book](https://bookdown.org/yihui/rmarkdown/language-engines.html#sql).
 
-
 ```{sql sql_direct_rmd, connection=con}
 SELECT *
 FROM flights
@@ -272,7 +271,7 @@ I know this seems like more work (undeniably so for this simple example). Howeve
 
 Finally, disconnect from the connection using the `DBI::dbDisconnect()` function.
 
-```{r dbDisconnect}
+```{r dbDisconnect, cache=FALSE}
 dbDisconnect(con)
 ```
 
