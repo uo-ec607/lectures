@@ -346,7 +346,7 @@ bw %>%
   geom_line()
 ```
 
-For the record, I have no idea why birth weights are falling over time and whether that is a good (e.g. declining maternal obesity rates) or bad (e.g. maternal malutrition) thing. One thing we can do, however, is provide a more disaggregated look at the data. This time, I'll query the natality table in a way that summarises mean bith weight by US state and gender. 
+For the record, I don't know why birth weights have been falling recently, and whether that is a good (e.g. declining maternal obesity rates) or bad (e.g. maternal malutrition) thing.^[See [here](https://twitter.com/grant_mcdermott/status/1156260684126048256) for more discussion and help from some epidemiologists on Twitter.] One thing we can do, however, is provide a more disaggregated look at the data. This time, I'll query the natality table in a way that summarises mean bith weight by US state and gender. 
 
 ```{r bw_st}
 ## Get mean yearly birth weight by state and gender
