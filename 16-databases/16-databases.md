@@ -4,7 +4,7 @@ subtitle: "Lecture 16: Databases"
 author:
   name: Grant R. McDermott
   affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
-# date: Lecture 16  #"29 February 2020"
+# date: Lecture 16  #"01 March 2020"
 output: 
   html_document:
     theme: flatly
@@ -833,7 +833,7 @@ dbDisconnect(gfw_con)
 
 ## Where to next: Learning and practicing SQL
 
-I realise that I've been somewhat dismissive about SQL in these lecture notes. My goal has been to get you up running and running with databases as quickly and painlessly as possible. I also do think that you can get a great deal of mileage using the **dplyr** database integration that we've focused on here. However, learning SQL will make a big difference to your life once you start working with databases regularly. I expect that it will also boost your employment options significantly. The good news is that you are already well on your way to internalising the basic commands and structure of SQL queries. We've seen the `show_query()` function, which is a great way to get started if your coming from R and the tidyverse. Another helpful **dplyr** resource is the provided by the "sql-translation" vignette, so take a look:
+I realise that this lecture has not gone into much depth about SQL itself. My goal has been to get you up running and running with databases as quickly and painlessly as possible. I really do think that you can get a great deal of mileage using the **dplyr** database integration that we've focused on here. However, learning SQL will make a big difference to your life once you start working with databases regularly. I expect that it will also boost your employment options significantly. The good news is that you are already well on your way to internalising the basic commands and structure of SQL queries. We've seen the `show_query()` function, which is a great way to get started if your coming from R and the tidyverse. Another helpful **dplyr** resource is the provided by the "sql-translation" vignette, so take a look:
 
 
 ```r
@@ -847,5 +847,7 @@ In my experience, though the best best way to learn SQL is simply to *start writ
 
 You are spoilt for choice here and I've already hyperlinked to many resources throughout this lecture. So here are some final suggestions to get you querying databases like a boss.
 
-- [Juan Mayorga](https://twitter.com/juansmayorga) has an outstanding tutorial on "[Getting Global Fishing Watch Data from Google Big Query using R](http://jsmayorga.com/post/getting-global-fishing-watch-from-google-bigquery-using-r)". He also dives into some reasons why you might want to learn SQL and provides several examples. Highly recommended.
-- If you want a dedicated resource for learning SQL, then there are loads of online tutorials (e.g. [W3Schools](https://www.w3schools.com/sql/default.asp)) and courses (e.g. [Codecademy](https://www.codecademy.com/learn/learn-sql)).
+- [Juan Mayorga](https://twitter.com/juansmayorga) has a super tutorial on "[Getting Global Fishing Watch Data from Google Big Query using R](http://jsmayorga.com/post/getting-global-fishing-watch-from-google-bigquery-using-r)". He also dives into some of the reasons why you might want to learn SQL (i.e. beyond just using the **dplyr** translation).
+- If you want a dedicated resource for learning SQL, then again I'm going to stump for [Julia Evans'](https://twitter.com/b0rk) [*Become A Select Star*](https://wizardzines.com/zines/sql/). It's a great, concise introduction to the major concepts and a steal at only $12. 
+- On the other end of the scale, the official BigQuery [documentation](https://cloud.google.com/bigquery/docs/) provides an exhaustive overview of the many functions and syntax for so-called standard SQL (including specialised operations on say, datetime and JSON objects).
+- There are also loads of online tutorials (e.g. [W3Schools](https://www.w3schools.com/sql/default.asp)) and courses (e.g. [Codecademy](https://www.codecademy.com/learn/learn-sql)) that you can check out.
