@@ -292,12 +292,13 @@ You know the JSON file (i.e. key) that we just downloaded in step 6? Good, becau
 ## Open your .Renviron file
 usethis::edit_r_environ()
 ```
-in RStudio. (You can also open and edit it manually in your preferred text editor.) Now, add the following lines your file. Make sure you adjust the file path and variable strings as required. 
+in RStudio. (You can also open and edit it manually in your preferred text editor.) Now, add the following lines your file. Make sure you adjust the file path and variable strings as required!
 
 ```bash
-GCE_AUTH_FILE="/fullpath-to-your-service-key/filename.json" ## Use full path
-GCE_DEFAULT_PROJECT_ID="your-project-id-here" ## Probably some random string like violet-ghost123
-GCE_DEFAULT_ZONE="your-preferred-zone-here" ## E.g. us-west1-a
+## Change these to your reflect your own path and project locations
+GCE_AUTH_FILE="/full/path/to/your/service/key/filename.json"
+GCE_DEFAULT_PROJECT_ID="your-project-id-here"
+GCE_DEFAULT_ZONE="your-preferred-zone-here"
 ```
 Save your updated .Renviron file. Then refresh your system: 
 
@@ -318,7 +319,7 @@ library(googleComputeEngineR)
 then you should see something like the following:
 ```
 ## Setting scopes to https://www.googleapis.com/auth/cloud-platform
-## Successfully auto-authenticated via /fullpath-to-your-service-key/filename.json
+## Successfully auto-authenticated via /full/path/to/your/service/key/filename.json
 ## Set default project ID to 'your-project-id-here'
 ## Set default zone to 'your-preferred-zone-here'
 ```
@@ -347,7 +348,7 @@ vm <-
 vm
 ```
 
-And that's really all you need. Just to prove that it worked, here's a screenshot of "Oprah" running RStudio Server on this VM.
+And that's really all you need. To log in, simply click on the external IP address (you do <u>not</u> need to add the 8787 port this time). Just to prove that it worked, here's a screenshot of "Oprah" running RStudio Server on this VM.
 
 ![](pics/oprah-loggedin.png)
 
@@ -360,6 +361,8 @@ gce_vm_delete(vm) ## Delete the VM (optional)
 ```
 
 ### Cluster of VMs
+
+<i>**Note:** This section isn't working for Windows users at present. Follow along [here](https://github.com/cloudyr/googleComputeEngineR/issues/137) for a longer discussion of the problem (related to SSH keys) and, hopefully, a solution at some point.</i>
 
 At the risk of gross simplification, there are two approaches to "brute forcing" your way through a computationally-intensive problem.^[Of course, you can also combine a cluster of very power machines to get a *really* powerful system. That's what supercomputing services like the University of Oregon's [Talapas cluster](https://hpcf.uoregon.edu/content/talapas) provide, which is the subject of our next lecture.]
 
