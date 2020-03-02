@@ -632,9 +632,9 @@ pacman::p_load(hrbrthemes, gganimate)
 # What else? (cont.)
 
 Simple extension: Use an external package theme.
-```{r modern_rc_theme, dependson=p2}
+```{r modern_rc_theme, dependson=p2, dev='svg'}
 # library(hrbrthemes)
-p2 + theme_modern_rc() + geom_point(aes(size = pop, col = continent), alpha = 0.3)
+p2 + theme_modern_rc() + geom_point(aes(size = pop, col = continent), alpha = 0.2)
 ```
 
 ---
@@ -691,7 +691,8 @@ Rest assured, you will be using ggplot2 throughout the rest of this course and d
 
 In the meantime, I want you to do some reading and practice on your own. Pick either of the following (or choose among the litany of online resources) and work through their examples:
 - [Chapter 3](https://r4ds.had.co.nz/data-visualisation.html) of *R for Data Science* by Hadley Wickham and Garett Grolemund.
-- [Chapter 3](https://socviz.co/makeplot.html#how-ggplot-works) of *Data Visualization: A Practical Guide* by Kieran Healy. (Or just try a chapter at random.) 
+- [*Data Visualization: A Practical Guide*](https://socviz.co/makeplot.html) by Kieran Healy.
+- [Designing ggplots](https://designing-ggplots.netlify.com) by Malcom Barrett.
 
 ---
 class: inverse, center, middle

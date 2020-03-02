@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<html lang="" xml:lang="">
   <head>
     <title>Data Science for Economists</title>
     <meta charset="utf-8" />
     <meta name="author" content="Grant McDermott" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
     <link href="libs/remark-css/metropolis-fonts.css" rel="stylesheet" />
@@ -224,7 +225,7 @@ Open up the [shell](http://happygitwithr.com/shell.html#shell).
   ```
   
   ```
-  ## git version 2.24.1
+  ## git version 2.25.0
   ```
 
 ☑ Did you introduce yourself to Git? (Substitute in your details.)
@@ -691,10 +692,10 @@ Simple extension: Use an external package theme.
 
 ```r
 # library(hrbrthemes)
-p2 + theme_modern_rc() + geom_point(aes(size = pop, col = continent), alpha = 0.3)
+p2 + theme_modern_rc() + geom_point(aes(size = pop, col = continent), alpha = 0.2)
 ```
 
-&lt;img src="01-Intro_files/figure-html/modern_rc_theme-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="01-Intro_files/figure-html/modern_rc_theme-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -740,7 +741,8 @@ Rest assured, you will be using ggplot2 throughout the rest of this course and d
 
 In the meantime, I want you to do some reading and practice on your own. Pick either of the following (or choose among the litany of online resources) and work through their examples:
 - [Chapter 3](https://r4ds.had.co.nz/data-visualisation.html) of *R for Data Science* by Hadley Wickham and Garett Grolemund.
-- [Chapter 3](https://socviz.co/makeplot.html#how-ggplot-works) of *Data Visualization: A Practical Guide* by Kieran Healy. (Or just try a chapter at random.) 
+- [*Data Visualization: A Practical Guide*](https://socviz.co/makeplot.html) by Kieran Healy.
+- [Designing ggplots](https://designing-ggplots.netlify.com) by Malcom Barrett.
 
 ---
 class: inverse, center, middle
