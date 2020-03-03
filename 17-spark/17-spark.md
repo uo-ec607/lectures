@@ -4,7 +4,7 @@ subtitle: "Lecture 16: Spark"
 author:
   name: Grant R. McDermott
   affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
-# date: Lecture 16  #"02 March 2020"
+# date: Lecture 16  #"03 March 2020"
 output: 
   html_document:
     theme: flatly
@@ -37,7 +37,7 @@ Installation may take a few minutes to complete, depending on your internet conn
 
 ### Java 8 
 
-Spark requires Java 8. This is somewhat annoying, since you probably already have a newer version of Java installed on your system as the default.^[The method for checking which version(s) of Java you have varies by operating system. I therefore recommend that you Google it. On my linux system I can just use the following shell commands: `$ java --version` or `$ archlinux-java status` (Arch linux only).] One way to get around this problem is to [replace your current Java installation with Java 8](https://github.com/uc-cfss/Discussion/issues/71). This will automatically make it the default Java environment and is probably the simplest solution. However, I personally don't like the idea of uninstalling the most recent Java version on my computer just to run Spark. In my view, a better solution is to install Java 8 *alongside* your current version. You can then tell R which Java version it should use via an **environment variable**. This works exactly the same way as when we used environment variables to save secret API keys. (See [here](https://raw.githack.com/uo-ec607/lectures/master/07-web-apis/07-web-apis.html#aside:_safely_store_and_use_api_keys_as_environment_variables) if you missed it.) For example, you can tell R to use Java 8 for the current session by [setting a temporary environment variable](https://github.com/rstudio/sparklyr/issues/1383#issuecomment-381014611) with the following command.
+Spark requires Java 8, which you can install [here](https://www.java.com/download/). This is somewhat annoying, since you probably already have a newer version of Java installed on your system as the default.^[We'll get to this in a second, but you can check your current (default) Java version by running `system("java -version")` in your R console. You can also get a list of all installed Java versions on your system, although the method varies by operating system. (E.g. On Arch Linux I can run `$ archlinux-java status` from the shell.) You're probably best off Googling it.] One way to get around this problem is to [replace your current Java installation with Java 8](https://github.com/uc-cfss/Discussion/issues/71). This will automatically make it the default Java environment and is probably the simplest solution. However, I personally don't like the idea of uninstalling the most recent Java version on my computer just to run Spark. In my view, a better solution is to install Java 8 *alongside* your current version. You can then tell R which Java version it should use via an environment variable. This works exactly the same way as when we used environment variables to save secret API keys during our webscraping and cloud computing lectures. (See [here](https://raw.githack.com/uo-ec607/lectures/master/07-web-apis/07-web-apis.html#aside:_safely_store_and_use_api_keys_as_environment_variables) if you missed it.) For example, you can tell R to use Java 8 for the current session by setting a temporary environment variable with the following command.
 
 
 ```r
@@ -45,8 +45,16 @@ Spark requires Java 8. This is somewhat annoying, since you probably already hav
 Sys.setenv(JAVA_HOME = "/path/to/your/java8/installation") 
 ```
 
-Again, this will only last for the current R session. However, similarly to our approach for storing API keys across sessions, you can make Java 8 the permanent environment for your R work by adding `JAVA_HOME = "/path/to/your/java8/installation"` to your `~/.Renviron` file.
+Again, this will only last for the current R session. However, similarly to our approach for storing API keys across sessions, you can make Java 8 the permanent environment for your R work by adding `JAVA_HOME = "/path/to/your/java8/installation"` to your `~/.Renviron` file. 
 
+You can confirm your Java installation by running the following command.
+
+
+```r
+system("java -version")
+```
+
+If you're having trouble with Java installation, then please consult the [*Mastering Spark with R*](https://therinspark.com/starting.html#starting-prerequisites)
 
 ### R packages 
 
