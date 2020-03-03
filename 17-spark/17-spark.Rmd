@@ -154,11 +154,11 @@ Combined file duly created, we can now read the dataset into our R environment u
 
 First, we need to instantiate a Spark connection via the **`sparklyr::spark_connect()`** function. This is going to follow a very similar path to the database connections that we saw in the previous lecture. Note that I am going to specify a "local" Spark instance because I'm working on my laptop, rather than a HPC cluster.^[Just about any HPC cluster that you work on should have Spark installed, so you should be able to follow exactly the same steps there. Just make sure that **sparklyr** is installed on the cluster too.]
 
-```{r sc, cache=F}
+```{r sc, cache=FALSE}
 # library(sparklyr) ## Already loaded
 
 ## Instantiate a Spark connection
-sc <- spark_connect(master = "local", config = spark_config())
+sc <- spark_connect(master = "local", version = "2.3", config = spark_config())
 ```
 
 > **Tip: ** Did you run into an error message to the effect of "Java X is currently unsupported in Spark distributions... Please consider uninstalling Java 9 and reinstalling Java 8"? If so, please see the software requirements discussion for Java 8 (above)[#java8].
@@ -217,6 +217,12 @@ collected_mean_dep_delay %>%
 
 **Bottom line:** Try to avoid flying over the December and summer holidays.
 
+Let's disconnect from our Spark connection.
+
+```{r discon, cache=FALSE}
+spark_disconnect(sc)
+```
+
 ### Option 2: Distributed analysis using **sparklyr** and **dbplot**
 
 While the above method is great for showing off the power of the shell and the basic functionality of **sparklyr**, it doesn't demonstrate the core *distributed* functionality of the Spark ecosystem. In particular, Spark is very efficient --- optimised, even --- for working with a distributed files. Our second example is intended to demonstrate this functionality. Note that, while it will involve a pretty simple distributed set of files on our local computer, the same ideas would apply to more complicated cluster setups.
@@ -231,8 +237,6 @@ list.files("data/")
 Good. We're only left with the individual monthly CSVs. Now we instantiate a new spark connection. (which we'll again call "sc" but that doesn't matter). Similar to the earlier shell-based approach where we extracted the column names from the first file, we'll read this structure into a separate vector called `col_names`. I'll also use the `janitor` package to clean up the column names.
 
 ```{r col_names}
-sc <- spark_connect(master = "local")
-
 # library(janitor) ## Already loaded
 
 col_names <- 
@@ -241,12 +245,19 @@ col_names <-
   names()
 ```
 
+Instantiate a new Spark connection.
+
+```{r sc2, cache=FALSE}
+sc2 <- spark_connect(master = "local", version = "2.3")
+```
+
+
 Now, we read in the distributed files. We'll be using the same `spark_read_csv()` function as before, but now I'll just use the path for the whole `data/` directory rather than any individual CSVs. I'll call this new (distributed) Spark object `air_new`, but only to keep it clear that this is not the same object as before.
 
 ```{r air_new}
 air_new <- 
   spark_read_csv(
-  sc,
+  sc2,
   name = "air_new",
   path = "./data/",
   memory = FALSE,
@@ -294,8 +305,8 @@ air_new_cached %>%
 
 
 Finally, let's disconnect from our Spark connection.
-```{r discon, cache=F}
-spark_disconnect(sc)
+```{r discon2, cache=FALSE}
+spark_disconnect(sc2)
 ```
 
 

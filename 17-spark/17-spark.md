@@ -174,7 +174,7 @@ First, we need to instantiate a Spark connection via the **`sparklyr::spark_conn
 # library(sparklyr) ## Already loaded
 
 ## Instantiate a Spark connection
-sc <- spark_connect(master = "local", config = spark_config())
+sc <- spark_connect(master = "local", version = "2.3", config = spark_config())
 ```
 
 > **Tip: ** Did you run into an error message to the effect of "Java X is currently unsupported in Spark distributions... Please consider uninstalling Java 9 and reinstalling Java 8"? If so, please see the software requirements discussion for Java 8 (above)[#java8].
@@ -293,6 +293,13 @@ collected_mean_dep_delay %>%
 
 **Bottom line:** Try to avoid flying over the December and summer holidays.
 
+Let's disconnect from our Spark connection.
+
+
+```r
+spark_disconnect(sc)
+```
+
 ### Option 2: Distributed analysis using **sparklyr** and **dbplot**
 
 While the above method is great for showing off the power of the shell and the basic functionality of **sparklyr**, it doesn't demonstrate the core *distributed* functionality of the Spark ecosystem. In particular, Spark is very efficient --- optimised, even --- for working with a distributed files. Our second example is intended to demonstrate this functionality. Note that, while it will involve a pretty simple distributed set of files on our local computer, the same ideas would apply to more complicated cluster setups.
@@ -322,14 +329,6 @@ Good. We're only left with the individual monthly CSVs. Now we instantiate a new
 
 
 ```r
-sc <- spark_connect(master = "local")
-```
-
-```
-## Re-using existing Spark connection to local
-```
-
-```r
 # library(janitor) ## Already loaded
 
 col_names <- 
@@ -338,13 +337,21 @@ col_names <-
   names()
 ```
 
+Instantiate a new Spark connection.
+
+
+```r
+sc2 <- spark_connect(master = "local", version = "2.3")
+```
+
+
 Now, we read in the distributed files. We'll be using the same `spark_read_csv()` function as before, but now I'll just use the path for the whole `data/` directory rather than any individual CSVs. I'll call this new (distributed) Spark object `air_new`, but only to keep it clear that this is not the same object as before.
 
 
 ```r
 air_new <- 
   spark_read_csv(
-  sc,
+  sc2,
   name = "air_new",
   path = "./data/",
   memory = FALSE,
@@ -424,7 +431,7 @@ air_new_cached %>%
 Finally, let's disconnect from our Spark connection.
 
 ```r
-spark_disconnect(sc)
+spark_disconnect(sc2)
 ```
 
 
