@@ -32,7 +32,7 @@ if (!require("sparklyr")) install.packages("sparklyr")
 sparklyr::spark_install(version = "2.3.0")
 ```
 
-Fair warning: Installation will take a while to complete.
+Installation may take a few minutes to complete, depending on your internet connection and system.
 
 
 ### Java 8 
@@ -64,6 +64,56 @@ pacman::p_load(tidyverse, hrbrthemes, lubridate, janitor, httr, sparklyr, dbplot
 theme_set(hrbrthemes::theme_ipsum())
 ```
 
+
+### Data
+
+Finally, we'll be exploring Spark's capabilities using monthly air traffic data from 2012.^[This will look very familiar to the data that we've already seen in the **nycflights13** package, albeit from a different year and not limited to New York. Note that both of these datasets come from a much larger collection of flight information that is curated by the Research and Innovative Technology Administration (RITA) in the Bureau of Transportation Statistics. Siailrly, Revolution Analytics also offer the possiblity of [downloading](https://packages.revolutionanalytics.com/datasets/AirOnTime87to12) monthly flight data from 1987 to 2012.] The data consist of 12 CSV files that first need to be downloaded from [Revolution Analytics](https://packages.revolutionanalytics.com/datasets/) and then saved to `data/` subdirectory of this lecture. You can do that manually if you like, but here are some commands to do everything from R.
+
+
+```r
+# library(here) ## Already loaded
+# library(httr) ## Already loaded
+# library(stringr) ## Already loaded (via tidyverse)
+
+dir_path <- here("17-spark/data/")
+
+## Create data sub-directory if it doesn't already exist
+if (!dir.exists(dir_path)) dir.create(dir_path)
+
+## Next, we download the 2012 air traffic data from Revolution Analytics...
+# First set the base URL
+base_url <- "https://packages.revolutionanalytics.com/datasets/AirOnTimeCSV2012/"
+# Quick way to get a vector of the hosted CSV files
+csvs <- GET(base_url) %>% content("text") %>% str_extract_all("airOT2012...csv") %>% unlist() %>% unique()
+# Loop over all the files and download to disk
+lapply(
+  csvs, 
+  function(x) {
+    out_path <- paste0(dir_path, x)
+    ## Only download the files if they don't already exist
+    if (!file.exists(out_path)) {
+      GET(
+        url = paste0(base_url, x), 
+        write_disk(paste0(dir_path, x)), 
+        progress()
+      )
+    }
+  }
+) 
+```
+
+The downloads should take a few minutes. Once they're done, check that everything is in order.
+
+
+```r
+list.files(dir_path)
+```
+
+```
+##  [1] "airOT201201.csv" "airOT201202.csv" "airOT201203.csv" "airOT201204.csv"
+##  [5] "airOT201205.csv" "airOT201206.csv" "airOT201207.csv" "airOT201208.csv"
+##  [9] "airOT201209.csv" "airOT201210.csv" "airOT201211.csv" "airOT201212.csv"
+```
 
 ## What is Spark?
 
@@ -99,42 +149,7 @@ Luckily, there's a better way. Two ways, in fact, and they both involve Spark (i
 1. The first combines Spark and our old friend, the shell.
 2. The second uses Spark directly for distributed analysis (with some help from the `dbplot` package, which I'll introduce later).
 
-Let's demonstrate both approaches using a bunch of large(ish) files from the [Revolution Analytics collection](https://packages.revolutionanalytics.com/datasets/) of big dataset examples. We'll be using monthly data on airline departures and arrivals from 2012. This will look very familiar to the data that we've already seen in the `nycflights13` package, albeit from a different year and not limited to New York. Note that both of these data collections come from a much larger collection of flight information that is curated by the Research and Innovative Technology Administration (RITA) in the Bureau of Transportation Statistics. Similarly, Revolution Analytics also offer the possiblity of [downloading](https://packages.revolutionanalytics.com/datasets/AirOnTime87to12/) monthly flight data from 1987 to 2012. Background information out of the way, let's download the 2012 files to a "data/" subdirectory of this lecture. Note that I am going to do this in the shell using the `wget` command
-
-
-```bash
-$ mkdir -p data ## Make the data folder if one doesn't already exist
-```
-
-```bash
-$ wget -A csv -r -l 1 -N -nd --directory-prefix=./data/ https://packages.revolutionanalytics.com/datasets/AirOnTimeCSV2012/
-```
-
-**Aside:** that I'm specifying the `--directory-prefix=` flag mostly for reasons related to knitting this Rmarkdown document. Relative paths get complicated in Rmarkdown when we're using multiple bash code chunks; I'd probably just use `cd` if I were running this interactively. See [here](https://stackoverflow.com/a/23775416/4115816) if you're wondering about the various other flags that I used with the `wget` command.
-
-The downloads should take a few minutes. Once they're done, check that everything is in order.
-
-
-```bash
-$ ls -lh data/airOT*
-```
-
-```
-## -rw-r--r-- 1 grant users 104M Mar  2 16:51 data/airOT201201.csv
-## -rw-r--r-- 1 grant users  99M Mar  2 16:51 data/airOT201202.csv
-## -rw-r--r-- 1 grant users 112M Mar  2 16:52 data/airOT201203.csv
-## -rw-r--r-- 1 grant users 108M Mar  2 16:52 data/airOT201204.csv
-## -rw-r--r-- 1 grant users 111M Mar  2 16:52 data/airOT201205.csv
-## -rw-r--r-- 1 grant users 113M Mar  2 16:52 data/airOT201206.csv
-## -rw-r--r-- 1 grant users 117M Mar  2 16:53 data/airOT201207.csv
-## -rw-r--r-- 1 grant users 116M Mar  2 16:53 data/airOT201208.csv
-## -rw-r--r-- 1 grant users 105M Mar  2 16:53 data/airOT201209.csv
-## -rw-r--r-- 1 grant users 110M Mar  2 16:53 data/airOT201210.csv
-## -rw-r--r-- 1 grant users 105M Mar  2 16:54 data/airOT201211.csv
-## -rw-r--r-- 1 grant users 107M Mar  2 16:54 data/airOT201212.csv
-```
-
-While not "big data" by any conceivable modern definition, these 12 files are all reasonably meaty at around 100 MB each. So we'd use at least ~1.2 GB of RAM to load and merge them all within R. Let's take a look
+Let's demonstrate both approaches using the monthly air traffic data for 2012 that we downloaded earlier (see: [Data](#data)). While not "big data" by any conceivable modern definition, each of the 12 CSV files is reasonably meaty at around 100 MB. So we'd use at least ~1.2 GB of RAM to load and merge them all within R. 
 
 ### Option 1: Concatenate files in the shell and then use **sparklyr**
 
@@ -423,6 +438,12 @@ air_new_cached %>%
   # mutate(Date = as.Date(paste("2012", as.integer(month), "01", sep="-"))) %>% 
   mutate(Date = as.Date(fl_date)) %>%
   dbplot_line(Date, mean(dep_delay))
+```
+
+```
+## Warning: Missing values are always removed in SQL.
+## Use `mean(x, na.rm = TRUE)` to silence this warning
+## This warning is displayed only once per session.
 ```
 
 ![](17-spark_files/figure-html/air_new_cached_plot-1.png)<!-- -->
