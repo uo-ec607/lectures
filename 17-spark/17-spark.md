@@ -4,7 +4,7 @@ subtitle: "Lecture 16: Spark"
 author:
   name: Grant R. McDermott
   affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
-# date: Lecture 16  #"`r format(Sys.time(), '%d %B %Y')`"
+# date: Lecture 16  #"02 March 2020"
 output: 
   html_document:
     theme: flatly
@@ -16,20 +16,7 @@ output:
     keep_md: true
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
-## Next hook based on this SO answer: https://stackoverflow.com/a/39025054
-knitr::knit_hooks$set(
-  prompt = function(before, options, envir) {
-    options(
-      prompt = if (options$engine %in% c('sh','bash')) '$ ' else 'R> ',
-      continue = if (options$engine %in% c('sh','bash')) '$ ' else '+ '
-      )
-    })
 
-## Spark only works with JAVA 8. See here: https://github.com/rstudio/sparklyr/issues/1383#issuecomment-381014611
-Sys.setenv(JAVA_HOME = "/usr/lib/jvm/java-8-openjdk")
-```
 
 
 ## Requirements
@@ -38,7 +25,8 @@ Sys.setenv(JAVA_HOME = "/usr/lib/jvm/java-8-openjdk")
 
 Today's lecture is largely going to be focused on the [**sparklyr**](https://spark.rstudio.com/) package, which provides a seemless interface to the larger [Apache Spark](https://spark.apache.org/) ecosystem. Among other things, **sparklyr** provides a convenient way to install Spark on your system via the `sparklyr::spark_install()` command. Run this next code chunk interactively in your R session. Note that I am going to install a slightly older version of Spark itself (version 2.4.0 is available as of the time of writing), but I don't think this matters all that much.
 
-```{r spark_install, eval=F}
+
+```r
 if (!require("sparklyr")) install.packages("sparklyr")
 # sparklyr::spark_available_versions() ## list all available versions
 sparklyr::spark_install(version = "2.3.0")
@@ -51,7 +39,8 @@ Fair warning: Installation will take a while to complete.
 
 Spark requires Java 8. This is somewhat annoying, since you probably already have a newer version of Java installed on your system as the default.^[The method for checking which version(s) of Java you have varies by operating system. I therefore recommend that you Google it. On my linux system I can just use the following shell commands: `$ java --version` or `$ archlinux-java status` (Arch linux only).] One way to get around this problem is to [replace your current Java installation with Java 8](https://github.com/uc-cfss/Discussion/issues/71). This will automatically make it the default Java environment and is probably the simplest solution. However, I personally don't like the idea of uninstalling the most recent Java version on my computer just to run Spark. In my view, a better solution is to install Java 8 *alongside* your current version. You can then tell R which Java version it should use via an **environment variable**. This works exactly the same way as when we used environment variables to save secret API keys. (See [here](https://raw.githack.com/uo-ec607/lectures/master/07-web-apis/07-web-apis.html#aside:_safely_store_and_use_api_keys_as_environment_variables) if you missed it.) For example, you can tell R to use Java 8 for the current session by [setting a temporary environment variable](https://github.com/rstudio/sparklyr/issues/1383#issuecomment-381014611) with the following command.
 
-```{r java8, eval=F}
+
+```r
 ## Change to the location of your Java 8 installation
 Sys.setenv(JAVA_HOME = "/path/to/your/java8/installation") 
 ```
@@ -66,7 +55,8 @@ Again, this will only last for the current R session. However, similarly to our 
 
 As per usual, the code chunk below will install (if necessary) and load all of these packages for you. I'm also going to set my preferred ggplot2 theme, but as you wish.
 
-```{r packages, cache=FALSE, message=FALSE}
+
+```r
 ## Load/install packages
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(tidyverse, hrbrthemes, lubridate, janitor, httr, sparklyr, dbplot, here)
@@ -111,19 +101,37 @@ Luckily, there's a better way. Two ways, in fact, and they both involve Spark (i
 
 Let's demonstrate both approaches using a bunch of large(ish) files from the [Revolution Analytics collection](https://packages.revolutionanalytics.com/datasets/) of big dataset examples. We'll be using monthly data on airline departures and arrivals from 2012. This will look very familiar to the data that we've already seen in the `nycflights13` package, albeit from a different year and not limited to New York. Note that both of these data collections come from a much larger collection of flight information that is curated by the Research and Innovative Technology Administration (RITA) in the Bureau of Transportation Statistics. Similarly, Revolution Analytics also offer the possiblity of [downloading](https://packages.revolutionanalytics.com/datasets/AirOnTime87to12/) monthly flight data from 1987 to 2012. Background information out of the way, let's download the 2012 files to a "data/" subdirectory of this lecture. Note that I am going to do this in the shell using the `wget` command
 
-```{bash mkdir_data, prompt=T}
-mkdir -p data ## Make the data folder if one doesn't already exist
+
+```bash
+$ mkdir -p data ## Make the data folder if one doesn't already exist
 ```
-```{bash wget_AirOnTimeCSV2012, prompt=T, results="hide"}
-wget -A csv -r -l 1 -N -nd --directory-prefix=./data/ https://packages.revolutionanalytics.com/datasets/AirOnTimeCSV2012/
+
+```bash
+$ wget -A csv -r -l 1 -N -nd --directory-prefix=./data/ https://packages.revolutionanalytics.com/datasets/AirOnTimeCSV2012/
 ```
 
 **Aside:** that I'm specifying the `--directory-prefix=` flag mostly for reasons related to knitting this Rmarkdown document. Relative paths get complicated in Rmarkdown when we're using multiple bash code chunks; I'd probably just use `cd` if I were running this interactively. See [here](https://stackoverflow.com/a/23775416/4115816) if you're wondering about the various other flags that I used with the `wget` command.
 
 The downloads should take a few minutes. Once they're done, check that everything is in order.
 
-```{bash ls_files, prompt=T}
-ls -lh data/airOT*
+
+```bash
+$ ls -lh data/airOT*
+```
+
+```
+## -rw-r--r-- 1 grant users 104M Mar  2 16:51 data/airOT201201.csv
+## -rw-r--r-- 1 grant users  99M Mar  2 16:51 data/airOT201202.csv
+## -rw-r--r-- 1 grant users 112M Mar  2 16:52 data/airOT201203.csv
+## -rw-r--r-- 1 grant users 108M Mar  2 16:52 data/airOT201204.csv
+## -rw-r--r-- 1 grant users 111M Mar  2 16:52 data/airOT201205.csv
+## -rw-r--r-- 1 grant users 113M Mar  2 16:52 data/airOT201206.csv
+## -rw-r--r-- 1 grant users 117M Mar  2 16:53 data/airOT201207.csv
+## -rw-r--r-- 1 grant users 116M Mar  2 16:53 data/airOT201208.csv
+## -rw-r--r-- 1 grant users 105M Mar  2 16:53 data/airOT201209.csv
+## -rw-r--r-- 1 grant users 110M Mar  2 16:53 data/airOT201210.csv
+## -rw-r--r-- 1 grant users 105M Mar  2 16:54 data/airOT201211.csv
+## -rw-r--r-- 1 grant users 107M Mar  2 16:54 data/airOT201212.csv
 ```
 
 While not "big data" by any conceivable modern definition, these 12 files are all reasonably meaty at around 100 MB each. So we'd use at least ~1.2 GB of RAM to load and merge them all within R. Let's take a look
@@ -134,8 +142,14 @@ While not "big data" by any conceivable modern definition, these 12 files are al
 
 Regardless of where we do it, however, we need to make sure that they have a consistent structure (same columns, etc.). Let's compare the top 2 lines of the first and last files using the `head` command.
 
-```{bash head_files, prompt=T}
-head -2 data/airOT201201.csv
+
+```bash
+$ head -2 data/airOT201201.csv
+```
+
+```
+## "YEAR","MONTH","DAY_OF_MONTH","DAY_OF_WEEK","FL_DATE","UNIQUE_CARRIER","TAIL_NUM","FL_NUM","ORIGIN_AIRPORT_ID","ORIGIN","ORIGIN_STATE_ABR","DEST_AIRPORT_ID","DEST","DEST_STATE_ABR","CRS_DEP_TIME","DEP_TIME","DEP_DELAY","DEP_DELAY_NEW","DEP_DEL15","DEP_DELAY_GROUP","TAXI_OUT","WHEELS_OFF","WHEELS_ON","TAXI_IN","CRS_ARR_TIME","ARR_TIME","ARR_DELAY","ARR_DELAY_NEW","ARR_DEL15","ARR_DELAY_GROUP","CANCELLED","CANCELLATION_CODE","DIVERTED","CRS_ELAPSED_TIME","ACTUAL_ELAPSED_TIME","AIR_TIME","FLIGHTS","DISTANCE","DISTANCE_GROUP","CARRIER_DELAY","WEATHER_DELAY","NAS_DELAY","SECURITY_DELAY","LATE_AIRCRAFT_DELAY",
+## 2012,1,1,7,2012-01-01,"AA","N325AA","1",12478,"JFK","NY",12892,"LAX","CA","0900","0855",-5.00,0.00,0.00,-1,13.00,"0908","1138",4.00,"1225","1142",-43.00,0.00,0.00,-2,0.00,"",0.00,385.00,347.00,330.00,1.00,2475.00,10,,,,,,
 ```
 
 Looks good. Now we merge (i.e. concatenate) all the files in two steps: 
@@ -143,10 +157,11 @@ Looks good. Now we merge (i.e. concatenate) all the files in two steps:
   1. Extract the column headers from one file using the `head` command as before. Export these headers to a new `data/combined.csv` file.
   2. Loop over the remaining files and copy across all their lines using the `cat` command, but making sure to remove the first line of (duplicate) column headers using an option of the `sed` command. Append each run of the loop to the `data/combined.csv` file.
 
-```{bash combine, prompt=T, continue=T}
-head -1 data/airOT201201.csv > data/combined.csv
-for file in $(ls data/airOT*); do cat $file | sed "1 d" >> data/combined.csv; done
-```  
+
+```bash
+$ head -1 data/airOT201201.csv > data/combined.csv
+$ for file in $(ls data/airOT*); do cat $file | sed "1 d" >> data/combined.csv; done
+```
 
 These two commands should run pretty quickly. On my system, the increase in memory useage was barely discernable. Certainly, not even close the amount that would have been required in R.
 
@@ -154,7 +169,8 @@ Combined file duly created, we can now read the dataset into our R environment u
 
 First, we need to instantiate a Spark connection via the **`sparklyr::spark_connect()`** function. This is going to follow a very similar path to the database connections that we saw in the previous lecture. Note that I am going to specify a "local" Spark instance because I'm working on my laptop, rather than a HPC cluster.^[Just about any HPC cluster that you work on should have Spark installed, so you should be able to follow exactly the same steps there. Just make sure that **sparklyr** is installed on the cluster too.]
 
-```{r sc, cache=F}
+
+```r
 # library(sparklyr) ## Already loaded
 
 ## Instantiate a Spark connection
@@ -165,10 +181,39 @@ sc <- spark_connect(master = "local", config = spark_config())
 
 A point of convenience here is **sparklyr** offers intuitive aliases for regular R functions. So, we'll be using the **`sparklyr::spark_read_csv()`** function to pull in this (pretend) large CSV. 
 
-```{r air}
+
+```r
 ## Read in the file as a Spark object
 air <- spark_read_csv(sc, name = "air", path = "data/combined.csv")
 air
+```
+
+```
+## # Source: spark<air> [?? x 45]
+##     YEAR MONTH DAY_OF_MONTH DAY_OF_WEEK FL_DATE             UNIQUE_CARRIER
+##    <int> <int>        <int>       <int> <dttm>              <chr>         
+##  1  2012     1            1           7 2012-01-01 08:00:00 AA            
+##  2  2012     1            2           1 2012-01-02 08:00:00 AA            
+##  3  2012     1            3           2 2012-01-03 08:00:00 AA            
+##  4  2012     1            4           3 2012-01-04 08:00:00 AA            
+##  5  2012     1            5           4 2012-01-05 08:00:00 AA            
+##  6  2012     1            6           5 2012-01-06 08:00:00 AA            
+##  7  2012     1            7           6 2012-01-07 08:00:00 AA            
+##  8  2012     1            8           7 2012-01-08 08:00:00 AA            
+##  9  2012     1            9           1 2012-01-09 08:00:00 AA            
+## 10  2012     1           10           2 2012-01-10 08:00:00 AA            
+## # … with more rows, and 39 more variables: TAIL_NUM <chr>, FL_NUM <int>,
+## #   ORIGIN_AIRPORT_ID <int>, ORIGIN <chr>, ORIGIN_STATE_ABR <chr>,
+## #   DEST_AIRPORT_ID <int>, DEST <chr>, DEST_STATE_ABR <chr>,
+## #   CRS_DEP_TIME <int>, DEP_TIME <int>, DEP_DELAY <dbl>, DEP_DELAY_NEW <dbl>,
+## #   DEP_DEL15 <dbl>, DEP_DELAY_GROUP <int>, TAXI_OUT <dbl>, WHEELS_OFF <int>,
+## #   WHEELS_ON <int>, TAXI_IN <dbl>, CRS_ARR_TIME <int>, ARR_TIME <int>,
+## #   ARR_DELAY <dbl>, ARR_DELAY_NEW <dbl>, ARR_DEL15 <dbl>,
+## #   ARR_DELAY_GROUP <int>, CANCELLED <dbl>, CANCELLATION_CODE <chr>,
+## #   DIVERTED <dbl>, CRS_ELAPSED_TIME <dbl>, ACTUAL_ELAPSED_TIME <dbl>,
+## #   AIR_TIME <dbl>, FLIGHTS <dbl>, DISTANCE <dbl>, DISTANCE_GROUP <int>,
+## #   CARRIER_DELAY <dbl>, WEATHER_DELAY <dbl>, NAS_DELAY <dbl>,
+## #   SECURITY_DELAY <dbl>, LATE_AIRCRAFT_DELAY <dbl>, `_c44` <chr>
 ```
 
 Next, similar to the database connections that we saw in the previous lecture, we can create a spark connection to an object (i.e. dataset) via the `spark_connect()` function. Note that I specify a "local" Spark instance because I'm working on my laptop, rather than a HPC cluster.
@@ -181,7 +226,8 @@ At this point, you can click on the "Connections" tab of your RStudio IDE and it
 
 The good news is that --- thanks once again to the folks at RStudio --- all of our favourite `dplyr` verbs and tidyverse syntax carry over to an **sparklyr** connection. Let's create a summary dataframe, showing the mean departure delay for each day of our dataset.
 
-```{r mean_dep_delay, cache=F, dependson=air}
+
+```r
 # library(tidyverse) ## Already loaded
 
 mean_dep_delay <- 
@@ -194,14 +240,42 @@ This works incredibly quickly, but note that once again we are dealing with a **
 
 So how to do actually pull this data into our R environment? Well, again just like in the databases lecture we can use the **`dplyr::collect()`** function to execute the full set of commands and load the resulting object into R.
 
-```{r collected_mean_dep_delay, message=F}
+
+```r
 collected_mean_dep_delay <- collect(mean_dep_delay)
+```
+
+```
+## Warning: Missing values are always removed in SQL.
+## Use `mean(x, na.rm = TRUE)` to silence this warning
+## This warning is displayed only once per session.
+```
+
+```r
 collected_mean_dep_delay
+```
+
+```
+## # A tibble: 366 x 4
+##     YEAR MONTH DAY_OF_MONTH mean_delay
+##    <int> <int>        <int>      <dbl>
+##  1  2012     1            9      5.84 
+##  2  2012     1           17      5.43 
+##  3  2012     1           20     13.6  
+##  4  2012     1           25      6.67 
+##  5  2012     2            7      0.334
+##  6  2012     2           29      7.74 
+##  7  2012     3           11      9.37 
+##  8  2012     4            1      6.58 
+##  9  2012     4           11      2.48 
+## 10  2012     4           16      5.69 
+## # … with 356 more rows
 ```
 
 All that hard work deserves a nice plot, don't you think? I'm going to use the lubridate package to get some sensible dates and then we can take a look at how departure delays vary by 
 
-```{r collected_mean_dep_delay_plot, message=F}
+
+```r
 # library(lubridate) ## Already loaded
 
 collected_mean_dep_delay <- 
@@ -215,6 +289,8 @@ collected_mean_dep_delay %>%
   geom_smooth(se = F)
 ```
 
+![](17-spark_files/figure-html/collected_mean_dep_delay_plot-1.png)<!-- -->
+
 **Bottom line:** Try to avoid flying over the December and summer holidays.
 
 ### Option 2: Distributed analysis using **sparklyr** and **dbplot**
@@ -223,16 +299,37 @@ While the above method is great for showing off the power of the shell and the b
 
 Let's start by removing that `combined.csv` file from earlier, just to convince ourselves that we're not somehow reading in the concatenated file. We want to make sure that we're working across a distributed set of files.
 
-```{r rm_combined}
+
+```r
 file.remove("data/combined.csv")
+```
+
+```
+## [1] TRUE
+```
+
+```r
 list.files("data/")
+```
+
+```
+##  [1] "airOT201201.csv" "airOT201202.csv" "airOT201203.csv" "airOT201204.csv"
+##  [5] "airOT201205.csv" "airOT201206.csv" "airOT201207.csv" "airOT201208.csv"
+##  [9] "airOT201209.csv" "airOT201210.csv" "airOT201211.csv" "airOT201212.csv"
 ```
 
 Good. We're only left with the individual monthly CSVs. Now we instantiate a new spark connection. (which we'll again call "sc" but that doesn't matter). Similar to the earlier shell-based approach where we extracted the column names from the first file, we'll read this structure into a separate vector called `col_names`. I'll also use the `janitor` package to clean up the column names.
 
-```{r col_names}
-sc <- spark_connect(master = "local")
 
+```r
+sc <- spark_connect(master = "local")
+```
+
+```
+## Re-using existing Spark connection to local
+```
+
+```r
 # library(janitor) ## Already loaded
 
 col_names <- 
@@ -243,7 +340,8 @@ col_names <-
 
 Now, we read in the distributed files. We'll be using the same `spark_read_csv()` function as before, but now I'll just use the path for the whole `data/` directory rather than any individual CSVs. I'll call this new (distributed) Spark object `air_new`, but only to keep it clear that this is not the same object as before.
 
-```{r air_new}
+
+```r
 air_new <- 
   spark_read_csv(
   sc,
@@ -258,9 +356,17 @@ air_new %>%
   count()
 ```
 
+```
+## # Source: spark<?> [?? x 1]
+##         n
+##     <dbl>
+## 1 6096762
+```
+
 Next we cache the (distributed) Spark object to improve performace. There are various ways to do this and you can read more about the underlying idea [here](https://spark.rstudio.com/guides/caching/).
 
-```{r air_new_cached, dependson=air_new}
+
+```r
 air_new_cached <- 
   air_new %>% 
   select(fl_date, #month,
@@ -275,13 +381,34 @@ air_new_cached <-
 
 air_new_cached %>% 
   count()
+```
 
+```
+## # Source: spark<?> [?? x 1]
+##         n
+##     <dbl>
+## 1 6096762
+```
+
+```r
 head(air_new_cached, 5)
+```
+
+```
+## # Source: spark<?> [?? x 6]
+##   fl_date    dep_time arr_time arr_delay dep_delay distance
+##   <chr>         <dbl>    <dbl>     <dbl>     <dbl>    <dbl>
+## 1 2012-06-01      855     1202       -13        -5     2475
+## 2 2012-06-02      854     1150       -25        -6     2475
+## 3 2012-06-03      851     1148       -27        -9     2475
+## 4 2012-06-04      850     1213        -2       -10     2475
+## 5 2012-06-05      849     1138       -37       -11     2475
 ```
 
 Now we can plot using the [dbplot package](https://db.rstudio.com/dbplot/).
 
-```{r air_new_cached_plot}
+
+```r
 # library(dbplot) ## Already loaded
 
 air_new_cached %>%
@@ -289,12 +416,14 @@ air_new_cached %>%
   # mutate(Date = as.Date(paste("2012", as.integer(month), "01", sep="-"))) %>% 
   mutate(Date = as.Date(fl_date)) %>%
   dbplot_line(Date, mean(dep_delay))
-
 ```
+
+![](17-spark_files/figure-html/air_new_cached_plot-1.png)<!-- -->
 
 
 Finally, let's disconnect from our Spark connection.
-```{r discon, cache=F}
+
+```r
 spark_disconnect(sc)
 ```
 
