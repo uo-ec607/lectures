@@ -1703,7 +1703,7 @@ my-vm  us-west1-a  n1-standard-8               10.138.0.2   104.198.7.157  RUNNI
 <span id="cb8-3"><a href="#cb8-3"></a><span class="ex">grant@my-vm</span>:~$ sudo apt update <span class="kw">&amp;&amp;</span> <span class="fu">sudo</span> apt upgrade <span class="co">## Hit &quot;y&quot; when prompted</span></span>
 <span id="cb8-4"><a href="#cb8-4"></a><span class="ex">grant@my-vm</span>:~$ sudo apt install r-base r-base-dev <span class="co">## Again, hit &quot;y&quot; when prompted</span></span></code></pre></div>
 <p><strong>Aside:</strong> Those <code>apt</code> commands are referring to the <a href="https://wiki.debian.org/Aptitude">Aptitude</a> package management system. Think of it like of <a href="https://brew.sh/">Homebrew</a> for Ubuntu (and other Debian Linux distributions).</p>
-<p>In addition to the above, a number of important R packages require external Linux libraries that must be installed separately on your VM first. (<strong>Note:</strong> You can skip this step if you prefer to install R package binaries on Ubuntu. See <a href="#install_r_binaries_on_ubuntu">below</a>.) For Ubuntu, we can install these packages with the following commands. Again, hit “y” whenever you are prompted to confirm installation.</p>
+<p>In addition to the above, a number of important R packages require external Linux libraries that must be installed separately on your VM first. (<strong>Note:</strong> You can skip this step if you prefer to install R package binaries on Ubuntu. See <a href="#install_r_package_binaries_on_ubuntu">below</a>.) For Ubuntu, we can install these packages with the following commands. Again, hit “y” whenever you are prompted to confirm installation.</p>
 <ol style="list-style-type: decimal">
 <li>For the “<a href="http://tidyverse.org/">tidyverse</a>” suite of packages:</li>
 </ol>
@@ -2102,6 +2102,14 @@ my-vm  us-west1-a  n1-standard-8               10.138.0.2   104.198.7.157  RUNNI
 <div id="bonus-getting-the-most-out-of-your-gce-rstudio-server-setup" class="section level2">
 <h2>BONUS: Getting the most out of your GCE + RStudio Server setup</h2>
 <p>You have already completed all of the steps that you’ll need for high-performance computing in the cloud. Any VM that you create on GCE using the above methods will be ready to go with RStudio Server whenever you want it. However, there are still a few more tweaks and tips that we can use to really improve our user experience and reduce complications when interacting with these VMs from our local computers. The rest of this tutorial covers my main tips and recommendations.</p>
+<div id="keep-your-system-up-to-date" class="section level3">
+<h3>Keep your system up to date</h3>
+<p>Remember to keep your VM up to date, just like you would a normal computer. Run the following two commands regularly:</p>
+<div class="sourceCode" id="cb78"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb78-1"><a href="#cb78-1"></a><span class="ex">grant@my-vm</span>:~$ sudo apt update</span>
+<span id="cb78-2"><a href="#cb78-2"></a><span class="ex">grant@my-vm</span>:~$ sudo apt upgrade</span></code></pre></div>
+<p>You can also update the <code>gcloud</code> utility components on your local computer (i.e. not your VM) with the following command:</p>
+<div class="sourceCode" id="cb79"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb79-1"><a href="#cb79-1"></a>$ <span class="ex">gcloud</span> components update</span></code></pre></div>
+</div>
 <div id="transfer-and-sync-files-between-your-vm-and-your-local-computer" class="section level3">
 <h3>Transfer and sync files between your VM and your local computer</h3>
 <p>You have three main options.</p>
@@ -2113,7 +2121,7 @@ my-vm  us-west1-a  n1-standard-8               10.138.0.2   104.198.7.157  RUNNI
 <div id="manually-transfer-files-and-folders-using-the-command-line-or-scp" class="section level4">
 <h4>2. Manually transfer files and folders using the command line or SCP</h4>
 <p>Manually transferring files or folders across systems is done fairly easily using the command line. Note that this next code chunk would be run in a new shell instance (i.e. not the one connected to your VM via SSH).</p>
-<div class="sourceCode" id="cb78"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb78-1"><a href="#cb78-1"></a>$ <span class="ex">gcloud</span> compute scp my-vm:/home/elvis/Papers/MyAwesomePaper/amazingresults.csv ~/local-directory/amazingresults-copy.csv --zone us-west1-a</span></code></pre></div>
+<div class="sourceCode" id="cb80"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb80-1"><a href="#cb80-1"></a>$ <span class="ex">gcloud</span> compute scp my-vm:/home/elvis/Papers/MyAwesomePaper/amazingresults.csv ~/local-directory/amazingresults-copy.csv --zone us-west1-a</span></code></pre></div>
 <p>It’s also possible to transfer files using your regular desktop file browser thanks to SCP. (On Linux and Mac OSX at least. Windows users first need to install a program call WinSCP.) See <a href="https://cloud.google.com/compute/docs/instances/transfer-files">here</a>.</p>
 <blockquote>
 <p><strong>Tip:</strong> The file browser-based SCP solution is much more efficient when you have assigned a static IP address to your VM instance — otherwise you have to set it up each time you restart your VM instance and are assigned a new ephemeral IP address — so I’d advise doing that <a href="https://cloud.google.com/compute/docs/configure-instance-ip-addresses#assign_new_instance">first</a>.</p>
@@ -2129,6 +2137,34 @@ my-vm  us-west1-a  n1-standard-8               10.138.0.2   104.198.7.157  RUNNI
 <p>Last, but not least, Google themselves encourage data synchronisation on GCE VMs using another product within their Cloud Platform, i.e. <a href="https://cloud.google.com/storage/">Google Storage</a>. This is especially useful for really big data files and folders, but beyond the scope of this lecture. (If you’re interested in learning more, see <a href="https://cloud.google.com/solutions/filers-on-compute-engine">here</a> and <a href="https://cloud.google.com/compute/docs/disks/gcs-buckets">here</a>.)</p>
 </div>
 </div>
+<div id="install-r-package-binaries-on-ubuntu" class="section level3">
+<h3>Install R package binaries on Ubuntu</h3>
+<p>Installing R packages on a Linux system can come as a bit of shock for first-time users. It takes much longer than Mac or Windows because everything has to compiled from source. The good news is that pre-compiled binaries <em>are</em> available on Ubuntu thanks to Mark Rutter. This means we can greatly speed up package installation and reduce other complications related to external dependencies. More information <a href="https://twitter.com/grant_mcdermott/status/1174059096900718592">here</a>, but the short version is that you can open up your terminal and try out the following.</p>
+<div class="sourceCode" id="cb81"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb81-1"><a href="#cb81-1"></a><span class="co">#  Add the PPA</span></span>
+<span id="cb81-2"><a href="#cb81-2"></a><span class="ex">grant@my-vm</span>:~$ sudo add-apt-repository -y <span class="st">&quot;ppa:marutter/rrutter3.5&quot;</span></span>
+<span id="cb81-3"><a href="#cb81-3"></a><span class="ex">grant@my-vm</span>:~$ sudo add-apt-repository -y <span class="st">&quot;ppa:marutter/c2d4u3.5&quot;</span></span>
+<span id="cb81-4"><a href="#cb81-4"></a><span class="ex">grant@my-vm</span>:~$ sudo apt update</span>
+<span id="cb81-5"><a href="#cb81-5"></a></span>
+<span id="cb81-6"><a href="#cb81-6"></a><span class="co"># To list all of the available binaries:</span></span>
+<span id="cb81-7"><a href="#cb81-7"></a><span class="ex">grant@my-vm</span>:~$ apt-cache search r-cran- <span class="kw">|</span> <span class="fu">sort</span> <span class="kw">|</span> <span class="fu">less</span></span>
+<span id="cb81-8"><a href="#cb81-8"></a></span>
+<span id="cb81-9"><a href="#cb81-9"></a><span class="co"># Or, to see if a specific package is available:</span></span>
+<span id="cb81-10"><a href="#cb81-10"></a><span class="ex">grant@my-vm</span>:~$ apt-cache search r-cran <span class="kw">|</span> <span class="fu">grep</span> “tidy”</span>
+<span id="cb81-11"><a href="#cb81-11"></a></span>
+<span id="cb81-12"><a href="#cb81-12"></a><span class="co"># Install your package(s) of choice, e.g.:</span></span>
+<span id="cb81-13"><a href="#cb81-13"></a><span class="ex">grant@my-vm</span>:~$ sudo apt install -y r-cran-tidyverse r-cran-rstan</span></code></pre></div>
+<p>Note that this approach requires you to install packages from your terminal using Aptitude (i.e. Ubuntu’s built-in package manager that I mentioned earlier in the lecture). So, not the traditional <code>install.packages()</code> command that you’re used to from within R. If you really prefer the latter approach, two other ways to greatly reduce R package (re)installation and compilation times on Linux are 1) make sure packages are installed <a href="https://www.jumpingrivers.com/blog/speeding-up-package-installation/">in parallel</a> by adding <code>options(Ncpus=parallel::detectCores())</code> to your <code>~./Rprofile</code> file, and/or 2) caching your packages using <a href="http://dirk.eddelbuettel.com/blog/2017/11/27/">ccache</a>.</p>
+</div>
+<div id="install-the-intel-math-kernel-library-mkl-or-openblaslapack" class="section level3">
+<h3>Install the Intel Math Kernel Library (MKL) or OpenBLAS/LAPACK</h3>
+<p>As we discussed in the previous lecture on <a href="https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html">parallel programming</a>, R ships with its own BLAS/LAPACK libraries by default. While this default works well enough, you can get <em>significant</em> speedups by switching to more optimized libraries such as the <a href="https://software.intel.com/en-us/mkl">Intel Math Kernel Library (MKL)</a> or <a href="https://www.openblas.net/">OpenBLAS</a>. The former is slightly faster according to the benchmark tests that I’ve seen, but was historically harder to install. However, thanks to <a href="https://github.com/eddelbuettel/mkl4deb">Dirk Eddelbuettel</a>, this is now very easily done:</p>
+<div class="sourceCode" id="cb82"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb82-1"><a href="#cb82-1"></a><span class="ex">grant@my-vm</span>:~$ git clone https://github.com/eddelbuettel/mkl4deb.git</span>
+<span id="cb82-2"><a href="#cb82-2"></a><span class="ex">grant@my-vm</span>:~$ sudo bash mkl4deb/script.sh</span></code></pre></div>
+<p>Wait for the script to finish running. Once it’s done, your R session should automatically be configured to use MKL by default. You can check yourself by opening up R and checking the <code>sessionInfo()</code> output, which should return something like:</p>
+<pre><code>Matrix products: default
+BLAS/LAPACK: /opt/intel/compilers_and_libraries_2018.2.199/linux/mkl/lib/intel64_lin/libmkl_rt.so</code></pre>
+<p>(Note: Dirk’s script only works for Ubuntu and other Debian-based Linux distros. If you decided to spin up a different OS for your VM than we did in this tutorial, then you are probably better off <a href="https://github.com/xianyi/OpenBLAS/wiki/Precompiled-installation-packages">installing OpenBLAS</a>.)</p>
+</div>
 <div id="share-files-and-libraries-between-multiple-users-on-the-same-vm" class="section level3">
 <h3>Share files and libraries between multiple users on the same VM</h3>
 <p>The default configuration that I have described above works perfectly well in cases where you are a single user and don’t venture outside of your home directory (and its sub directories). Indeed, you can just add new folders within this user’s home directory using <a href="https://linuxjourney.com/lesson/make-directory-mkdir-command">standard Linux commands</a> and you will be able to access these from within RStudio Server when you log in as that user.</p>
@@ -2137,75 +2173,40 @@ my-vm  us-west1-a  n1-standard-8               10.138.0.2   104.198.7.157  RUNNI
 <div id="share-files-across-users" class="section level4">
 <h4>Share files across users</h4>
 <p>Let’s say that Elvis is working on a joint project together with a colleague called Priscilla. (Although, some say they are more than colleagues…) They have decided to keep all of their shared analysis in a new directory called <code>TeamProject</code>, located within Elvis’s home directory. Start by creating this new shared directory:</p>
-<div class="sourceCode" id="cb79"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb79-1"><a href="#cb79-1"></a>$ <span class="ex">grant@my-vm</span>:~$ sudo mkdir /home/elvis/TeamProject</span></code></pre></div>
+<div class="sourceCode" id="cb84"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb84-1"><a href="#cb84-1"></a>$ <span class="ex">grant@my-vm</span>:~$ sudo mkdir /home/elvis/TeamProject</span></code></pre></div>
 <p>Presumably, a real-life Priscilla would already have a user profile at this point. But let’s quickly create one too for our fictional version.</p>
-<div class="sourceCode" id="cb80"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb80-1"><a href="#cb80-1"></a>$ <span class="ex">grant@my-vm</span>:~$ sudo adduser priscilla</span></code></pre></div>
+<div class="sourceCode" id="cb85"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb85-1"><a href="#cb85-1"></a>$ <span class="ex">grant@my-vm</span>:~$ sudo adduser priscilla</span></code></pre></div>
 <p>Next, we create a user group. I’m going to call it “projectgrp”, but as you wish. The group setup is useful because once we assign a set of permissions to a group, any members of that group will automatically receive those permissions too. With that in mind, we should add Elvis and Priscilla to “projectgrp” once it is created:</p>
-<div class="sourceCode" id="cb81"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb81-1"><a href="#cb81-1"></a><span class="ex">grant@my-vm</span>:~$ sudo groupadd projectgrp</span>
-<span id="cb81-2"><a href="#cb81-2"></a><span class="ex">grant@my-vm</span>:~$ sudo gpasswd -a elvis projectgrp</span>
-<span id="cb81-3"><a href="#cb81-3"></a><span class="ex">grant@my-vm</span>:~$ sudo gpasswd -a priscilla projectgrp</span></code></pre></div>
+<div class="sourceCode" id="cb86"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb86-1"><a href="#cb86-1"></a><span class="ex">grant@my-vm</span>:~$ sudo groupadd projectgrp</span>
+<span id="cb86-2"><a href="#cb86-2"></a><span class="ex">grant@my-vm</span>:~$ sudo gpasswd -a elvis projectgrp</span>
+<span id="cb86-3"><a href="#cb86-3"></a><span class="ex">grant@my-vm</span>:~$ sudo gpasswd -a priscilla projectgrp</span></code></pre></div>
 <p>Now we can set the necessary ownership permissions to the shared <code>TeamProject</code> directory. First, we use the <code>chown</code> command to assign ownership of this directory to a default user (in this case, “elvis”) and the other “projectgrp” members. Second, we use the <code>chmod 770</code> command to grant them all read, write and execute access to the directory. In both both cases, we’ll use the <code>-R</code> flag to recursively set permissions to all children directories of <code>TeamProject/</code> too.</p>
-<div class="sourceCode" id="cb82"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb82-1"><a href="#cb82-1"></a><span class="ex">grant@my-vm</span>:~$ sudo chown -R elvis:projectgrp /home/elvis/TeamProject</span>
-<span id="cb82-2"><a href="#cb82-2"></a><span class="ex">grant@my-vm</span>:~$ sudo chmod -R 770 /home/elvis/TeamProject</span></code></pre></div>
+<div class="sourceCode" id="cb87"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb87-1"><a href="#cb87-1"></a><span class="ex">grant@my-vm</span>:~$ sudo chown -R elvis:projectgrp /home/elvis/TeamProject</span>
+<span id="cb87-2"><a href="#cb87-2"></a><span class="ex">grant@my-vm</span>:~$ sudo chmod -R 770 /home/elvis/TeamProject</span></code></pre></div>
 <p>The next two commands are optional, but advised if Priscilla is only going to be working on this VM through the <code>TeamProject</code> directory. First, you can change her primary group ID to “projectgrp”, so that all the files she creates are automatically assigned to that group:</p>
-<div class="sourceCode" id="cb83"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb83-1"><a href="#cb83-1"></a><span class="ex">grant@my-vm</span>:~$ sudo usermod -g projectgrp priscilla</span></code></pre></div>
+<div class="sourceCode" id="cb88"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb88-1"><a href="#cb88-1"></a><span class="ex">grant@my-vm</span>:~$ sudo usermod -g projectgrp priscilla</span></code></pre></div>
 <p>Second, you can add a symbolic link to the <code>TeamProject</code> directory in Priscilla’s home directory, so that it is immediately visible when she logs into RStudio Server. (Making sure that you switch to her account before running this command):</p>
-<div class="sourceCode" id="cb84"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb84-1"><a href="#cb84-1"></a><span class="ex">grant@my-vm</span>:~$ sudo su - priscilla</span>
-<span id="cb84-2"><a href="#cb84-2"></a><span class="ex">priscilla@my-vm</span>:~$ ln -s /home/elvis/TeamProject /home/priscilla/TeamProject</span>
-<span id="cb84-3"><a href="#cb84-3"></a><span class="ex">priscilla@my-vm</span>:~$ exit</span></code></pre></div>
+<div class="sourceCode" id="cb89"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb89-1"><a href="#cb89-1"></a><span class="ex">grant@my-vm</span>:~$ sudo su - priscilla</span>
+<span id="cb89-2"><a href="#cb89-2"></a><span class="ex">priscilla@my-vm</span>:~$ ln -s /home/elvis/TeamProject /home/priscilla/TeamProject</span>
+<span id="cb89-3"><a href="#cb89-3"></a><span class="ex">priscilla@my-vm</span>:~$ exit</span></code></pre></div>
 <div id="share-r-libraries-packages-across-users" class="section level5">
 <h5>Share R libraries (packages) across users</h5>
-<p>Sharing R libraries across users is less critical than being able to share files. However, it’s still annoying having to install, say, <code>ggplot2</code> when your colleague has already installed it under her user account. Luckily, the solution to this annoyance very closely mimics the solution to file sharing that we’ve just seen above: We’re going to set a default system-wide R library path and give all of our users access to that library via a group. For convenience I’m just going to contine with the “projectgrp” group that we created above. However, you could also create a new group (say, “rusers”), add individual users to it, and proceed that way if you wanted to.</p>
+<p>Sharing R libraries across users is less critical than being able to share files. However, it’s still annoying having to install, say, the <strong>tidyverse</strong> when your colleague has already installed it under her user account. Luckily, the solution to this annoyance very closely mimics the solution to file sharing that we’ve just seen above: We’re going to set a default system-wide R library path and give all of our users access to that library via a group. For convenience I’m just going to contine with the “projectgrp” group that we created above. However, you could also create a new group (say, “rusers”), add individual users to it, and proceed that way if you wanted to.</p>
 <p>The first thing to do is determine where your exisiting system-wide R library is located. Open up your R console and type (without the “&gt;” prompt):</p>
 <pre><code>&gt; .libPaths()</code></pre>
 <p>This will likely return several library paths. The system-wide library path should hopefully be pretty obvious (e.g. no usernames) and will probably be one of <code>/usr/lib/R/library</code> or <code>/usr/local/lib/R/site-library</code>. In my case, it was the former, but adjust as necessary.</p>
 <p>Once we have determined the location of our system-wide library directory, we can recursively assign read, write and execute permissions to it for all members of our group. Here, I’m actually using the parent directory (i.e. <code>.../R</code> rather than <code>.../R/library</code>), but it should work regardless. Go back to your shell and type:</p>
-<div class="sourceCode" id="cb86"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb86-1"><a href="#cb86-1"></a><span class="ex">grant@my-vm</span>:~$ sudo chown elvis:projectgrp -R /usr/lib/R/ <span class="co">## Get location by typing &quot;.libPaths()&quot; in your R console</span></span>
-<span id="cb86-2"><a href="#cb86-2"></a><span class="ex">grant@my-vm</span>:~$ sudo chmod -R 775 R/</span></code></pre></div>
+<div class="sourceCode" id="cb91"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb91-1"><a href="#cb91-1"></a><span class="ex">grant@my-vm</span>:~$ sudo chown elvis:projectgrp -R /usr/lib/R/ <span class="co">## Get location by typing &quot;.libPaths()&quot; in your R console</span></span>
+<span id="cb91-2"><a href="#cb91-2"></a><span class="ex">grant@my-vm</span>:~$ sudo chmod -R 775 R/</span></code></pre></div>
 <p>Once that’s done, tell R to make this shared library path the default for your user, by adding it to their <code>~/.Renviron</code> file:</p>
-<div class="sourceCode" id="cb87"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb87-1"><a href="#cb87-1"></a><span class="ex">grant@my-vm</span>:~$ su - elvis</span>
-<span id="cb87-2"><a href="#cb87-2"></a><span class="ex">elvis@my-vm</span>:~$ sudo echo <span class="st">&#39;export PATH=&quot;R_LIBS_USER=/usr/lib/R/library&quot;&#39;</span> <span class="op">&gt;&gt;</span> ~/.Renviron</span></code></pre></div>
+<div class="sourceCode" id="cb92"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb92-1"><a href="#cb92-1"></a><span class="ex">grant@my-vm</span>:~$ su - elvis</span>
+<span id="cb92-2"><a href="#cb92-2"></a><span class="ex">elvis@my-vm</span>:~$ sudo echo <span class="st">&#39;export PATH=&quot;R_LIBS_USER=/usr/lib/R/library&quot;&#39;</span> <span class="op">&gt;&gt;</span> ~/.Renviron</span></code></pre></div>
 <p>The R packages that Elvis installs should now be immediately available to Priscilla and vice versa.</p>
 <blockquote>
 <p><strong>Tip:</strong> If you’ve already installed some packages in a local (i.e. this-user-only) library path before creating the system-wide setup, you can just move them across with the <a href="https://linuxjourney.com/lesson/move-mv-command">‘mv’</a> command. Something like the following should work, but you’ll need to check the appropriate paths yourself: <code>elvis@my-vm:~$ sudo mv &quot;/home/elvis/R/x86_64-pc-linux-gnu-library/3.5/*&quot; /usr/lib/R/library</code>.</p>
 </blockquote>
 </div>
 </div>
-</div>
-<div id="install-r-binaries-on-ubuntu" class="section level3">
-<h3>Install R binaries on Ubuntu</h3>
-<p>Installing R packages on Linux system can come as a bit of shock for first-time users, because everything has to compiled from source. The good news is that pre-compiled binaries are available on Ubuntu thanks to Mark Rutter. This means we can greatly speed up package installation and reduce other complications related to external dependencies. More information <a href="https://twitter.com/grant_mcdermott/status/1174059096900718592">here</a>, but the short version is that you can open up your terminal and try out the following.</p>
-<div class="sourceCode" id="cb88"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb88-1"><a href="#cb88-1"></a><span class="co">#  Add the PPA</span></span>
-<span id="cb88-2"><a href="#cb88-2"></a><span class="ex">grant@my-vm</span>:~$ sudo add-apt-repository -y <span class="st">&quot;ppa:marutter/rrutter3.5&quot;</span></span>
-<span id="cb88-3"><a href="#cb88-3"></a><span class="ex">grant@my-vm</span>:~$ sudo add-apt-repository -y <span class="st">&quot;ppa:marutter/c2d4u3.5&quot;</span></span>
-<span id="cb88-4"><a href="#cb88-4"></a><span class="ex">grant@my-vm</span>:~$ sudo apt update</span>
-<span id="cb88-5"><a href="#cb88-5"></a></span>
-<span id="cb88-6"><a href="#cb88-6"></a><span class="co"># To list all of the available binaries:</span></span>
-<span id="cb88-7"><a href="#cb88-7"></a><span class="ex">grant@my-vm</span>:~$ apt-cache search r-cran- <span class="kw">|</span> <span class="fu">sort</span> <span class="kw">|</span> <span class="fu">less</span></span>
-<span id="cb88-8"><a href="#cb88-8"></a></span>
-<span id="cb88-9"><a href="#cb88-9"></a><span class="co"># Or, to see if a specific package is available:</span></span>
-<span id="cb88-10"><a href="#cb88-10"></a><span class="ex">grant@my-vm</span>:~$ apt-cache search r-cran <span class="kw">|</span> <span class="fu">grep</span> “tidy”</span>
-<span id="cb88-11"><a href="#cb88-11"></a></span>
-<span id="cb88-12"><a href="#cb88-12"></a><span class="co"># Install your package(s) of choice, e.g.:</span></span>
-<span id="cb88-13"><a href="#cb88-13"></a><span class="ex">grant@my-vm</span>:~$ sudo apt install -y r-cran-tidyverse r-cran-rstan</span></code></pre></div>
-</div>
-<div id="install-the-intel-math-kernel-library-mkl-or-openblaslapack" class="section level3">
-<h3>Install the Intel Math Kernel Library (MKL) or OpenBLAS/LAPACK</h3>
-<p>As we discussed in the previous lecture on <a href="https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html">parallel programming</a>, R ships with its own BLAS/LAPACK libraries by default. While this default works well enough, you can get <em>significant</em> speedups by switching to more optimized libraries such as the <a href="https://software.intel.com/en-us/mkl">Intel Math Kernel Library (MKL)</a> or <a href="https://www.openblas.net/">OpenBLAS</a>. The former is slightly faster according to the benchmark tests that I’ve seen, but was historically harder to install. However, thanks to <a href="https://github.com/eddelbuettel/mkl4deb">Dirk Eddelbuettel</a>, this is now very easily done:</p>
-<div class="sourceCode" id="cb89"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb89-1"><a href="#cb89-1"></a><span class="ex">grant@my-vm</span>:~$ git clone https://github.com/eddelbuettel/mkl4deb.git</span>
-<span id="cb89-2"><a href="#cb89-2"></a><span class="ex">grant@my-vm</span>:~$ sudo bash mkl4deb/script.sh</span></code></pre></div>
-<p>Wait for the script to finish running. Once it’s done, your R session should automatically be configured to use MKL by default. You can check yourself by opening up R and checking the <code>sessionInfo()</code> output, which should return something like:</p>
-<pre><code>Matrix products: default
-BLAS/LAPACK: /opt/intel/compilers_and_libraries_2018.2.199/linux/mkl/lib/intel64_lin/libmkl_rt.so</code></pre>
-<p>(Note: Dirk’s script only works for Ubuntu and other Debian-based Linux distros. If you decided to spin up a different OS for your VM than we did in this tutorial, then you are probably better off <a href="https://github.com/xianyi/OpenBLAS/wiki/Precompiled-installation-packages">installing OpenBLAS</a>.)</p>
-</div>
-<div id="other-tips" class="section level3">
-<h3>Other tips</h3>
-<p>Remember to keep your VM system up to date (just like you would a normal computer).</p>
-<div class="sourceCode" id="cb91"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb91-1"><a href="#cb91-1"></a><span class="ex">grant@my-vm</span>:~$ sudo apt update</span>
-<span id="cb91-2"><a href="#cb91-2"></a><span class="ex">grant@my-vm</span>:~$ sudo apt upgrade</span></code></pre></div>
-<p>You can also update the <code>gcloud</code> utility components on your local computer (i.e. not your VM) with the following command:</p>
-<div class="sourceCode" id="cb92"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb92-1"><a href="#cb92-1"></a>$ <span class="ex">gcloud</span> components update</span></code></pre></div>
 </div>
 </div>
 <div id="further-resources" class="section level2">

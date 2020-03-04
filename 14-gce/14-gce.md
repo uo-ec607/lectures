@@ -166,7 +166,7 @@ grant@my-vm:~$ sudo apt install r-base r-base-dev ## Again, hit "y" when prompte
 
 **Aside:** Those `apt` commands are referring to the [Aptitude](https://wiki.debian.org/Aptitude) package management system. Think of it like of [Homebrew](https://brew.sh/) for Ubuntu (and other Debian Linux distributions).
 
-In addition to the above, a number of important R packages require external Linux libraries that must be installed separately on your VM first. (**Note:** You can skip this step if you prefer to install R package binaries on Ubuntu. See [below](#install_r_binaries_on_ubuntu).) For Ubuntu, we can install these packages with the following commands. Again, hit "y" whenever you are prompted to confirm installation.
+In addition to the above, a number of important R packages require external Linux libraries that must be installed separately on your VM first. (**Note:** You can skip this step if you prefer to install R package binaries on Ubuntu. See [below](#install_r_package_binaries_on_ubuntu).) For Ubuntu, we can install these packages with the following commands. Again, hit "y" whenever you are prompted to confirm installation.
 
 1) For the "[tidyverse](http://tidyverse.org/)" suite of packages:
 
@@ -814,6 +814,22 @@ The **googleComputeEngineR** package offers a lot more functionality than I can 
 
 You have already completed all of the steps that you'll need for high-performance computing in the cloud. Any VM that you create on GCE using the above methods will be ready to go with RStudio Server whenever you want it. However, there are still a few more tweaks and tips that we can use to really improve our user experience and reduce complications when interacting with these VMs from our local computers. The rest of this tutorial covers my main tips and recommendations.
 
+### Keep your system up to date
+
+Remember to keep your VM up to date, just like you would a normal computer. Run the following two commands regularly:
+
+```bash
+grant@my-vm:~$ sudo apt update
+grant@my-vm:~$ sudo apt upgrade
+```
+You can also update the `gcloud` utility components on your local computer (i.e. not your VM) with the following command:
+
+```bash
+$ gcloud components update
+```
+
+
+
 ### Transfer and sync files between your VM and your local computer
 
 You have three main options.
@@ -845,6 +861,45 @@ While I haven't tried it myself, you should also be able to install [Box](http:/
 > **Tip:** Remember that your VM lives on a server and doesn't have the usual graphical interface — including installation utilities — of a normal desktop. You'll thus need to follow command line installation instructions for these programs. Make sure you scroll down to the relevant sections of the links that I have provided above.
 
 Last, but not least, Google themselves encourage data synchronisation on GCE VMs using another product within their Cloud Platform, i.e. [Google Storage](https://cloud.google.com/storage/). This is especially useful for really big data files and folders, but beyond the scope of this lecture. (If you're interested in learning more, see [here](https://cloud.google.com/solutions/filers-on-compute-engine) and [here](https://cloud.google.com/compute/docs/disks/gcs-buckets).)
+
+### Install R package binaries on Ubuntu
+
+Installing R packages on a Linux system can come as a bit of shock for first-time users. It takes much longer than Mac or Windows because everything has to compiled from source. The good news is that pre-compiled binaries *are* available on Ubuntu thanks to Mark Rutter. This means we can greatly speed up package installation and reduce other complications related to external dependencies. More information [here](https://twitter.com/grant_mcdermott/status/1174059096900718592), but the short version is that you can open up your terminal and try out the following.
+
+```sh
+#  Add the PPA
+grant@my-vm:~$ sudo add-apt-repository -y "ppa:marutter/rrutter3.5"
+grant@my-vm:~$ sudo add-apt-repository -y "ppa:marutter/c2d4u3.5"
+grant@my-vm:~$ sudo apt update
+
+# To list all of the available binaries:
+grant@my-vm:~$ apt-cache search r-cran- | sort | less
+
+# Or, to see if a specific package is available:
+grant@my-vm:~$ apt-cache search r-cran | grep “tidy”
+
+# Install your package(s) of choice, e.g.:
+grant@my-vm:~$ sudo apt install -y r-cran-tidyverse r-cran-rstan
+```
+
+Note that this approach requires you to install packages from your terminal using Aptitude (i.e. Ubuntu's built-in package manager that I mentioned earlier in the lecture). So, not the traditional `install.packages()` command that you're used to from within R. If you really prefer the latter approach, two other ways to greatly reduce R package (re)installation and compilation times on Linux are 1) make sure packages are installed [in parallel](https://www.jumpingrivers.com/blog/speeding-up-package-installation/) by adding `options(Ncpus=parallel::detectCores())` to your `~./Rprofile` file, and/or 2) caching your packages using [ccache](http://dirk.eddelbuettel.com/blog/2017/11/27/).
+
+### Install the Intel Math Kernel Library (MKL) or OpenBLAS/LAPACK
+
+As we discussed in the previous lecture on [parallel programming](https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html), R ships with its own BLAS/LAPACK libraries by default. While this default works well enough, you can get *significant* speedups by switching to more optimized libraries such as the [Intel Math Kernel Library (MKL)](https://software.intel.com/en-us/mkl) or [OpenBLAS](https://www.openblas.net/). The former is slightly faster according to the benchmark tests that I've seen, but was historically harder to install. However, thanks to [Dirk Eddelbuettel](https://github.com/eddelbuettel/mkl4deb), this is now very easily done:
+
+
+```bash
+grant@my-vm:~$ git clone https://github.com/eddelbuettel/mkl4deb.git
+grant@my-vm:~$ sudo bash mkl4deb/script.sh
+```
+
+Wait for the script to finish running. Once it's done, your R session should automatically be configured to use MKL by default. You can check yourself by opening up R and checking the `sessionInfo()` output, which should return something like:
+```
+Matrix products: default
+BLAS/LAPACK: /opt/intel/compilers_and_libraries_2018.2.199/linux/mkl/lib/intel64_lin/libmkl_rt.so
+```
+(Note: Dirk's script only works for Ubuntu and other Debian-based Linux distros. If you decided to spin up a different OS for your VM than we did in this tutorial, then you are probably better off [installing OpenBLAS](https://github.com/xianyi/OpenBLAS/wiki/Precompiled-installation-packages).)
 
 
 ### Share files and libraries between multiple users on the same VM
@@ -895,7 +950,7 @@ priscilla@my-vm:~$ exit
 
 ##### Share R libraries (packages) across users
 
-Sharing R libraries across users is less critical than being able to share files. However, it's still annoying having to install, say, `ggplot2` when your colleague has already installed it under her user account. Luckily, the solution to this annoyance very closely mimics the solution to file sharing that we've just seen above: We're going to set a default system-wide R library path and give all of our users access to that library via a group. For convenience I'm just going to contine with the "projectgrp" group that we created above. However, you could also create a new group (say, "rusers"), add individual users to it, and proceed that way if you wanted to.
+Sharing R libraries across users is less critical than being able to share files. However, it's still annoying having to install, say, the **tidyverse** when your colleague has already installed it under her user account. Luckily, the solution to this annoyance very closely mimics the solution to file sharing that we've just seen above: We're going to set a default system-wide R library path and give all of our users access to that library via a group. For convenience I'm just going to contine with the "projectgrp" group that we created above. However, you could also create a new group (say, "rusers"), add individual users to it, and proceed that way if you wanted to.
 
 The first thing to do is determine where your exisiting system-wide R library is located. Open up your R console and type (without the ">" prompt):
 ```
@@ -918,57 +973,6 @@ elvis@my-vm:~$ sudo echo 'export PATH="R_LIBS_USER=/usr/lib/R/library"' >> ~/.Re
 The R packages that Elvis installs should now be immediately available to Priscilla and vice versa.
 
 > **Tip:** If you've already installed some packages in a local (i.e. this-user-only) library path before creating the system-wide setup, you can just move them across with the ['mv'](https://linuxjourney.com/lesson/move-mv-command) command. Something like the following should work, but you'll need to check the appropriate paths yourself: `elvis@my-vm:~$ sudo mv "/home/elvis/R/x86_64-pc-linux-gnu-library/3.5/*" /usr/lib/R/library`.
-
-### Install R binaries on Ubuntu
-
-Installing R packages on Linux system can come as a bit of shock for first-time users, because everything has to compiled from source. The good news is that pre-compiled binaries are available on Ubuntu thanks to Mark Rutter. This means we can greatly speed up package installation and reduce other complications related to external dependencies. More information [here](https://twitter.com/grant_mcdermott/status/1174059096900718592), but the short version is that you can open up your terminal and try out the following.
-
-```sh
-#  Add the PPA
-grant@my-vm:~$ sudo add-apt-repository -y "ppa:marutter/rrutter3.5"
-grant@my-vm:~$ sudo add-apt-repository -y "ppa:marutter/c2d4u3.5"
-grant@my-vm:~$ sudo apt update
-
-# To list all of the available binaries:
-grant@my-vm:~$ apt-cache search r-cran- | sort | less
-
-# Or, to see if a specific package is available:
-grant@my-vm:~$ apt-cache search r-cran | grep “tidy”
-
-# Install your package(s) of choice, e.g.:
-grant@my-vm:~$ sudo apt install -y r-cran-tidyverse r-cran-rstan
-```
-
-### Install the Intel Math Kernel Library (MKL) or OpenBLAS/LAPACK
-
-As we discussed in the previous lecture on [parallel programming](https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html), R ships with its own BLAS/LAPACK libraries by default. While this default works well enough, you can get *significant* speedups by switching to more optimized libraries such as the [Intel Math Kernel Library (MKL)](https://software.intel.com/en-us/mkl) or [OpenBLAS](https://www.openblas.net/). The former is slightly faster according to the benchmark tests that I've seen, but was historically harder to install. However, thanks to [Dirk Eddelbuettel](https://github.com/eddelbuettel/mkl4deb), this is now very easily done:
-
-
-```bash
-grant@my-vm:~$ git clone https://github.com/eddelbuettel/mkl4deb.git
-grant@my-vm:~$ sudo bash mkl4deb/script.sh
-```
-
-Wait for the script to finish running. Once it's done, your R session should automatically be configured to use MKL by default. You can check yourself by opening up R and checking the `sessionInfo()` output, which should return something like:
-```
-Matrix products: default
-BLAS/LAPACK: /opt/intel/compilers_and_libraries_2018.2.199/linux/mkl/lib/intel64_lin/libmkl_rt.so
-```
-(Note: Dirk's script only works for Ubuntu and other Debian-based Linux distros. If you decided to spin up a different OS for your VM than we did in this tutorial, then you are probably better off [installing OpenBLAS](https://github.com/xianyi/OpenBLAS/wiki/Precompiled-installation-packages).)
-
-
-### Other tips
-Remember to keep your VM system up to date (just like you would a normal computer).
-
-```bash
-grant@my-vm:~$ sudo apt update
-grant@my-vm:~$ sudo apt upgrade
-```
-You can also update the `gcloud` utility components on your local computer (i.e. not your VM) with the following command:
-
-```bash
-$ gcloud components update
-```
 
 
 ## Further resources
