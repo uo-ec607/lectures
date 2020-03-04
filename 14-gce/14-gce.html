@@ -1607,8 +1607,8 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <h3>Create an account on Google Cloud Platform (free)</h3>
 <p>These next instructions are important, so please read carefully.</p>
 <ol style="list-style-type: decimal">
-<li>Sign up for a <a href="https://console.cloud.google.com/freetrial">12-month ($300 credit) free trial</a> with Google Cloud Platform. This requires an existing Google/Gmail account.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> During the course of sign-up, you should <a href="https://cloud.google.com/resource-manager/docs/creating-managing-projects">create a project</a> that will be associated with billing. This is purely ceremonial at present — we’re using the free trial period after all — but a billable project ID is required before gaining access to the platform.</li>
-<li>Download and follow the installation instructions for the Google Cloud SDK command line utility, <code>gcloud</code> <a href="https://cloud.google.com/sdk/">here</a>.</li>
+<li>Sign up for a <a href="https://console.cloud.google.com/freetrial">12-month ($300 credit) free trial</a> with Google Cloud Platform (GCP). This requires an existing Google/Gmail account.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> During the course of sign-up, you’ll be prompted to enter credit card details for billing purposes. Don’t worry, you won’t be charged unless/until you actively request continued access to GCP after your free trial ends. But a billable project ID is required before gaining access to the platform.</li>
+<li>Download and follow the installation instructions for the <a href="https://cloud.google.com/sdk/">Google Cloud SDK</a> command line utility, <code>gcloud</code>. This is how we’ll connect to GCP from our local computers via the shell.</li>
 </ol>
 </div>
 <div id="r-packages" class="section level3">
@@ -1799,7 +1799,7 @@ my-vm  us-west1-a  n1-standard-8               10.138.0.2   104.198.7.157  RUNNI
 <p>You know the JSON file (i.e. key) that we just downloaded in step 6? Good, because now we need to tell R where to find it so that we can automatically enable credential authentication. We’re going to use the same approach that I showed you in our <a href="https://raw.githack.com/uo-ec607/lectures/master/07-web-apis/07-web-apis.html#aside:_safely_store_and_use_api_keys_as_environment_variables">API lecture</a>, which is to store and access sensitive credential information through our <code>~/.Renviron</code> file. Open up your .Renviron file by calling</p>
 <div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a><span class="co">## Open your .Renviron file</span></span>
 <span id="cb20-2"><a href="#cb20-2"></a>usethis<span class="op">::</span><span class="kw">edit_r_environ</span>()</span></code></pre></div>
-<p>in RStudio. (You can also open and edit it manually in your preferred text editor.) Now, add the following lines your file. Make sure you adjust the file path and variable strings as required!</p>
+<p>in RStudio. (You can also open and edit it manually in your preferred text editor.) Now, add the following lines to the file. Make sure you adjust the file path and variable strings as required!</p>
 <div class="sourceCode" id="cb21"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1"></a><span class="co">## Change these to your reflect your own path and project locations</span></span>
 <span id="cb21-2"><a href="#cb21-2"></a><span class="va">GCE_AUTH_FILE=</span><span class="st">&quot;/full/path/to/your/service/key/filename.json&quot;</span></span>
 <span id="cb21-3"><a href="#cb21-3"></a><span class="va">GCE_DEFAULT_PROJECT_ID=</span><span class="st">&quot;your-project-id-here&quot;</span></span>
@@ -1811,7 +1811,7 @@ my-vm  us-west1-a  n1-standard-8               10.138.0.2   104.198.7.157  RUNNI
 </div>
 <div id="load-package-and-test" class="section level3">
 <h3>Load package and test</h3>
-<p>Assuming everything went to plan during the initial setup above, Google Cloud authentication from R should automtically be enabled whenever you load the <strong>googleComputeEngineR</strong> package. That is, when you run</p>
+<p>Assuming everything went to plan during the initial setup above, Google Cloud authentication from R should automatically be enabled whenever you load the <strong>googleComputeEngineR</strong> package. That is, when you run</p>
 <div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="kw">library</span>(googleComputeEngineR)</span></code></pre></div>
 <p>then you should see something like the following:</p>
 <pre><code>## Setting scopes to https://www.googleapis.com/auth/cloud-platform
@@ -2220,7 +2220,7 @@ BLAS/LAPACK: /opt/intel/compilers_and_libraries_2018.2.199/linux/mkl/lib/intel64
 <div class="footnotes">
 <hr />
 <ol>
-<li id="fn1"><p>If you have multiple Gmail accounts, please pay attention to which one you are using. (E.g. You might have two Gmail accounts, where one is your personal Gmail and the other is linked to your university email.) Needless to say, you’ll want to make sure that you use the <em>same</em> account when setting up the gcloud utility in Step 2. This might all sound obvious, but it has been the primary sticking point during live tutorials, where people encounter a bunch of puzzling authentication errors simply because they aren’t using a consistent account.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn1"><p>If you have multiple Gmail accounts, please pick one and stick to it consistently whenever you are prompted to authenticate a new GCP service API.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
 <li id="fn2"><p>While the cloud is not the only game in town, it offers a variety benefits that, in my view, make it a no-brainer for most people: economies of scale make it much cheaper; maintenance and depreciation worries are taken care of; access does not hinge on institutional affiliation or faculty status; cloud providers offer a host of other useful services; etc.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
 <li id="fn3"><p>Alternatives to GCP include <a href="https://aws.amazon.com/">AWS</a> and <a href="https://www.digitalocean.com/">Digital Ocean</a>. RStudio recently launched its own cloud service too: <a href="https://rstudio.cloud/">RStudio Cloud</a> is more narrowly focused, but is great for teaching and is (currently) free to use. The good news is that these are all great options and the general principles of cloud computing carry over very easily. So use whatever you feel comfortable with.<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
 <li id="fn4"><p>You can also set the default zone so that you don’t need to specify it every time. See <a href="https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_region_in_your_local_client">here</a>.<a href="#fnref4" class="footnote-back">↩︎</a></p></li>

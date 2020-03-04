@@ -4,7 +4,7 @@ subtitle: "Lecture 14: Cloud computing with Google Compute Engine"
 author:
   name: Grant R. McDermott
   affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
-# date: Lecture 14  #"01 March 2020"
+# date: Lecture 14  #"03 March 2020"
 output: 
   html_document:
     theme: flatly
@@ -26,8 +26,8 @@ This is the first of several lectures on cloud and high-performance computing. T
 
 These next instructions are important, so please read carefully.
 
-1. Sign up for a [12-month ($300 credit) free trial](https://console.cloud.google.com/freetrial) with Google Cloud Platform. This requires an existing Google/Gmail account.^[If you have multiple Gmail accounts, please pay attention to which one you are using. (E.g. You might have two Gmail accounts, where one is your personal Gmail and the other is linked to your university email.) Needless to say, you'll want to make sure that you use the *same* account when setting up the gcloud utility in Step 2. This might all sound obvious, but it has been the primary sticking point during live tutorials, where people encounter a bunch of puzzling authentication errors simply because they aren't using a consistent account.] During the course of sign-up, you should [create a project](https://cloud.google.com/resource-manager/docs/creating-managing-projects) that will be associated with billing. This is purely ceremonial at present — we're using the free trial period after all — but a billable project ID is required before gaining access to the platform.
-2. Download and follow the installation instructions for the Google Cloud SDK command line utility, `gcloud` [here](https://cloud.google.com/sdk/).
+1. Sign up for a [12-month ($300 credit) free trial](https://console.cloud.google.com/freetrial) with Google Cloud Platform (GCP). This requires an existing Google/Gmail account.^[If you have multiple Gmail accounts, please pick one and stick to it consistently whenever you are prompted to authenticate a new GCP service API.] During the course of sign-up, you'll be prompted to enter credit card details for billing purposes. Don't worry, you won't be charged unless/until you actively request continued access to GCP after your free trial ends. But a billable project ID is required before gaining access to the platform.
+2. Download and follow the installation instructions for the [Google Cloud SDK](https://cloud.google.com/sdk/) command line utility, `gcloud`. This is how we'll connect to GCP from our local computers via the shell.
 
 ### R packages 
 
@@ -300,7 +300,7 @@ You know the JSON file (i.e. key) that we just downloaded in step 6? Good, becau
 ## Open your .Renviron file
 usethis::edit_r_environ()
 ```
-in RStudio. (You can also open and edit it manually in your preferred text editor.) Now, add the following lines your file. Make sure you adjust the file path and variable strings as required!
+in RStudio. (You can also open and edit it manually in your preferred text editor.) Now, add the following lines to the file. Make sure you adjust the file path and variable strings as required!
 
 ```bash
 ## Change these to your reflect your own path and project locations
@@ -319,7 +319,7 @@ And that's the once-off setup pain complete!
 
 ### Load package and test
 
-Assuming everything went to plan during the initial setup above, Google Cloud authentication from R should automtically be enabled whenever you load the **googleComputeEngineR** package. That is, when you run
+Assuming everything went to plan during the initial setup above, Google Cloud authentication from R should automatically be enabled whenever you load the **googleComputeEngineR** package. That is, when you run
 
 
 ```r
