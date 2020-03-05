@@ -292,13 +292,13 @@ col_names <-
   names()
 ```
 
-Now, we read in the distributed files. We'll be using the same `spark_read_csv()` function as before, but now I'll just use the path for the whole `data/` directory rather than any individual CSVs. I'll call this new (distributed) Spark object `air_new`, but only to keep it clear that this is not the same object as before.
+Now, we read in the distributed files. We'll be using the same `spark_read_csv()` function as before, but now I'll just use the path for the whole `data/` directory rather than any individual CSVs. I'll call this new (distributed) Spark object `flights`, but only to keep it clear that this is not the same object as before.
 
-```{r air_new, cache=FALSE}
-air_new <- 
+```{r flights, cache=FALSE}
+flights <- 
   spark_read_csv(
   sc,
-  name = "air_new",
+  name = "flights",
   path = here("17-spark/data/"),
   memory = FALSE,
   columns = col_names,
@@ -306,39 +306,143 @@ air_new <-
   )
 
 ## Count rows to prove all 6+ million obs have been read in
-count(air_new)
+count(flights)
 ```
 
-Next, we'll query some columns and cache the resulting table to improve performance. There are various configurations and considerations that we'd normally want to weigh before caching a Spark table --- see [here](https://spark.rstudio.com/guides/caching/) --- but the default settings will suffice for this simple example. In truth, the benefit from explicit caching is not clear for this particular example, since the whole dataset is small enough to be held in memory regardless.^[By default, local Spark instances only request 4 GB of memory for the Spark driver. However, you can easily change this by requesting a larger memory allocation (among other features) via the `config` argument. See the **sparklyr** [website](https://spark.rstudio.com/deployment/#configuration) or [Chapter 9](https://therinspark.com/tuning.html) of *Mastering Spark with R* for more details.] But I again just want to demonstrate some general principles that would apply when working with much bigger data too. 
+You should now be able to see the second "flights" table in your connections tab. (Refresh the tab if not.) This next step is not strictly necessary, but since we'll no longer be using the original "air" table anymore, it's safe to remove it and conserve memory for other Spark objects. We can do this with the `dplyr::db_drop_table()` function.
 
-```{r air_new_cached}
-air_new_cached <- 
-  air_new %>% 
-  select(fl_date, dep_time, arr_time, arr_delay, dep_delay, distance) %>%
-  mutate_at(vars(dep_time:distance), as.numeric) %>%
-  sdf_register("air_new_cached") ## Register resulting Spark SQL in Spark connection
+```{r rm_air}
+db_drop_table(sc, "air")
+```
+
+Okay, let's query and mutate some columns from our new "flights" table.^[You might note that that I'm not using **lubridate** for the date conversions in the query that follows. That's because Spark relies on Hive functions for built-in aggregation, including datetime operations. See [here](https://spark.rstudio.com/dplyr/#hive-functions).] I'm also going to go ahead and cache the resulting table in Spark's memory allocation to improve performance. There are various configurations and considerations that we'd normally want to weigh before caching a Spark table --- see [here](https://spark.rstudio.com/guides/caching/) --- but the default settings will suffice for this simple example. In truth, the benefit from explicit caching is not clear for this particular example, since the whole dataset is small enough to be held in memory regardless.^[By default, local Spark instances only request 4 GB of memory for the Spark driver. However, you can easily change this by requesting a larger memory allocation (among other features) via the `config` argument. See the **sparklyr** [website](https://spark.rstudio.com/deployment/#configuration) or [Chapter 9](https://therinspark.com/tuning.html) of *Mastering Spark with R* for more details.] But I again just want to demonstrate some general principles that would apply when working with much bigger data too. 
+
+```{r flights_cached, cache=FALSE}
+flights_cached <- 
+  flights %>% 
+  select(
+    fl_date, month, dep_time, arr_time, arr_delay, dep_delay, distance,
+    sched_dep_time = crs_dep_time, sched_arr_time = crs_arr_time
+    ) %>%
+  ## Can't use lubridate functions like ymd(), but as.Date() works for Spark SQL tables 
+  mutate(fl_date = as.Date(fl_date)) %>%
+  ## Convert all other variables to numeric
+  mutate_at(vars(-fl_date), as.numeric) %>%
+  ## Register resulting Spark SQL in Spark connection
+  sdf_register("flights_cached")
 
 ## Cache it (i.e. load in memory for performance)
-tbl_cache(sc, "air_new_cached")
+tbl_cache(sc, "flights_cached")
 
 ## Preview it
-air_new_cached
+flights_cached
 ```
 
 > **Tip:** Open the Spark web UI (`spark_web(sc)`) and click the "Storage" tab to see which of your tables are cached and held in memory.
 
-Remembering that "air_new_cached" still only exists as a Spark table, here's something cool: We can use the [**dbplot**](https://db.rstudio.com/dbplot/) package to perform plot calculations *inside* the Spark connection (i.e. database). While this might seem like overkill for this particular example --- it is --- this database plotting functionality is extremely useful extracting insights from large database connections.^[You might note that that I'm not using **lubridate** for the date conversions here. That's because Spark relies on Hive functions for built-in aggregation, including datetime operations. See [here](https://spark.rstudio.com/dplyr/#hive-functions).]
+Remembering that "flights_cached" still only exists as a Spark table, here's something cool: We can use the [**dbplot**](https://db.rstudio.com/dbplot/) package to perform plot calculations *inside* the Spark connection (i.e. database). While this might seem like overkill for this particular example --- it is --- this database plotting functionality is extremely useful extracting insights from large database connections.
 
-```{r air_new_cached_plot}
+```{r flights_cached_plot}
 # library(dbplot) ## Already loaded
 
-air_new_cached %>%
-  ## Can't use lubridate functions (e.g. ymd()), but as.Date works well for Spark SQL tables 
-  mutate(Date = as.Date(fl_date)) %>%
-  dbplot_line(Date, mean(dep_delay))
+flights_cached %>%
+  dbplot_line(fl_date, mean(dep_delay))
 ```
 
 And there we have our same plot from before, but now executed from inside the Spark table, which in turn was created from a directory of distributed files. Pretty cool and extremely powerful once you starting working with big data proper.
+
+## Machine Learning
+
+Some of the most exciting applications of Spark involve machine learning; both through its built-in [MLlib](http://spark.rstudio.com/mlib/) library and its (seemless) interface to external platforms like H2O's [Sparkling Water](https://www.h2o.ai/sparkling-water/). There's a lot to cover here and I'm not going to be able to explain everything in depth. (We'll have a dedicated intro-to-machine-learning lecture next week.) But here's a simple example that uses our cached flights data to predict arrival delays with different algorithms.
+
+### Prepare the data
+
+First, I'm going to prepare the data. For this simple example, I'm not going to worry about scaling and any of the other feature engineering tricks that we'd pay attention to in a real-life problem. Instead, I'm just going to create a binary (1/0) "delayed" variable for flights that arrived more than 15 minutes later than scheduled. I'
+
+
+As ever with prediction algorithms, the we also need to partition our data into random samples for testing and validation. This will help us to avoid overfitting. In this case, I'm only going to use 10% of the data for model building and testing. This 10% sample will in turn be split 30-70 between training and testing data, respectively.
+
+```{r flights_sample}
+flights_sample <- 
+  flights_cached %>%
+  filter(!is.na(arr_delay)) %>%
+  ft_binarizer(input_col = "arr_delay", 
+               output_col = "delayed", 
+               threshold = 15) %>%
+  ft_bucketizer(input_col = "sched_dep_time", 
+                output_col = "dep_hr", 
+                splits = c(0, 400, 800, 1200, 1600, 2000, 2400)) %>% 
+  mutate(dep_hr = paste0("h", as.integer(dep_hr))) %>%
+  sdf_random_split(train = 0.03, test = 0.07, other = 0.9,
+                   seed = 123)
+
+tally(flights_sample$train)
+```
+
+Register and then cache the sampled tables in our Spark instance.
+
+```{r flights_train}
+flights_train <- sdf_register(flights_sample$train, "flights_train")
+tbl_cache(sc, "flights_train")
+```
+
+Let's fit a simple logistic regression model using `sparklyr::ml_logistic_regression`.
+
+```{r log_mod}
+log_mod <- 
+  flights_train %>%
+  ml_logistic_regression(delayed ~ dep_delay + dep_hr)
+
+summary(log_mod)
+```
+
+Now, we turn to our holdout "test" (i.e. holdout) sample to run predictions on data that the model has never seen.
+
+```{r log_pred}
+log_pred <- ml_predict(log_mod, flights_sample$test)
+
+## Preview the prediction results
+log_pred %>% 
+  select(delayed, dep_hr, prediction, probability) %>% 
+  head(5)
+```
+
+How did we do overall?
+
+```{r log_pred_tally}
+log_cmatrix <-
+  log_pred %>%
+  group_by(delayed, prediction) %>%
+  tally() 
+
+## Or get summary metrics:
+# ml_binary_classification_evaluator(log_pred) ## area under ROC
+# ml_multiclass_classification_evaluator(log_pred) ## F1 score
+```
+
+Let's compare how we might have done with a random forest model instead.
+
+```{r rf_mod, eval = FALSE}
+rf_mod <- 
+  flights_train %>%
+  ml_random_forest(delayed ~ dep_delay + dep_hr, type = "classification")
+
+## Run predictions on test (i.e. holdout) sample
+rf_pred <- ml_predict(rf_mod, flights_sample$test)
+
+## Preview the prediction results
+# rf_pred %>% 
+#   select(delayed, dep_hr, prediction, contains("probability")) %>% 
+#   head(5)
+
+## How did we do?
+rf_cmatrix <-
+  rf_pred %>%
+  group_by(delayed, prediction) %>%
+  tally() 
+```
+
+## Disconnect
 
 Finally, let's disconnect from our Spark connection.
 
@@ -346,7 +450,6 @@ Finally, let's disconnect from our Spark connection.
 spark_disconnect(sc)
 ```
 
+## Bonus: Spark in the cloud (GCP Dataproc)
 
-## Machine Learning and other Spark extensions
-
-Some of the most exciting applications of Spark involve machine learning; both through its built-in [MLlib](http://spark.rstudio.com/mlib/) library and its (seemless) interface to external platforms like H2O's [Sparkling Water](https://www.h2o.ai/sparkling-water/). We won't have enough time to cover these in today's lecture, but will return to them in the machine learning lecture (lectures?) later in the course.
+This is a bonus section of live material that I've prepared if we have time.
