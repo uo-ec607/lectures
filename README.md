@@ -18,7 +18,7 @@
 14. Cloud computing with Google Compute Engine \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/14-gce/14-gce.html)\]
 15. High performance computing (UO Talapas cluster) \[[Slides](https://docs.google.com/presentation/d/146u3W0J0ytGYBq7MZBOoE6wdbkEUrMIV-Fg5N3Cnsls/edit?usp=sharing) from Nick Maggio guest lecture.\]
 16. Databases: SQL(ite) and BigQuery \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/16-databases/16-databases.html)\]
-17. Spark
+17. Spark \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/17-spark/17-spark.html)\]
 18. Machine learning: (1)
 19. Machine learning: (2)
 
