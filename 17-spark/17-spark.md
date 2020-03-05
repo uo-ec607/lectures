@@ -4,7 +4,7 @@ subtitle: "Lecture 16: Spark"
 author:
   name: Grant R. McDermott
   affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
-# date: Lecture 16  #"04 March 2020"
+# date: Lecture 16  #"05 March 2020"
 output: 
   html_document:
     theme: flatly
@@ -155,18 +155,14 @@ Just to preempt things somewhat, our **sparklyr** workflow is going to closely m
 
 ## Instantiate a (local) Spark connection
 
-Before getting started, we need to instantiate a Spark connection via the `sparklyr::spark_connect()` function. This is going to follow a very similar path to the database connections that we saw in the previous lecture. Note that I am going to specify a "local" Spark instance because I'm working on my laptop, rather than a HPC cluster. (We'll get to some cluster examples at the very end of the lecture.) The only tweak that I'm going to implement beyond the default settings is to give the Spark driver a bit more memory, since I want to cache some tables for peformance reasons.^[By default, local Spark instances only request 2 GB for in-memory allocation. See [Chapter 9](https://therinspark.com/tuning.html) of *Mastering Spark with R* for more details.]
+Before getting started, we need to instantiate a Spark connection via the `sparklyr::spark_connect()` function. This is going to follow a very similar path to the database connections that we saw in the previous lecture. Note that I am going to specify a "local" Spark instance because I'm working on my laptop, rather than a HPC cluster. (We'll get to some cluster examples at the very end of the lecture.) 
 
 
 ```r
 # library(sparklyr) ## Already loaded
 
-# Customize the connection configuration by giving Spark a bit more memory
-conf <- spark_config()
-conf$`sparklyr.shell.driver-memory` <- "4G"
-
 ## Instantiate a Spark connection
-sc <- spark_connect(master = "local", config = conf, version = "2.3")
+sc <- spark_connect(master = "local", version = "2.3")
 ```
 
 > **Tip:** Did you run into an error message to the effect of "Java X is currently unsupported in Spark distributions... Please consider uninstalling Java 9 and reinstalling Java 8"? If so, please see the software requirements discussion for Java 8 (above)[#java_8].
@@ -410,7 +406,7 @@ count(air_new)
 ## 1 12193524
 ```
 
-Next, we'll query some columns and cache the resulting table to improve performance. There are various configurations and considerations that we'd normally want to weigh before caching a Spark table --- see [here](https://spark.rstudio.com/guides/caching/) --- but the default settings will suffice for this simple example. In truth, the benefit from explicit caching is not clear for this particular example, since the whole dataset is small enough to be held in memory regardless. But I again just want to demonstrate some general principles that would apply when working with much bigger data too. 
+Next, we'll query some columns and cache the resulting table to improve performance. There are various configurations and considerations that we'd normally want to weigh before caching a Spark table --- see [here](https://spark.rstudio.com/guides/caching/) --- but the default settings will suffice for this simple example. In truth, the benefit from explicit caching is not clear for this particular example, since the whole dataset is small enough to be held in memory regardless.^[By default, local Spark instances only request 4 GB of memory for the Spark driver. However, you can easily change this by requesting a larger memory allocation (among other features) via the `config` argument. See the **Sparklyr** website or [Chapter 9](https://therinspark.com/tuning.html) of *Mastering Spark with R* for more details.] But I again just want to demonstrate some general principles that would apply when working with much bigger data too. 
 
 
 ```r
