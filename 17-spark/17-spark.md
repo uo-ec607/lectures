@@ -4,7 +4,7 @@ subtitle: "Lecture 16: Spark"
 author:
   name: Grant R. McDermott
   affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
-# date: Lecture 16  #"03 March 2020"
+# date: Lecture 16  #"04 March 2020"
 output: 
   html_document:
     theme: flatly
@@ -121,6 +121,7 @@ list.files(dir_path)
 ##  [1] "airOT201201.csv" "airOT201202.csv" "airOT201203.csv" "airOT201204.csv"
 ##  [5] "airOT201205.csv" "airOT201206.csv" "airOT201207.csv" "airOT201208.csv"
 ##  [9] "airOT201209.csv" "airOT201210.csv" "airOT201211.csv" "airOT201212.csv"
+## [13] "combined.csv"
 ```
 
 ## What is Spark?
@@ -140,75 +141,113 @@ The short answer is that Spark can scale in ways that R simply can't. You can mo
 
 You'll note that Spark is often compared to a predecessor framework for cluster computing and distributed data processing called [(Hadoop) MapReduce](https://en.wikipedia.org/wiki/MapReduce). The key difference between these two frameworks is that Spark allows for in-memory processing, whereas MapReduce relies solely on I/O to disk. (See [here](https://www.scnsoft.com/blog/spark-vs-hadoop-mapreduce) and [here](https://www.quora.com/What-is-the-difference-in-idea-design-and-code-between-Apache-Spark-and-Apache-Hadoop/answer/Shubham-Sinha-202.)) You don't need to worry too much about all this now. It basically means that Spark is faster and better suited to our present needs. Spark also comes with a bunch of really cool extension libraries, which we'll barely scratch the surface of today.
 
-## Working with big datasets
+## Big data and Spark
 
 A central limitation of working with big datasets in R (and Stata and Python and virtually every other statistical or programming language) is that everything needs to be loaded in memory. By "memory" I'm talking about RAM, not disk storage. So if your laptop only has (say) 16 GB of RAM then --- even diregarding the memory simply needed to run my OS and other applications --- you are limited to datasets smaller than this size.^[The memory load of dataset doesn't scale perfectly with the disk space it occupies. Indeed, you will often find that a CSV file of X bytes is significantly larger than that when it is read into your R environment. (One reason: Your variables might get converted to special value types like factors or dates that take up more space than their string and numerical equivalents.) However, it's a useful approximation.] 
 
 We've already seen some methods to brute force our way passed this problem. These basically involve using a more powerful computer by spinning up a VM on the cloud (e.g. Google Compute Engine) or using a HPC cluster (e.g. UO's Talapas cluster). We've also talked about "small data problems disguised as big data problems". Perhaps you only need a subset of a large dataset and so the trick is pulling that smaller subset into memory. Our previous lecture on databases was primarily aimed at addressing this issue, where we either need to subset based on specified criteria or simply use an effective sampling strategy.^[We're all trained as applied econometrians so we believe in the valid statistical properties of sampling, right?] 
 
-Spark (and the **sparklyr** package) offer another approach to solving the "in-memory" bottleneck of large datasets. As we'll see, this has a familiar flavour to the "lazy" evaluation style that `dplyr` took to working with databases. Much of this relates to Spark's fundamental use case for working with distributed files systems and HPC clusters. However, I'll try to demonstrate these properties below by instantiating a "local" Spark instance and then working across multiple files.
+Spark offers another approach to solving the "in-memory" bottleneck of large datasets. This reflects Spark's fundamental use case for working with distributed files systems and HPC clusters. However, in the examples that follow, I'll demonstrate these properties by instantiating a "local" Spark instance and that allows us to map across multiple files. 
 
-## Working with multiple (large) files
+### Lazy evaluation redux
 
-A situation that will be familiar to many of you is where you have to merge a number of smaller datasets into a larger, composite dataset. These component data files can be pretty large in of themselves, as anyone who has ever worked with Census or weather data from multiple years can attest to. A natural approach to this task is to read all of the files into your data analysis environment (e.g. R) and then combine them within this environment. You may even use a relatively sophisticated loop or lapply call that does all the reading and merging programmatically. However, this approach still runs up against the "in-memory" bottleneck that we spoke about above. 
+Just to preempt things somewhat, our **sparklyr** workflow is going to closely mimic the **DBI**/**dbplyr** workflow that we saw in the [databases lecture](https://raw.githack.com/uo-ec607/lectures/master/16-databases/16-databases.html). First we'll instantiate a *connection* that can be populated with one or more *tables*. Then we'll reference and perform operations on these tables from R (e.g. submit queries or run statistical models) using the *lazy* evaluation framework provided by the **dplyr** package and friends. 
 
-Luckily, there's a better way. Two ways, in fact, and they both involve Spark (i.e. **sparklyr**). 
+## Instantiate a (local) Spark connection
 
-1. The first combines Spark and our old friend, the shell.
-2. The second uses Spark directly for distributed analysis (with some help from the `dbplot` package, which I'll introduce later).
-
-Let's demonstrate both approaches using the monthly air traffic data for 2012 that we downloaded earlier (see: [Data](#data)). While not "big data" by any conceivable modern definition, each of the 12 CSV files is reasonably meaty at around 100 MB. So we'd use at least ~1.2 GB of RAM to load and merge them all within R. 
-
-### Option 1: Concatenate files in the shell and then use **sparklyr**
-
-*Note: The next section is inspired by [this](http://www.brodrigues.co/blog/2018-02-16-importing_30gb_of_data/) blog post by Bruno Rodrigues. Bruno actually uses a significantly larger dataset (~30 GB) than what I'm going to use here. We won't have time for everyone to download the files during class and, to be honest, the same general principles apply. Well, with the exception of some additional tweaks that he invokes to avoid memory limitation errors. Read his [blog post](http://www.brodrigues.co/blog/2018-02-16-importing_30gb_of_data/) for more details.*
-
-Regardless of where we do it, however, we need to make sure that they have a consistent structure (same columns, etc.). Let's compare the top 2 lines of the first and last files using the `head` command.
-
-
-```bash
-$ head -2 data/airOT201201.csv
-```
-
-```
-## "YEAR","MONTH","DAY_OF_MONTH","DAY_OF_WEEK","FL_DATE","UNIQUE_CARRIER","TAIL_NUM","FL_NUM","ORIGIN_AIRPORT_ID","ORIGIN","ORIGIN_STATE_ABR","DEST_AIRPORT_ID","DEST","DEST_STATE_ABR","CRS_DEP_TIME","DEP_TIME","DEP_DELAY","DEP_DELAY_NEW","DEP_DEL15","DEP_DELAY_GROUP","TAXI_OUT","WHEELS_OFF","WHEELS_ON","TAXI_IN","CRS_ARR_TIME","ARR_TIME","ARR_DELAY","ARR_DELAY_NEW","ARR_DEL15","ARR_DELAY_GROUP","CANCELLED","CANCELLATION_CODE","DIVERTED","CRS_ELAPSED_TIME","ACTUAL_ELAPSED_TIME","AIR_TIME","FLIGHTS","DISTANCE","DISTANCE_GROUP","CARRIER_DELAY","WEATHER_DELAY","NAS_DELAY","SECURITY_DELAY","LATE_AIRCRAFT_DELAY",
-## 2012,1,1,7,2012-01-01,"AA","N325AA","1",12478,"JFK","NY",12892,"LAX","CA","0900","0855",-5.00,0.00,0.00,-1,13.00,"0908","1138",4.00,"1225","1142",-43.00,0.00,0.00,-2,0.00,"",0.00,385.00,347.00,330.00,1.00,2475.00,10,,,,,,
-```
-
-Looks good. Now we merge (i.e. concatenate) all the files in two steps: 
-
-  1. Extract the column headers from one file using the `head` command as before. Export these headers to a new `data/combined.csv` file.
-  2. Loop over the remaining files and copy across all their lines using the `cat` command, but making sure to remove the first line of (duplicate) column headers using an option of the `sed` command. Append each run of the loop to the `data/combined.csv` file.
-
-
-```bash
-$ head -1 data/airOT201201.csv > data/combined.csv
-$ for file in $(ls data/airOT*); do cat $file | sed "1 d" >> data/combined.csv; done
-```
-
-These two commands should run pretty quickly. On my system, the increase in memory useage was barely discernable. Certainly, not even close the amount that would have been required in R.
-
-Combined file duly created, we can now read the dataset into our R environment using Spark (via the **sparklyr** package).^[At this point you might be asking: "Why not just do this with a regular `read_csv()` call?" Well, remember that this simple example is only meant to *emulate* a case where we have a dataset that is bigger than memory. Spark provides the framework for working with these huge files, since it is efficiently splits operations between memory and disk. It uses memory (i.e. RAM) whenever it is available, otherwise it will switch to disk I/O. The same basic principles would apply if you were to actually start working with very large files.]
-
-First, we need to instantiate a Spark connection via the **`sparklyr::spark_connect()`** function. This is going to follow a very similar path to the database connections that we saw in the previous lecture. Note that I am going to specify a "local" Spark instance because I'm working on my laptop, rather than a HPC cluster.^[Just about any HPC cluster that you work on should have Spark installed, so you should be able to follow exactly the same steps there. Just make sure that **sparklyr** is installed on the cluster too.]
+Before getting started, we need to instantiate a Spark connection via the `sparklyr::spark_connect()` function. This is going to follow a very similar path to the database connections that we saw in the previous lecture. Note that I am going to specify a "local" Spark instance because I'm working on my laptop, rather than a HPC cluster. (We'll get to some cluster examples at the very end of the lecture.) The only tweak that I'm going to implement beyond the default settings is to give the Spark driver a bit more memory, since I want to cache some tables for peformance reasons.^[By default, local Spark instances only request 2 GB for in-memory allocation. See [Chapter 9](https://therinspark.com/tuning.html) of *Mastering Spark with R* for more details.]
 
 
 ```r
 # library(sparklyr) ## Already loaded
 
+# Customize the connection configuration by giving Spark a bit more memory
+conf <- spark_config()
+conf$`sparklyr.shell.driver-memory` <- "4G"
+
 ## Instantiate a Spark connection
-sc <- spark_connect(master = "local", version = "2.3", config = spark_config())
+sc <- spark_connect(master = "local", config = conf, version = "2.3")
 ```
 
-> **Tip: ** Did you run into an error message to the effect of "Java X is currently unsupported in Spark distributions... Please consider uninstalling Java 9 and reinstalling Java 8"? If so, please see the software requirements discussion for Java 8 (above)[#java8].
+> **Tip:** Did you run into an error message to the effect of "Java X is currently unsupported in Spark distributions... Please consider uninstalling Java 9 and reinstalling Java 8"? If so, please see the software requirements discussion for Java 8 (above)[#java_8].
 
-A point of convenience here is **sparklyr** offers intuitive aliases for regular R functions. So, we'll be using the **`sparklyr::spark_read_csv()`** function to pull in this (pretend) large CSV. 
+Assuming that you are running these commands in RStudio, you should have seen the "Connections" tab pop open. It is currently empty and should look like this:
+
+</br>
+![](pics/sc-rstudio-empty.png)
+
+We'll start copying over some tables to our empty connection shortly.
+
+## Working with multiple (large) files
+
+Every data scientist (or applied social scientist) has encountered a situation where they need to combine a collection of data files into a single dataset. These component data files can be pretty large in of themselves, as anyone who has ever worked with Census or weather data from multiple years can attest to. A natural approach to this task is to read all of the files into your data analysis environment (e.g. R or Python) and then combine them within this environment. You may even use a sophisticated loop that does all the reading and merging programmatically in parallel. However, this approach often still runs up against the "in-memory" bottleneck that we spoke about above. 
+
+Luckily, there's a better way. Two ways, in fact, and they both involve Spark (i.e. **sparklyr**). 
+
+1. The first combines Spark and our old friend, the shell.
+2. The second uses Spark for distributed analysis.
+
+Let's demonstrate both approaches using the monthly air traffic data for 2012 that we downloaded earlier (see: [Data](#data)). While not "big data" by any conceivable modern definition, each of the 12 CSV files is reasonably meaty at around 100 MB. So we'd use at least ~1.2 GB of RAM to load and merge them all within R. 
+
+### Option 1: Concatenate files in the shell and then use **sparklyr**
+
+*Note: The next section is inspired by [this](http://www.brodrigues.co/blog/2018-02-16-importing_30gb_of_data/) blog post by Bruno Rodrigues. He actually uses a significantly larger dataset (~30 GB) than what I'm going to use here. We won't have time for everyone to download the files during class, but the same general principles apply. Well, with the exception of some additional tweaks that Bruno invokes to avoid memory limitation errors. Read his [blog post](http://www.brodrigues.co/blog/2018-02-16-importing_30gb_of_data/) for more details.*
+
+Regardless of where we combine the data (CSV) files, we first need to make sure that they have a consistent structure (same columns, etc.). Let's compare the top 2 lines of the first and last files using the `head` command.
+
+
+```bash
+$ head -2 data/airOT201201.csv data/airOT201212.csv
+```
+
+```
+## ==> data/airOT201201.csv <==
+## "YEAR","MONTH","DAY_OF_MONTH","DAY_OF_WEEK","FL_DATE","UNIQUE_CARRIER","TAIL_NUM","FL_NUM","ORIGIN_AIRPORT_ID","ORIGIN","ORIGIN_STATE_ABR","DEST_AIRPORT_ID","DEST","DEST_STATE_ABR","CRS_DEP_TIME","DEP_TIME","DEP_DELAY","DEP_DELAY_NEW","DEP_DEL15","DEP_DELAY_GROUP","TAXI_OUT","WHEELS_OFF","WHEELS_ON","TAXI_IN","CRS_ARR_TIME","ARR_TIME","ARR_DELAY","ARR_DELAY_NEW","ARR_DEL15","ARR_DELAY_GROUP","CANCELLED","CANCELLATION_CODE","DIVERTED","CRS_ELAPSED_TIME","ACTUAL_ELAPSED_TIME","AIR_TIME","FLIGHTS","DISTANCE","DISTANCE_GROUP","CARRIER_DELAY","WEATHER_DELAY","NAS_DELAY","SECURITY_DELAY","LATE_AIRCRAFT_DELAY",
+## 2012,1,1,7,2012-01-01,"AA","N325AA","1",12478,"JFK","NY",12892,"LAX","CA","0900","0855",-5.00,0.00,0.00,-1,13.00,"0908","1138",4.00,"1225","1142",-43.00,0.00,0.00,-2,0.00,"",0.00,385.00,347.00,330.00,1.00,2475.00,10,,,,,,
+## 
+## ==> data/airOT201212.csv <==
+## "YEAR","MONTH","DAY_OF_MONTH","DAY_OF_WEEK","FL_DATE","UNIQUE_CARRIER","TAIL_NUM","FL_NUM","ORIGIN_AIRPORT_ID","ORIGIN","ORIGIN_STATE_ABR","DEST_AIRPORT_ID","DEST","DEST_STATE_ABR","CRS_DEP_TIME","DEP_TIME","DEP_DELAY","DEP_DELAY_NEW","DEP_DEL15","DEP_DELAY_GROUP","TAXI_OUT","WHEELS_OFF","WHEELS_ON","TAXI_IN","CRS_ARR_TIME","ARR_TIME","ARR_DELAY","ARR_DELAY_NEW","ARR_DEL15","ARR_DELAY_GROUP","CANCELLED","CANCELLATION_CODE","DIVERTED","CRS_ELAPSED_TIME","ACTUAL_ELAPSED_TIME","AIR_TIME","FLIGHTS","DISTANCE","DISTANCE_GROUP","CARRIER_DELAY","WEATHER_DELAY","NAS_DELAY","SECURITY_DELAY","LATE_AIRCRAFT_DELAY",
+## 2012,12,1,6,2012-12-01,"AA","N322AA","1",12478,"JFK","NY",12892,"LAX","CA","0900","0852",-8.00,0.00,0.00,-1,20.00,"0912","1148",19.00,"1220","1207",-13.00,0.00,0.00,-1,0.00,"",0.00,380.00,375.00,336.00,1.00,2475.00,10,,,,,,
+```
+
+Looks good. Now we'll merge (i.e. concatenate) all the files using the same two-step approach that I showed you --- using a set of much smaller files --- back in the shell lecture (see [here](https://raw.githack.com/uo-ec607/lectures/master/03-shell/03-shell.html#101)). 
+
+  1. Extract the column headers (i.e. first row) from any of the CSV files and redirect them to a new `data/combined.csv` file.
+  2. Loop over the remaining files and append everything (except the duplicate column headers) to the just-created `data/combined.csv` file.
+
+
+```bash
+$ head -1 data/airOT201201.csv > data/combined.csv
+$ for i in $(ls data/airOT*); do tail -n +2 $i >> data/combined.csv; done
+```
+
+These two commands should run pretty quickly (two seconds on my system). The required memory usage should also barely be discernible. Certainly, not even close the amount that would have been required in R. Combined file duly created, we can now read the dataset into our R environment using Spark via the **sparklyr** package.
+
+**Aside 1:** Right now, you might be wondering: "Why not just do this with a regular `read_csv()` call?" Yes, that would work perfectly well. But remember that this simple pedagogical example is only meant to *emulate* a case where we have a dataset that is bigger than memory. Spark provides the framework for working with these huge files, since it is efficiently splits operations between memory and disk. It uses memory (i.e. RAM) whenever it is available, otherwise it will switch to disk I/O. So, the same basic principles would apply if you were to actually start working with very large files.
+
+**Aside 2:** Something else these examples don't demonstrate --- but I want to emphasise nonetheless --- is that Spark can also read compressed files (.gzip, .bz2, etc.). This is obviously important for conserving disk space when dealing with big data.
+
+Okay, time to feed our empty `sc` connection some data by copying over the (pretend) big `combined.csv` file that we created just a few seconds ago. We'll do so using the `sparklyr::spark_read_csv()` function.^[A point of convenience is that **sparklyr** offers intuitive aliases for many base/tidyverse R functions.] In another similarity to our databases lecture, we should give the dataset a unique table name that distinguishes it in the Spark connection panel. I'll call it "air" and then also reference it from R by assigning it to a new object called `air_spark`.^[I'm only giving the R object a different name to avoid confusion. You can certainly call them both "air" if you want.] The next command will take a few seconds to run.
 
 
 ```r
 ## Read in the file as a Spark object
-air <- spark_read_csv(sc, name = "air", path = "data/combined.csv")
-air
+air_spark <- spark_read_csv(sc, name = "air", path = here("17-spark/data/combined.csv"))
+```
+
+The "Connections" tab of your RStudio IDE should now contain the "air" table that we just instantiated to our Spark connection. You can click on it to expand the various columns, or you could click on the spreadsheet icon to see a preview of the dataset in a new RStudio window.
+
+</br>
+![](pics/sc-rstudio-air.png)
+</br>
+
+> **Tip:** I won't go through it here, but you can open the (native) Spark web interface in your internet browser by typing `spark_web(sc)` in your R console. See [Chapter 2.4.1](https://therinspark.com/starting.html#starting-spark-web-interface) of *Mastering Spark in R* for more details. 
+
+You can also get a (lazy) preview of table by printing the `air_spark` reference object in your R console. 
+
+
+```r
+air_spark
 ```
 
 ```
@@ -239,33 +278,24 @@ air
 ## #   SECURITY_DELAY <dbl>, LATE_AIRCRAFT_DELAY <dbl>, `_c44` <chr>
 ```
 
-Next, similar to the database connections that we saw in the previous lecture, we can create a spark connection to an object (i.e. dataset) via the `spark_connect()` function. Note that I specify a "local" Spark instance because I'm working on my laptop, rather than a HPC cluster.
-
-At this point, you can click on the "Connections" tab of your RStudio IDE and it should show you that you are connected to a new table called "air". You can expand it to see the various columns, or you could click on the spreadsheet icon to see a preview of the dataset in a new RStudio window. While I won't go through it here, you can even click on the "SparkUI" tab, which will open open the native Spark connections pane in your internet browser.
-
-</br>
-![](pics/spark-rstudio.png)
-</br>
-
-The good news is that --- thanks once again to the folks at RStudio --- all of our favourite `dplyr` verbs and tidyverse syntax carry over to an **sparklyr** connection. Let's create a summary dataframe, showing the mean departure delay for each day of our dataset.
+Since I keep referencing the databases lecture, the good news is that all of the **dplyr** verbs and tidyverse syntax carry over to a **sparklyr** table connection. (In the background, these are getting translated to Spark SQL.) Let's create a new data frame that contains the mean departure delay for each day of our table.
 
 
 ```r
 # library(tidyverse) ## Already loaded
 
 mean_dep_delay <- 
-  air %>%
+  air_spark %>%
   group_by(YEAR, MONTH, DAY_OF_MONTH) %>%
   summarise(mean_delay = mean(DEP_DELAY))
 ```
 
-This works incredibly quickly, but note that once again we are dealing with a **lazy** query. Just like we saw in our databases lecture, the `mean_dep_delay` object hasn't actually been created yet. At the moment it is just a pointer to a set of aspirational commands. Even if we printed the object name, then we'd only get a preview of the object. (Confirm this for yourself.)
-
-So how to do actually pull this data into our R environment? Well, again just like in the databases lecture we can use the **`dplyr::collect()`** function to execute the full set of commands and load the resulting object into R.
+This works incredibly quickly, but remember that we're dealing with a *lazy* query here. The `mean_dep_delay` object hasn't actually been created yet; it's just a pointer to a set of aspirational commands. To actually execute the query and pull the resulting object into our R environment, we'll use `dplyr::collect()`. At the risk of repeating myself, this is exactly the same approach that we adopted in the databases lecture. 
 
 
 ```r
-collected_mean_dep_delay <- collect(mean_dep_delay)
+# mean_dep_delay %>% show_query() ## Show the Spark SQL translation
+mean_dep_delay <- collect(mean_dep_delay)
 ```
 
 ```
@@ -275,7 +305,7 @@ collected_mean_dep_delay <- collect(mean_dep_delay)
 ```
 
 ```r
-collected_mean_dep_delay
+mean_dep_delay
 ```
 
 ```
@@ -295,43 +325,38 @@ collected_mean_dep_delay
 ## # … with 356 more rows
 ```
 
-All that hard work deserves a nice plot, don't you think? I'm going to use the lubridate package to get some sensible dates and then we can take a look at how departure delays vary by 
+All that hard work deserves a nice plot, don't you think? Let's see how departure delays vary over the course of a year. Note that I'm using the **lubridate** package to create some sensible dates.
 
 
 ```r
 # library(lubridate) ## Already loaded
 
-collected_mean_dep_delay <- 
-  collected_mean_dep_delay %>%
+mean_dep_delay <- 
+  mean_dep_delay %>%
   arrange(YEAR, MONTH, DAY_OF_MONTH) %>%
   mutate(date = ymd(paste(YEAR, MONTH, DAY_OF_MONTH, sep = "-")))
 
-collected_mean_dep_delay %>%
+mean_dep_delay %>%
   ggplot(aes(date, mean_delay)) + 
   geom_line() +
-  geom_smooth(se = F)
+  geom_smooth(se = FALSE)
 ```
 
 ![](17-spark_files/figure-html/collected_mean_dep_delay_plot-1.png)<!-- -->
 
-**Bottom line:** Try to avoid flying over the December and summer holidays.
+**Bottom line:** Looks like you want to avoid flying over the December and summer holidays. (This kind of deep analysis is what they pay us the big bucks for.)
 
-Let's disconnect from our Spark connection.
+We'd normally disconnect from our `sc` connection at this point using `spark_disconnect(sc)`, but I want to keep it open for the moment and copy over some new data.
 
+### Option 2: Distributed analysis using **sparklyr**
 
-```r
-spark_disconnect(sc)
-```
-
-### Option 2: Distributed analysis using **sparklyr** and **dbplot**
-
-While the above method is great for showing off the power of the shell and the basic functionality of **sparklyr**, it doesn't demonstrate the core *distributed* functionality of the Spark ecosystem. In particular, Spark is very efficient --- optimised, even --- for working with a distributed files. Our second example is intended to demonstrate this functionality. Note that, while it will involve a pretty simple distributed set of files on our local computer, the same ideas would apply to more complicated cluster setups.
+While the above method is great for showing off the power of the shell and the basic functionality of **sparklyr**, it doesn't demonstrate the core *distributed* functionality of the Spark ecosystem. In particular, Spark is very efficient --- optimised, even --- for working with a distributed files. Our second example is intended to demonstrate this functionality. Note that, while it will involve a pretty simple distributed set of files on our local computer, the same ideas would apply to more complicated cluster setups. 
 
 Let's start by removing that `combined.csv` file from earlier, just to convince ourselves that we're not somehow reading in the concatenated file. We want to make sure that we're working across a distributed set of files.
 
 
 ```r
-file.remove("data/combined.csv")
+file.remove(here("17-spark/data/combined.csv"))
 ```
 
 ```
@@ -339,7 +364,7 @@ file.remove("data/combined.csv")
 ```
 
 ```r
-list.files("data/")
+list.files(here("17-spark/data/"))
 ```
 
 ```
@@ -360,90 +385,75 @@ col_names <-
   names()
 ```
 
-Instantiate a new Spark connection.
-
-
-```r
-sc2 <- spark_connect(master = "local", version = "2.3")
-```
-
-
 Now, we read in the distributed files. We'll be using the same `spark_read_csv()` function as before, but now I'll just use the path for the whole `data/` directory rather than any individual CSVs. I'll call this new (distributed) Spark object `air_new`, but only to keep it clear that this is not the same object as before.
 
 
 ```r
 air_new <- 
   spark_read_csv(
-  sc2,
+  sc,
   name = "air_new",
-  path = "./data/",
+  path = here("17-spark/data/"),
   memory = FALSE,
   columns = col_names,
   infer_schema = FALSE
   )
 
-air_new %>% 
-  count()
+## Count rows to prove all 6+ million obs have been read in
+count(air_new)
 ```
 
 ```
 ## # Source: spark<?> [?? x 1]
-##         n
-##     <dbl>
-## 1 6096762
+##          n
+##      <dbl>
+## 1 12193524
 ```
 
-Next we cache the (distributed) Spark object to improve performace. There are various ways to do this and you can read more about the underlying idea [here](https://spark.rstudio.com/guides/caching/).
+Next, we'll query some columns and cache the resulting table to improve performance. There are various configurations and considerations that we'd normally want to weigh before caching a Spark table --- see [here](https://spark.rstudio.com/guides/caching/) --- but the default settings will suffice for this simple example. In truth, the benefit from explicit caching is not clear for this particular example, since the whole dataset is small enough to be held in memory regardless. But I again just want to demonstrate some general principles that would apply when working with much bigger data too. 
 
 
 ```r
 air_new_cached <- 
   air_new %>% 
-  select(fl_date, #month,
-         dep_time,
-         arr_time,
-         arr_delay,
-         dep_delay,
-         distance) %>%
-  # mutate_all(as.numeric) %>%
+  select(fl_date, dep_time, arr_time, arr_delay, dep_delay, distance) %>%
   mutate_at(vars(dep_time:distance), as.numeric) %>%
-  compute("air_new_cached")
+  sdf_register("air_new_cached") ## Register resulting Spark SQL in Spark connection
 
-air_new_cached %>% 
-  count()
-```
+## Cache it (i.e. load in memory for performance)
+tbl_cache(sc, "air_new_cached")
 
-```
-## # Source: spark<?> [?? x 1]
-##         n
-##     <dbl>
-## 1 6096762
-```
-
-```r
-head(air_new_cached, 5)
+## Preview it
+air_new_cached
 ```
 
 ```
-## # Source: spark<?> [?? x 6]
-##   fl_date    dep_time arr_time arr_delay dep_delay distance
-##   <chr>         <dbl>    <dbl>     <dbl>     <dbl>    <dbl>
-## 1 2012-06-01      855     1202       -13        -5     2475
-## 2 2012-06-02      854     1150       -25        -6     2475
-## 3 2012-06-03      851     1148       -27        -9     2475
-## 4 2012-06-04      850     1213        -2       -10     2475
-## 5 2012-06-05      849     1138       -37       -11     2475
+## # Source: spark<air_new_cached> [?? x 6]
+##    fl_date    dep_time arr_time arr_delay dep_delay distance
+##    <chr>         <dbl>    <dbl>     <dbl>     <dbl>    <dbl>
+##  1 2012-01-01      855     1142       -43        -5     2475
+##  2 2012-01-02      921     1210       -15        21     2475
+##  3 2012-01-03      931     1224        -1        31     2475
+##  4 2012-01-04      904     1151       -34         4     2475
+##  5 2012-01-05      858     1142       -43        -2     2475
+##  6 2012-01-06      911     1151       -34        11     2475
+##  7 2012-01-07      902     1203       -22         2     2475
+##  8 2012-01-08      855     1129       -56        -5     2475
+##  9 2012-01-09      858     1127       -58        -2     2475
+## 10 2012-01-10      852     1134       -51        -8     2475
+## # … with more rows
 ```
 
-Now we can plot using the [dbplot package](https://db.rstudio.com/dbplot/).
+> **Tip:** Open the Spark web UI (`spark_web(sc)`) and click the "Storage" tab to see which of your tables are cached and held in memory.
+
+Remembering that "air_new_cached" still only exists as a Spark table, here's something cool: We can use the [**dbplot**](https://db.rstudio.com/dbplot/) package to perform plot calculations *inside* the Spark connection (i.e. database). While this might seem like overkill for this particular example --- it is --- this database plotting functionality is extremely useful extracting insights from large database connections.^[You might note that that I'm not using **lubridate** for the date conversions here. That's because Spark relies on Hive functions for built-in aggregation, including datetime operations. See [here](https://spark.rstudio.com/dplyr/#hive-functions).]
 
 
 ```r
 # library(dbplot) ## Already loaded
 
 air_new_cached %>%
-  ## Can't use lubridate functions (e.g. ymd()), so h 
-  # mutate(Date = as.Date(paste("2012", as.integer(month), "01", sep="-"))) %>% 
+  ## Can't use lubridate functions (e.g. ymd()), but as.Date works well for Spark SQL tables 
   mutate(Date = as.Date(fl_date)) %>%
   dbplot_line(Date, mean(dep_delay))
 ```
@@ -456,11 +466,13 @@ air_new_cached %>%
 
 ![](17-spark_files/figure-html/air_new_cached_plot-1.png)<!-- -->
 
+And there we have our same plot from before, but now executed from inside the Spark table, which in turn was created from a directory of distributed files. Pretty cool and extremely powerful once you starting working with big data proper.
 
 Finally, let's disconnect from our Spark connection.
 
+
 ```r
-spark_disconnect(sc2)
+spark_disconnect(sc)
 ```
 
 
