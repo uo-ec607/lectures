@@ -1,10 +1,10 @@
 ---
 title: "Data Science for Economists"
-subtitle: "Lecture 16: Spark"
+subtitle: "Lecture 17: Spark"
 author:
   name: Grant R. McDermott
   affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
-# date: Lecture 16  #"`r format(Sys.time(), '%d %B %Y')`"
+# date: Lecture 17  #"`r format(Sys.time(), '%d %B %Y')`"
 output: 
   html_document:
     theme: flatly
