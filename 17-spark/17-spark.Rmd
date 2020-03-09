@@ -33,12 +33,15 @@ knitr::knit_hooks$set(
 Sys.setenv(JAVA_HOME = "/usr/lib/jvm/java-8-openjdk")
 ```
 
+<i>Note: Today's lecture is largely going to be focused on the [**sparklyr**](https://spark.rstudio.com/) package, which provides an R interface to the larger [Apache Spark](https://spark.apache.org/) ecosystem. I want to emphasize ahead of time that Spark is really designed for big data pipelines on an HPC cluster or network. These systems would normally be configured and maintained by your company or university's IT/software engineering team. We're going to emulate these big data pipelines by installing Spark on our local machines, and then explore some of the key concepts through a series of relatively simple examples. My goal is to give you a good sense of how Spark (and **sparklyr**) works and why it's so popular for big data work. The same ideas and functions that we explore today will work at much larger scale.</i>
 
 ## Requirements
 
+A lot of work has gone into making a local Spark install as easy as possible. But we've still got quite a few steps to walk through, so please follow all of the below instructions carefully.
+
 ### Apache Spark
 
-Today's lecture is largely going to be focused on the [**sparklyr**](https://spark.rstudio.com/) package, which provides a seemless interface to the larger [Apache Spark](https://spark.apache.org/) ecosystem. Among other things, **sparklyr** provides a convenient way to install Spark on your system via the `sparklyr::spark_install()` command. Run this next code chunk interactively in your R session. Note that I am going to install a slightly older version of Spark itself (version 2.4.0 is available as of the time of writing), but I don't think this matters all that much.
+The **sparklyr** package provides a convenient way to install Spark on your system via the `sparklyr::spark_install()` command. Run this next code chunk interactively in your R session. Note that I am going to install a slightly older version of Spark itself (version 2.4.0 is available as of the time of writing), but I don't think this matters all that much.
 
 ```{r spark_install, eval=F}
 if (!require("sparklyr")) install.packages("sparklyr")
@@ -48,15 +51,51 @@ sparklyr::spark_install(version = "2.3.0")
 
 Installation may take a few minutes to complete, depending on your internet connection and system.
 
-
 ### Java 8 
 
-Spark requires Java 8, which you can download [here](https://www.java.com/en/download/manual.jsp). (Windows users: Please make sure that you download the 64 bit version if you are on 64 bit machine. Otherwise you will probably run into memory allocation errors.)
+Spark specifically requires Java 8. (Other versions of Java won't work!) This can be a bit finicky, so here are some platform-specific installation tips:
 
-The Java 8 requirement is somewhat annoying, since you probably already have a newer version of Java installed on your system as the default.^[We'll get to this in a second, but you can check your current (default) Java version by running `system("java -version")` in your R console. You can also get a list of all installed Java versions on your system, although the method varies by operating system. (E.g. On Arch Linux I can run `$ archlinux-java status` from the shell.) You're probably best off Googling it for your own system.] One way to get around this problem is to [replace your current Java installation with Java 8](https://github.com/uc-cfss/Discussion/issues/71). This will automatically make it the default Java environment and is probably the simplest solution. However, I personally don't like the idea of uninstalling the most recent Java version on my computer just to run Spark. In my view, a better solution is to install Java 8 *alongside* your current version. You can then tell R which Java version it should use via an environment variable. This works exactly the same way as when we used environment variables to save secret API keys during our webscraping and cloud computing lectures. (See [here](https://raw.githack.com/uo-ec607/lectures/master/07-web-apis/07-web-apis.html#aside:_safely_store_and_use_api_keys_as_environment_variables) if you missed it.) For example, you can tell R to use Java 8 for the current session by setting a temporary environment variable with the following command.
+#### Windows 
+
+Download the official installer [here](https://www.java.com/en/download/manual.jsp) and then follow the prompts. Please make sure that you download the 64 bit version if you are using a 64 bit machine (which almost certainly the case). Otherwise you will probably run into memory allocation errors when you try to use Spark.
+
+I recommend that you allow it to install in the default location, which should be something like: `C:\Program Files\Java\jre1.8.0_241`. If you decide on a different install location, please take careful note of your new installation path since you will need that later.
+
+#### Mac
+
+It's possible to download Java 8 [here](https://www.java.com/en/download/manual.jsp). However, this official link appears to causing problems on the latest versions of OSX. Consequently, I recommend that you instead install it using [Homebrew](https://brew.sh/). From your terminal:
+
+```{sh mac1, eval=FALSE, prompt=TRUE}
+brew cask install adoptopenjdk/openjdk/adoptopenjdk8
+```
+
+This should install Java 8 to the following location: `/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home`
+
+You can check for all Java installations on your machine by typing in the following command in your terminal:
+
+```{sh mac2, eval=FALSE, prompt=TRUE}
+ls -lh /Library/Java/JavaVirtualMachines/
+```
+
+#### Linux
+
+You probably know what you're doing, but I recommend that you install OpenJDK 8 using your distro's package manager. See [here](https://openjdk.java.net/install/). This should install to `/usr/lib/jvm/java-8-openjdk` by default. You can list all installed Java versions on your machine with:
+
+```{sh linux1, eval=FALSE, prompt=TRUE}
+ls -lh /usr/lib/jvm
+```
+
+(Those of you on Arch who installed Java OpenJDK --- or OpenJFX --- through the [official repos](https://wiki.archlinux.org/index.php/Java) can also run `$ archlinux-java status`.)
+
+#### Linking Java 8 to R
+
+The Java 8 requirement is somewhat annoying, since you probably (might?) have a newer version of Java installed on your system already. One way to get around this problem is to [replace your current Java installation with Java 8](https://github.com/uc-cfss/Discussion/issues/71). This will automatically make it the default Java environment and is probably the simplest solution. However, I personally don't like the idea of uninstalling the most recent Java version on my computer just to run Spark. In my view, a better solution is to install Java 8 *alongside* your current version. You can then tell R which Java version it should use via an environment variable. This works exactly the same way as when we used environment variables to save secret API keys during our webscraping and cloud computing lectures. (See [here](https://raw.githack.com/uo-ec607/lectures/master/07-web-apis/07-web-apis.html#aside:_safely_store_and_use_api_keys_as_environment_variables) if you missed it.) For example, you can tell R to use Java 8 for the current session by setting a temporary environment variable with the following command.
 
 ```{r java8, eval=FALSE}
-## NB: Change to the location of your Java 8 installation!
+## NB: Change to the location path of your own Java 8 installation!
+# Linux: /usr/lib/jvm/java-8-openjdk
+# Mac: /Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home
+# Windows: C:/Program Files/Java/jre1.8.0_241 ## At time of writing
 Sys.setenv(JAVA_HOME = "/path/to/your/java8/installation") 
 ```
 
@@ -68,6 +107,8 @@ You can confirm your Java installation by running the following command.
 system("java -version")
 ```
 
+> **Tip:** If you're running Windows, the above command might give you a random number like "127" until you restart your system.
+
 If you're having trouble with Java installation, then please consult the [*Mastering Spark with R*](https://therinspark.com/starting.html#starting-prerequisites) book.
 
 ### R packages 
@@ -75,7 +116,7 @@ If you're having trouble with Java installation, then please consult the [*Maste
 - New: **sparklyr**, **dbplot**
 - Already used: **tidyverse**, **hrbrthemes**, **lubridate**, **janitor**, **httr**, **here**
 
-As per usual, the code chunk below will install (if necessary) and load all of these packages for you. I'm also going to set my preferred ggplot2 theme, but as you wish.
+As per usual, the code chunk below will install (if necessary) and load all of these packages for you.
 
 ```{r packages, cache=FALSE, message=FALSE}
 ## Load/install packages
@@ -84,7 +125,6 @@ pacman::p_load(tidyverse, hrbrthemes, lubridate, janitor, httr, sparklyr, dbplot
 ## My preferred ggplot2 theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
-
 
 ### Data
 
@@ -563,3 +603,8 @@ spark_disconnect(sc)
 ## Bonus: Spark in the cloud (GCP Dataproc)
 
 This is a bonus section of live material that I've prepared if we have time.
+
+## Further reading and resources
+
+- [*Mastering Spark with R*](https://therinspark.com/) by Javier Luraschi, Kevin Kuo, and Edgar Ruiz.
+- The [**sparklyr** website](https://spark.rstudio.com/).
