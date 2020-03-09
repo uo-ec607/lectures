@@ -1,10 +1,10 @@
 ---
 title: "Data Science for Economists"
-subtitle: "Lecture 16: Spark"
+subtitle: "Lecture 17: Spark"
 author:
   name: Grant R. McDermott
   affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
-# date: Lecture 16  #"05 March 2020"
+# date: Lecture 17  #"09 March 2020"
 output: 
   html_document:
     theme: flatly
@@ -37,11 +37,13 @@ Installation may take a few minutes to complete, depending on your internet conn
 
 ### Java 8 
 
-Spark requires Java 8, which you can install [here](https://www.java.com/download/). This is somewhat annoying, since you probably already have a newer version of Java installed on your system as the default.^[We'll get to this in a second, but you can check your current (default) Java version by running `system("java -version")` in your R console. You can also get a list of all installed Java versions on your system, although the method varies by operating system. (E.g. On Arch Linux I can run `$ archlinux-java status` from the shell.) You're probably best off Googling it.] One way to get around this problem is to [replace your current Java installation with Java 8](https://github.com/uc-cfss/Discussion/issues/71). This will automatically make it the default Java environment and is probably the simplest solution. However, I personally don't like the idea of uninstalling the most recent Java version on my computer just to run Spark. In my view, a better solution is to install Java 8 *alongside* your current version. You can then tell R which Java version it should use via an environment variable. This works exactly the same way as when we used environment variables to save secret API keys during our webscraping and cloud computing lectures. (See [here](https://raw.githack.com/uo-ec607/lectures/master/07-web-apis/07-web-apis.html#aside:_safely_store_and_use_api_keys_as_environment_variables) if you missed it.) For example, you can tell R to use Java 8 for the current session by setting a temporary environment variable with the following command.
+Spark requires Java 8, which you can download [here](https://www.java.com/en/download/manual.jsp). (Windows users: Please make sure that you download the 64 bit version if you are on 64 bit machine. Otherwise you will probably run into memory allocation errors.)
+
+The Java 8 requirement is somewhat annoying, since you probably already have a newer version of Java installed on your system as the default.^[We'll get to this in a second, but you can check your current (default) Java version by running `system("java -version")` in your R console. You can also get a list of all installed Java versions on your system, although the method varies by operating system. (E.g. On Arch Linux I can run `$ archlinux-java status` from the shell.) You're probably best off Googling it for your own system.] One way to get around this problem is to [replace your current Java installation with Java 8](https://github.com/uc-cfss/Discussion/issues/71). This will automatically make it the default Java environment and is probably the simplest solution. However, I personally don't like the idea of uninstalling the most recent Java version on my computer just to run Spark. In my view, a better solution is to install Java 8 *alongside* your current version. You can then tell R which Java version it should use via an environment variable. This works exactly the same way as when we used environment variables to save secret API keys during our webscraping and cloud computing lectures. (See [here](https://raw.githack.com/uo-ec607/lectures/master/07-web-apis/07-web-apis.html#aside:_safely_store_and_use_api_keys_as_environment_variables) if you missed it.) For example, you can tell R to use Java 8 for the current session by setting a temporary environment variable with the following command.
 
 
 ```r
-## Change to the location of your Java 8 installation
+## NB: Change to the location of your Java 8 installation!
 Sys.setenv(JAVA_HOME = "/path/to/your/java8/installation") 
 ```
 
@@ -54,7 +56,7 @@ You can confirm your Java installation by running the following command.
 system("java -version")
 ```
 
-If you're having trouble with Java installation, then please consult the [*Mastering Spark with R*](https://therinspark.com/starting.html#starting-prerequisites)
+If you're having trouble with Java installation, then please consult the [*Mastering Spark with R*](https://therinspark.com/starting.html#starting-prerequisites) book.
 
 ### R packages 
 
@@ -161,8 +163,12 @@ Before getting started, we need to instantiate a Spark connection via the `spark
 ```r
 # library(sparklyr) ## Already loaded
 
+## Give our Spark instance a bit more memory
+config <- spark_config()
+config$spark.executor.memory <- "4G"
+
 ## Instantiate a Spark connection
-sc <- spark_connect(master = "local", version = "2.3")
+sc <- spark_connect(master = "local", config = config, version = "2.3")
 ```
 
 > **Tip:** Did you run into an error message to the effect of "Java X is currently unsupported in Spark distributions... Please consider uninstalling Java 9 and reinstalling Java 8"? If so, please see the software requirements discussion for Java 8 (above)[#java_8].
@@ -401,9 +407,9 @@ count(flights)
 
 ```
 ## # Source: spark<?> [?? x 1]
-##          n
-##      <dbl>
-## 1 12193524
+##         n
+##     <dbl>
+## 1 6096762
 ```
 
 You should now be able to see the second "flights" table in your connections tab. (Refresh the tab if not.) This next step is not strictly necessary, but since we'll no longer be using the original "air" table anymore, it's safe to remove it and conserve memory for other Spark objects. We can do this with the `dplyr::db_drop_table()` function.
@@ -417,7 +423,7 @@ db_drop_table(sc, "air")
 ## [1] 0
 ```
 
-Okay, let's query and mutate some columns from our new "flights" table.^[You might note that that I'm not using **lubridate** for the date conversions in the query that follows. That's because Spark relies on Hive functions for built-in aggregation, including datetime operations. See [here](https://spark.rstudio.com/dplyr/#hive-functions).] I'm also going to go ahead and cache the resulting table in Spark's memory allocation to improve performance. There are various configurations and considerations that we'd normally want to weigh before caching a Spark table --- see [here](https://spark.rstudio.com/guides/caching/) --- but the default settings will suffice for this simple example. In truth, the benefit from explicit caching is not clear for this particular example, since the whole dataset is small enough to be held in memory regardless.^[By default, local Spark instances only request 4 GB of memory for the Spark driver. However, you can easily change this by requesting a larger memory allocation (among other features) via the `config` argument. See the **sparklyr** [website](https://spark.rstudio.com/deployment/#configuration) or [Chapter 9](https://therinspark.com/tuning.html) of *Mastering Spark with R* for more details.] But I again just want to demonstrate some general principles that would apply when working with much bigger data too. 
+Okay, let's query and mutate some columns from our new "flights" table.^[You might note that that I'm not using **lubridate** for the date conversions in the query that follows. That's because Spark relies on Hive functions for built-in aggregation, including datetime operations. See [here](https://spark.rstudio.com/dplyr/#hive-functions).] I'm also going to go ahead and cache the resulting table in Spark's memory allocation to improve performance. There are various configurations and considerations that we'd normally want to weigh before caching a Spark table --- see [here](https://spark.rstudio.com/guides/caching/) --- but the default settings will suffice for this simple example. In truth, the benefit from explicit caching is not clear for this particular example, since the whole dataset is small enough to be held in memory regardless.^[By default, local Spark instances only request 2 GB of memory for the Spark driver. However, you can easily change this by requesting a larger memory allocation (among other features) via the `config` argument. See the **sparklyr** [website](https://spark.rstudio.com/deployment/#configuration) or [Chapter 9](https://therinspark.com/tuning.html) of *Mastering Spark with R* for more details.] But I again just want to demonstrate some general principles that would apply when working with much bigger data too. 
 
 
 ```r
@@ -445,16 +451,16 @@ flights_cached
 ## # Source: spark<flights_cached> [?? x 9]
 ##    fl_date    month dep_time arr_time arr_delay dep_delay distance
 ##    <date>     <dbl>    <dbl>    <dbl>     <dbl>     <dbl>    <dbl>
-##  1 2012-01-01     1      855     1142       -43        -5     2475
-##  2 2012-01-02     1      921     1210       -15        21     2475
-##  3 2012-01-03     1      931     1224        -1        31     2475
-##  4 2012-01-04     1      904     1151       -34         4     2475
-##  5 2012-01-05     1      858     1142       -43        -2     2475
-##  6 2012-01-06     1      911     1151       -34        11     2475
-##  7 2012-01-07     1      902     1203       -22         2     2475
-##  8 2012-01-08     1      855     1129       -56        -5     2475
-##  9 2012-01-09     1      858     1127       -58        -2     2475
-## 10 2012-01-10     1      852     1134       -51        -8     2475
+##  1 2012-06-01     6      855     1202       -13        -5     2475
+##  2 2012-06-02     6      854     1150       -25        -6     2475
+##  3 2012-06-03     6      851     1148       -27        -9     2475
+##  4 2012-06-04     6      850     1213        -2       -10     2475
+##  5 2012-06-05     6      849     1138       -37       -11     2475
+##  6 2012-06-06     6      857     1141       -34        -3     2475
+##  7 2012-06-07     6      852     1138       -37        -8     2475
+##  8 2012-06-08     6      849     1127       -48       -11     2475
+##  9 2012-06-09     6      913     1155       -20        13     2475
+## 10 2012-06-10     6      853     1147       -28        -7     2475
 ## # … with more rows, and 2 more variables: sched_dep_time <dbl>,
 ## #   sched_arr_time <dbl>
 ```
@@ -471,12 +477,6 @@ flights_cached %>%
   dbplot_line(fl_date, mean(dep_delay))
 ```
 
-```
-## Warning: Missing values are always removed in SQL.
-## Use `mean(x, na.rm = TRUE)` to silence this warning
-## This warning is displayed only once per session.
-```
-
 ![](17-spark_files/figure-html/flights_cached_plot-1.png)<!-- -->
 
 And there we have our same plot from before, but now executed from inside the Spark table, which in turn was created from a directory of distributed files. Pretty cool and extremely powerful once you starting working with big data proper.
@@ -485,36 +485,31 @@ And there we have our same plot from before, but now executed from inside the Sp
 
 Some of the most exciting applications of Spark involve machine learning; both through its built-in [MLlib](http://spark.rstudio.com/mlib/) library and its (seemless) interface to external platforms like H2O's [Sparkling Water](https://www.h2o.ai/sparkling-water/). There's a lot to cover here and I'm not going to be able to explain everything in depth. (We'll have a dedicated intro-to-machine-learning lecture next week.) But here's a simple example that uses our cached flights data to predict arrival delays with different algorithms.
 
-### Prepare the data
+### Prepare and the data
 
-First, I'm going to prepare the data. For this simple example, I'm not going to worry about scaling and any of the other feature engineering tricks that we'd pay attention to in a real-life problem. Instead, I'm just going to create a binary (1/0) "delayed" variable for flights that arrived more than 15 minutes later than scheduled. I'
+First, I'm going to prepare the data. For this simple example, I'm not going to worry about scaling and any of the other feature engineering tricks that we'd normally heed in a real-life ML problem. Instead, I'm just going to create a binary (1/0) variable called "late", which records whether a flight arrived more than 15 minutes behind schedule. In other words, this is going to be a *classification* problem.
 
-
-As ever with prediction algorithms, the we also need to partition our data into random samples for testing and validation. This will help us to avoid overfitting. In this case, I'm only going to use 10% of the data for model building and testing. This 10% sample will in turn be split 30-70 between training and testing data, respectively.
+As ever with prediction algorithms, we also need to partition our data into random samples for testing and validation. This will help us avoid overfitting. In this case, I'm only going to use 10% of the data for model building and testing. This 10% sample will in turn be split 30-70 between training and testing data, respectively.
 
 
 ```r
 flights_sample <- 
   flights_cached %>%
   filter(!is.na(arr_delay)) %>%
+  ## Create our binary outcome variable: "late" 
+  ## Measures whether arrival > 15 min delayed
   ft_binarizer(input_col = "arr_delay", 
-               output_col = "delayed", 
+               output_col = "late", 
                threshold = 15) %>%
+  ## Create a new discretized predictor variable: dep_block
+  ## Divides departure times into six evenly-spaced "blocks" (i.e. 4 hours apart)
   ft_bucketizer(input_col = "sched_dep_time", 
-                output_col = "dep_hr", 
-                splits = c(0, 400, 800, 1200, 1600, 2000, 2400)) %>% 
-  mutate(dep_hr = paste0("h", as.integer(dep_hr))) %>%
+                output_col = "dep_block", 
+                splits = seq(0, 2400, by = 400)) %>% 
+  mutate(dep_block = paste0(as.integer(dep_block))) %>%
+  ## Partition the data: Randomly sample 10% for training (7%) and testing (3%)
   sdf_random_split(train = 0.03, test = 0.07, other = 0.9,
                    seed = 123)
-
-tally(flights_sample$train)
-```
-
-```
-## # Source: spark<?> [?? x 1]
-##        n
-##    <dbl>
-## 1 360235
 ```
 
 Register and then cache the sampled tables in our Spark instance.
@@ -523,28 +518,51 @@ Register and then cache the sampled tables in our Spark instance.
 ```r
 flights_train <- sdf_register(flights_sample$train, "flights_train")
 tbl_cache(sc, "flights_train")
+
+tally(flights_train)
 ```
 
-Let's fit a simple logistic regression model using `sparklyr::ml_logistic_regression`.
+```
+## # Source: spark<?> [?? x 1]
+##        n
+##    <dbl>
+## 1 180045
+```
+
+### Models
+
+I'm going to compare three different models/algorithms: 1) logistic regression, 2) random forest, and 3) neural network. The point is simply to demonstrate the flexibility of Spark's MLlib and give you an idea of the required syntax. I am *not* trying to optimize model performance here. 
+
+With the appropriate caveat out of the way, it will prove convenient to save the (very simple) formula that I'll be using for all three models as its own object. This will allow me to quickly recycle it quickly with minimal typing or typos... And is thus a good habit to get into for the more complex types of comparative analyses that you will confront in real-life.
+
+
+```r
+fml <- late ~ dep_delay + dep_block
+```
+
+
+#### Logistic regression
+
+We start with a simple logistic regression. For this first model/algorithm class I'll walk you through the individual modeling steps in more detail. The function of interest here is `sparklyr::ml_logistic_regression`.
 
 
 ```r
 log_mod <- 
   flights_train %>%
-  ml_logistic_regression(delayed ~ dep_delay + dep_hr)
+  ml_logistic_regression(fml)
 
 summary(log_mod)
 ```
 
 ```
 ## Coefficients:
-## (Intercept)   dep_delay   dep_hr_h2   dep_hr_h3   dep_hr_h4   dep_hr_h1 
-##  -2.8978116   0.1502224  -0.3126401  -0.3151214  -0.2690458  -0.3016123 
-##   dep_hr_h5 
-##  -0.2847679
+## (Intercept)   dep_delay dep_block_2 dep_block_3 dep_block_4 dep_block_1 
+## -3.05239256  0.14941256 -0.15615644 -0.12356241 -0.09983516 -0.05681138 
+## dep_block_5 
+## -0.08468994
 ```
 
-Now, we turn to our holdout "test" (i.e. holdout) sample to run predictions on data that the model has never seen.
+Now, we turn to our holdout "test" (i.e. holdout) sample to run predictions on data that the model has never seen, using the `sparklyr::ml_predict()` function.
 
 
 ```r
@@ -552,57 +570,196 @@ log_pred <- ml_predict(log_mod, flights_sample$test)
 
 ## Preview the prediction results
 log_pred %>% 
-  select(delayed, dep_hr, prediction, probability) %>% 
+  select(late, prediction, probability) %>% 
   head(5)
 ```
 
 ```
-## # Source: spark<?> [?? x 4]
-##   delayed dep_hr prediction probability
-##     <dbl> <chr>       <dbl> <list>     
-## 1       0 h0              0 <dbl [2]>  
-## 2       0 h1              0 <dbl [2]>  
-## 3       0 h1              0 <dbl [2]>  
-## 4       0 h1              0 <dbl [2]>  
-## 5       0 h1              0 <dbl [2]>
+## # Source: spark<?> [?? x 3]
+##    late prediction probability
+##   <dbl>      <dbl> <list>     
+## 1     0          0 <dbl [2]>  
+## 2     0          0 <dbl [2]>  
+## 3     1          1 <dbl [2]>  
+## 4     0          0 <dbl [2]>  
+## 5     1          1 <dbl [2]>
 ```
 
 How did we do overall?
 
 
 ```r
-log_cmatrix <-
-  log_pred %>%
-  group_by(delayed, prediction) %>%
-  tally() 
-
-## Or get summary metrics:
-# ml_binary_classification_evaluator(log_pred) ## area under ROC
-# ml_multiclass_classification_evaluator(log_pred) ## F1 score
+## Summary metrics:
+ml_binary_classification_evaluator(log_pred) ## area under ROC
 ```
 
-Let's compare how we might have done with a random forest model instead.
+```
+## [1] 0.9289266
+```
+
+```r
+ml_multiclass_classification_evaluator(log_pred) ## F1 score
+```
+
+```
+## [1] 0.9368919
+```
+
+```r
+## We'll also create a confusion matrix for use later
+log_cmat <-
+  log_pred %>%
+  group_by(late, prediction) %>%
+  tally() %>%
+  collect()
+```
+
+#### Random forest
+
+Second, we have a random forest model.
 
 
 ```r
+## Train the RF model
 rf_mod <- 
   flights_train %>%
-  ml_random_forest(delayed ~ dep_delay + dep_hr, type = "classification")
+  ml_random_forest(fml, type = "classification")
 
 ## Run predictions on test (i.e. holdout) sample
 rf_pred <- ml_predict(rf_mod, flights_sample$test)
 
 ## Preview the prediction results
 # rf_pred %>% 
-#   select(delayed, dep_hr, prediction, contains("probability")) %>% 
+#   select(late, dep_block, prediction) %>% 
 #   head(5)
 
-## How did we do?
-rf_cmatrix <-
-  rf_pred %>%
-  group_by(delayed, prediction) %>%
-  tally() 
+## Summary metrics:
+ml_binary_classification_evaluator(rf_pred) ## area under ROC
 ```
+
+```
+## [1] 0.9149249
+```
+
+```r
+ml_multiclass_classification_evaluator(rf_pred) ## F1 score
+```
+
+```
+## [1] 0.9362383
+```
+
+```r
+## Create confusion matrix
+rf_cmat <-
+  rf_pred %>%
+  group_by(late, prediction) %>%
+  tally() %>%
+  collect()
+```
+
+#### Neural network
+
+Third, we'll train a (feedforward) neural network model with three layers.
+
+
+```r
+## Train the neural net
+## Note: The number in the first layer must correspond to the number of input 
+## features; in this case 6 (i.e. 1 for dep_delay + 5 for the dep_block dummies
+## so as to avoid the dummy variable trap). Similarly, the last layer must 
+## correspond to the number of output classes; in this case 2 (i.e. late or not 
+## late.) The intermediate layers are flexible.
+nnet_model <- 
+  flights_train %>%
+  ml_multilayer_perceptron_classifier(fml, layers = c(6, 3, 2))
+
+## Run predictions on test (i.e. holdout) sample
+nnet_pred <- ml_predict(nnet_model, flights_sample$test)
+
+## Preview the prediction results
+# nnet_pred %>%
+#   select(late, dep_block, prediction) %>%
+#   head(5)
+
+## Summary metrics:
+ml_binary_classification_evaluator(nnet_pred) ## area under ROC
+```
+
+```
+## [1] 0.9287666
+```
+
+```r
+ml_multiclass_classification_evaluator(nnet_pred) ## F1 score
+```
+
+```
+## [1] 0.9368939
+```
+
+```r
+## Create confusion matrix
+nnet_cmat <-
+  nnet_pred %>%
+  group_by(late, prediction) %>%
+  tally() %>%
+  collect()
+```
+
+
+#### Model comparison
+
+We can compare our three confusion matrices now. The logistic model does (slightly) better on true positives, whilst the random forest does (slightly) better on true negatives. The neural net is somewhere in the middle. All three tend to underestimate the number of late arrivals.
+
+
+```r
+bind_rows(
+  log_cmat %>% mutate(mod = "Logistic regression"), 
+  rf_cmat %>% mutate(mod = "Random forest"),
+  nnet_cmat %>% mutate(mod = "Neural network")
+  ) %>% 
+  pivot_wider(names_from = mod, values_from = n)
+```
+
+```
+## # A tibble: 4 x 5
+##    late prediction `Logistic regression` `Random forest` `Neural network`
+##   <dbl>      <dbl>                 <dbl>           <dbl>            <dbl>
+## 1     1          1                 48326           47284            48311
+## 2     0          1                  5468            4494             5449
+## 3     1          0                 19852           20894            19867
+## 4     0          0                347219          348193           347238
+```
+
+And here's the same information in plot form.
+
+
+```r
+bind_rows(
+  log_cmat %>% mutate(mod = "Logistic regression"), 
+  rf_cmat %>% mutate(mod = "Random forest"), 
+  nnet_cmat %>% mutate(mod = "Neural network")
+  ) %>%
+  mutate(mod = factor(mod, levels = c("Logistic regression", "Random forest", "Neural network"))) %>%
+  mutate_at(vars(late, prediction), factor) %>%
+  ggplot(aes(x = late, y = n, fill = prediction)) +
+  geom_col(alpha = 0.5) + 
+  scale_fill_brewer(palette = "Set1") +
+  scale_y_continuous(labels = scales::comma) + 
+  labs(
+    title = "Predicting late arrivals: Model performance",
+    x = "observation"
+    ) +
+  facet_wrap(~ mod) + 
+  theme(
+    axis.title.y = element_blank(),
+    panel.grid.major.x = element_blank()
+    )
+```
+
+![](17-spark_files/figure-html/cmat_plot-1.png)<!-- -->
+
 
 ## Disconnect
 

@@ -68,7 +68,7 @@ You can confirm your Java installation by running the following command.
 system("java -version")
 ```
 
-If you're having trouble with Java installation, then please consult the [*Mastering Spark with R*](https://therinspark.com/starting.html#starting-prerequisites)
+If you're having trouble with Java installation, then please consult the [*Mastering Spark with R*](https://therinspark.com/starting.html#starting-prerequisites) book.
 
 ### R packages 
 
@@ -207,7 +207,7 @@ Looks good. Now we'll merge (i.e. concatenate) all the files using the same two-
   1. Extract the column headers (i.e. first row) from any of the CSV files and redirect them to a new `data/combined.csv` file.
   2. Loop over the remaining files and append everything (except the duplicate column headers) to the just-created `data/combined.csv` file.
 
-```{bash combine, prompt=T, continue=T}
+```{bash combine, prompt=TRUE, continue=TRUE, cache=FALSE}
 head -1 data/airOT201201.csv > data/combined.csv
 for i in $(ls data/airOT*); do tail -n +2 $i >> data/combined.csv; done
 ```  
@@ -369,7 +369,7 @@ First, I'm going to prepare the data. For this simple example, I'm not going to 
 
 As ever with prediction algorithms, we also need to partition our data into random samples for testing and validation. This will help us avoid overfitting. In this case, I'm only going to use 10% of the data for model building and testing. This 10% sample will in turn be split 30-70 between training and testing data, respectively.
 
-```{r flights_sample}
+```{r flights_sample, cache=FALSE}
 flights_sample <- 
   flights_cached %>%
   filter(!is.na(arr_delay)) %>%
@@ -391,19 +391,32 @@ flights_sample <-
 
 Register and then cache the sampled tables in our Spark instance.
 
-```{r flights_train}
+```{r flights_train, cache=FALSE}
 flights_train <- sdf_register(flights_sample$train, "flights_train")
 tbl_cache(sc, "flights_train")
 
 tally(flights_train)
 ```
 
-Let's fit a simple logistic regression model using `sparklyr::ml_logistic_regression`.
+### Models
 
-```{r log_mod}
+I'm going to compare three different models/algorithms: 1) logistic regression, 2) random forest, and 3) neural network. The point is simply to demonstrate the flexibility of Spark's MLlib and give you an idea of the required syntax. I am *not* trying to optimize model performance here. 
+
+With the appropriate caveat out of the way, it will prove convenient to save the (very simple) formula that I'll be using for all three models as its own object. This will allow me to quickly recycle it quickly with minimal typing or typos... And is thus a good habit to get into for the more complex types of comparative analyses that you will confront in real-life.
+
+```{r fml}
+fml <- late ~ dep_delay + dep_block
+```
+
+
+#### Logistic regression
+
+We start with a simple logistic regression. For this first model/algorithm class I'll walk you through the individual modeling steps in more detail. The function of interest here is `sparklyr::ml_logistic_regression`.
+
+```{r log_mod, dependson=fml}
 log_mod <- 
   flights_train %>%
-  ml_logistic_regression(late ~ dep_delay + dep_block)
+  ml_logistic_regression(fml)
 
 summary(log_mod)
 ```
@@ -434,19 +447,22 @@ log_cmat <-
   collect()
 ```
 
-Let's compare how we might have done with a random forest model instead.
+#### Random forest
 
-```{r rf_mod}
+Second, we have a random forest model.
+
+```{r rf_mod, dependson=fml}
+## Train the RF model
 rf_mod <- 
   flights_train %>%
-  ml_random_forest(late ~ dep_delay + dep_block, type = "classification")
+  ml_random_forest(fml, type = "classification")
 
 ## Run predictions on test (i.e. holdout) sample
 rf_pred <- ml_predict(rf_mod, flights_sample$test)
 
 ## Preview the prediction results
 # rf_pred %>% 
-#   select(late, dep_block, prediction, contains("probability")) %>% 
+#   select(late, dep_block, prediction) %>% 
 #   head(5)
 
 ## Summary metrics:
@@ -461,12 +477,51 @@ rf_cmat <-
   collect()
 ```
 
-We can compare our two confusion matrices now. The logistic model does (slightly) better on true positives, whilst the random forest does (slightly) better on true negatives. Both tend to underestimate the number of late arrivals.
+#### Neural network
+
+Third, we'll train a (feedforward) neural network model with three layers.
+
+```{r nnet_mod, dependson=fml}
+## Train the neural net
+## Note: The number in the first layer must correspond to the number of input 
+## features; in this case 6 (i.e. 1 for dep_delay + 5 for the dep_block dummies
+## so as to avoid the dummy variable trap). Similarly, the last layer must 
+## correspond to the number of output classes; in this case 2 (i.e. late or not 
+## late.) The intermediate layers are flexible.
+nnet_model <- 
+  flights_train %>%
+  ml_multilayer_perceptron_classifier(fml, layers = c(6, 3, 2))
+
+## Run predictions on test (i.e. holdout) sample
+nnet_pred <- ml_predict(nnet_model, flights_sample$test)
+
+## Preview the prediction results
+# nnet_pred %>%
+#   select(late, dep_block, prediction) %>%
+#   head(5)
+
+## Summary metrics:
+ml_binary_classification_evaluator(nnet_pred) ## area under ROC
+ml_multiclass_classification_evaluator(nnet_pred) ## F1 score
+
+## Create confusion matrix
+nnet_cmat <-
+  nnet_pred %>%
+  group_by(late, prediction) %>%
+  tally() %>%
+  collect()
+```
+
+
+#### Model comparison
+
+We can compare our three confusion matrices now. The logistic model does (slightly) better on true positives, whilst the random forest does (slightly) better on true negatives. The neural net is somewhere in the middle. All three tend to underestimate the number of late arrivals.
 
 ```{r cmat}
 bind_rows(
   log_cmat %>% mutate(mod = "Logistic regression"), 
-  rf_cmat %>% mutate(mod = "Random forest")
+  rf_cmat %>% mutate(mod = "Random forest"),
+  nnet_cmat %>% mutate(mod = "Neural network")
   ) %>% 
   pivot_wider(names_from = mod, values_from = n)
 ```
@@ -476,8 +531,10 @@ And here's the same information in plot form.
 ```{r cmat_plot}
 bind_rows(
   log_cmat %>% mutate(mod = "Logistic regression"), 
-  rf_cmat %>% mutate(mod = "Random forest")
+  rf_cmat %>% mutate(mod = "Random forest"), 
+  nnet_cmat %>% mutate(mod = "Neural network")
   ) %>%
+  mutate(mod = factor(mod, levels = c("Logistic regression", "Random forest", "Neural network"))) %>%
   mutate_at(vars(late, prediction), factor) %>%
   ggplot(aes(x = late, y = n, fill = prediction)) +
   geom_col(alpha = 0.5) + 
