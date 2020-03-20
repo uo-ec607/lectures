@@ -119,14 +119,19 @@ school."*
 
 | Component                           | Weight |
 |:-|-:|
-| 5 × homework assignments (15% each) | 75% |
+| 4 × homework assignments (20% each) | 80% |
 | 2 × short presentations (5% each)		| 10% |
-| 1 × OSS contribtion				          | 10% |
-|	In-class participation						  | 5%  |
+| 1 × OSS contribution				        | 10% |
 
 - You can swap out one homework assignment for an (approved) final presentation of your own research.
 - [Short presentations](https://github.com/uo-ec607/presentations) summarize either a key lecture reading, or an (approved) software package/platform.
 - We'll get to OSS contribution later in the course, but this year I'm particularly encouraging contributions to [LOST](lost-stats.github.io/).
+
+--
+
+</br>
+
+PS &mdash; I'll also award a class participation bonus (2.5%) at my discretion.
 
 ---
 # Lecture outline
