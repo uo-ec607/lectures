@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<html lang="" xml:lang="">
   <head>
     <title>Data Science for Economists</title>
     <meta charset="utf-8" />
     <meta name="author" content="Grant McDermott" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
     <link href="libs/remark-css/metropolis-fonts.css" rel="stylesheet" />
@@ -77,7 +78,7 @@ But here are some nice standalone Git GUIs that you might want to consider:
 
 ☑ Once that's done, pull to get the latest lecture slides.
 
-☑ Do you have Bash-compatible shell? (Windows users: see [here](#windows).)
+☑ Do you have Bash-compatible shell? (**Windows** users: see [here](#windows) before continuing.)
 
 --
 
@@ -134,7 +135,7 @@ Don't be thrown off by terminology: *shell*, *terminal*, *tty*, *command prompt*
 
 There are many shell variants, but we're going to focus on [**Bash**](https://www.gnu.org/software/bash/) (i.e. **B**ourne **a**gain **sh**ell).
 - Default shell on Linux and MacOS.
-- Windows users need to install a Bash-compatible shell (see [here](#windows)).
+- Windows users need to install a Bash-compatible shell first (again, see [here](#windows)).
 
 --
 
@@ -195,14 +196,20 @@ name: basics
 
 # First look
 
-Open up your Bash shell. 
-- [Linux](https://www.wikihow.com/Open-a-Terminal-Window-in-Ubuntu) (You already know what you're doing, but still...)
+Let's open up our Bash shell. 
+
+A convenient way to do this is through [RStudio's built-in Terminal](https://support.rstudio.com/hc/en-us/articles/115010737148-Using-the-RStudio-Terminal).
+- Hitting `Shift`+`Alt`+`T` will cause a "Terminal" tab to open up in the bottom-left window pane (i.e. next to the "Console" tab).
+- This should run Bash by default if it is installed on your system. (Windows users: Once again, see [here](#wsl-rstudio).)
+
+--
+
+&lt;/br&gt;
+
+P.S. Of course, it's always possible to open up the Bash shell directly if you prefer.
+- [Linux](https://www.wikihow.com/Open-a-Terminal-Window-in-Ubuntu)
 - [Mac](https://www.techwalla.com/articles/how-to-open-terminal-on-a-macbook)
 - [Windows](https://www.howtogeek.com/265900/everything-you-can-do-with-windows-10s-new-bash-shell/)
-
-You can also access the Bash shell through RStudio.
-- Hitting `Shift`+`Alt`+`T` will cause a "Terminal" tab to open up in the bottom-left window pane (i.e. next to the "Console" tab).
-- Again, this should run Bash by default if it is installed on your system. See [here](https://support.rstudio.com/hc/en-us/articles/115010737148-Using-the-RStudio-Terminal) for more details.
 
 ---
 
@@ -608,20 +615,23 @@ $ man ls
 ##               version (-v), extension (-X)
 ## 
 ##        --time=WORD
-##               with -l, show time as WORD instead of default modification time:
-##               atime  or  access  or  use  (-u); ctime or status (-c); also use
-##               specified time as sort key if --sort=time (newest first)
+##               change the default of  using  modification  times;  access  time
+##               (-u): atime, access, use; change time (-c): ctime, status; birth
+##               time: birth, creation;
+## 
+##               with -l, WORD determines which time to show;  with  --sort=time,
+##               sort by WORD (newest first)
 ## 
 ##        --time-style=TIME_STYLE
 ##               time/date format with -l; see TIME_STYLE below
 ## 
-##        -t     sort by modification time, newest first
+##        -t     sort by time, newest first; see --time
 ## 
 ##        -T, --tabsize=COLS
 ##               assume tab stops at each COLS instead of 8
 ## 
-##        -u     with -lt: sort by, and show, access time; with -l:  show  access
-##               time  and  sort  by name; otherwise: sort by access time, newest
+##        -u     with  -lt:  sort by, and show, access time; with -l: show access
+##               time and sort by name; otherwise: sort by  access  time,  newest
 ##               first
 ## 
 ##        -U     do not sort; list entries in directory order
@@ -645,21 +655,21 @@ $ man ls
 ##        --version
 ##               output version information and exit
 ## 
-##        The SIZE argument is an integer and  optional  unit  (example:  10K  is
-##        10*1024).   Units  are  K,M,G,T,P,E,Z,Y  (powers  of 1024) or KB,MB,...
-##        (powers of 1000).  Binary prefixes can be used, too: KiB=K, MiB=M,  and
+##        The  SIZE  argument  is  an  integer and optional unit (example: 10K is
+##        10*1024).  Units are K,M,G,T,P,E,Z,Y  (powers  of  1024)  or  KB,MB,...
+##        (powers  of 1000).  Binary prefixes can be used, too: KiB=K, MiB=M, and
 ##        so on.
 ## 
-##        The  TIME_STYLE  argument  can  be  full-iso, long-iso, iso, locale, or
-##        +FORMAT.  FORMAT is interpreted like in date(1).   If  FORMAT  is  FOR‐
+##        The TIME_STYLE argument can be  full-iso,  long-iso,  iso,  locale,  or
+##        +FORMAT.   FORMAT  is  interpreted  like in date(1).  If FORMAT is FOR‐
 ##        MAT1&lt;newline&gt;FORMAT2, then FORMAT1 applies to non-recent files and FOR‐
-##        MAT2 to recent files.  TIME_STYLE prefixed with 'posix-'  takes  effect
-##        only  outside  the POSIX locale.  Also the TIME_STYLE environment vari‐
+##        MAT2  to  recent files.  TIME_STYLE prefixed with 'posix-' takes effect
+##        only outside the POSIX locale.  Also the TIME_STYLE  environment  vari‐
 ##        able sets the default style to use.
 ## 
-##        Using color to distinguish file types is disabled both by  default  and
-##        with  --color=never.  With --color=auto, ls emits color codes only when
-##        standard output is connected to a terminal.  The LS_COLORS  environment
+##        Using  color  to distinguish file types is disabled both by default and
+##        with --color=never.  With --color=auto, ls emits color codes only  when
+##        standard  output is connected to a terminal.  The LS_COLORS environment
 ##        variable can change the settings.  Use the dircolors command to set it.
 ## 
 ##    Exit status:
@@ -677,16 +687,16 @@ $ man ls
 ##        Report any translation bugs to &lt;https://translationproject.org/team/&gt;
 ## 
 ## COPYRIGHT
-##        Copyright  ©  2019  Free Software Foundation, Inc.  License GPLv3+: GNU
+##        Copyright © 2020 Free Software Foundation, Inc.   License  GPLv3+:  GNU
 ##        GPL version 3 or later &lt;https://gnu.org/licenses/gpl.html&gt;.
-##        This is free software: you are free  to  change  and  redistribute  it.
+##        This  is  free  software:  you  are free to change and redistribute it.
 ##        There is NO WARRANTY, to the extent permitted by law.
 ## 
 ## SEE ALSO
 ##        Full documentation &lt;https://www.gnu.org/software/coreutils/ls&gt;
 ##        or available locally via: info '(coreutils) ls invocation'
 ## 
-## GNU coreutils 8.31               November 2019                           LS(1)
+## GNU coreutils 8.32                March 2020                             LS(1)
 ```
 
 ---
@@ -815,11 +825,11 @@ $ ls -lh examples
 
 ```
 ## total 144K
-## drwxr-xr-x 2 grant users 4.0K Jan 22 19:06 ABC
+## drwxr-xr-x 2 grant users 4.0K Apr  7 15:51 ABC
 ## drwxr-xr-x 2 grant users 4.0K Jan 12  2019 Bad folder name
 ## -rwxr-xr-x 1 grant users   37 Jan 14  2019 hello.sh
-## drwxr-xr-x 2 grant users 4.0K Jan 22 19:06 meals
-## -rw-r--r-- 1 grant users   32 Jan 22 19:06 nursery.txt
+## drwxr-xr-x 2 grant users 4.0K Apr  7 15:51 meals
+## -rw-r--r-- 1 grant users   32 Apr  7 15:51 nursery.txt
 ## -rwxrwxrwx 1 grant users  153 Jan 12  2019 reps.txt
 ## -rw-r--r-- 1 grant users 120K Jan 12  2019 sonnets.txt
 ```
@@ -5194,26 +5204,51 @@ Windows users have two options:
 - **Pros:** A self-contained Linux image (terminal) that allows full Bash functionality. 
 - **Cons:** Must be installed first and only available to Windows 10 users.
 
-I'm going to go out on a limb and recommend option 2 (WSL) if available to you. It's more overhead, but I think worth it. See the next slide for some extra instructions...
+I'm going to go out on a limb and recommend option 2 (WSL) if available to you. It's more overhead, but I think worth it. See the next two slides for instructions and tips...
 
 .footnote[(Back to [table of contents](#toc).)]
 
 ---
+name:wsl
 
 # WSL
 
-The basic WSL installation guide is [here](https://docs.microsoft.com/en-us/windows/wsl/install-win10). 
-- Follow the guide to install your preferred Linux distro first. Ubuntu is a good choice. 
-- Then, come back to these slides.
+The basic WSL installation guide is [**here**](https://docs.microsoft.com/en-us/windows/wsl/install-win10). 
+- Follow the guide to install your preferred Linux distro. [Ubuntu](https://www.microsoft.com/en-us/p/ubuntu/9nblggh4msv6) is a good choice. 
+- Then, once you've restarted your PC, come back to these slides.
 
-After installing the WSL, you need to navigate to today's lecture directory to run the examples. 
-- Presumably, you've cloned the course repo somewhere on your (Windows) C drive. 
+After installing your chosen WSL, you need to navigate to today's lecture directory to run the examples. You have two options:
+
+### i) Go directly through the WSL 
+
+Presumably, you've cloned the course repo somewhere on your C drive. 
 - The way this work is that Windows drives are mounted on the WSL's `mnt` directory. (More [here](https://www.howtogeek.com/261383/how-to-access-your-ubuntu-bash-files-in-windows-and-your-windows-system-drive-in-bash/).)
 - Say you cloned the repo to "C:\\Users\\Grant\\ec607\\lectures".
 - The WSL equivalent is "/mnt/c/Users/Grant/ec607/lectures".
 - So, then you can navigate to today's lecture through the WSL with: `$ cd /mnt/c/Users/Grant/ec607/lectures/03-shell`. Adjust as needed.
 
+.right[*Continues on next slide...*]
+
+---
+name: wsl-rstudio
+
+# WSL (cont.)
+
+### ii) Access WSL through RStudio
+
+If you access WSL through RStudio, then it will conveniently configure your path to the present working directory. So, here's how to make WSL your default [RStudio Terminal](https://support.rstudio.com/hc/en-us/articles/115010737148-Using-the-RStudio-Terminal):
+- In RStudio, navigate to: *Tools &gt; Terminal &gt; Terminal Options...*. \[[Screenshot](pics/wsl-rstudio-1.png).\]
+- Click on the dropdown menu for *New terminals open with* and select "Bash (Windows Subsystem for Linux)", Then click *OK*. \[[Screenshot](pics/wsl-rstudio-2.png).\]
+- Refresh your RStudio terminal (`Alt+Shift+R`). \[[Screenshot](pics/wsl-rstudio-3.png).\]
+- You should see the WSL Bash environment with the path automatically configured to the present working director, mount point and all. \[[Screenshot](pics/wsl-rstudio-4.png).\]
+
 .footnote[(Back to [table of contents](#toc).)]
+
+--
+
+### Which option to choose?
+
+Both are fine, but I recommend option **(ii)**. As a Windows user, being able to access a true Bash shell (i.e. terminal) conveniently from RStudio will make things *much* easier for you in my class. You can always revert back to a different shell later if you want. 
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
@@ -5262,6 +5297,42 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
     deleted = true;
   });
 })();
+(function() {
+  "use strict"
+  /* Replace <script> tags in slides area to make them executable
+   *
+   * Runs after post-processing of markdown source into slides and replaces only
+   * <script>s on the last slide of continued slides using the .has-continuation
+   * class added by xaringan. Finally, any <script>s in the slides area that
+   * aren't executed are commented out.
+   */
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container:not(.has-continuation) script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+  var scriptsNotExecuted = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container.has-continuation script'
+  );
+  if (!scriptsNotExecuted.length) return;
+  for (var i = 0; i < scriptsNotExecuted.length; i++) {
+    var comment = document.createComment(scriptsNotExecuted[i].outerHTML)
+    scriptsNotExecuted[i].parentElement.replaceChild(comment, scriptsNotExecuted[i])
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
 // adds .remark-code-has-line-highlighted class to <pre> parent elements
 // of code chunks containing highlighted lines with class .remark-code-line-highlighted
 (function(d) {
@@ -5279,17 +5350,6 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   }
   preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
 })(document);</script>
-
-<script>
-(function() {
-  var links = document.getElementsByTagName('a');
-  for (var i = 0; i < links.length; i++) {
-    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
-      links[i].target = '_blank';
-    }
-  }
-})();
-</script>
 
 <script>
 slideshow._releaseMath = function(el) {
