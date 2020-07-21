@@ -679,7 +679,7 @@ See instructions <a href="https://help.github.com/articles/creating-a-pull-reque
 
 # Forks
 
-Git forks lie somewhere between cloning a repo and and branching from it.
+Git forks lie somewhere between cloning a repo and branching from it.
 - In fact, if you fork a repo then you are really creating a copy of it.
 
 Forking a repo on GitHub is [very simple](https://help.github.com/articles/fork-a-repo/); just click the "Fork" button in the top-right corner of said repo.
