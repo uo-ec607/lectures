@@ -40,7 +40,8 @@ Here's a convenient way to install (if necessary) and load all of the above pack
 ```{r packages, cache=F, message=F}
 ## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(tidyverse, httr, lubridate, hrbrthemes, janitor, jsonlite, listviewer, usethis, fredr)
+pacman::p_load(tidyverse, httr, lubridate, hrbrthemes, janitor, jsonlite, listviewer, usethis)
+pacman::p_install_gh("sboysel/fredr") ## https://github.com/sboysel/fredr/issues/75
 ## My preferred ggplot2 plotting theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
@@ -315,7 +316,7 @@ params = list(
   )
 ```
 
-We're going to be revisiting (and setting) environment variables once we get to the cloud computation part of the course. So please make sure that you've understood this section and that you're new FRED API key works.
+We're going to be revisiting (and setting) environment variables once we get to the cloud computation part of the course. So please make sure that you've understood this section and that your new FRED API key works.
 
 ### Use a package
 
@@ -326,7 +327,7 @@ One of the great features about the R (and data science community in general) is
 
 Our final application will involve a more challenging case where the API endpoint is *hidden from view*. In particular, I'm going to show you how to access data on [**World Rugby rankings**](https://www.world.rugby/rankings/mru). Because --- real talk --- what's more important than teaching Americans about rugby?
 
-*<b>Disclaimer:</b> World Rugby's [Terms & Conditions](https://www.world.rugby/terms-and-conditions) permits data downloading for own non-commerical use. It seems reasonable to me that these lecture notes fall under this use category.^[If you're reading this from World Rugby and disagree, please [contact me](mailto:grantmcd@uoregon.edu). In my defence, I am still awaiting a reply to my initial email confirming my interpretation of your T&Cs...] None of the methods presented below should be construed as an endorsement of data aquisition and use that violates these terms. Again: Just because you can scrape something, doesn't mean you should.*
+*<b>Disclaimer:</b> World Rugby's [Terms & Conditions](https://www.world.rugby/terms-and-conditions) permits data downloading for own non-commerical use. It seems reasonable to me that these lecture notes fall under this use category.^[If you're reading this from World Rugby and disagree, please [contact me](mailto:grantmcd@uoregon.edu). In my defence, I am still awaiting a reply to my initial email confirming my interpretation of your T&Cs...] None of the methods presented below should be construed as an endorsement of data acquisition and use that violates these terms. Again: Just because you can scrape something, doesn't mean you should.*
 
 Start by taking a look at the complicated structure of the website in a [live session](http://www.worldrugby.org/rankings). Pay attention to the various tables and other interactive elements like calendars. Now take a minute or two for a quick challenge: Try to scrape the full country rankings using the `rvest` + CSS selectors approach that we practiced last time...
 

@@ -664,7 +664,7 @@ tidy_stocks <-
 
 ### Aside: Remembering the pivot_longer() syntax 
 
-There's a long-running joke about no-one being able to remember Stata's "reshape" command. ([Exhibit A](https://twitter.com/scottimberman/status/1036801308785864704).)
+There's a long-running joke about no-one being able to remember Stata's "reshape" command. 
 
 It's easy to see this happening with `pivot_wider()` too. However, I find that I never forget the command as long as I remember the argument order is *"names"* then *"values"*.
 
@@ -702,7 +702,7 @@ This command is pretty smart. But to avoid ambiguity, you can also specify the s
 
 # 3) tidyr::separate() *cont.*
 
-A related function is `separate_rows()`, for splitting up cells that contain multiple fields or observations (a frustratingly common occurence with survey data).
+A related function is `separate_rows()`, for splitting up cells that contain multiple fields or observations (a frustratingly common occurrence with survey data).
 ```{r sep2}
 jobs <- data.frame(
   name = c("Jack", "Jill"),
