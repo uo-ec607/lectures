@@ -104,7 +104,7 @@ ols1
 ##    -13.8103       0.6386
 ```
 
-The resulting object is pretty terse, but that's only because it buries most of its valuable information --- of which there is a lot --- within its internal list structure. You can use the `str()` function to view this structure. Or, if you want to be fancy, the interactive `listviewer::jsonedit()` function that we saw in the previous lecture is nice option.
+The resulting object is pretty terse, but that's only because it buries most of its valuable information --- of which there is a lot --- within its internal list structure. You can use the `str()` function to view this structure. Or, if you want to be fancy, the interactive `listviewer::jsonedit()` function that we saw in the previous lecture is a nice option.
 
 
 ```r
@@ -554,7 +554,7 @@ summary(ols_ie)
 
 The simplest (and least efficient) way to include fixed effects in a regression model is, of course, to use dummy variables. However, it isn't very efficient or scaleable. What's the point learning all that stuff about the Frisch-Waugh-Lovell theorem, within-group transformations, etcetera, etcetera if we can't use them in our software routines? Again, there are several options to choose from here. For example, the venerable **plm** package ([link](https://cran.r-project.org/web//packages/plm/vignettes/plmPackage.html)), which also handles random effects and pooling models. However, I am going to strongly advocate for the **lfe** package ([link](https://cran.r-project.org/web/packages/lfe/index.html)).
 
-`lfe` (i.e. "**l**inear **f**ixed **e**ffects") is one of my packages in the entire R catalogue. It has a boatload of functionality built in to it (instrumental variables support, multilevel clustering, etc.) It is also *fast* because it automatically uses all the available processing power on your machine. We'll return to the idea of multicore implementation when we get to the lecture on parallel processing. For the moment, simply enjoy the fact that `lfe` is optimised to solve big regression problems as quickly as possible.
+`lfe` (i.e. "**l**inear **f**ixed **e**ffects") is one of my favorite packages in the entire R catalogue. It has a boatload of functionality built in to it (instrumental variables support, multilevel clustering, etc.) It is also *fast* because it automatically uses all the available processing power on your machine. We'll return to the idea of multicore implementation when we get to the lecture on parallel processing. For the moment, simply enjoy the fact that `lfe` is optimised to solve big regression problems as quickly as possible.
 
 Let's take a look, starting off with a simple example and then moving on to something more demanding.
 
