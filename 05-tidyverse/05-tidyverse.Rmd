@@ -1,7 +1,7 @@
 ---
 title: "Data Science for Economists"
 # subtitle: "<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
-subtitle: 'Lecture 5: Data work in the "tidyverse"'
+subtitle: "Lecture 5: Data cleaning & wrangling: Tidyverse"
 author: "Grant McDermott"
 date: "University of Oregon | [EC 607](https://github.com/uo-ec607)" #"`r format(Sys.time(), '%d %B %Y')`"
 output:
@@ -11,8 +11,10 @@ output:
     nature:
       highlightStyle: github
       highlightLines: true
+      highlightSpans: true
       countIncrementalSlides: false
 ---
+name: toc
 
 ```{r setup, include=FALSE}
 options(htmltools.dir.version = FALSE)
@@ -48,11 +50,11 @@ name: prologue
 
 ---
 
-# Student presentation: Tidy data
+# What is "tidy" data?
 
 Resources:
-- Paper: [*Tidy Data*](https://vita.had.co.nz/papers/tidy-data.pdf) (Hadley Wickham, 2014 JSS)
-- Vignette: [Tidy data](https://cran.r-project.org/web/packages/tidyr/vignettes/tidy-data.html) (from the `tidyr` package)
+- [Vignette](https://cran.r-project.org/web/packages/tidyr/vignettes/tidy-data.html) (from the **tidyr** package)
+- [Original paper](https://vita.had.co.nz/papers/tidy-data.pdf) (Hadley Wickham, 2014 JSS)
 
 --
 
@@ -73,18 +75,11 @@ Basically, tidy data is more likely to be [long (i.e. narrow) format](https://en
 
 # Checklist
 
-☑ You should already have installed the [tidyverse](https://www.tidyverse.org/) last week.
+☑ You should already have installed the [**tidyverse**](https://www.tidyverse.org/) in the first lecture.
+- I'll hold off loading for now, but we'll get there in a few slides.
 
-☑ You will also need the [nycflights13](hhttps://github.com/hadley/nycflights13) package.
-- Install it now: `install.packages("nycflights13")`
-
---
-
-</br>
-
-Today is the last lecture where I'll be using slides (i.e. "forcing" you to type out commands by hand).
-- I've also included an HTML document version of these slides, since I think these will be easier to use a reference going forward (scrolling and so forth). Look inside the `html_document/` sub-directory.  
-- From next lecture on we'll be switching to HMTL documents entirely, but I still encourage you to avoid copy+paste as much as possible.
+☑ You will also need the [**nycflights13**](hhttps://github.com/hadley/nycflights13) package.
+- Install it now: `install.packages('nycflights13', repos = 'https://cran.rstudio.com')`
 
 ---
 class: inverse, center, middle
@@ -102,19 +97,20 @@ Much digital ink has been spilled over the "tidyverse vs. base R" debate.
 
 --
 
-I won't delve into this debate here, because I think the answer is [obvious](http://varianceexplained.org/r/teach-tidyverse/): We should teach (and learn) the tidyverse first.
+I won't delve into this debate here, because I think the answer is [obvious](http://varianceexplained.org/r/teach-tidyverse/): We should teach the tidyverse first (or, at least, early).
 - The documentation and community support are outstanding.
 - Having a consistent philosophy and syntax makes it much easier to learn.
+- The tidyverse provides a convenient "front-end" to some key big-data tools that we'll use later in the course.
 - For data cleaning, wrangling and plotting... the tidyverse is really a no-brainer.<sup>1</sup>
 
 .footnote[
-<sup>1</sup> I'm also a huge fan of the [data.table](http://r-datatable.com/) package. This package will be the subject of our next student presentation.
+<sup>1</sup> I'm also a huge fan of [**data.table**](http://r-datatable.com/). This package will be the subject of our next lecture...
 ]
 
 --
 
 But this certainly shouldn't put you off learning base R alternatives.
-- Base R is extremely flexible and powerful (esp. when combined with other libraries).
+- Base R is extremely flexible and powerful, esp. when combined with other libraries.
 - There are some things that you'll have to venture outside of the tidyverse for.
 - A combination of tidyverse and base R is often the best solution to a problem.
 
@@ -124,11 +120,14 @@ But this certainly shouldn't put you off learning base R alternatives.
 
 One point of convenience is that there is often a direct correspondence between a tidyverse command and its base R equivalent. 
 
-These invariably follow a `tidyverse::snake_case` vs `base::period.case` rule. E.g. see:
-- `?readr::read_csv` vs `?utils::read.csv`
-- `?tibble::data_frame`vs `?base::data.frame`
-- `?dplyr::if_else` vs `?base::ifelse`
-- etc.
+These generally follow a `tidyverse::snake_case` vs `base::period.case` rule. E.g. Compare:
+
+| tidyverse  |  base |
+|---|---|
+| `?readr::read_csv`  | `?utils::read.csv` |
+|  `?dplyr::if_else` |  `?base::ifelse` |
+|  `?tibble::tibble` |  `?base::data.frame` |
+Etcetera.
   
 If you call up the above examples, you'll see that the tidyverse alternative typically offers some enhancements or other useful options (and sometimes restrictions) over its base counterpart.
 - Remember: There are always many ways to achieve a single goal in R.
@@ -138,14 +137,14 @@ If you call up the above examples, you'll see that the tidyverse alternative typ
 # Tidyverse packages
 
 Let's load the tidyverse meta-package and check the output.
-```{r tverse, cache = F}
+```{r tverse, cache = FALSE}
 library(tidyverse)
 ```
 
 --
 
-We see that we have actually loaded a number of packages (which could also be loaded individually): `ggplot2`, `tibble`, `dplyr`, etc.
-- We can also see information about the package versions and some namespace conflicts (remember those from last week).
+We see that we have actually loaded a number of packages (which could also be loaded individually): **ggplot2**, **tibble**, **dplyr**, etc.
+- We can also see information about the package versions and some [namespace conflicts](https://raw.githack.com/uo-ec607/lectures/master/04-rlang/04-rlang.html#59).
 
 ---
 
@@ -157,12 +156,12 @@ tidyverse_packages()
 ```
 
 We'll use several of these additional packages during the remainder of this course.
-— E.g. The `lubridate` package for working with dates and the `rvest` package for webscraping.
+— E.g. The **lubridate** package for working with dates and the **rvest** package for webscraping.
 - However, bear in mind that these packages will have to be loaded separately.
 
 .footnote[
-<sup>1</sup> It also includes a lot of dependencies upon installation.
-]
+<sup>1</sup> It also includes a *lot* of dependencies upon installation. This is a topic of some [controversy](http://www.tinyverse.org/).
+].
 
 ---
 
@@ -174,7 +173,7 @@ Today, however, I'm only really going to focus on two packages:
 1. [**dplyr**](https://dplyr.tidyverse.org/)
 2. [**tidyr**](https://tidyr.tidyverse.org/)
 
-These are the workhorse packages for cleaning and wrangling data. They are thus the ones that you will likely make the most use of (alongside `ggplot2`, which we already met back in Lecture 1).
+These are the workhorse packages for cleaning and wrangling data. They are thus the ones that you will likely make the most use of (alongside **ggplot2**, which we already met back in Lecture 1).
 - Data cleaning and wrangling occupies an inordinate amount of time, no matter where you are in your research career.
 
 ---
@@ -216,7 +215,7 @@ Remember: Using vertical space costs nothing and makes for much more readable/wr
 
 --
 
-PS — The pipe is originally from the [magrittr](https://magrittr.tidyverse.org/) package ([geddit?](https://en.wikipedia.org/wiki/The_Treachery_of_Images)), which can do some other cool things if you're inclined to explore.
+PS — The pipe is originally from the [**magrittr**](https://magrittr.tidyverse.org/) package ([geddit?](https://en.wikipedia.org/wiki/The_Treachery_of_Images)), which can do some other cool things if you're inclined to explore.
 
 
 ---
@@ -229,33 +228,55 @@ name: dplyr
 
 ---
 
+# Aside: dplyr 1.0.0 release
+
+Some of the **dplyr** features that we'll cover today were introduced in [version 1.0.0](https://www.tidyverse.org/blog/2020/06/dplyr-1-0-0/) of the package.
+- Version 1.0.0 is a big deal since it marks a stable code base for the package going forward. However, at the time of writing these slides, it had only come out very recently. 
+- Please make sure that you are running at least **dplyr** 1.0.0 before continuing.
+
+```{r dplyr_vers, cache=FALSE}
+packageVersion('dplyr')
+# install.packages('dplyr') ## install updated version if < 1.0.0
+```
+
+--
+
+*Note:* dplyr 1.0.0 also notifies you about grouping variables every time you do operations on or with them. YMMV, but, personally, I find these messages annoying and so prefer to [switch them off](https://twitter.com/MattCowgill/status/1278463099272491008).
+
+```r
+options(dplyr.summarise.inform = FALSE) ## Add to .Rprofile to make permanent
+```
+
+
+---
+
 # Key dplyr verbs
 
 There are five key dplyr verbs that you need to learn.
 
-1. `filter()`: Filter (i.e. subset) rows based on their values.
+1. `filter`: Filter (i.e. subset) rows based on their values.
 
-2. `arrange()`: Arrange (i.e. reorder) rows based on their values.
+2. `arrange`: Arrange (i.e. reorder) rows based on their values.
 
-3. `select()`: Select (i.e. subset) columns by their names: 
+3. `select`: Select (i.e. subset) columns by their names: 
 
-4. `mutate()`: Create new columns.
+4. `mutate`: Create new columns.
 
-5. `summarise()`: Collapse multiple rows into a single summary value.<sup>1</sup>
+5. `summarise`: Collapse multiple rows into a single summary value.<sup>1</sup>
 
 .footnote[
-<sup>1</sup> `summarize()` with a "z" works too. R doesn't discriminate against uncivilised nations of the world.
+<sup>1</sup> `summarize` with a "z" works too. R doesn't discriminate against uncivilised nations of the world.
 ]
 
 --
 
 </br>
 
-Let's practice these commands together using the starwars data frame that comes pre-packaged with `dplyr`. 
+Let's practice these commands together using the `starwars` data frame that comes pre-packaged with dplyr. 
 
 ---
 
-# 1) dplyr::filter()
+# 1) dplyr::filter
 
 We can chain multiple filter commands with the pipe (`%>%`), or just separate them within a single filter command using commas.
 ```{r filter1}
@@ -268,7 +289,7 @@ starwars %>%
 
 ---
 
-# 1) dplyr::filter() *cont.*
+# 1) dplyr::filter *cont.*
 
 Regular expressions work well too.
 ```{r filter2}
@@ -278,9 +299,9 @@ starwars %>%
 
 ---
 
-# 1) dplyr::filter() *cont.*
+# 1) dplyr::filter *cont.*
 
-A very common `filter()` use case is identifying (or removing) missing data cases. 
+A very common `filter` use case is identifying (or removing) missing data cases. 
 ```{r filter3}
 starwars %>% 
   filter(is.na(height))
@@ -294,7 +315,7 @@ To remove missing observations, simply use negation: `filter(!is.na(height))`. T
 
 ---
 
-# 2) dplyr::arrange()
+# 2) dplyr::arrange
 
 ```{r arrange1}
 starwars %>% 
@@ -303,11 +324,11 @@ starwars %>%
 
 --
 
-*Note.* Arranging on a character-based column (i.e. strings) will sort alphabetically. Try this yourself by arranging according to the "name" column.
+*Note:* Arranging on a character-based column (i.e. strings) will sort alphabetically. Try this yourself by arranging according to the "name" column.
 
 ---
 
-# 2) dplyr::arrange() *cont.*
+# 2) dplyr::arrange *cont.*
 
 We can also arrange items in descending order using `arrange(desc())`.
 ```{r arrange2}
@@ -317,7 +338,7 @@ starwars %>%
 
 ---
 
-# 3) dplyr::select()
+# 3) dplyr::select
 
 Use commas to select multiple columns out of a data frame. (You can also use "first:last" for consecutive columns). Deselect a column with "-".
 ```{r select1}
@@ -327,7 +348,7 @@ starwars %>%
 
 ---
 
-# 3) dplyr::select() *cont.*
+# 3) dplyr::select *cont.*
 
 You can also rename some (or all) of your selected variables in place.
 ```{r select2}
@@ -335,9 +356,13 @@ starwars %>%
   select(alias=name, crib=homeworld, sex=gender) 
 ```
 
+--
+
+If you just want to rename columns without subsetting them, you can use `rename`. Try this now by replacing `select(...)` in the above code chunk with `rename(...)`.
+
 ---
 
-# 3) dplyr::select() *cont.*
+# 3) dplyr::select *cont.*
 
 The `select(contains(PATTERN))` option provides a nice shortcut in relevant cases.
 ```{r select3}
@@ -347,18 +372,24 @@ starwars %>%
 
 ---
 
-# 3) dplyr::select() *cont.*
+# 3) dplyr::select *cont.*
 
 The `select(..., everything())` option is another useful shortcut if you only want to bring some variable(s) to the "front" of a data frame.
 
 ```{r select4}
 starwars %>% 
-  select(species, homeworld, everything())
+  select(species, homeworld, everything()) %>%
+  head(5)
 ```
+
+--
+
+</br>
+*Note:* The new `relocate` function available in dplyr 1.0.0 has brought a lot more functionality to ordering of columns. See [here](https://www.tidyverse.org/blog/2020/03/dplyr-1-0-0-select-rename-relocate/).
 
 ---
 
-# 4) dplyr::mutate()
+# 4) dplyr::mutate
 
 You can create new columns from scratch, or (more commonly) as transformations of existing columns.
 ```{r mutate1}
@@ -371,9 +402,9 @@ starwars %>%
 ---
 
 
-# 4) dplyr::mutate() *cont*
+# 4) dplyr::mutate *cont*
 
-*Note:* `mutate()` is order aware. So you can chain multiple mutates in a single call.
+*Note:* `mutate` is order aware. So you can chain multiple mutates in a single call.
 ```{r mutate2}
 starwars %>% 
   select(name, birth_year) %>%
@@ -385,9 +416,9 @@ starwars %>%
 
 ---
 
-# 4) dplyr::mutate() *cont.*
+# 4) dplyr::mutate *cont.*
 
-Boolean, logical and conditional operators all work well with `mutate()` too.
+Boolean, logical and conditional operators all work well with `mutate` too.
 ```{r mutate3}
 starwars %>% 
   select(name, height) %>%
@@ -399,89 +430,87 @@ starwars %>%
 
 ---
 
-# 4) dplyr::mutate() *cont.*
+# 4) dplyr::mutate *cont.*
 
-Lastly, there are "scoped" variants of `mutate()` that work on a subset of variables.
-- `mutate_all()` affects every variable
-- `mutate_at()` affects named or selected variables
-- `mutate_if()` affects variables that meet some criteria (e.g. are numeric)
-
-A silly example using the latter:
+Lastly, combining `mutate` with the new `across` feature in dplyr 1.0.0+ allows you to easily work on a subset of variables. For example:
 
 ```{r, mutate4}
-starwars %>% select(name:eye_color) %>% mutate_if(is.character, toupper) %>% head(5)
+starwars %>% 
+  select(name:eye_color) %>% 
+  mutate(across(where(is.character), toupper)) %>% #<< 
+  head(5)
 ```
 
 --
 
-See `?mutate_all` for more details and examples.
+</br>
+*Note:* This workflow (i.e. combining `mutate` and `across`) supersedes the old "scoped" variants of `mutate` that you might have used previously. More details [here](https://www.tidyverse.org/blog/2020/04/dplyr-1-0-0-colwise/) and [here](https://dplyr.tidyverse.org/dev/articles/colwise.html).
 
 ---
 
-# 5) dplyr::summarise()
+# 5) dplyr::summarise
 
-Particularly useful in combination with the `group_by()` command.
+Particularly useful in combination with the `group_by` command.
 ```{r summ1}
 starwars %>% 
   group_by(species, gender) %>% 
-  summarise(mean_height = mean(height, na.rm = T))
+  summarise(mean_height = mean(height, na.rm = TRUE))
 ```
 
 ---
 
-# 5) dplyr::summarise() *cont.*
+# 5) dplyr::summarise *cont.*
 
-Note that including "na.rm = T" is usually a good idea with summarise functions. Otherwise, any missing value will propogate to the summarised value too.
+Note that including "na.rm = TRUE" (or,  its alias "na.rm = T") is usually a good idea with summarise functions. Otherwise, any missing value will propogate to the summarised value too.
 ```{r summ2}
 ## Probably not what we want
 starwars %>% 
   summarise(mean_height = mean(height))
 ## Much better
 starwars %>% 
-  summarise(mean_height = mean(height, na.rm = T))
+  summarise(mean_height = mean(height, na.rm = TRUE))
 ```
 
 ---
 
-# 4) dplyr::summarise() *cont.*
+# 4) dplyr::summarise *cont.*
 
-The "scoped" variants that we saw earlier also work with `summarise()`
-- `summarise_all()` affects every variable
-- `summarise_at()` affects named or selected variables
-- `summarise_if()` affects variables that meet some criteria (e.g. are numeric)
-
-An example using the latter:
+The same `across`-based workflow that we saw with `mutate` a few slides back also works with `summarise`. For example:
 
 ```{r, summ4}
-starwars %>% group_by(species, gender) %>% summarise_if(is.numeric, mean, na.rm=T) %>% head(5)
+starwars %>% 
+  group_by(species) %>% 
+  summarise(across(where(is.numeric), mean, na.rm=T)) %>% #<<
+  head(5)
 ```
 
 --
 
-Again, see `?summarise_at` for more details and examples.
+</br>
+*Note:* Again, this functionality supersedes the old "scoped" variants of `summarise` that you used prior to dplyr 1.0.0. Details [here](https://www.tidyverse.org/blog/2020/04/dplyr-1-0-0-colwise/) and [here](https://dplyr.tidyverse.org/dev/articles/colwise.html).
 
 ---
 
 # Other dplyr goodies
 
-`group_by()` and `ungroup()`: For (un)grouping.
-- Particularly useful with the `summarise()` and `mutate()` commands, as we've already seen.
+`group_by` and `ungroup`: For (un)grouping.
+- Particularly useful with the `summarise` and `mutate` commands, as we've already seen.
 
 --
 
-`slice()`: Subset rows by position rather than filtering by values.
+`slice`: Subset rows by position rather than filtering by values.
 - E.g. `starwars %>% slice(c(1, 5))`
 
 --
 
-`pull()`: Extract a column from as a data frame as a vector or scalar.
+`pull`: Extract a column from as a data frame as a vector or scalar.
 - E.g. `starwars %>% filter(gender=="female") %>% pull(height)`
 
 --
 
-`count()` and `distinct()`: Number and isolate unique observations.
+`count` and `distinct`: Number and isolate unique observations.
 - E.g. `starwars %>% count(species)`, or `starwars %>% distinct(species)`
-- You could also use a combination of `mutate()`, `group_by()`, and `n()`, e.g. `starwars %>% group_by(species) %>% mutate(num = n())`.
+- You could also use a combination of `mutate`, `group_by`, and `n()`, e.g. `starwars %>% group_by(species) %>% mutate(num = n())`.
 
 
 ---
@@ -511,9 +540,11 @@ One of the mainstays of the dplyr package is merging data with the family [join 
 - `semi_join(df1, df2)`
 - `anti_join(df1, df2)`
 
+(You find find it helpful to to see visual depictions of the different join operations [here](https://r4ds.had.co.nz/relational-data.html).)
+
 --
 
-For the simple examples that I'm going to show here, we'll need some data sets that come bundled with the [nycflights13 package](http://github.com/hadley/nycflights13). 
+For the simple examples that I'm going to show here, we'll need some data sets that come bundled with the [**nycflights13**](http://github.com/hadley/nycflights13) package. 
 - Load it now and then inspect these data frames in your own console.
 
 ```{r flights, echo = F}
@@ -545,7 +576,7 @@ left_join(flights, planes) %>%
 
 (*continued from previous slide*)
 
-Note that `dplyr` made a reasonable guess about which columns to join on (i.e. columns that share the same name). It also told us its choices: 
+Note that dplyr made a reasonable guess about which columns to join on (i.e. columns that share the same name). It also told us its choices: 
 
 ```
 *## Joining, by = c("year", "tailnum")
@@ -611,18 +642,18 @@ name: tidyr
 
 # Key tidyr verbs
 
-1. `pivot_longer()`: Pivot wide data into long format (i.e. "melt").<sup>1</sup> 
+1. `pivot_longer`: Pivot wide data into long format (i.e. "melt").<sup>1</sup> 
 
-2. `pivot_wider()`: Pivot long data into wide format (i.e. "cast").<sup>2</sup> 
+2. `pivot_wider`: Pivot long data into wide format (i.e. "cast").<sup>2</sup> 
 
-3. `separate()`: Separate (i.e. split) one column into multiple columns.
+3. `separate`: Separate (i.e. split) one column into multiple columns.
 
-4. `unite()`: Unite (i.e. combine) multiple columns into one.
+4. `unite`: Unite (i.e. combine) multiple columns into one.
 
 .footnote[
-<sup>1</sup> Updated version of `tidyr::gather()`.
+<sup>1</sup> Updated version of `tidyr::gather`.
 
-<sup>2</sup> Updated version of `tidyr::spread()`.
+<sup>2</sup> Updated version of `tidyr::spread`.
 ]  
 
 --
@@ -630,11 +661,11 @@ name: tidyr
 </br>
 
 Let's practice these verbs together in class.
-- Side question: Which of `pivot_longer()` vs `pivot_wider()` produces "tidy" data?
+- Side question: Which of `pivot_longer` vs `pivot_wider` produces "tidy" data?
   
 ---
 
-# 1) tidyr::pivot_longer()
+# 1) tidyr::pivot_longer
 
 ```{r pivot_longer1}
 stocks <- data.frame( ## Could use "tibble" instead of "data.frame" if you prefer
@@ -649,7 +680,7 @@ stocks %>% pivot_longer(-time, names_to="stock", values_to="price")
 
 ---
 
-# 1) tidyr::pivot_longer() *cont.*
+# 1) tidyr::pivot_longer *cont.*
 
 Let's quickly save the "tidy" (i.e. long) stocks data frame for use on the next slide. 
 
@@ -660,17 +691,9 @@ tidy_stocks <-
   pivot_longer(-time, names_to="stock", values_to="price")
 ```
 
---
-
-### Aside: Remembering the pivot_longer() syntax 
-
-There's a long-running joke about no-one being able to remember Stata's "reshape" command. 
-
-It's easy to see this happening with `pivot_wider()` too. However, I find that I never forget the command as long as I remember the argument order is *"names"* then *"values"*.
-
 ---
 
-# 2) tidyr::pivot_wider()
+# 2) tidyr::pivot_wider
 
 ```{r pivot_wider1, dependson=tidy_stocks}
 tidy_stocks %>% pivot_wider(names_from=stock, values_from=price)
@@ -682,9 +705,18 @@ tidy_stocks %>% pivot_wider(names_from=time, values_from=price)
 </br>
 Note that the second example &mdash; which has combined different pivoting arguments &mdash; has effectively transposed the data.
 
+
 ---
 
-# 3) tidyr::separate()
+# Aside: Remembering the pivot_* syntax 
+
+There's a long-running joke about no-one being able to remember Stata's "reshape" command. ([Exhibit A](https://twitter.com/scottimberman/status/1036801308785864704).)
+
+It's easy to see this happening with the `pivot_*` functions too. However, I find that I never forget the commands as long as I remember the argument order is *"names"* then *"values"*.
+
+---
+
+# 3) tidyr::separate
 
 ```{r sep1}
 economists <- data.frame(name = c("Adam.Smith", "Paul.Samuelson", "Milton.Friedman"))
@@ -696,13 +728,13 @@ economists %>% separate(name, c("first_name", "last_name"))
 
 </br>
 
-This command is pretty smart. But to avoid ambiguity, you can also specify the separation character with `separate(..., sep="\\.")`.
+This command is pretty smart. But to avoid ambiguity, you can also specify the separation character with `separate(..., sep=".")`.
 
 ---
 
-# 3) tidyr::separate() *cont.*
+# 3) tidyr::separate *cont.*
 
-A related function is `separate_rows()`, for splitting up cells that contain multiple fields or observations (a frustratingly common occurrence with survey data).
+A related function is `separate_rows`, for splitting up cells that contain multiple fields or observations (a frustratingly common occurence with survey data).
 ```{r sep2}
 jobs <- data.frame(
   name = c("Jack", "Jill"),
@@ -714,7 +746,7 @@ jobs %>% separate_rows(occupation)
 ```
 ---
 
-# 4) tidyr::unite()
+# 4) tidyr::unite
 
 ```{r unite1}
 gdp <- data.frame(
@@ -730,9 +762,9 @@ gdp %>% unite(date, c("yr", "mnth", "dy"), sep = "-")
 
 ---
 
-# 4) tidyr::unite() *cont.*
+# 4) tidyr::unite *cont.*
 
-Note that `unite()` will automatically create a character variable. You can see this better if we convert it to a tibble. 
+Note that `unite` will automatically create a character variable. You can see this better if we convert it to a tibble. 
 ```{r unite2}
 gdp_u <- gdp %>% unite(date, c("yr", "mnth", "dy"), sep = "-") %>% as_tibble()
 gdp_u
@@ -740,11 +772,11 @@ gdp_u
 
 --
 
-If you want to convert it to something else (e.g. date or numeric) then you will need to modify it using `mutate()`. See the next slide for an example, using the [lubridate](https://lubridate.tidyverse.org/) package's super helpful date conversion functions.
+If you want to convert it to something else (e.g. date or numeric) then you will need to modify it using `mutate`. See the next slide for an example, using the [lubridate](https://lubridate.tidyverse.org/) package's super helpful date conversion functions.
 
 ---
 
-# 4) tidyr::unite() *cont.*
+# 4) tidyr::unite *cont.*
 
 *(continued from previous slide)*
 
@@ -757,19 +789,19 @@ gdp_u %>% mutate(date = ymd(date))
 
 # Other tidyr goodies
 
-Use `crossing()` to get the full combination of a group of variables.<sup>1</sup>
+Use `crossing` to get the full combination of a group of variables.<sup>1</sup>
 
 ```{r cross1}
 crossing(side=c("left", "right"), height=c("top", "bottom"))
 ```
 
 .footnote[
-<sup>1</sup> Base R alternative: `expand.grid()`.
+<sup>1</sup> Base R alternative: `expand.grid`.
 ]  
 
 --
 
-See `?expand()` and `?complete()` for more specialised functions that allow you to fill in (implicit) missing data or variable combinations in existing data frames.
+See `?expand` and `?complete` for more specialised functions that allow you to fill in (implicit) missing data or variable combinations in existing data frames.
 - You'll encounter this during your next assignment.
 
 ---
@@ -784,30 +816,21 @@ name: summary
 # Key verbs
 
 ### dplyr
-1. `filter()`
-2. `arrange()`
-3. `select()`
-4. `mutate()`
-5. `summarise()`
+1. `filter`
+2. `arrange`
+3. `select`
+4. `mutate`
+5. `summarise`
 
 ### tidyr
-1. `pivot_longer()`
-2. `pivot_wider()`
-3. `separate()`
-4. `unite()`
+1. `pivot_longer`
+2. `pivot_wider`
+3. `separate`
+4. `unite`
 
 --
 
-Other useful items include: pipes (`%>%`), grouping (`group_by()`), joining functions (`left_join()`, `inner_join`, etc.).
-
----
-
-# Assignment 2
-
-Assignment 2 is up on GitHub Classroom.
-- Hone your data wrangling and cleaning skills on a dataset culled from the wild.
-- This one will take some of you a while to get through, so please get started early.
-- Deadline: One week from today.
+Other useful items include: pipes (`%>%`), grouping (`group_by`), joining functions (`left_join`, `inner_join`, etc.).
 
 ---
 class: inverse, center, middle
