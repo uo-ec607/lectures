@@ -198,25 +198,25 @@ tidy(ols1_robust_clustered, conf.int = T)
 
 On thing I want to flag is that **estimatr** does not yet offer support for HAC (i.e. heteroskedasticity and autocorrelation consistent) standard errors *a la* [Newey-West](https://en.wikipedia.org/wiki/Newey%E2%80%93West_estimator). I've submitted a [feature request](https://github.com/DeclareDesign/estimatr/issues/272) on GitHub --- vote up if you would like to see it added sooner! --- but you can still obtain these pretty easily using the aforementioned **sandwich** package. For example, we can use `sandwich::NeweyWest()` on our existing `ols1` object to obtain HAC SEs for it.
 
-```{r ols1_hac}
+```{r ols1_hac_ses}
 # library(sandwich) ## Already loaded
 NeweyWest(ols1) ## Print the HAC VCOV
 sqrt(diag(NeweyWest(ols1))) ## Print the HAC SEs
 ```
 
-If you wanted to convert it to a tidy data frame of coefficient values, then, I would recommend first piping it to `lmtest::coeftest(..., vcov=NeweyWest)`, which is a convenient way to do hypothesis testing using alternate variance-covariance matrices. Note that in the below, I'm going to manually create my own upper and lower 95% confidence intervals, since `broom::tidy(conf.int=T)` doesn't work with coeftest objects.
+If you plan to use HAC SEs for inference, then I recommend converting the model object with `lmtest::coeftest()`. This function provides a convenient way to do hypothesis testing with a wide variety of alternate variance-covariance (VCOV) matrices. Of course, these alternate VCOV matrices could extended way beyond HAC, but here's how it would work for the present case:
 
 ```{r ols1_hac_tidy}
 # library(lmtest) ## Already loaded
-ols1 %>% 
-  lmtest::coeftest(vcov=NeweyWest) %>%
-  tidy() %>% ## "conf.int" doesn't work with coeftest object, so calculate manually...
-  mutate(
-    conf.low = estimate - qt(0.975, df=ols1$df.residual)*std.error,
-    conf.high = estimate + qt(0.975, df=ols1$df.residual)*std.error
-    )
+ols1_hac <- lmtest::coeftest(ols1, vcov=NeweyWest)
+ols1_hac
 ```
 
+Note that its easy to convert `coeftest` adjusted models to tidied broom objects too. 
+
+```{r ols1_hac_tidy}
+tidy(ols1_hac, conf.int = TRUE)
+```
 
 ## Dummy variables and interaction terms
 
