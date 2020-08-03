@@ -20,7 +20,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
 ```
 
-Today's lecture is about the bread-and-butter tool of applied econometrics and data science: regression analysis. My goal is to give you a whirlwind tour of the key functions and packages. I'm going to assume that you already know all of the necessary theoretical background on causal inference, asymptotics, etc. This lecture will *not* cover any of theoretical concepts or seek to justify a particular statistical model. Indeed, most of the models that we're going to run today are pretty silly. We also won't be able to cover some important topics. For example, I'll only provide the briefest example of a Bayesian regression model and I won't touch times series analysis at all. (Although, I will provide links for further reading at the bottom of this document.) These disclaimers aside, let's proceeed...
+Today's lecture is about the bread-and-butter tool of applied econometrics and data science: regression analysis. My goal is to give you a whirlwind tour of the key functions and packages. I'm going to assume that you already know all of the necessary theoretical background on causal inference, asymptotics, etc. This lecture will *not* cover any of theoretical concepts or seek to justify a particular statistical model. Indeed, most of the models that we're going to run today are pretty silly. We also won't be able to cover some important topics. For example, I'll only provide the briefest example of a Bayesian regression model and I won't touch times series analysis at all. (Although, I will provide links for further reading at the bottom of this document.) These disclaimers aside, let's proceed...
 
 ## Software requirements
 
@@ -65,7 +65,7 @@ R's workhorse command for running regression models is the built-in `lm()` funct
 lm(y ~ x1 + x2 + x3 + ..., data = df)
 ```
 
-You'll note that the `lm()` call includes a reference to the data source (in this case, a hyopthetical data frame called `df`). We covered this in our earlier lecture on R language basics and object-orientated programming, but the reason is that many objects (e.g. data frames) can exist in your R environment at the same time. So we need to be specific about where our regression variables are coming from --- even if `df` is the only data frame in our global environment at the time. Another option would be to use indexing, but I find it a bit verbose:
+You'll note that the `lm()` call includes a reference to the data source (in this case, a hypothetical data frame called `df`). We covered this in our earlier lecture on R language basics and object-orientated programming, but the reason is that many objects (e.g. data frames) can exist in your R environment at the same time. So we need to be specific about where our regression variables are coming from --- even if `df` is the only data frame in our global environment at the time. Another option would be to use indexing, but I find it a bit verbose:
 
 ```r
 lm(df$y ~ df$x1 + df$x2 + df$x3 + ...)
@@ -108,7 +108,7 @@ library(broom)
 tidy(ols1, conf.int = T)
 ```
 
-Again, I could now pipe this tidied coeffients data frame to a ggplot2 call, using saying `geom_pointrange()` to plot the error bars. Feel free to practice doing this yourself now, but we'll get to some explicit examples further below.
+Again, I could now pipe this tidied coefficients data frame to a ggplot2 call, using saying `geom_pointrange()` to plot the error bars. Feel free to practice doing this yourself now, but we'll get to some explicit examples further below.
 
 A related and also useful function is `broom::glance()`, which summarises the model "meta" data (R<sup>2</sup>, AIC, etc.) in a data frame.
 
@@ -172,7 +172,7 @@ The overall model fit is much improved by the exclusion of this outlier, with R<
 
 Dealing with statistical irregularities (heteroskedasticity, clustering, etc.) is a fact of life for empirical researchers. However, it says something about the economics profession that a random stranger could walk uninvited into a live seminar and ask, "How did you cluster your standard errors?", and it would likely draw approving nods from audience members. 
 
-The good news is that there are *lots* of ways to get robust and clustered standard errors in R. For many years, these have been based on the excellent **sandwich** package ([link](https://cran.r-project.org/web/packages/sandwich/index.html)). However, my prefered way these days is to use the **estimatr** package ([link](https://declaredesign.org/r/estimatr/articles/getting-started.html)), which is both fast and provides convenient aliases for the standard regression functions. For example, you can obtain robust standard errors using `estimatr::lm_robust()`. Let's illustrate by running a robust version of the `ols1` regression that ran earlier.
+The good news is that there are *lots* of ways to get robust and clustered standard errors in R. For many years, these have been based on the excellent **sandwich** package ([link](https://cran.r-project.org/web/packages/sandwich/index.html)). However, my preferred way these days is to use the **estimatr** package ([link](https://declaredesign.org/r/estimatr/articles/getting-started.html)), which is both fast and provides convenient aliases for the standard regression functions. For example, you can obtain robust standard errors using `estimatr::lm_robust()`. Let's illustrate by running a robust version of the `ols1` regression that ran earlier.
 
 ```{r ols1_robust}
 # library(estimatr) ## Already loaded
@@ -323,7 +323,7 @@ bind_rows(
   theme(axis.title.x = element_blank())
 ```
 
-Normally we expect our standard errors to blow up with clustering, but here that effect appears to be outweighted by the increased precision brought on by additional fixed effects. (As suggested earlier, our level of clustering probably doesn't make much sense either.)
+Normally we expect our standard errors to blow up with clustering, but here that effect appears to be outweighed by the increased precision brought on by additional fixed effects. (As suggested earlier, our level of clustering probably doesn't make much sense either.)
 
 #### Instrumental variables
 
@@ -445,7 +445,7 @@ summary(iv_felm_all)
 
 ### Marginal effects
 
-Caculating marginal effect in a regression is utterly straightforward in cases where there are no non-linearities; just look at the coefficient values! However, that quickly goes out the window when you have interaction effects or non-linear models like probit, logit, etc. Luckily, the **margins** package ([link](https://cran.r-project.org/web/packages/margins)), which is modeled on its namesake in Stata, goes a long way towards automating the process. You can read more in the package [vignette](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html), but here's a very simple example to illustrate. 
+Calculating marginal effect in a regression is utterly straightforward in cases where there are no non-linearities; just look at the coefficient values! However, that quickly goes out the window when you have interaction effects or non-linear models like probit, logit, etc. Luckily, the **margins** package ([link](https://cran.r-project.org/web/packages/margins)), which is modeled on its namesake in Stata, goes a long way towards automating the process. You can read more in the package [vignette](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html), but here's a very simple example to illustrate. 
 
 Consider our earlier interaction effects regression, where we interested in how people's mass varied by height and gender. To get the average marginal effect (AME) of these dependent variables, we can just use the `margins::margins()` function.
 
