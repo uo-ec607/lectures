@@ -1,7 +1,7 @@
 ---
 title: "Data Science for Economists"
 # subtitle: "<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
-subtitle: "Lecture 5 (bonus): Data cleaning & wrangling: (2) data.table"
+subtitle: "Lecture 5: Data cleaning & wrangling: (2) data.table"
 author: "Grant McDermott"
 date: "University of Oregon | [EC 607](https://github.com/uo-ec607)" #"`r format(Sys.time(), '%d %B %Y')`"
 output:
@@ -1439,7 +1439,7 @@ microbenchmark::microbenchmark(collapse_dplyr(), collapse_dt(), collapse_dtplyr(
 
 --
 
-Not quite a fast as the native data.table method, but a 36x speed-up for free? I'd take it!
+Not quite a fast as the native data.table method, but a >30x speed-up for free? I'd take it!
 
 --
 

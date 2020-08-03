@@ -15,7 +15,7 @@
 class: center, middle, inverse, title-slide
 
 # Data Science for Economists
-## Lecture 5 (bonus): Data cleaning &amp; wrangling: (2) data.table
+## Lecture 5: Data cleaning &amp; wrangling: (2) data.table
 ### Grant McDermott
 ### University of Oregon | <a href="https://github.com/uo-ec607">EC 607</a>
 
@@ -166,12 +166,12 @@ microbenchmark(collapse_dplyr(), collapse_dt(), times = 10)
 
 ```
 ## Unit: milliseconds
-##              expr        min         lq       mean     median         uq
-##  collapse_dplyr() 132.035251 132.881915 141.803750 141.343418 147.372954
-##     collapse_dt()   1.600982   1.671694   2.524987   1.773653   2.067316
+##              expr        min         lq      mean     median         uq
+##  collapse_dplyr() 140.181460 142.787776 150.78830 150.755265 156.050819
+##     collapse_dt()   1.720564   2.000747   2.88159   2.221572   2.533579
 ##         max neval cld
-##  159.671766    10   b
-##    6.572697    10  a
+##  164.193097    10   b
+##    6.324305    10  a
 ```
 ]
 
@@ -1316,18 +1316,18 @@ microbenchmark(collapse_dplyr(), collapse_dt(), collapse_dt_key(), times = 10)
 ```
 ## Unit: microseconds
 ##               expr        min         lq       mean     median         uq
-##   collapse_dplyr() 125912.572 134836.688 142969.085 137308.041 148418.886
-##      collapse_dt()   1624.786   1683.095   2053.401   1796.533   1960.274
-##  collapse_dt_key()    892.060    967.984   1493.125   1006.038   1049.568
+##   collapse_dplyr() 129404.940 137071.132 148097.833 144425.856 152524.524
+##      collapse_dt()   1520.959   1576.205   2122.899   1746.844   1796.816
+##  collapse_dt_key()    976.502    996.313   2457.842   1026.590   1081.641
 ##         max neval cld
-##  187041.136    10   b
-##    4495.933    10  a 
-##    5991.249    10  a
+##  195411.502    10   b
+##    5774.651    10  a 
+##   14925.692    10  a
 ```
 
 --
 
-The keyed data.table version is now **136** (!!!) faster than dplyr.
+The keyed data.table version is now **141** (!!!) faster than dplyr.
 --
 
 - That thing you feel... is your face melting.
@@ -1437,9 +1437,12 @@ microbenchmark(merge_dt(), merge_dt_key(), times = 10)
 
 ```
 ## Unit: milliseconds
-##            expr      min       lq     mean   median       uq      max neval cld
-##      merge_dt() 50.49598 53.91468 65.58133 54.50564 61.12535 153.0012    10   b
-##  merge_dt_key() 32.68316 33.88563 37.66186 37.27642 42.09658  42.9566    10  a
+##            expr      min       lq     mean   median       uq       max neval
+##      merge_dt() 52.13972 56.19201 66.19852 58.82896 61.71827 142.84994    10
+##  merge_dt_key() 28.09798 33.95716 36.59836 34.73080 41.03766  43.11121    10
+##  cld
+##    b
+##   a
 ```
 
 --
@@ -1492,9 +1495,9 @@ stocks
 ```
 
 ```
-##          time         X          Y         Z
-## 1: 2009-01-01 -0.932168 -2.0820187  1.204898
-## 2: 2009-01-02 -2.486961 -0.4610805 -2.066471
+##          time           X         Y         Z
+## 1: 2009-01-01 -0.36176990 -3.863700 -3.806386
+## 2: 2009-01-02  0.04221233  1.064251 -9.912991
 ```
 
 To convert this into long format, we could do either of the following:
@@ -1507,13 +1510,13 @@ melt(stocks, id.vars ="time")
 ```
 
 ```
-##          time variable      value
-## 1: 2009-01-01        X -0.9321680
-## 2: 2009-01-02        X -2.4869609
-## 3: 2009-01-01        Y -2.0820187
-## 4: 2009-01-02        Y -0.4610805
-## 5: 2009-01-01        Z  1.2048983
-## 6: 2009-01-02        Z -2.0664715
+##          time variable       value
+## 1: 2009-01-01        X -0.36176990
+## 2: 2009-01-02        X  0.04221233
+## 3: 2009-01-01        Y -3.86370033
+## 4: 2009-01-02        Y  1.06425112
+## 5: 2009-01-01        Z -3.80638594
+## 6: 2009-01-02        Z -9.91299065
 ```
 ]]
 
@@ -1525,13 +1528,13 @@ stocks %&gt;%
 ```
 
 ```
-##          time stock      price
-## 1: 2009-01-01     X -0.9321680
-## 2: 2009-01-02     X -2.4869609
-## 3: 2009-01-01     Y -2.0820187
-## 4: 2009-01-02     Y -0.4610805
-## 5: 2009-01-01     Z  1.2048983
-## 6: 2009-01-02     Z -2.0664715
+##          time stock       price
+## 1: 2009-01-01     X -0.36176990
+## 2: 2009-01-02     X  0.04221233
+## 3: 2009-01-01     Y -3.86370033
+## 4: 2009-01-02     Y  1.06425112
+## 5: 2009-01-01     Z -3.80638594
+## 6: 2009-01-02     Z -9.91299065
 ```
 ]]
 
@@ -1549,13 +1552,13 @@ stocks_long
 ```
 
 ```
-##          time stock      price
-## 1: 2009-01-01     X -0.9321680
-## 2: 2009-01-02     X -2.4869609
-## 3: 2009-01-01     Y -2.0820187
-## 4: 2009-01-02     Y -0.4610805
-## 5: 2009-01-01     Z  1.2048983
-## 6: 2009-01-02     Z -2.0664715
+##          time stock       price
+## 1: 2009-01-01     X -0.36176990
+## 2: 2009-01-02     X  0.04221233
+## 3: 2009-01-01     Y -3.86370033
+## 4: 2009-01-02     Y  1.06425112
+## 5: 2009-01-01     Z -3.80638594
+## 6: 2009-01-02     Z -9.91299065
 ```
 
 --
@@ -1569,9 +1572,9 @@ dcast(stocks_long,
 ```
 
 ```
-##          time         X          Y         Z
-## 1: 2009-01-01 -0.932168 -2.0820187  1.204898
-## 2: 2009-01-02 -2.486961 -0.4610805 -2.066471
+##          time           X         Y         Z
+## 1: 2009-01-01 -0.36176990 -3.863700 -3.806386
+## 2: 2009-01-02  0.04221233  1.064251 -9.912991
 ```
 ]]
 
@@ -1584,9 +1587,9 @@ stocks_long %&gt;%
 ```
 
 ```
-##          time         X          Y         Z
-## 1: 2009-01-01 -0.932168 -2.0820187  1.204898
-## 2: 2009-01-02 -2.486961 -0.4610805 -2.066471
+##          time           X         Y         Z
+## 1: 2009-01-01 -0.36176990 -3.863700 -3.806386
+## 2: 2009-01-02  0.04221233  1.064251 -9.912991
 ```
 ]]
 
@@ -1640,7 +1643,7 @@ storms_dt[, .(wind = mean(wind),
 ```
 ]]
 .pull-right[
-&lt;img src="05-xtra-datatable_files/figure-html/storms_ggplot-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="05-datatable_files/figure-html/storms_ggplot-1.png" style="display: block; margin: auto;" /&gt;
 ]
 
 ---
@@ -1713,18 +1716,18 @@ microbenchmark::microbenchmark(collapse_dplyr(), collapse_dt(), collapse_dtplyr(
 ```
 ## Unit: milliseconds
 ##               expr        min         lq       mean     median         uq
-##   collapse_dplyr() 121.109864 124.101424 124.686307 125.372367 126.011917
-##      collapse_dt()   1.611797   1.627705   1.812684   1.773216   1.866872
-##  collapse_dtplyr()   2.668058   2.755780  14.314162   2.989473   3.695894
+##   collapse_dplyr() 128.168670 132.242519 144.873369 134.277006 136.059531
+##      collapse_dt()   1.697320   1.736246   1.864282   1.802721   1.883381
+##  collapse_dtplyr()   2.941845   3.026561   3.895421   3.556846   3.830063
 ##         max neval cld
-##  126.417643    10   b
-##    2.242903    10  a 
-##  112.818072    10  a
+##  244.397906    10   b
+##    2.221476    10  a 
+##    7.288890    10  a
 ```
 
 --
 
-Not quite a fast as the native data.table method, but a 36x speed-up for free? I'd take it!
+Not quite a fast as the native data.table method, but a &gt;30x speed-up for free? I'd take it!
 
 --
 
