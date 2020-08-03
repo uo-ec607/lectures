@@ -1,7 +1,7 @@
 ---
 title: "Data Science for Economists"
 # subtitle: "<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
-subtitle: "Lecture 5: Data cleaning & wrangling: Tidyverse"
+subtitle: "Lecture 5: Data cleaning & wrangling: (1) Tidyverse"
 author: "Grant McDermott"
 date: "University of Oregon | [EC 607](https://github.com/uo-ec607)" #"`r format(Sys.time(), '%d %B %Y')`"
 output:
@@ -835,5 +835,5 @@ Other useful items include: pipes (`%>%`), grouping (`group_by`), joining functi
 ---
 class: inverse, center, middle
 
-# Next lecture: Webscraping (1)
+# Next lecture: Data cleaning and wrangling: (2) data.table
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>

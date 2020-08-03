@@ -1,0 +1,20 @@
+ 
+/* Required: Clear floats after the columns */
+.multicolrow:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/*Optional: Color header boxes*/
+.multicolhead {
+    background-color:#4B9CD3;
+    color: #FFFFFF;
+}
+
+.wordwrap { 
+   white-space: pre-wrap;      /* CSS3 */   
+   white-space: -moz-pre-wrap; /* Firefox */   
+   white-space: -o-pre-wrap;   /* Opera 7 */    
+   word-wrap: break-word;      /* IE */
+}
