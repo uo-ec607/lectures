@@ -89,8 +89,8 @@ Let's run a simple bivariate regression of starwars characters' mass on height.
 
 
 ```r
-ols1 <- lm(mass ~ height, data = starwars)
-# ols1 <- lm(starwars$mass ~ starwars$height) ## Also works
+ols1 = lm(mass ~ height, data = starwars)
+# ols1 = lm(starwars$mass ~ starwars$height) ## Also works
 ols1
 ```
 
@@ -157,13 +157,13 @@ summary(ols1)$coefficients
 
 ### Get "tidy" regression coefficients with the `broom` package
 
-While it's easy to extract regression coefficients via the `summary()` function, in practice I always use the **broom** package ([link ](https://broom.tidyverse.org/)) to do so. This package has a bunch of neat features to convert regression (and other statistical) objects into "tidy" data frames. This is especially useful because regression output is so often used as an input to something else, e.g. a plot of coefficients or marginal effects. Here, I'll use `broom::tidy(..., conf.int=T)` to coerce the `ols1` regression object into a tidy data frame of coefficient values and key statistics.
+While it's easy to extract regression coefficients via the `summary()` function, in practice I always use the **broom** package ([link ](https://broom.tidyverse.org/)) to do so. This package has a bunch of neat features to convert regression (and other statistical) objects into "tidy" data frames. This is especially useful because regression output is so often used as an input to something else, e.g. a plot of coefficients or marginal effects. Here, I'll use `broom::tidy(..., conf.int = TRUE)` to coerce the `ols1` regression object into a tidy data frame of coefficient values and key statistics.
 
 
 ```r
 library(broom)
 
-tidy(ols1, conf.int = T)
+tidy(ols1, conf.int = TRUE)
 ```
 
 ```
@@ -231,12 +231,12 @@ Recall that we can keep multiple objects in memory in R. So we can easily create
 
 
 ```r
-starwars2 <-
+starwars2 =
   starwars %>% 
   filter(name != "Jabba Desilijic Tiure")
   # filter(!(grepl("Jabba", name))) ## Regular expressions also work
 
-ols2 <- lm(mass ~ height, data = starwars2)
+ols2 = lm(mass ~ height, data = starwars2)
 summary(ols2)
 ```
 
@@ -268,7 +268,7 @@ Running a regression directly on a subsetted data frame is equally easy.
 
 
 ```r
-ols2a <- lm(mass ~ height, data = starwars %>% filter(!(grepl("Jabba", name))))
+ols2a = lm(mass ~ height, data = starwars %>% filter(!(grepl("Jabba", name))))
 summary(ols2a)
 ```
 
@@ -306,8 +306,8 @@ The good news is that there are *lots* of ways to get robust and clustered stand
 
 ```r
 # library(estimatr) ## Already loaded
-ols1_robust <- lm_robust(mass ~ height, data = starwars)
-tidy(ols1_robust, conf.int = T)
+ols1_robust = lm_robust(mass ~ height, data = starwars)
+tidy(ols1_robust, conf.int = TRUE)
 ```
 
 ```
@@ -323,8 +323,8 @@ The package defaults to using Eicker-Huber-White robust standard errors, commonl
 
 
 ```r
-ols1_robust_stata <- lm_robust(mass ~ height, data = starwars, se_type = "stata")
-tidy(ols1_robust_stata, conf.int = T)
+ols1_robust_stata = lm_robust(mass ~ height, data = starwars, se_type = "stata")
+tidy(ols1_robust_stata, conf.int = TRUE)
 ```
 
 ```
@@ -340,7 +340,7 @@ tidy(ols1_robust_stata, conf.int = T)
 
 
 ```r
-ols1_robust_clustered <- lm_robust(mass ~ height, data = starwars, clusters = homeworld)
+ols1_robust_clustered = lm_robust(mass ~ height, data = starwars, clusters = homeworld)
 ```
 
 ```
@@ -350,7 +350,7 @@ ols1_robust_clustered <- lm_robust(mass ~ height, data = starwars, clusters = ho
 ```
 
 ```r
-tidy(ols1_robust_clustered, conf.int = T)
+tidy(ols1_robust_clustered, conf.int = TRUE)
 ```
 
 ```
@@ -392,7 +392,7 @@ If you plan to use HAC SEs for inference, then I recommend converting the model 
 
 ```r
 # library(lmtest) ## Already loaded
-ols1_hac <- lmtest::coeftest(ols1, vcov=NeweyWest)
+ols1_hac = lmtest::coeftest(ols1, vcov=NeweyWest)
 ols1_hac
 ```
 
@@ -432,7 +432,7 @@ For this next section, it will be convenient to demonstrate using a subsample of
  
 
 ```r
-humans <- 
+humans = 
   starwars %>% 
   filter(species=="Human") %>%
   mutate(gender_factored = as.factor(gender)) %>% ## create factored version of "gender"
@@ -460,7 +460,7 @@ humans
 ```
 
 ```r
-ols_dv <- lm(mass ~ height + gender_factored, data = humans)
+ols_dv = lm(mass ~ height + gender_factored, data = humans)
 summary(ols_dv)
 ```
 
@@ -493,7 +493,7 @@ In fact, I'm even making things more complicated than they need to be. R is "fri
 
 ```r
 ## Use the non-factored "gender" variable instead
-ols_dv2 <- lm(mass ~ height + gender, data = humans)
+ols_dv2 = lm(mass ~ height + gender, data = humans)
 summary(ols_dv2)
 ```
 
@@ -533,7 +533,7 @@ To implement this in R, we simply run the following
 
 
 ```r
-ols_ie <- lm(mass ~ gender * height, data = humans)
+ols_ie = lm(mass ~ gender * height, data = humans)
 summary(ols_ie)
 ```
 
@@ -576,7 +576,7 @@ The package's main function is `fixest::feols()`, which is used for estimating l
 ```r
 # library(fixest) ## Already loaded
 
-ols_fe <- feols(mass ~ height | species, data = starwars) ## Fixed effect(s) go after the "|"
+ols_fe = feols(mass ~ height | species, data = starwars) ## Fixed effect(s) go after the "|"
 ols_fe
 ```
 
@@ -617,8 +617,8 @@ Before continuing, let's quickly save a "tidied" data frame of the coefficients 
 
 
 ```r
-# coefs_fe <- tidy(summary(ols_fe, se = 'standard'), conf.int = TRUE) ## yields same result as below
-coefs_fe <- tidy(ols_fe, se = 'standard', conf.int = TRUE)
+# coefs_fe = tidy(summary(ols_fe, se = 'standard'), conf.int = TRUE) ## yields same result as below
+coefs_fe = tidy(ols_fe, se = 'standard', conf.int = TRUE)
 ```
 
 #### High dimensional FEs and multiway clustering
@@ -628,7 +628,7 @@ As I already mentioned above, **fixest** supports both high-dimensional fixed ef
 
 ```r
 ## We now have two fixed effects: species and homeworld
-ols_hdfe <- feols(mass ~ height |  species + homeworld, data = starwars)
+ols_hdfe = feols(mass ~ height |  species + homeworld, data = starwars)
 ```
 
 ```
@@ -640,8 +640,8 @@ Easy enough, but the standard errors of the above model are automatically cluste
 
 ```r
 ## Cluster by both species and homeworld
-# ols_hdfe <- summary(ols_hdfe, se = 'twoway') ## Same effect as the next line
-ols_hdfe <- summary(ols_hdfe, cluster = c('species', 'homeworld'))
+# ols_hdfe = summary(ols_hdfe, se = 'twoway') ## Same effect as the next line
+ols_hdfe = summary(ols_hdfe, cluster = c('species', 'homeworld'))
 ols_hdfe
 ```
 
@@ -665,7 +665,7 @@ ols_hdfe
 
 ```r
 ## First get tidied output of the ols_hdfe object
-coefs_hdfe <- tidy(ols_hdfe, conf.int = TRUE)
+coefs_hdfe = tidy(ols_hdfe, conf.int = TRUE)
 
 bind_rows(
   coefs_fe %>% mutate(reg = "Model 1\nFE and no clustering"),
@@ -703,7 +703,7 @@ The dataset that we'll be using here is a panel of US cigarette consumption by s
 ## Get the data
 data("CigarettesSW", package = "AER")
 ## Create a new data frame with some modified variables
-cigs <-
+cigs =
   CigarettesSW %>%
   mutate(
     rprice = price/cpi,
@@ -713,7 +713,7 @@ cigs <-
     ) %>%
   as_tibble()
 ## Create a subset of the data limited to 1995
-cigs95 <- cigs %>% filter(year==1995)
+cigs95 = cigs %>% filter(year==1995)
 cigs95
 ```
 
@@ -748,7 +748,7 @@ Let's start with `AER::ivreg()` as our first IV regression option; if for no oth
 # library(AER) ## Already loaded
 
 ## Run the IV regression 
-iv_reg <- 
+iv_reg = 
   ivreg(
     log(packs) ~ log(rprice) + log(rincome) | ## The main regression. "rprice" is endogenous
       log(rincome) + tdiff + rtax, ## List all exogenous variables, including "rincome"
@@ -793,7 +793,7 @@ The good news for those who prefer the Stata-style syntax is that `AER::ivreg()`
 
 ```r
 ## Run the IV regression 
-iv_reg2 <- 
+iv_reg2 = 
   ivreg(
     log(packs) ~ log(rprice) + log(rincome) | 
       . -log(rprice) + tdiff + rtax, ## Alternative way of specifying the first-stage.
@@ -811,7 +811,7 @@ Our second IV option comes from the **estimatr** package that we saw earlier. Th
 # library(estimatr) ## Already loaded
 
 ## Run the IV regression with robust SEs
-iv_reg_robust <- 
+iv_reg_robust = 
   iv_robust( ## We only need to change the function call. Everything else stays the same.
     log(packs) ~ log(rprice) + log(rincome) | 
       log(rincome) + tdiff + rtax,
@@ -846,7 +846,7 @@ Finally, we get to my personal favourite IV option using the `felm()` function f
 ```r
 # library(lfe) ## Already loaded
 
-iv_felm <- 
+iv_felm = 
   felm(
     log(packs) ~ log(rincome) |
       0 | ## No FEs
@@ -885,7 +885,7 @@ Note that in the above example, we inserted a "0" where the fixed effect slot go
 
 
 ```r
-iv_felm_all <- 
+iv_felm_all = 
   felm(
     log(packs) ~ log(rincome) |
       year + state | ## Now include FEs
@@ -1069,7 +1069,7 @@ We could spend a whole course on Bayesian models. The very, very short version i
 ```r
 # install.packages("rstanarm") ## Run this first if you want to try yourself
 library(rstanarm)
-bayes_reg <- 
+bayes_reg = 
   stan_glm(
     mass ~ gender * height,
     data = humans, 

@@ -2635,8 +2635,8 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <p>You’ll note that the <code>lm()</code> call includes a reference to the data source (in this case, a hypothetical data frame called <code>df</code>). We covered this in our earlier lecture on R language basics and object-orientated programming, but the reason is that many objects (e.g. data frames) can exist in your R environment at the same time. So we need to be specific about where our regression variables are coming from — even if <code>df</code> is the only data frame in our global environment at the time. Another option would be to use indexing, but I find it a bit verbose:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="kw">lm</span>(df<span class="op">$</span>y <span class="op">~</span><span class="st"> </span>df<span class="op">$</span>x1 <span class="op">+</span><span class="st"> </span>df<span class="op">$</span>x2 <span class="op">+</span><span class="st"> </span>df<span class="op">$</span>x3 <span class="op">+</span><span class="st"> </span>...)</span></code></pre></div>
 <p>Let’s run a simple bivariate regression of starwars characters’ mass on height.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a>ols1 &lt;-<span class="st"> </span><span class="kw">lm</span>(mass <span class="op">~</span><span class="st"> </span>height, <span class="dt">data =</span> starwars)</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a><span class="co"># ols1 &lt;- lm(starwars$mass ~ starwars$height) ## Also works</span></span>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a>ols1 =<span class="st"> </span><span class="kw">lm</span>(mass <span class="op">~</span><span class="st"> </span>height, <span class="dt">data =</span> starwars)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a><span class="co"># ols1 = lm(starwars$mass ~ starwars$height) ## Also works</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a>ols1</span></code></pre></div>
 <pre><code>## 
 ## Call:
@@ -2677,10 +2677,10 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 </div>
 <div id="get-tidy-regression-coefficients-with-the-broom-package" class="section level3">
 <h3>Get “tidy” regression coefficients with the <code>broom</code> package</h3>
-<p>While it’s easy to extract regression coefficients via the <code>summary()</code> function, in practice I always use the <strong>broom</strong> package (<a href="https://broom.tidyverse.org/">link</a>) to do so. This package has a bunch of neat features to convert regression (and other statistical) objects into “tidy” data frames. This is especially useful because regression output is so often used as an input to something else, e.g. a plot of coefficients or marginal effects. Here, I’ll use <code>broom::tidy(..., conf.int=T)</code> to coerce the <code>ols1</code> regression object into a tidy data frame of coefficient values and key statistics.</p>
+<p>While it’s easy to extract regression coefficients via the <code>summary()</code> function, in practice I always use the <strong>broom</strong> package (<a href="https://broom.tidyverse.org/">link</a>) to do so. This package has a bunch of neat features to convert regression (and other statistical) objects into “tidy” data frames. This is especially useful because regression output is so often used as an input to something else, e.g. a plot of coefficients or marginal effects. Here, I’ll use <code>broom::tidy(..., conf.int = TRUE)</code> to coerce the <code>ols1</code> regression object into a tidy data frame of coefficient values and key statistics.</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true"></a><span class="kw">library</span>(broom)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true"></a></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true"></a><span class="kw">tidy</span>(ols1, <span class="dt">conf.int =</span> T)</span></code></pre></div>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true"></a><span class="kw">tidy</span>(ols1, <span class="dt">conf.int =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 2 x 7
 ##   term        estimate std.error statistic p.value conf.low conf.high
 ##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
@@ -2721,12 +2721,12 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <div id="create-a-new-data-frame" class="section level4">
 <h4>1) Create a new data frame</h4>
 <p>Recall that we can keep multiple objects in memory in R. So we can easily create a new data frame that excludes Jabba using <code>dplyr::filter()</code>.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true"></a>starwars2 &lt;-</span>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true"></a>starwars2 =</span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true"></a><span class="st">  </span>starwars <span class="op">%&gt;%</span><span class="st"> </span></span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true"></a><span class="st">  </span><span class="kw">filter</span>(name <span class="op">!=</span><span class="st"> &quot;Jabba Desilijic Tiure&quot;</span>)</span>
 <span id="cb19-4"><a href="#cb19-4" aria-hidden="true"></a>  <span class="co"># filter(!(grepl(&quot;Jabba&quot;, name))) ## Regular expressions also work</span></span>
 <span id="cb19-5"><a href="#cb19-5" aria-hidden="true"></a></span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true"></a>ols2 &lt;-<span class="st"> </span><span class="kw">lm</span>(mass <span class="op">~</span><span class="st"> </span>height, <span class="dt">data =</span> starwars2)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true"></a>ols2 =<span class="st"> </span><span class="kw">lm</span>(mass <span class="op">~</span><span class="st"> </span>height, <span class="dt">data =</span> starwars2)</span>
 <span id="cb19-7"><a href="#cb19-7" aria-hidden="true"></a><span class="kw">summary</span>(ols2)</span></code></pre></div>
 <pre><code>## 
 ## Call:
@@ -2751,7 +2751,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <div id="subset-directly-in-the-lm-call" class="section level4">
 <h4>2) Subset directly in the <code>lm()</code> call</h4>
 <p>Running a regression directly on a subsetted data frame is equally easy.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true"></a>ols2a &lt;-<span class="st"> </span><span class="kw">lm</span>(mass <span class="op">~</span><span class="st"> </span>height, <span class="dt">data =</span> starwars <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(<span class="op">!</span>(<span class="kw">grepl</span>(<span class="st">&quot;Jabba&quot;</span>, name))))</span>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true"></a>ols2a =<span class="st"> </span><span class="kw">lm</span>(mass <span class="op">~</span><span class="st"> </span>height, <span class="dt">data =</span> starwars <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(<span class="op">!</span>(<span class="kw">grepl</span>(<span class="st">&quot;Jabba&quot;</span>, name))))</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true"></a><span class="kw">summary</span>(ols2a)</span></code></pre></div>
 <pre><code>## 
 ## Call:
@@ -2782,8 +2782,8 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <p>Dealing with statistical irregularities (heteroskedasticity, clustering, etc.) is a fact of life for empirical researchers. However, it says something about the economics profession that a random stranger could walk uninvited into a live seminar and ask, “How did you cluster your standard errors?”, and it would likely draw approving nods from audience members.</p>
 <p>The good news is that there are <em>lots</em> of ways to get robust and clustered standard errors in R. For many years, these have been based on the excellent <strong>sandwich</strong> package (<a href="https://cran.r-project.org/web/packages/sandwich/index.html">link</a>). However, my preferred way these days is to use the <strong>estimatr</strong> package (<a href="https://declaredesign.org/r/estimatr/articles/getting-started.html">link</a>), which is both fast and provides convenient aliases for the standard regression functions. For example, you can obtain robust standard errors using <code>estimatr::lm_robust()</code>. Let’s illustrate by implementing a robust version of the <code>ols1</code> regression that we ran earlier.</p>
 <div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true"></a><span class="co"># library(estimatr) ## Already loaded</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true"></a>ols1_robust &lt;-<span class="st"> </span><span class="kw">lm_robust</span>(mass <span class="op">~</span><span class="st"> </span>height, <span class="dt">data =</span> starwars)</span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true"></a><span class="kw">tidy</span>(ols1_robust, <span class="dt">conf.int =</span> T)</span></code></pre></div>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true"></a>ols1_robust =<span class="st"> </span><span class="kw">lm_robust</span>(mass <span class="op">~</span><span class="st"> </span>height, <span class="dt">data =</span> starwars)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true"></a><span class="kw">tidy</span>(ols1_robust, <span class="dt">conf.int =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
 <pre><code>##          term   estimate   std.error  statistic      p.value    conf.low
 ## 1 (Intercept) -13.810314 23.45557632 -0.5887859 5.583311e-01 -60.7792950
 ## 2      height   0.638571  0.08791977  7.2631109 1.159161e-09   0.4625147
@@ -2791,8 +2791,8 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 ## 1 33.1586678 57    mass
 ## 2  0.8146273 57    mass</code></pre>
 <p>The package defaults to using Eicker-Huber-White robust standard errors, commonly referred to as “HC2” standard errors. You can easily specify alternate methods using the <code>se_type =</code> argument.<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> For example, you can specify Stata robust standard errors if you want to replicate code or results from that language. (See <a href="https://declaredesign.org/r/estimatr/articles/stata-wls-hat.html">here</a> for more details on why this isn’t the default and why Stata’s robust standard errors differ from those in R and Python.)</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true"></a>ols1_robust_stata &lt;-<span class="st"> </span><span class="kw">lm_robust</span>(mass <span class="op">~</span><span class="st"> </span>height, <span class="dt">data =</span> starwars, <span class="dt">se_type =</span> <span class="st">&quot;stata&quot;</span>)</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true"></a><span class="kw">tidy</span>(ols1_robust_stata, <span class="dt">conf.int =</span> T)</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true"></a>ols1_robust_stata =<span class="st"> </span><span class="kw">lm_robust</span>(mass <span class="op">~</span><span class="st"> </span>height, <span class="dt">data =</span> starwars, <span class="dt">se_type =</span> <span class="st">&quot;stata&quot;</span>)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true"></a><span class="kw">tidy</span>(ols1_robust_stata, <span class="dt">conf.int =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
 <pre><code>##          term   estimate   std.error  statistic      p.value    conf.low
 ## 1 (Intercept) -13.810314 23.36219608 -0.5911394 5.567641e-01 -60.5923043
 ## 2      height   0.638571  0.08616105  7.4113649 6.561046e-10   0.4660365
@@ -2800,11 +2800,11 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 ## 1 32.9716771 57    mass
 ## 2  0.8111055 57    mass</code></pre>
 <p><strong>estimatr</strong> also supports (robust) instrumental variable regression and clustered standard errors. I’ll return to these issues in the relevant sections below, but here’s a quick example of the latter just to illustrate:</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true"></a>ols1_robust_clustered &lt;-<span class="st"> </span><span class="kw">lm_robust</span>(mass <span class="op">~</span><span class="st"> </span>height, <span class="dt">data =</span> starwars, <span class="dt">clusters =</span> homeworld)</span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true"></a>ols1_robust_clustered =<span class="st"> </span><span class="kw">lm_robust</span>(mass <span class="op">~</span><span class="st"> </span>height, <span class="dt">data =</span> starwars, <span class="dt">clusters =</span> homeworld)</span></code></pre></div>
 <pre><code>## Warning in eval(quote({: Some observations have missingness in the cluster
 ## variable(s) but not in the outcome or covariates. These observations have been
 ## dropped.</code></pre>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true"></a><span class="kw">tidy</span>(ols1_robust_clustered, <span class="dt">conf.int =</span> T)</span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true"></a><span class="kw">tidy</span>(ols1_robust_clustered, <span class="dt">conf.int =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
 <pre><code>##          term   estimate   std.error  statistic      p.value    conf.low
 ## 1 (Intercept) -9.3014938 28.84436408 -0.3224718 0.7559158751 -76.6200628
 ## 2      height  0.6134058  0.09911832  6.1886211 0.0002378887   0.3857824
@@ -2824,7 +2824,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 ##  21.2694130   0.0774265</code></pre>
 <p>If you plan to use HAC SEs for inference, then I recommend converting the model object with <code>lmtest::coeftest()</code>. This function provides a convenient way to do hypothesis testing with a wide variety of alternate variance-covariance (VCOV) matrices. Of course, these alternate VCOV matrices could extended way beyond HAC, but here’s how it would work for the present case:</p>
 <div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true"></a><span class="co"># library(lmtest) ## Already loaded</span></span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true"></a>ols1_hac &lt;-<span class="st"> </span>lmtest<span class="op">::</span><span class="kw">coeftest</span>(ols1, <span class="dt">vcov=</span>NeweyWest)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true"></a>ols1_hac =<span class="st"> </span>lmtest<span class="op">::</span><span class="kw">coeftest</span>(ols1, <span class="dt">vcov=</span>NeweyWest)</span>
 <span id="cb35-3"><a href="#cb35-3" aria-hidden="true"></a>ols1_hac</span></code></pre></div>
 <pre><code>## 
 ## t test of coefficients:
@@ -2849,7 +2849,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <h3>Dummy variables as <em>factors</em></h3>
 <p>Dummy variables are a core component of many regression models. However, these can be a pain to create in many statistical languages, since you first have to tabulate a whole new matrix of binary variables and then append it to the original data frame. In contrast, R has a much more convenient framework for creating and evaluating dummy variables in a regression. You simply specify the variable of interest as a <a href="https://r4ds.had.co.nz/factors.html">factor</a>.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a></p>
 <p>For this next section, it will be convenient to demonstrate using a subsample of the data that comprises only humans. I’ll first create this <code>humans</code> data frame and then demonstrate the dummy-variables-as-factors approach.</p>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true"></a>humans &lt;-<span class="st"> </span></span>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true"></a>humans =<span class="st"> </span></span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true"></a><span class="st">  </span>starwars <span class="op">%&gt;%</span><span class="st"> </span></span>
 <span id="cb39-3"><a href="#cb39-3" aria-hidden="true"></a><span class="st">  </span><span class="kw">filter</span>(species<span class="op">==</span><span class="st">&quot;Human&quot;</span>) <span class="op">%&gt;%</span></span>
 <span id="cb39-4"><a href="#cb39-4" aria-hidden="true"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">gender_factored =</span> <span class="kw">as.factor</span>(gender)) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## create factored version of &quot;gender&quot;</span></span>
@@ -2871,7 +2871,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 ## # … with 25 more rows, and 7 more variables: birth_year &lt;dbl&gt;, sex &lt;chr&gt;,
 ## #   homeworld &lt;chr&gt;, species &lt;chr&gt;, films &lt;list&gt;, vehicles &lt;list&gt;,
 ## #   starships &lt;list&gt;</code></pre>
-<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true"></a>ols_dv &lt;-<span class="st"> </span><span class="kw">lm</span>(mass <span class="op">~</span><span class="st"> </span>height <span class="op">+</span><span class="st"> </span>gender_factored, <span class="dt">data =</span> humans)</span>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true"></a>ols_dv =<span class="st"> </span><span class="kw">lm</span>(mass <span class="op">~</span><span class="st"> </span>height <span class="op">+</span><span class="st"> </span>gender_factored, <span class="dt">data =</span> humans)</span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true"></a><span class="kw">summary</span>(ols_dv)</span></code></pre></div>
 <pre><code>## 
 ## Call:
@@ -2895,7 +2895,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 ## F-statistic: 7.587 on 2 and 19 DF,  p-value: 0.003784</code></pre>
 <p>In fact, I’m even making things more complicated than they need to be. R is “friendly” and tries to help whenever it thinks you have misspecified a function or variable. While this is something to be <a href="https://rawgit.com/grantmcdermott/R-intro/master/rIntro.html#r_tries_to_guess_what_you_meant">aware of</a>, it normally just works<sup>TM</sup>. A case in point is that we don’t actually <em>need</em> to specify a qualitative or character variable as a factor in a regression. R will automatically do this for you regardless, since that’s the only sensible way to include string variables in a regression.</p>
 <div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true"></a><span class="co">## Use the non-factored &quot;gender&quot; variable instead</span></span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true"></a>ols_dv2 &lt;-<span class="st"> </span><span class="kw">lm</span>(mass <span class="op">~</span><span class="st"> </span>height <span class="op">+</span><span class="st"> </span>gender, <span class="dt">data =</span> humans)</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true"></a>ols_dv2 =<span class="st"> </span><span class="kw">lm</span>(mass <span class="op">~</span><span class="st"> </span>height <span class="op">+</span><span class="st"> </span>gender, <span class="dt">data =</span> humans)</span>
 <span id="cb43-3"><a href="#cb43-3" aria-hidden="true"></a><span class="kw">summary</span>(ols_dv2)</span></code></pre></div>
 <pre><code>## 
 ## Call:
@@ -2924,7 +2924,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <p>For example, we might wonder whether the relationship between a person’s body mass and their height is modulated by their gender. That is, we want to run a regression of the form</p>
 <p><span class="math display">\[Mass = \beta_0 + \beta_1 D_{Male} + \beta_2 Height + \beta_3 D_{Male} \times Height\]</span></p>
 <p>To implement this in R, we simply run the following</p>
-<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true"></a>ols_ie &lt;-<span class="st"> </span><span class="kw">lm</span>(mass <span class="op">~</span><span class="st"> </span>gender <span class="op">*</span><span class="st"> </span>height, <span class="dt">data =</span> humans)</span>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true"></a>ols_ie =<span class="st"> </span><span class="kw">lm</span>(mass <span class="op">~</span><span class="st"> </span>gender <span class="op">*</span><span class="st"> </span>height, <span class="dt">data =</span> humans)</span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true"></a><span class="kw">summary</span>(ols_ie)</span></code></pre></div>
 <pre><code>## 
 ## Call:
@@ -2958,7 +2958,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <p>The package’s main function is <code>fixest::feols()</code>, which is used for estimating linear fixed effects models. The syntax is such that you first specify the regression model as per normal, and then list the fixed effect(s) after a <code>|</code>. An example may help to illustrate. Let’s say that we again want to run our simple regression of mass on height, but this time control for species-level fixed effects.<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a></p>
 <div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true"></a><span class="co"># library(fixest) ## Already loaded</span></span>
 <span id="cb47-2"><a href="#cb47-2" aria-hidden="true"></a></span>
-<span id="cb47-3"><a href="#cb47-3" aria-hidden="true"></a>ols_fe &lt;-<span class="st"> </span><span class="kw">feols</span>(mass <span class="op">~</span><span class="st"> </span>height <span class="op">|</span><span class="st"> </span>species, <span class="dt">data =</span> starwars) <span class="co">## Fixed effect(s) go after the &quot;|&quot;</span></span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true"></a>ols_fe =<span class="st"> </span><span class="kw">feols</span>(mass <span class="op">~</span><span class="st"> </span>height <span class="op">|</span><span class="st"> </span>species, <span class="dt">data =</span> starwars) <span class="co">## Fixed effect(s) go after the &quot;|&quot;</span></span>
 <span id="cb47-4"><a href="#cb47-4" aria-hidden="true"></a>ols_fe</span></code></pre></div>
 <pre><code>## OLS estimation, Dep. Var.: mass
 ## Observations: 58 
@@ -2983,19 +2983,19 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 ## Log-likelihood: -214.02   Adj. R2: 0.99282 
 ##                         R2-Within: 0.66249</code></pre>
 <p>Before continuing, let’s quickly save a “tidied” data frame of the coefficients for later use. I’ll use vanilla standard errors again, if only to show you that the <code>broom::tidy()</code> method for <code>fixest</code> objects also accepts an <code>se</code> argument. This basically just provides another convenient way for you to adjust standard errors for your models on the fly.</p>
-<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true"></a><span class="co"># coefs_fe &lt;- tidy(summary(ols_fe, se = &#39;standard&#39;), conf.int = TRUE) ## yields same result as below</span></span>
-<span id="cb51-2"><a href="#cb51-2" aria-hidden="true"></a>coefs_fe &lt;-<span class="st"> </span><span class="kw">tidy</span>(ols_fe, <span class="dt">se =</span> <span class="st">&#39;standard&#39;</span>, <span class="dt">conf.int =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true"></a><span class="co"># coefs_fe = tidy(summary(ols_fe, se = &#39;standard&#39;), conf.int = TRUE) ## yields same result as below</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true"></a>coefs_fe =<span class="st"> </span><span class="kw">tidy</span>(ols_fe, <span class="dt">se =</span> <span class="st">&#39;standard&#39;</span>, <span class="dt">conf.int =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
 </div>
 <div id="high-dimensional-fes-and-multiway-clustering" class="section level4">
 <h4>High dimensional FEs and multiway clustering</h4>
 <p>As I already mentioned above, <strong>fixest</strong> supports both high-dimensional fixed effects and multiway clustering. To see this in action, let’s add “homeworld” as an additional fixed effect to the model.</p>
 <div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true"></a><span class="co">## We now have two fixed effects: species and homeworld</span></span>
-<span id="cb52-2"><a href="#cb52-2" aria-hidden="true"></a>ols_hdfe &lt;-<span class="st"> </span><span class="kw">feols</span>(mass <span class="op">~</span><span class="st"> </span>height <span class="op">|</span><span class="st">  </span>species <span class="op">+</span><span class="st"> </span>homeworld, <span class="dt">data =</span> starwars)</span></code></pre></div>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true"></a>ols_hdfe =<span class="st"> </span><span class="kw">feols</span>(mass <span class="op">~</span><span class="st"> </span>height <span class="op">|</span><span class="st">  </span>species <span class="op">+</span><span class="st"> </span>homeworld, <span class="dt">data =</span> starwars)</span></code></pre></div>
 <pre><code>## NOTE: 32 observations removed because of NA values (Breakup: LHS: 28, RHS: 6, Fixed-effects: 13).</code></pre>
 <p>Easy enough, but the standard errors of the above model are automatically clustered by species, i.e. the first fixed effect variable. (Print the model to screen to prove this for yourself.) Let’s go a step further and cluster by both “species” and “homeworld”. <a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a> We can do this using either the <code>se</code> or <code>cluster</code> arguments of <code>summary.fixest()</code>. I’ll (re)assign the model to the same <code>ols_hdfe</code> object, but you could of course create a new object if you so wished.</p>
 <div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true"></a><span class="co">## Cluster by both species and homeworld</span></span>
-<span id="cb54-2"><a href="#cb54-2" aria-hidden="true"></a><span class="co"># ols_hdfe &lt;- summary(ols_hdfe, se = &#39;twoway&#39;) ## Same effect as the next line</span></span>
-<span id="cb54-3"><a href="#cb54-3" aria-hidden="true"></a>ols_hdfe &lt;-<span class="st"> </span><span class="kw">summary</span>(ols_hdfe, <span class="dt">cluster =</span> <span class="kw">c</span>(<span class="st">&#39;species&#39;</span>, <span class="st">&#39;homeworld&#39;</span>))</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true"></a><span class="co"># ols_hdfe = summary(ols_hdfe, se = &#39;twoway&#39;) ## Same effect as the next line</span></span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true"></a>ols_hdfe =<span class="st"> </span><span class="kw">summary</span>(ols_hdfe, <span class="dt">cluster =</span> <span class="kw">c</span>(<span class="st">&#39;species&#39;</span>, <span class="st">&#39;homeworld&#39;</span>))</span>
 <span id="cb54-4"><a href="#cb54-4" aria-hidden="true"></a>ols_hdfe</span></code></pre></div>
 <pre><code>## OLS estimation, Dep. Var.: mass
 ## Observations: 55 
@@ -3012,7 +3012,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <h4>Comparing our model coefficients</h4>
 <p><strong>fixest</strong> provides an inbuilt <code>coefplot()</code> function for plotting estimation results. This is especially useful for tracing the evolution of treatment effects over time. (Take a look <a href="https://cran.r-project.org/web/packages/fixest/vignettes/fixest_walkthrough.html#23_adding_interactions:_yearly_treatment_effect.">here</a> When it comes to comparing coefficients across models, however, I personally prefer to do this “manually” with <strong>ggplot2</strong>. Consider the below example, which leverages the fact that we have saved (or can save) regression models as data frames with <code>broom::tidy()</code>.</p>
 <div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true"></a><span class="co">## First get tidied output of the ols_hdfe object</span></span>
-<span id="cb56-2"><a href="#cb56-2" aria-hidden="true"></a>coefs_hdfe &lt;-<span class="st"> </span><span class="kw">tidy</span>(ols_hdfe, <span class="dt">conf.int =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true"></a>coefs_hdfe =<span class="st"> </span><span class="kw">tidy</span>(ols_hdfe, <span class="dt">conf.int =</span> <span class="ot">TRUE</span>)</span>
 <span id="cb56-3"><a href="#cb56-3" aria-hidden="true"></a></span>
 <span id="cb56-4"><a href="#cb56-4" aria-hidden="true"></a><span class="kw">bind_rows</span>(</span>
 <span id="cb56-5"><a href="#cb56-5" aria-hidden="true"></a>  coefs_fe <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(<span class="dt">reg =</span> <span class="st">&quot;Model 1</span><span class="ch">\n</span><span class="st">FE and no clustering&quot;</span>),</span>
@@ -3044,7 +3044,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true"></a><span class="co">## Get the data</span></span>
 <span id="cb57-2"><a href="#cb57-2" aria-hidden="true"></a><span class="kw">data</span>(<span class="st">&quot;CigarettesSW&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;AER&quot;</span>)</span>
 <span id="cb57-3"><a href="#cb57-3" aria-hidden="true"></a><span class="co">## Create a new data frame with some modified variables</span></span>
-<span id="cb57-4"><a href="#cb57-4" aria-hidden="true"></a>cigs &lt;-</span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true"></a>cigs =</span>
 <span id="cb57-5"><a href="#cb57-5" aria-hidden="true"></a><span class="st">  </span>CigarettesSW <span class="op">%&gt;%</span></span>
 <span id="cb57-6"><a href="#cb57-6" aria-hidden="true"></a><span class="st">  </span><span class="kw">mutate</span>(</span>
 <span id="cb57-7"><a href="#cb57-7" aria-hidden="true"></a>    <span class="dt">rprice =</span> price<span class="op">/</span>cpi,</span>
@@ -3054,7 +3054,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <span id="cb57-11"><a href="#cb57-11" aria-hidden="true"></a>    ) <span class="op">%&gt;%</span></span>
 <span id="cb57-12"><a href="#cb57-12" aria-hidden="true"></a><span class="st">  </span><span class="kw">as_tibble</span>()</span>
 <span id="cb57-13"><a href="#cb57-13" aria-hidden="true"></a><span class="co">## Create a subset of the data limited to 1995</span></span>
-<span id="cb57-14"><a href="#cb57-14" aria-hidden="true"></a>cigs95 &lt;-<span class="st"> </span>cigs <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(year<span class="op">==</span><span class="dv">1995</span>)</span>
+<span id="cb57-14"><a href="#cb57-14" aria-hidden="true"></a>cigs95 =<span class="st"> </span>cigs <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(year<span class="op">==</span><span class="dv">1995</span>)</span>
 <span id="cb57-15"><a href="#cb57-15" aria-hidden="true"></a>cigs95</span></code></pre></div>
 <pre><code>## # A tibble: 48 x 13
 ##    state year    cpi population packs income   tax price  taxs rprice rincome
@@ -3078,7 +3078,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true"></a><span class="co"># library(AER) ## Already loaded</span></span>
 <span id="cb59-2"><a href="#cb59-2" aria-hidden="true"></a></span>
 <span id="cb59-3"><a href="#cb59-3" aria-hidden="true"></a><span class="co">## Run the IV regression </span></span>
-<span id="cb59-4"><a href="#cb59-4" aria-hidden="true"></a>iv_reg &lt;-<span class="st"> </span></span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true"></a>iv_reg =<span class="st"> </span></span>
 <span id="cb59-5"><a href="#cb59-5" aria-hidden="true"></a><span class="st">  </span><span class="kw">ivreg</span>(</span>
 <span id="cb59-6"><a href="#cb59-6" aria-hidden="true"></a>    <span class="kw">log</span>(packs) <span class="op">~</span><span class="st"> </span><span class="kw">log</span>(rprice) <span class="op">+</span><span class="st"> </span><span class="kw">log</span>(rincome) <span class="op">|</span><span class="st"> </span><span class="co">## The main regression. &quot;rprice&quot; is endogenous</span></span>
 <span id="cb59-7"><a href="#cb59-7" aria-hidden="true"></a><span class="st">      </span><span class="kw">log</span>(rincome) <span class="op">+</span><span class="st"> </span>tdiff <span class="op">+</span><span class="st"> </span>rtax, <span class="co">## List all exogenous variables, including &quot;rincome&quot;</span></span>
@@ -3114,7 +3114,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <p>I want to emphasise that you might find the above syntax a little counterintuitive — or, at least, unusual — if you’re coming from a language like Stata.<a href="#fn8" class="footnote-ref" id="fnref8"><sup>8</sup></a> Note that we didn’t specify the endogenous variable (i.e. “rprice”) directly. Rather, we told R which are the <em>exogenous</em> variables. It then figured out which were the endogenous variables that needed to be instrumented and ran the necessary first-stage regression(s) in the background. This approach actually makes quite a lot of sense if you think about the underlying theory of IV. But different strokes for different folks.</p>
 <p>The good news for those who prefer the Stata-style syntax is that <code>AER::ivreg()</code> also accepts an alternate way of specifying the first-stage. This time, we’ll denote our endogenous “rprice” variable with <code>. -price</code> and include only the instrumental variables after the <code>|</code> break. Feel free to check yourself, but the outcome will be exactly the same.</p>
 <div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true"></a><span class="co">## Run the IV regression </span></span>
-<span id="cb61-2"><a href="#cb61-2" aria-hidden="true"></a>iv_reg2 &lt;-<span class="st"> </span></span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true"></a>iv_reg2 =<span class="st"> </span></span>
 <span id="cb61-3"><a href="#cb61-3" aria-hidden="true"></a><span class="st">  </span><span class="kw">ivreg</span>(</span>
 <span id="cb61-4"><a href="#cb61-4" aria-hidden="true"></a>    <span class="kw">log</span>(packs) <span class="op">~</span><span class="st"> </span><span class="kw">log</span>(rprice) <span class="op">+</span><span class="st"> </span><span class="kw">log</span>(rincome) <span class="op">|</span><span class="st"> </span></span>
 <span id="cb61-5"><a href="#cb61-5" aria-hidden="true"></a><span class="st">      </span>. <span class="op">-</span><span class="kw">log</span>(rprice) <span class="op">+</span><span class="st"> </span>tdiff <span class="op">+</span><span class="st"> </span>rtax, <span class="co">## Alternative way of specifying the first-stage.</span></span>
@@ -3127,7 +3127,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true"></a><span class="co"># library(estimatr) ## Already loaded</span></span>
 <span id="cb62-2"><a href="#cb62-2" aria-hidden="true"></a></span>
 <span id="cb62-3"><a href="#cb62-3" aria-hidden="true"></a><span class="co">## Run the IV regression with robust SEs</span></span>
-<span id="cb62-4"><a href="#cb62-4" aria-hidden="true"></a>iv_reg_robust &lt;-<span class="st"> </span></span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true"></a>iv_reg_robust =<span class="st"> </span></span>
 <span id="cb62-5"><a href="#cb62-5" aria-hidden="true"></a><span class="st">  </span><span class="kw">iv_robust</span>( <span class="co">## We only need to change the function call. Everything else stays the same.</span></span>
 <span id="cb62-6"><a href="#cb62-6" aria-hidden="true"></a>    <span class="kw">log</span>(packs) <span class="op">~</span><span class="st"> </span><span class="kw">log</span>(rprice) <span class="op">+</span><span class="st"> </span><span class="kw">log</span>(rincome) <span class="op">|</span><span class="st"> </span></span>
 <span id="cb62-7"><a href="#cb62-7" aria-hidden="true"></a><span class="st">      </span><span class="kw">log</span>(rincome) <span class="op">+</span><span class="st"> </span>tdiff <span class="op">+</span><span class="st"> </span>rtax,</span>
@@ -3155,7 +3155,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <p>Finally, we get to my personal favourite IV option using the <code>felm()</code> function from the <strong>lfe</strong> package. This is actually my favourite option; not only because I work mostly with panel data, but also because I find it has the most natural syntax.<a href="#fn9" class="footnote-ref" id="fnref9"><sup>9</sup></a> In fact, it very closely resembles Stata’s approach to writing out the first-stage, where you specify the endogenous variable(s) and the instruments only.</p>
 <div class="sourceCode" id="cb64"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true"></a><span class="co"># library(lfe) ## Already loaded</span></span>
 <span id="cb64-2"><a href="#cb64-2" aria-hidden="true"></a></span>
-<span id="cb64-3"><a href="#cb64-3" aria-hidden="true"></a>iv_felm &lt;-<span class="st"> </span></span>
+<span id="cb64-3"><a href="#cb64-3" aria-hidden="true"></a>iv_felm =<span class="st"> </span></span>
 <span id="cb64-4"><a href="#cb64-4" aria-hidden="true"></a><span class="st">  </span><span class="kw">felm</span>(</span>
 <span id="cb64-5"><a href="#cb64-5" aria-hidden="true"></a>    <span class="kw">log</span>(packs) <span class="op">~</span><span class="st"> </span><span class="kw">log</span>(rincome) <span class="op">|</span></span>
 <span id="cb64-6"><a href="#cb64-6" aria-hidden="true"></a><span class="st">      </span><span class="dv">0</span> <span class="op">|</span><span class="st"> </span><span class="co">## No FEs</span></span>
@@ -3186,7 +3186,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 ## F-statistic(proj model): 13.28 on 2 and 45 DF, p-value: 2.931e-05 
 ## F-statistic(endog. vars):23.56 on 1 and 45 DF, p-value: 1.496e-05</code></pre>
 <p>Note that in the above example, we inserted a “0” where the fixed effect slot goes, since we only used a subset of the data. Just for fun then, here’s another IV regression with <code>felm()</code>. This time, I’ll use the whole <code>cigs</code> data frame (i.e. not subsetting to 1995), and use both year and state fixed effects to control for the panel structure.</p>
-<div class="sourceCode" id="cb66"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true"></a>iv_felm_all &lt;-<span class="st"> </span></span>
+<div class="sourceCode" id="cb66"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true"></a>iv_felm_all =<span class="st"> </span></span>
 <span id="cb66-2"><a href="#cb66-2" aria-hidden="true"></a><span class="st">  </span><span class="kw">felm</span>(</span>
 <span id="cb66-3"><a href="#cb66-3" aria-hidden="true"></a>    <span class="kw">log</span>(packs) <span class="op">~</span><span class="st"> </span><span class="kw">log</span>(rincome) <span class="op">|</span></span>
 <span id="cb66-4"><a href="#cb66-4" aria-hidden="true"></a><span class="st">      </span>year <span class="op">+</span><span class="st"> </span>state <span class="op">|</span><span class="st"> </span><span class="co">## Now include FEs</span></span>
@@ -3298,7 +3298,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <p>We could spend a whole course on Bayesian models. The very, very short version is that R offers outstanding support for Bayesian models and data analysis. You will find convenient interfaces to all of the major MCMC and Bayesian software engines: <a href="https://mc-stan.org/users/interfaces/rstan">Stan</a>, <a href="http://mcmc-jags.sourceforge.net/">JAGS</a>, TensorFlow (via <a href="https://greta-stats.org/">Greta</a>), etc. Here follows a <em>super</em> simple example using the <strong>rstanarm</strong> package (<a href="http://mc-stan.org/rstanarm/">link</a>). Note that we did not install this package with the others above, as it can take fairly long and involve some minor troubleshooting.<a href="#fn10" class="footnote-ref" id="fnref10"><sup>10</sup></a></p>
 <div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true"></a><span class="co"># install.packages(&quot;rstanarm&quot;) ## Run this first if you want to try yourself</span></span>
 <span id="cb85-2"><a href="#cb85-2" aria-hidden="true"></a><span class="kw">library</span>(rstanarm)</span>
-<span id="cb85-3"><a href="#cb85-3" aria-hidden="true"></a>bayes_reg &lt;-<span class="st"> </span></span>
+<span id="cb85-3"><a href="#cb85-3" aria-hidden="true"></a>bayes_reg =<span class="st"> </span></span>
 <span id="cb85-4"><a href="#cb85-4" aria-hidden="true"></a><span class="st">  </span><span class="kw">stan_glm</span>(</span>
 <span id="cb85-5"><a href="#cb85-5" aria-hidden="true"></a>    mass <span class="op">~</span><span class="st"> </span>gender <span class="op">*</span><span class="st"> </span>height,</span>
 <span id="cb85-6"><a href="#cb85-6" aria-hidden="true"></a>    <span class="dt">data =</span> humans, </span>
