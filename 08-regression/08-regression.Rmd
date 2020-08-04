@@ -28,7 +28,7 @@ Today's lecture is about the bread-and-butter tool of applied econometrics and d
 
 It's important to note that "base" R already provides all of the tools we need for basic regression analysis. However, we'll be using several external packages today, because they will make our lives easier and offer increased power for some more sophisticated analyses.
 
-- New: **broom**, **estimatr**, **fixest**, **sandwich**, **lmtest**, **AER**, **lfe**, **huxtable**, **margins**
+- New: **broom**, **estimatr**, **fixest**, **sandwich**, **lmtest**, **AER**, **lfe**, **margins**, **modelsummary**, **vt**
 - Already used: **tidyverse**, **hrbrthemes**, **listviewer**
 
 The **broom** package was bundled with the rest of tidyverse and **sandwich** should get installed as a dependency of several of the above packages. Still, a convenient way to install (if necessary) and load everything is by running the below code chunk. 
@@ -36,7 +36,7 @@ The **broom** package was bundled with the rest of tidyverse and **sandwich** sh
 ```{r, cache=F, message=F}
 ## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(tidyverse, broom, hrbrthemes, plm, estimatr, sandwich, lmtest, AER, lfe, huxtable, margins)
+pacman::p_load(tidyverse, broom, hrbrthemes, estimatr, fixest, sandwich, lmtest, AER, lfe, margins, modelsummary, vtable)
 ## My preferred ggplot2 plotting theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
@@ -172,7 +172,7 @@ The overall model fit is much improved by the exclusion of this outlier, with R<
 
 Dealing with statistical irregularities (heteroskedasticity, clustering, etc.) is a fact of life for empirical researchers. However, it says something about the economics profession that a random stranger could walk uninvited into a live seminar and ask, "How did you cluster your standard errors?", and it would likely draw approving nods from audience members. 
 
-The good news is that there are *lots* of ways to get robust and clustered standard errors in R. For many years, these have been based on the excellent **sandwich** package ([link](https://cran.r-project.org/web/packages/sandwich/index.html)). However, my preferred way these days is to use the **estimatr** package ([link](https://declaredesign.org/r/estimatr/articles/getting-started.html)), which is both fast and provides convenient aliases for the standard regression functions. For example, you can obtain robust standard errors using `estimatr::lm_robust()`. Let's illustrate by running a robust version of the `ols1` regression that ran earlier.
+The good news is that there are *lots* of ways to get robust and clustered standard errors in R. For many years, these have been based on the excellent **sandwich** package ([link](https://cran.r-project.org/web/packages/sandwich/index.html)). However, my preferred way these days is to use the **estimatr** package ([link](https://declaredesign.org/r/estimatr/articles/getting-started.html)), which is both fast and provides convenient aliases for the standard regression functions. For example, you can obtain robust standard errors using `estimatr::lm_robust()`. Let's illustrate by implementing a robust version of the `ols1` regression that we ran earlier.
 
 ```{r ols1_robust}
 # library(estimatr) ## Already loaded
@@ -270,14 +270,14 @@ summary(ols_ie)
 
 The simplest (and least efficient) way to include fixed effects in a regression model is, of course, to use dummy variables. However, it isn't very efficient or scalable. What's the point learning all that stuff about the Frisch-Waugh-Lovell theorem, within-group transformations, etcetera, etcetera if we can't use them in our software routines? Again, there are several options to choose from here. For example, many of you are probably familiar with the excellent **lfe** package ([link](https://cran.r-project.org/web/packages/lfe/index.html)), which offers near-identical functionality to the popular Stata library, **reghdfe** ([link](http://scorreia.com/software/reghdfe/)). However, for fixed effects models in R, I am going to advocate that you take a look at the **fixest** package ([link](https://github.com/lrberge/fixest)).
 
-**fixest** is relatively new on the scene and has quickly become one of my packages in the entire R catalogue. It has a boatload of functionality built in to it: support for nonlinear models, high-dimensional fixed effects, multiway clustering, etc. It is also insanely fast... as in, up to *orders of magnitude* faster than **lfe** or **reghdfe**. (See: [benchmarks](https://github.com/lrberge/fixest#benchmarking.) I won't be able to cover all of **fixest**'s features in depth here --- see the [introductory vignette](https://cran.r-project.org/web/packages/fixest/vignettes/fixest_walkthrough.html) for a thorough walkthrough --- but I hope to least give you a sense of why I am so enthusiastic about it. Let's start off with a simple example before moving on to something more demanding.
+**fixest** is relatively new on the scene and has quickly become one of my packages in the entire R catalogue. It has a boatload of functionality built in to it: support for nonlinear models, high-dimensional fixed effects, multiway clustering, etc. It is also insanely fast... as in, up to *orders of magnitude* faster than **lfe** or **reghdfe**. (See: [benchmarks](https://github.com/lrberge/fixest#benchmarking.)) I won't be able to cover all of **fixest**'s features in depth here --- see the [introductory vignette](https://cran.r-project.org/web/packages/fixest/vignettes/fixest_walkthrough.html) for a thorough walkthrough --- but I hope to least give you a sense of why I am so enthusiastic about it. Let's start off with a simple example before moving on to something a little more demanding.
 
 #### Simple FE model
 
 The package's main function is `fixest::feols()`, which is used for estimating linear fixed effects models. The syntax is such that you first specify the regression model as per normal, and then list the fixed effect(s) after a `|`. An example may help to illustrate. Let's say that we again want to run our simple regression of mass on height, but this time control for species-level fixed effects.^[Since we specify "species" in the fixed effects slot below, `feols()` will automatically coerce it to a factor variable even though we didn't explicitly tell it to.]
 
 ```{r ols_fe, message=FALSE}
-library(fixest)
+# library(fixest) ## Already loaded
 
 ols_fe <- feols(mass ~ height | species, data = starwars) ## Fixed effect(s) go after the "|"
 ols_fe
@@ -305,7 +305,7 @@ As I already mentioned above, **fixest** supports both high-dimensional fixed ef
 ols_hdfe <- feols(mass ~ height |  species + homeworld, data = starwars)
 ```
 
-Easy enough, but the standard errors of the above model are automatically clustered by species, i.e. the first fixed effect variable. (Print the model to screen to prove this for yourself.) Let's go a step further and cluster by both "species" and "homeworld". ^[I most definitely am not claiming that this is a particularly good or sensible clustering strategy, but just go with it.]. We can do this using either the `se` or `cluster` arguments of `summary.fixest()`. I'll (re)assign the model to the same `ols_hdfe` object, but you could of course create a new object if you so wished.
+Easy enough, but the standard errors of the above model are automatically clustered by species, i.e. the first fixed effect variable. (Print the model to screen to prove this for yourself.) Let's go a step further and cluster by both "species" and "homeworld". ^[I most definitely am not claiming that this is a particularly good or sensible clustering strategy, but just go with it.] We can do this using either the `se` or `cluster` arguments of `summary.fixest()`. I'll (re)assign the model to the same `ols_hdfe` object, but you could of course create a new object if you so wished.
 
 ```{r ols_hdfe_twoway}
 ## Cluster by both species and homeworld
@@ -316,15 +316,15 @@ ols_hdfe
 
 #### Comparing our model coefficients
 
-**fixest** provides an inbuilt `coefplot()` function that is very useful for visualizing model coefficients and things like event study evolution. (Take a look at the function's help documentation.) In general, however, I like to visualize and compare coefficients across models using **ggplot2**. This leverages the fact that we have saved (or can save) the model output as data frames with `broom::tidy()`. For example,
+**fixest** provides an inbuilt `coefplot()` function for plotting estimation results. This is especially useful for tracing the evolution of treatment effects over time. (Take a look [here](https://cran.r-project.org/web/packages/fixest/vignettes/fixest_walkthrough.html#23_adding_interactions:_yearly_treatment_effect.) When it comes to comparing coefficients across models, however, I personally prefer to do this "manually" with **ggplot2**. Consider the below example, which leverages the fact that we have saved (or can save) regression models as data frames with `broom::tidy()`.
 
 ```{r fe_mods_compared}
 ## First get tidied output of the ols_hdfe object
 coefs_hdfe <- tidy(ols_hdfe, conf.int = TRUE)
 
 bind_rows(
-  coefs_fe %>% mutate(reg = "Model 4\nFE and no clustering"),
-  coefs_hdfe %>% mutate(reg = "Model 5\nHDFE and twoway clustering")
+  coefs_fe %>% mutate(reg = "Model 1\nFE and no clustering"),
+  coefs_hdfe %>% mutate(reg = "Model 2\nHDFE and twoway clustering")
   ) %>%
   ggplot(aes(x=reg, y=estimate, ymin=conf.low, ymax=conf.high)) +
   geom_pointrange() +
@@ -338,7 +338,7 @@ bind_rows(
   theme(axis.title.x = element_blank())
 ```
 
-Normally we expect our standard errors to blow up with clustering, but here that effect appears to be outweighed by the increased precision brought on by additional fixed effects. As suggested earlier, our level of clustering probably doesn't make much sense either.
+FWIW, we'd normally expect our standard errors to blow up with clustering. Here that effect appears to be outweighed by the increased precision brought on by additional fixed effects. Still, I wouldn't put too much thought into it. Our clustering probably doesn't make much sense and was just used to demonstrate the package syntax.
 
 
 ### Random effects
@@ -534,9 +534,64 @@ tidy(bayes_reg)
 ```
 
 
+### Tables
+
+#### Regression tables
+
+There are loads of [different options](https://hughjonesd.github.io/huxtable/design-principles.html) here.^[FWIW, the **fixest** package also provides its own dedicated function for exporting regression models, namely `etable()`. This function is highly optimised and is capable of producing great looking tables with minimal effort, but is limited to `fixest` model objects only. More [here](https://cran.r-project.org/web/packages/fixest/vignettes/fixest_walkthrough.html#14_viewing_the_results_in_r) and [here](https://cran.r-project.org/web/packages/fixest/vignettes/exporting_tables.html).] These days, however, I find myself using the **modelsummary** package ([link](https://vincentarelbundock.github.io/modelsummary)) for creating and exporting regression tables. It is extremely flexible and handles all manner of models and output formats. **modelsummary** also supports automated coefficient plots and data summary tables, which I'll get back to in a moment. The [documentation](https://vincentarelbundock.github.io/modelsummary/articles/modelsummary.html) is outstanding and you should read it, but here is a bare-boned example just to demonstrate.
+
+```{r msum, warning=FALSE}
+# library(modelsummary) ## Already loaded
+
+## Note: msummary() is an alias for modelsummary()
+msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
+```
+
+</br>
+One nice thing about **modelsummary** is that it plays very well with Rmarkdown and will automatically coerce your tables to the format that matches your document output: HTML, LaTeX/PDF, RTF, etc. Of course, you can also [specify the output type](https://vincentarelbundock.github.io/modelsummary/#saving-and-viewing-output-formats) if you aren't using Rmarkdown and want to export a table for later use. Finally, you can even specify special table formats like *threepartable* for LaTeX and, provided that you have called the necessary packages in your preamble, it will render correctly (see example [here](https://twitter.com/VincentAB/status/1265255622943150081)).
+
+#### Summary tables
+
+A variety of summary tables --- balance, correlation, etc. --- can be produced by the companion set of `modelsummary::datasummary*()` functions. Again, you should read the [documentation](https://vincentarelbundock.github.io/modelsummary/articles/datasummary.html) to see all of the options. But here's an example of a very simple balance table using a subset of our "humans" data frame.
+
+```{r datsum}
+datasummary_balance(~ gender,
+                    data = select(humans, gender, height, mass, birth_year, eye_color))
+```
+
+</br>
+Another package that I like a lot in this regard is **vtable** ([link](https://nickch-k.github.io/vtable)). Not only can it be used to construct descriptive labels like you'd find in Stata's "Variables" pane, but it is also very good at producing the type of "out of the box" summary tables that economists like. For example, here's the equivalent version of the above balance table.
+
+```{r st1}
+# library(vtable) ## Already loaded
+
+## st() is an alias for sumtable()
+st(select(humans, gender, height, mass, birth_year, eye_color), 
+   group = 'gender')
+```
+
+</br>
+In case you were wondering, `vtable::st()` does a clever job of automatically picking defaults and dropping "unreasonable" variables (e.g. list variables or factors with too many levels). Here's what we get if we just ask it to produce a summary table of the main "starwars" data frame.
+
+```{r st2}
+st(starwars)
+```
+
+
 ### Visualizing regression output and models
 
-We've already worked through several visualization examples today and you should all be familiar with ggplot2's `geom_smooth()` from our earlier lectures. For instance:
+We've already worked through several visualization examples today. For example, we saw how to extract and compare model coefficients [here](#Comparing_our_model_coefficients). I use this "manual" approach to visualizing coefficient estimates all the time. However, our focus on **modelsummary** in the preceding section provides a nice segue to another one of the package's features: [`modelplot()`](https://vincentarelbundock.github.io/modelsummary/articles/modelplot.html). Consider the following, which shows both the degree to which `modelplot()` automates everything and the fact that it readily accepts regular **ggplot2** syntax.
+
+```{r modplot, warning=FALSE}
+# library(modelsummary) ## Already loaded
+mods = list('FE, no clustering' = summary(ols_fe, se = 'standard'),  # Don't cluster SEs 
+            'HDFE, twoway clustering' = ols_hdfe)
+
+modelplot(mods) +
+  coord_flip() ## You can modify with normal ggplot2 commands
+```
+
+With respect to visual model validation and prediction, you should already be familiar with `geom_smooth()` from our earlier lectures. For instance,
 
 ```{r smooth, warning=F}
 humans %>%
@@ -547,19 +602,6 @@ humans %>%
 ```
 
 For further reference, I highly encourage you to look over Chapter 6 of Kieran Healy's [*Data Visualization: A Practical Guide*](https://socviz.co/modeling.html#plot-marginal-effects). You will not only learn how to produce beautiful and effective model visualizations, but also pick up a variety of technical tips. You may want to pay particular attention attention to the section on [generating and plotting predictions](https://socviz.co/modeling.html#generate-predictions-to-graph), since that will form part of your next assignment.
-
-### Exporting regression results and descriptive tables (LaTeX, etc.)
-
-There are a loads of different options here. I've historically favoured the **stargazer** package ([link](https://www.jakeruss.com/cheatsheets/stargazer/)), these days I find myself using **huxtable** ([link](https://hughjonesd.github.io/huxtable)) or the even newer **modelsummary** package ([link](https://github.com/vincentarelbundock/modelsummary#modelsummary-beautiful-customizable-publication-ready-model-summaries-in-r)). And this is just a small sample of the available options; see [here](https://hughjonesd.github.io/huxtable/design-principles.html) for a handy comparison of different table "engines" in R.
-
-Here follows a bare-bones example using **huxtable**, since it works well with R Markdown documents.
-
-```{r hux, message=F}
-library(huxtable)
-
-huxreg(ols_dv, ols_ie, ols_hdfe)
-```
-
 
 ## Further resources
 

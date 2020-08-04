@@ -4,7 +4,7 @@ subtitle: "Lecture 8: Regression analysis in R"
 author:
   name: Grant R. McDermott
   affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
-# date: Lecture 6  #"03 August 2020"
+# date: Lecture 6  #"04 August 2020"
 output: 
   html_document:
     theme: flatly
@@ -26,7 +26,7 @@ Today's lecture is about the bread-and-butter tool of applied econometrics and d
 
 It's important to note that "base" R already provides all of the tools we need for basic regression analysis. However, we'll be using several external packages today, because they will make our lives easier and offer increased power for some more sophisticated analyses.
 
-- New: **broom**, **estimatr**, **fixest**, **sandwich**, **lmtest**, **AER**, **lfe**, **huxtable**, **margins**
+- New: **broom**, **estimatr**, **fixest**, **sandwich**, **lmtest**, **AER**, **lfe**, **margins**, **modelsummary**, **vt**
 - Already used: **tidyverse**, **hrbrthemes**, **listviewer**
 
 The **broom** package was bundled with the rest of tidyverse and **sandwich** should get installed as a dependency of several of the above packages. Still, a convenient way to install (if necessary) and load everything is by running the below code chunk. 
@@ -35,7 +35,7 @@ The **broom** package was bundled with the rest of tidyverse and **sandwich** sh
 ```r
 ## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(tidyverse, broom, hrbrthemes, plm, estimatr, sandwich, lmtest, AER, lfe, huxtable, margins)
+pacman::p_load(tidyverse, broom, hrbrthemes, estimatr, fixest, sandwich, lmtest, AER, lfe, margins, modelsummary, vtable)
 ## My preferred ggplot2 plotting theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
@@ -301,7 +301,7 @@ The overall model fit is much improved by the exclusion of this outlier, with R<
 
 Dealing with statistical irregularities (heteroskedasticity, clustering, etc.) is a fact of life for empirical researchers. However, it says something about the economics profession that a random stranger could walk uninvited into a live seminar and ask, "How did you cluster your standard errors?", and it would likely draw approving nods from audience members. 
 
-The good news is that there are *lots* of ways to get robust and clustered standard errors in R. For many years, these have been based on the excellent **sandwich** package ([link](https://cran.r-project.org/web/packages/sandwich/index.html)). However, my preferred way these days is to use the **estimatr** package ([link](https://declaredesign.org/r/estimatr/articles/getting-started.html)), which is both fast and provides convenient aliases for the standard regression functions. For example, you can obtain robust standard errors using `estimatr::lm_robust()`. Let's illustrate by running a robust version of the `ols1` regression that ran earlier.
+The good news is that there are *lots* of ways to get robust and clustered standard errors in R. For many years, these have been based on the excellent **sandwich** package ([link](https://cran.r-project.org/web/packages/sandwich/index.html)). However, my preferred way these days is to use the **estimatr** package ([link](https://declaredesign.org/r/estimatr/articles/getting-started.html)), which is both fast and provides convenient aliases for the standard regression functions. For example, you can obtain robust standard errors using `estimatr::lm_robust()`. Let's illustrate by implementing a robust version of the `ols1` regression that we ran earlier.
 
 
 ```r
@@ -566,7 +566,7 @@ summary(ols_ie)
 
 The simplest (and least efficient) way to include fixed effects in a regression model is, of course, to use dummy variables. However, it isn't very efficient or scalable. What's the point learning all that stuff about the Frisch-Waugh-Lovell theorem, within-group transformations, etcetera, etcetera if we can't use them in our software routines? Again, there are several options to choose from here. For example, many of you are probably familiar with the excellent **lfe** package ([link](https://cran.r-project.org/web/packages/lfe/index.html)), which offers near-identical functionality to the popular Stata library, **reghdfe** ([link](http://scorreia.com/software/reghdfe/)). However, for fixed effects models in R, I am going to advocate that you take a look at the **fixest** package ([link](https://github.com/lrberge/fixest)).
 
-**fixest** is relatively new on the scene and has quickly become one of my packages in the entire R catalogue. It has a boatload of functionality built in to it: support for nonlinear models, high-dimensional fixed effects, multiway clustering, etc. It is also insanely fast... as in, up to *orders of magnitude* faster than **lfe** or **reghdfe**. (See: [benchmarks](https://github.com/lrberge/fixest#benchmarking.) I won't be able to cover all of **fixest**'s features in depth here --- see the [introductory vignette](https://cran.r-project.org/web/packages/fixest/vignettes/fixest_walkthrough.html) for a thorough walkthrough --- but I hope to least give you a sense of why I am so enthusiastic about it. Let's start off with a simple example before moving on to something more demanding.
+**fixest** is relatively new on the scene and has quickly become one of my packages in the entire R catalogue. It has a boatload of functionality built in to it: support for nonlinear models, high-dimensional fixed effects, multiway clustering, etc. It is also insanely fast... as in, up to *orders of magnitude* faster than **lfe** or **reghdfe**. (See: [benchmarks](https://github.com/lrberge/fixest#benchmarking.)) I won't be able to cover all of **fixest**'s features in depth here --- see the [introductory vignette](https://cran.r-project.org/web/packages/fixest/vignettes/fixest_walkthrough.html) for a thorough walkthrough --- but I hope to least give you a sense of why I am so enthusiastic about it. Let's start off with a simple example before moving on to something a little more demanding.
 
 #### Simple FE model
 
@@ -574,7 +574,7 @@ The package's main function is `fixest::feols()`, which is used for estimating l
 
 
 ```r
-library(fixest)
+# library(fixest) ## Already loaded
 
 ols_fe <- feols(mass ~ height | species, data = starwars) ## Fixed effect(s) go after the "|"
 ols_fe
@@ -635,7 +635,7 @@ ols_hdfe <- feols(mass ~ height |  species + homeworld, data = starwars)
 ## NOTE: 32 observations removed because of NA values (Breakup: LHS: 28, RHS: 6, Fixed-effects: 13).
 ```
 
-Easy enough, but the standard errors of the above model are automatically clustered by species, i.e. the first fixed effect variable. (Print the model to screen to prove this for yourself.) Let's go a step further and cluster by both "species" and "homeworld". ^[I most definitely am not claiming that this is a particularly good or sensible clustering strategy, but just go with it.]. We can do this using either the `se` or `cluster` arguments of `summary.fixest()`. I'll (re)assign the model to the same `ols_hdfe` object, but you could of course create a new object if you so wished.
+Easy enough, but the standard errors of the above model are automatically clustered by species, i.e. the first fixed effect variable. (Print the model to screen to prove this for yourself.) Let's go a step further and cluster by both "species" and "homeworld". ^[I most definitely am not claiming that this is a particularly good or sensible clustering strategy, but just go with it.] We can do this using either the `se` or `cluster` arguments of `summary.fixest()`. I'll (re)assign the model to the same `ols_hdfe` object, but you could of course create a new object if you so wished.
 
 
 ```r
@@ -660,7 +660,7 @@ ols_hdfe
 
 #### Comparing our model coefficients
 
-**fixest** provides an inbuilt `coefplot()` function that is very useful for visualizing model coefficients and things like event study evolution. (Take a look at the function's help documentation.) In general, however, I like to visualize and compare coefficients across models using **ggplot2**. This leverages the fact that we have saved (or can save) the model output as data frames with `broom::tidy()`. For example,
+**fixest** provides an inbuilt `coefplot()` function for plotting estimation results. This is especially useful for tracing the evolution of treatment effects over time. (Take a look [here](https://cran.r-project.org/web/packages/fixest/vignettes/fixest_walkthrough.html#23_adding_interactions:_yearly_treatment_effect.) When it comes to comparing coefficients across models, however, I personally prefer to do this "manually" with **ggplot2**. Consider the below example, which leverages the fact that we have saved (or can save) regression models as data frames with `broom::tidy()`.
 
 
 ```r
@@ -668,8 +668,8 @@ ols_hdfe
 coefs_hdfe <- tidy(ols_hdfe, conf.int = TRUE)
 
 bind_rows(
-  coefs_fe %>% mutate(reg = "Model 4\nFE and no clustering"),
-  coefs_hdfe %>% mutate(reg = "Model 5\nHDFE and twoway clustering")
+  coefs_fe %>% mutate(reg = "Model 1\nFE and no clustering"),
+  coefs_hdfe %>% mutate(reg = "Model 2\nHDFE and twoway clustering")
   ) %>%
   ggplot(aes(x=reg, y=estimate, ymin=conf.low, ymax=conf.high)) +
   geom_pointrange() +
@@ -685,7 +685,7 @@ bind_rows(
 
 ![](08-regression_files/figure-html/fe_mods_compared-1.png)<!-- -->
 
-Normally we expect our standard errors to blow up with clustering, but here that effect appears to be outweighed by the increased precision brought on by additional fixed effects. As suggested earlier, our level of clustering probably doesn't make much sense either.
+FWIW, we'd normally expect our standard errors to blow up with clustering. Here that effect appears to be outweighed by the increased precision brought on by additional fixed effects. Still, I wouldn't put too much thought into it. Our clustering probably doesn't make much sense and was just used to demonstrate the package syntax.
 
 
 ### Random effects
@@ -1129,9 +1129,1225 @@ tidy(bayes_reg)
 ```
 
 
+### Tables
+
+#### Regression tables
+
+There are loads of [different options](https://hughjonesd.github.io/huxtable/design-principles.html) here.^[FWIW, the **fixest** package also provides its own dedicated function for exporting regression models, namely `etable()`. This function is highly optimised and is capable of producing great looking tables with minimal effort, but is limited to `fixest` model objects only. More [here](https://cran.r-project.org/web/packages/fixest/vignettes/fixest_walkthrough.html#14_viewing_the_results_in_r) and [here](https://cran.r-project.org/web/packages/fixest/vignettes/exporting_tables.html).] These days, however, I find myself using the **modelsummary** package ([link](https://vincentarelbundock.github.io/modelsummary)) for creating and exporting regression tables. It is extremely flexible and handles all manner of models and output formats. **modelsummary** also supports automated coefficient plots and data summary tables, which I'll get back to in a moment. The [documentation](https://vincentarelbundock.github.io/modelsummary/articles/modelsummary.html) is outstanding and you should read it, but here is a bare-boned example just to demonstrate.
+
+
+```r
+# library(modelsummary) ## Already loaded
+
+## Note: msummary() is an alias for modelsummary()
+msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
+```
+
+<!--html_preserve--><style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#ykllpknaij .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#ykllpknaij .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#ykllpknaij .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#ykllpknaij .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 4px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#ykllpknaij .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ykllpknaij .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#ykllpknaij .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#ykllpknaij .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#ykllpknaij .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#ykllpknaij .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#ykllpknaij .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#ykllpknaij .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#ykllpknaij .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#ykllpknaij .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#ykllpknaij .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#ykllpknaij .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#ykllpknaij .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#ykllpknaij .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#ykllpknaij .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ykllpknaij .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#ykllpknaij .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ykllpknaij .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#ykllpknaij .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ykllpknaij .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#ykllpknaij .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#ykllpknaij .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#ykllpknaij .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#ykllpknaij .gt_left {
+  text-align: left;
+}
+
+#ykllpknaij .gt_center {
+  text-align: center;
+}
+
+#ykllpknaij .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#ykllpknaij .gt_font_normal {
+  font-weight: normal;
+}
+
+#ykllpknaij .gt_font_bold {
+  font-weight: bold;
+}
+
+#ykllpknaij .gt_font_italic {
+  font-style: italic;
+}
+
+#ykllpknaij .gt_super {
+  font-size: 65%;
+}
+
+#ykllpknaij .gt_footnote_marks {
+  font-style: italic;
+  font-size: 65%;
+}
+</style>
+<div id="ykllpknaij" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1"> </th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">Model 1</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">Model 2</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">Model 3</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">Model 4</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr>
+      <td class="gt_row gt_left">(Intercept)</td>
+      <td class="gt_row gt_left">-84.252</td>
+      <td class="gt_row gt_left">-61.000</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">(65.786)</td>
+      <td class="gt_row gt_left">(204.057)</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">gendermasculine</td>
+      <td class="gt_row gt_left">10.739</td>
+      <td class="gt_row gt_left">-15.722</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">(13.197)</td>
+      <td class="gt_row gt_left">(219.544)</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">height</td>
+      <td class="gt_row gt_left">0.879</td>
+      <td class="gt_row gt_left">0.733</td>
+      <td class="gt_row gt_left">0.975</td>
+      <td class="gt_row gt_left">0.756</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">(0.407)</td>
+      <td class="gt_row gt_left">(1.274)</td>
+      <td class="gt_row gt_left">(0.044)</td>
+      <td class="gt_row gt_left">(0.117)</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">gendermasculine:height</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">0.163</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;"></td>
+      <td class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;"></td>
+      <td class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;">(1.349)</td>
+      <td class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;"></td>
+      <td class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">Num.Obs.</td>
+      <td class="gt_row gt_left">22</td>
+      <td class="gt_row gt_left">22</td>
+      <td class="gt_row gt_left">58</td>
+      <td class="gt_row gt_left">55</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">R2</td>
+      <td class="gt_row gt_left">0.444</td>
+      <td class="gt_row gt_left">0.444</td>
+      <td class="gt_row gt_left">0.997</td>
+      <td class="gt_row gt_left">0.998</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">R2 Adj.</td>
+      <td class="gt_row gt_left">0.386</td>
+      <td class="gt_row gt_left">0.352</td>
+      <td class="gt_row gt_left">0.993</td>
+      <td class="gt_row gt_left">1.008</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">R2 Pseudo</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">R2 Within</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">0.662</td>
+      <td class="gt_row gt_left">0.487</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">AIC</td>
+      <td class="gt_row gt_left">186.9</td>
+      <td class="gt_row gt_left">188.9</td>
+      <td class="gt_row gt_left">492.1</td>
+      <td class="gt_row gt_left">513.1</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">BIC</td>
+      <td class="gt_row gt_left">191.3</td>
+      <td class="gt_row gt_left">194.4</td>
+      <td class="gt_row gt_left">558.0</td>
+      <td class="gt_row gt_left">649.6</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">Log.Lik.</td>
+      <td class="gt_row gt_left">-89.465</td>
+      <td class="gt_row gt_left">-89.456</td>
+      <td class="gt_row gt_left">-214.026</td>
+      <td class="gt_row gt_left">-188.552</td>
+    </tr>
+  </tbody>
+  
+  
+</table></div><!--/html_preserve-->
+
+</br>
+One nice thing about **modelsummary** is that it plays very well with Rmarkdown and will automatically coerce your tables to the format that matches your document output: HTML, LaTeX/PDF, RTF, etc. Of course, you can also [specify the output type](https://vincentarelbundock.github.io/modelsummary/#saving-and-viewing-output-formats) if you aren't using Rmarkdown and want to export a table for later use. Finally, you can even specify special table formats like *threepartable* for LaTeX and, provided that you have called the necessary packages in your preamble, it will render correctly (see example [here](https://twitter.com/VincentAB/status/1265255622943150081)).
+
+#### Summary tables
+
+A variety of summary tables --- balance, correlation, etc. --- can be produced by the companion set of `modelsummary::datasummary*()` functions. Again, you should read the [documentation](https://vincentarelbundock.github.io/modelsummary/articles/datasummary.html) to see all of the options. But here's an example of a very simple balance table using a subset of our "humans" data frame.
+
+
+```r
+datasummary_balance(~ gender,
+                    data = select(humans, gender, height, mass, birth_year, eye_color))
+```
+
+<!--html_preserve--><style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#nqftesesrs .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#nqftesesrs .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#nqftesesrs .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#nqftesesrs .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 4px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#nqftesesrs .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#nqftesesrs .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#nqftesesrs .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#nqftesesrs .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#nqftesesrs .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#nqftesesrs .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#nqftesesrs .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#nqftesesrs .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#nqftesesrs .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#nqftesesrs .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#nqftesesrs .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#nqftesesrs .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#nqftesesrs .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#nqftesesrs .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#nqftesesrs .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#nqftesesrs .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#nqftesesrs .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#nqftesesrs .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#nqftesesrs .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#nqftesesrs .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#nqftesesrs .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#nqftesesrs .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#nqftesesrs .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#nqftesesrs .gt_left {
+  text-align: left;
+}
+
+#nqftesesrs .gt_center {
+  text-align: center;
+}
+
+#nqftesesrs .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#nqftesesrs .gt_font_normal {
+  font-weight: normal;
+}
+
+#nqftesesrs .gt_font_bold {
+  font-weight: bold;
+}
+
+#nqftesesrs .gt_font_italic {
+  font-style: italic;
+}
+
+#nqftesesrs .gt_super {
+  font-size: 65%;
+}
+
+#nqftesesrs .gt_footnote_marks {
+  font-style: italic;
+  font-size: 65%;
+}
+</style>
+<div id="nqftesesrs" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_center gt_columns_bottom_border" rowspan="2" colspan="1"> </th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2">
+        <span class="gt_column_spanner">feminine (N=9)</span>
+      </th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2">
+        <span class="gt_column_spanner">masculine (N=26)</span>
+      </th>
+      <th class="gt_col_heading gt_center gt_columns_bottom_border" rowspan="2" colspan="1">Diff. in Means</th>
+      <th class="gt_col_heading gt_center gt_columns_bottom_border" rowspan="2" colspan="1">Std. Error</th>
+    </tr>
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1">Mean</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1">Std. Dev.</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1">Mean </th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1">Std. Dev. </th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr>
+      <td class="gt_row gt_left">height</td>
+      <td class="gt_row gt_right">160.2</td>
+      <td class="gt_row gt_right">7.0</td>
+      <td class="gt_row gt_right">182.3</td>
+      <td class="gt_row gt_right">8.2</td>
+      <td class="gt_row gt_right">22.1</td>
+      <td class="gt_row gt_right">3.0</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">mass</td>
+      <td class="gt_row gt_right">56.3</td>
+      <td class="gt_row gt_right">16.3</td>
+      <td class="gt_row gt_right">87.0</td>
+      <td class="gt_row gt_right">16.5</td>
+      <td class="gt_row gt_right">30.6</td>
+      <td class="gt_row gt_right">10.1</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;">birth_year</td>
+      <td class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;">46.4</td>
+      <td class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;">18.8</td>
+      <td class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;">55.2</td>
+      <td class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;">26.0</td>
+      <td class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;">8.8</td>
+      <td class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;">10.2</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_right">N</td>
+      <td class="gt_row gt_right">%</td>
+      <td class="gt_row gt_right">N</td>
+      <td class="gt_row gt_right">%</td>
+      <td class="gt_row gt_right"></td>
+      <td class="gt_row gt_right"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">blue</td>
+      <td class="gt_row gt_right">3</td>
+      <td class="gt_row gt_right">33</td>
+      <td class="gt_row gt_right">9</td>
+      <td class="gt_row gt_right">35</td>
+      <td class="gt_row gt_right"></td>
+      <td class="gt_row gt_right"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">blue-gray</td>
+      <td class="gt_row gt_right">0</td>
+      <td class="gt_row gt_right">0</td>
+      <td class="gt_row gt_right">1</td>
+      <td class="gt_row gt_right">4</td>
+      <td class="gt_row gt_right"></td>
+      <td class="gt_row gt_right"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">brown</td>
+      <td class="gt_row gt_right">5</td>
+      <td class="gt_row gt_right">56</td>
+      <td class="gt_row gt_right">12</td>
+      <td class="gt_row gt_right">46</td>
+      <td class="gt_row gt_right"></td>
+      <td class="gt_row gt_right"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">dark</td>
+      <td class="gt_row gt_right">0</td>
+      <td class="gt_row gt_right">0</td>
+      <td class="gt_row gt_right">1</td>
+      <td class="gt_row gt_right">4</td>
+      <td class="gt_row gt_right"></td>
+      <td class="gt_row gt_right"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">hazel</td>
+      <td class="gt_row gt_right">1</td>
+      <td class="gt_row gt_right">11</td>
+      <td class="gt_row gt_right">1</td>
+      <td class="gt_row gt_right">4</td>
+      <td class="gt_row gt_right"></td>
+      <td class="gt_row gt_right"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">yellow</td>
+      <td class="gt_row gt_right">0</td>
+      <td class="gt_row gt_right">0</td>
+      <td class="gt_row gt_right">2</td>
+      <td class="gt_row gt_right">8</td>
+      <td class="gt_row gt_right"></td>
+      <td class="gt_row gt_right"></td>
+    </tr>
+  </tbody>
+  
+  
+</table></div><!--/html_preserve-->
+
+</br>
+Another package that I like a lot in this regard is **vtable** ([link](https://nickch-k.github.io/vtable)). Not only can it be used to construct descriptive labels like you'd find in Stata's "Variables" pane, but it is also very good at producing the type of "out of the box" summary tables that economists like. For example, here's the equivalent version of the above balance table.
+
+
+```r
+# library(vtable) ## Already loaded
+
+## st() is an alias for sumtable()
+st(select(humans, gender, height, mass, birth_year, eye_color), 
+   group = 'gender')
+```
+
+<table>
+<caption>Summary Statistics</caption>
+ <thead>
+<tr>
+<th style="border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="1"><div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">gender</div></th>
+<th style="border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="3"><div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">feminine</div></th>
+<th style="border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="3"><div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">masculine</div></th>
+</tr>
+  <tr>
+   <th style="text-align:left;"> Variable </th>
+   <th style="text-align:left;"> N </th>
+   <th style="text-align:left;"> Mean </th>
+   <th style="text-align:left;"> SD </th>
+   <th style="text-align:left;"> N </th>
+   <th style="text-align:left;"> Mean </th>
+   <th style="text-align:left;"> SD </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> height </td>
+   <td style="text-align:left;"> 8 </td>
+   <td style="text-align:left;"> 160.25 </td>
+   <td style="text-align:left;"> 6.985 </td>
+   <td style="text-align:left;"> 23 </td>
+   <td style="text-align:left;"> 182.348 </td>
+   <td style="text-align:left;"> 8.189 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> mass </td>
+   <td style="text-align:left;"> 3 </td>
+   <td style="text-align:left;"> 56.333 </td>
+   <td style="text-align:left;"> 16.289 </td>
+   <td style="text-align:left;"> 19 </td>
+   <td style="text-align:left;"> 86.958 </td>
+   <td style="text-align:left;"> 16.549 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> birth_year </td>
+   <td style="text-align:left;"> 5 </td>
+   <td style="text-align:left;"> 46.4 </td>
+   <td style="text-align:left;"> 18.77 </td>
+   <td style="text-align:left;"> 20 </td>
+   <td style="text-align:left;"> 55.165 </td>
+   <td style="text-align:left;"> 26.02 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eye_color </td>
+   <td style="text-align:left;"> 9 </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;"> 26 </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> ... blue </td>
+   <td style="text-align:left;"> 3 </td>
+   <td style="text-align:left;"> 33.3% </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;"> 9 </td>
+   <td style="text-align:left;"> 34.6% </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> ... blue-gray </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:left;"> 0% </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;"> 1 </td>
+   <td style="text-align:left;"> 3.8% </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> ... brown </td>
+   <td style="text-align:left;"> 5 </td>
+   <td style="text-align:left;"> 55.6% </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;"> 12 </td>
+   <td style="text-align:left;"> 46.2% </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> ... dark </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:left;"> 0% </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;"> 1 </td>
+   <td style="text-align:left;"> 3.8% </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> ... hazel </td>
+   <td style="text-align:left;"> 1 </td>
+   <td style="text-align:left;"> 11.1% </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;"> 1 </td>
+   <td style="text-align:left;"> 3.8% </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> ... yellow </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:left;"> 0% </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;"> 2 </td>
+   <td style="text-align:left;"> 7.7% </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+</tbody>
+</table>
+
+</br>
+In case you were wondering, `vtable::st()` does a clever job of automatically picking defaults and dropping "unreasonable" variables (e.g. list variables or factors with too many levels). Here's what we get if we just ask it to produce a summary table of the main "starwars" data frame.
+
+
+```r
+st(starwars)
+```
+
+<table>
+<caption>Summary Statistics</caption>
+ <thead>
+  <tr>
+   <th style="text-align:left;"> Variable </th>
+   <th style="text-align:left;"> N </th>
+   <th style="text-align:left;"> Mean </th>
+   <th style="text-align:left;"> Std. Dev. </th>
+   <th style="text-align:left;"> Min </th>
+   <th style="text-align:left;"> Pctl. 25 </th>
+   <th style="text-align:left;"> Pctl. 75 </th>
+   <th style="text-align:left;"> Max </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> height </td>
+   <td style="text-align:left;"> 81 </td>
+   <td style="text-align:left;"> 174.358 </td>
+   <td style="text-align:left;"> 34.77 </td>
+   <td style="text-align:left;"> 66 </td>
+   <td style="text-align:left;"> 167 </td>
+   <td style="text-align:left;"> 191 </td>
+   <td style="text-align:left;"> 264 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> mass </td>
+   <td style="text-align:left;"> 59 </td>
+   <td style="text-align:left;"> 97.312 </td>
+   <td style="text-align:left;"> 169.457 </td>
+   <td style="text-align:left;"> 15 </td>
+   <td style="text-align:left;"> 55.6 </td>
+   <td style="text-align:left;"> 84.5 </td>
+   <td style="text-align:left;"> 1358 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> birth_year </td>
+   <td style="text-align:left;"> 43 </td>
+   <td style="text-align:left;"> 87.565 </td>
+   <td style="text-align:left;"> 154.691 </td>
+   <td style="text-align:left;"> 8 </td>
+   <td style="text-align:left;"> 35 </td>
+   <td style="text-align:left;"> 72 </td>
+   <td style="text-align:left;"> 896 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> sex </td>
+   <td style="text-align:left;"> 83 </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> ... female </td>
+   <td style="text-align:left;"> 16 </td>
+   <td style="text-align:left;"> 19.3% </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> ... hermaphroditic </td>
+   <td style="text-align:left;"> 1 </td>
+   <td style="text-align:left;"> 1.2% </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> ... male </td>
+   <td style="text-align:left;"> 60 </td>
+   <td style="text-align:left;"> 72.3% </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> ... none </td>
+   <td style="text-align:left;"> 6 </td>
+   <td style="text-align:left;"> 7.2% </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> gender </td>
+   <td style="text-align:left;"> 83 </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> ... feminine </td>
+   <td style="text-align:left;"> 17 </td>
+   <td style="text-align:left;"> 20.5% </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> ... masculine </td>
+   <td style="text-align:left;"> 66 </td>
+   <td style="text-align:left;"> 79.5% </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+</tbody>
+</table>
+
+
 ### Visualizing regression output and models
 
-We've already worked through several visualization examples today and you should all be familiar with ggplot2's `geom_smooth()` from our earlier lectures. For instance:
+We've already worked through several visualization examples today. For example, we saw how to extract and compare model coefficients [here](#Comparing_our_model_coefficients). I use this "manual" approach to visualizing coefficient estimates all the time. However, our focus on **modelsummary** in the preceding section provides a nice segue to another one of the package's features: [`modelplot()`](https://vincentarelbundock.github.io/modelsummary/articles/modelplot.html). Consider the following, which shows both the degree to which `modelplot()` automates everything and the fact that it readily accepts regular **ggplot2** syntax.
+
+
+```r
+# library(modelsummary) ## Already loaded
+mods = list('FE, no clustering' = summary(ols_fe, se = 'standard'),  # Don't cluster SEs 
+            'HDFE, twoway clustering' = ols_hdfe)
+
+modelplot(mods) +
+  coord_flip() ## You can modify with normal ggplot2 commands
+```
+
+![](08-regression_files/figure-html/modplot-1.png)<!-- -->
+
+With respect to visual model validation and prediction, you should already be familiar with `geom_smooth()` from our earlier lectures. For instance,
 
 
 ```r
@@ -1149,60 +2365,6 @@ humans %>%
 ![](08-regression_files/figure-html/smooth-1.png)<!-- -->
 
 For further reference, I highly encourage you to look over Chapter 6 of Kieran Healy's [*Data Visualization: A Practical Guide*](https://socviz.co/modeling.html#plot-marginal-effects). You will not only learn how to produce beautiful and effective model visualizations, but also pick up a variety of technical tips. You may want to pay particular attention attention to the section on [generating and plotting predictions](https://socviz.co/modeling.html#generate-predictions-to-graph), since that will form part of your next assignment.
-
-### Exporting regression results and descriptive tables (LaTeX, etc.)
-
-There are a loads of different options here. I've historically favoured the **stargazer** package ([link](https://www.jakeruss.com/cheatsheets/stargazer/)), these days I find myself using **huxtable** ([link](https://hughjonesd.github.io/huxtable)) or the even newer **modelsummary** package ([link](https://github.com/vincentarelbundock/modelsummary#modelsummary-beautiful-customizable-publication-ready-model-summaries-in-r)). And this is just a small sample of the available options; see [here](https://hughjonesd.github.io/huxtable/design-principles.html) for a handy comparison of different table "engines" in R.
-
-Here follows a bare-bones example using **huxtable**, since it works well with R Markdown documents.
-
-
-```r
-library(huxtable)
-
-huxreg(ols_dv, ols_ie, ols_hdfe)
-```
-
-```
-## Warning in sqrt(sigma2): NaNs produced
-```
-
-<!--html_preserve--><table class="huxtable" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  " id="tab:hux">
-<col><col><col><col><tr>
-<th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;"></th><th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(1)</th><th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(2)</th><th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(3)</th></tr>
-<tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(Intercept)</th><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">-84.252&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">-61.000&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
-<tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;"></th><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(65.786)&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(204.057)</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
-<tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">height</th><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.879 *</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.733&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.756&nbsp;</td></tr>
-<tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;"></th><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(0.407)&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(1.274)</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(0.117)</td></tr>
-<tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">gender_factoredmasculine</th><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">10.739&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
-<tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;"></th><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(13.197)&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
-<tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">gendermasculine</th><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">-15.722&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
-<tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;"></th><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(219.544)</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
-<tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">gendermasculine:height</th><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.163&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
-<tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;"></th><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(1.349)</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
-<tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">N</th><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">22&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">22&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">55&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
-<tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">R2</th><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.444&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.444&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.998&nbsp;</td></tr>
-<tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">logLik</th><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">-89.465&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">-89.456&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">-188.552&nbsp;</td></tr>
-<tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">AIC</th><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">186.929&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">188.911&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">513.104&nbsp;</td></tr>
-<tr>
-<th colspan="4" style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;"> *** p &lt; 0.001;  ** p &lt; 0.01;  * p &lt; 0.05.</th></tr>
-</table>
-<!--/html_preserve-->
-
 
 ## Further resources
 
