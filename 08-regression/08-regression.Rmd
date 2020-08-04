@@ -28,7 +28,7 @@ Today's lecture is about the bread-and-butter tool of applied econometrics and d
 
 It's important to note that "base" R already provides all of the tools we need for basic regression analysis. However, we'll be using several external packages today, because they will make our lives easier and offer increased power for some more sophisticated analyses.
 
-- New: **broom**, **estimatr**, **sandwich**, **lmtest**, **AER**, **lfe**, **plm**, **huxtable**, **margins**
+- New: **broom**, **estimatr**, **fixest**, **sandwich**, **lmtest**, **AER**, **lfe**, **huxtable**, **margins**
 - Already used: **tidyverse**, **hrbrthemes**, **listviewer**
 
 The **broom** package was bundled with the rest of tidyverse and **sandwich** should get installed as a dependency of several of the above packages. Still, a convenient way to install (if necessary) and load everything is by running the below code chunk. 
@@ -206,7 +206,7 @@ sqrt(diag(NeweyWest(ols1))) ## Print the HAC SEs
 
 If you plan to use HAC SEs for inference, then I recommend converting the model object with `lmtest::coeftest()`. This function provides a convenient way to do hypothesis testing with a wide variety of alternate variance-covariance (VCOV) matrices. Of course, these alternate VCOV matrices could extended way beyond HAC, but here's how it would work for the present case:
 
-```{r ols1_hac_tidy}
+```{r ols1_hac}
 # library(lmtest) ## Already loaded
 ols1_hac <- lmtest::coeftest(ols1, vcov=NeweyWest)
 ols1_hac
@@ -266,50 +266,65 @@ summary(ols_ie)
 
 ## Panel models
 
-### Fixed effects with the **lfe** package
+### Fixed effects with the **fixest** package
 
-The simplest (and least efficient) way to include fixed effects in a regression model is, of course, to use dummy variables. However, it isn't very efficient or scaleable. What's the point learning all that stuff about the Frisch-Waugh-Lovell theorem, within-group transformations, etcetera, etcetera if we can't use them in our software routines? Again, there are several options to choose from here. For example, the venerable **plm** package ([link](https://cran.r-project.org/web//packages/plm/vignettes/plmPackage.html)), which also handles random effects and pooling models. However, I am going to strongly advocate for the **lfe** package ([link](https://cran.r-project.org/web/packages/lfe/index.html)).
+The simplest (and least efficient) way to include fixed effects in a regression model is, of course, to use dummy variables. However, it isn't very efficient or scalable. What's the point learning all that stuff about the Frisch-Waugh-Lovell theorem, within-group transformations, etcetera, etcetera if we can't use them in our software routines? Again, there are several options to choose from here. For example, many of you are probably familiar with the excellent **lfe** package ([link](https://cran.r-project.org/web/packages/lfe/index.html)), which offers near-identical functionality to the popular Stata library, **reghdfe** ([link](http://scorreia.com/software/reghdfe/)). However, for fixed effects models in R, I am going to advocate that you take a look at the **fixest** package ([link](https://github.com/lrberge/fixest)).
 
-`lfe` (i.e. "**l**inear **f**ixed **e**ffects") is one of my packages in the entire R catalogue. It has a boatload of functionality built in to it (instrumental variables support, multilevel clustering, etc.) It is also *fast* because it automatically uses all the available processing power on your machine. We'll return to the idea of multicore implementation when we get to the lecture on parallel processing. For the moment, simply enjoy the fact that `lfe` is optimised to solve big regression problems as quickly as possible.
-
-Let's take a look, starting off with a simple example and then moving on to something more demanding.
+**fixest** is relatively new on the scene and has quickly become one of my packages in the entire R catalogue. It has a boatload of functionality built in to it: support for nonlinear models, high-dimensional fixed effects, multiway clustering, etc. It is also insanely fast... as in, up to *orders of magnitude* faster than **lfe** or **reghdfe**. (See: [benchmarks](https://github.com/lrberge/fixest#benchmarking.) I won't be able to cover all of **fixest**'s features in depth here --- see the [introductory vignette](https://cran.r-project.org/web/packages/fixest/vignettes/fixest_walkthrough.html) for a thorough walkthrough --- but I hope to least give you a sense of why I am so enthusiastic about it. Let's start off with a simple example before moving on to something more demanding.
 
 #### Simple FE model
 
-The package's main function is `lfe::felm()`, which is used for estimating fixed effects linear models. The syntax is such that you first specify the regression model as per normal, and then list the fixed effect(s) after a `|`. An example may help to illustrate. Let's say that we again want to run our simple regression of mass on height, but this time control for species-level fixed effects.
+The package's main function is `fixest::feols()`, which is used for estimating linear fixed effects models. The syntax is such that you first specify the regression model as per normal, and then list the fixed effect(s) after a `|`. An example may help to illustrate. Let's say that we again want to run our simple regression of mass on height, but this time control for species-level fixed effects.^[Since we specify "species" in the fixed effects slot below, `feols()` will automatically coerce it to a factor variable even though we didn't explicitly tell it to.]
 
 ```{r ols_fe, message=FALSE}
-library(lfe)
+library(fixest)
 
-ols_fe <- felm(mass ~ height | species, data = starwars) ## Fixed effect(s) go after the "|"
-coefs_fe <- tidy(ols_fe, conf.int = T)
-summary(ols_fe)
+ols_fe <- feols(mass ~ height | species, data = starwars) ## Fixed effect(s) go after the "|"
+ols_fe
 ```
 
-Note that the resulting `felm` object drops all of the species intercepts, since it has abstracted them away as fixed effects. 
+Note that the resulting model object has automatically clustered the standard errors by the fixed effect variable (i.e. species). We'll explore some more options for adjusting standard errors in **fixest** objects shortly, but you can specify vanilla standard errors simply by calling the `se` argument in `summary.fixest()` as follows.
 
-#### High dimensional FEs and (multiway) clustering
+```{r ols_fe_standard}
+summary(ols_fe, se = 'standard')
+```
 
-One reason that I prefer **lfe** to other options --- e.g. the panel-focused **plm** package (see further below) --- is because it supports high dimensional fixed effects *and* (multiway) clustering.^[It is very similar to the excellent **reghdfe** ([link](http://scorreia.com/software/reghdfe/)) package in Stata.] In the below example, I'm going to add "homeworld" as an additional fixed effect to the model and also cluster according to this variable. I'm not claiming that this is a particularly good or sensible model, but just go with it. Note that, since we specify "homeworld" in the fixed effects slot below, `felm()` automatically converts it to a factor even though we didn't explicitly tell it to.
+Before continuing, let's quickly save a "tidied" data frame of the coefficients for later use. I'll use vanilla standard errors again, if only to show you that the `broom::tidy()` method for `fixest` objects also accepts an `se` argument. This basically just provides another convenient way for you to adjust standard errors for your models on the fly.
+
+```{r coefs_fe}
+# coefs_fe <- tidy(summary(ols_fe, se = 'standard'), conf.int = TRUE) ## yields same result as below
+coefs_fe <- tidy(ols_fe, se = 'standard', conf.int = TRUE)
+```
+
+#### High dimensional FEs and multiway clustering
+
+As I already mentioned above, **fixest** supports both high-dimensional fixed effects and multiway clustering. To see this in action, let's add "homeworld" as an additional fixed effect to the model.
 
 ```{r ols_hdfe}
-ols_hdfe <- 
-  felm(
-    mass ~ height |
-      species + homeworld | ## Two fixed effects go here after the first "|"
-      0 | ## This is where your IV equation goes, but we put 0 since we aren't instrumenting.
-      homeworld, ## The final slot is where we specify our cluster variables
-    data = starwars)
-coefs_hdfe <- tidy(ols_hdfe, conf.int = T)
-coefs_hdfe
+## We now have two fixed effects: species and homeworld
+ols_hdfe <- feols(mass ~ height |  species + homeworld, data = starwars)
 ```
 
-Visually, we can easily compare changes in the coefficients across models thanks to the fact that we saved the output in data frames with `broom::tidy()` above.
+Easy enough, but the standard errors of the above model are automatically clustered by species, i.e. the first fixed effect variable. (Print the model to screen to prove this for yourself.) Let's go a step further and cluster by both "species" and "homeworld". ^[I most definitely am not claiming that this is a particularly good or sensible clustering strategy, but just go with it.]. We can do this using either the `se` or `cluster` arguments of `summary.fixest()`. I'll (re)assign the model to the same `ols_hdfe` object, but you could of course create a new object if you so wished.
+
+```{r ols_hdfe_twoway}
+## Cluster by both species and homeworld
+# ols_hdfe <- summary(ols_hdfe, se = 'twoway') ## Same effect as the next line
+ols_hdfe <- summary(ols_hdfe, cluster = c('species', 'homeworld'))
+ols_hdfe
+```
+
+#### Comparing our model coefficients
+
+**fixest** provides an inbuilt `coefplot()` function that is very useful for visualizing model coefficients and things like event study evolution. (Take a look at the function's help documentation.) In general, however, I like to visualize and compare coefficients across models using **ggplot2**. This leverages the fact that we have saved (or can save) the model output as data frames with `broom::tidy()`. For example,
 
 ```{r fe_mods_compared}
+## First get tidied output of the ols_hdfe object
+coefs_hdfe <- tidy(ols_hdfe, conf.int = TRUE)
+
 bind_rows(
-  coefs_fe %>% mutate(reg = "Model 4 (FE and no clustering)"),
-  coefs_hdfe %>% mutate(reg = "Model 5 (HDFE and clustering)")
+  coefs_fe %>% mutate(reg = "Model 4\nFE and no clustering"),
+  coefs_hdfe %>% mutate(reg = "Model 5\nHDFE and twoway clustering")
   ) %>%
   ggplot(aes(x=reg, y=estimate, ymin=conf.low, ymax=conf.high)) +
   geom_pointrange() +
@@ -323,15 +338,12 @@ bind_rows(
   theme(axis.title.x = element_blank())
 ```
 
-Normally we expect our standard errors to blow up with clustering, but here that effect appears to be outweighed by the increased precision brought on by additional fixed effects. (As suggested earlier, our level of clustering probably doesn't make much sense either.)
+Normally we expect our standard errors to blow up with clustering, but here that effect appears to be outweighed by the increased precision brought on by additional fixed effects. As suggested earlier, our level of clustering probably doesn't make much sense either.
 
-#### Instrumental variables
-
-(See further below.)
 
 ### Random effects
 
-Fixed effects models are more common than random effects models in economics (in my experience, anyway). I'd also advocate for [Bayesian hierachical models](http://www.stat.columbia.edu/~gelman/arm/) if we're going down the whole random effects path. However, it's still good to know that R has you covered for random effects models through the **plm** ([link](https://cran.r-project.org/web/packages/plm/)) and **nlme** ([link](https://cran.r-project.org/web/packages/nlme/index.html)) packages.^[As I mentioned above, **plm** also handles fixed effects (and pooling) models. However, I prefer **lfe** for the reasons already discussed.] I won't go into detail , but click on those links (especially the first one) if you would like to see some examples.
+Fixed effects models are more common than random effects models in economics (in my experience, anyway). I'd also advocate for [Bayesian hierachical models](http://www.stat.columbia.edu/~gelman/arm/) if we're going down the whole random effects path. However, it's still good to know that R has you covered for random effects models through the **plm** ([link](https://cran.r-project.org/web/packages/plm/)) and **nlme** ([link](https://cran.r-project.org/web/packages/nlme/index.html)) packages.^[As I mentioned above, **plm** also handles fixed effects (and pooling) models. However, I prefer **fixest** and **lfe** for the reasons already discussed.] I won't go into detail , but click on those links (especially the first one) if you would like to see some examples.
 
 ## Instrumental variables
 
@@ -413,7 +425,7 @@ summary(iv_reg_robust, diagnostics = TRUE)
 
 ### Option 3: `felm::lfe()`
 
-Finally, we get to my personal favourite IV option using the `lfe::felm()` function that we already covered in the panel data section above.^[Needless to say, it includes all of same benefits that we saw earlier: support for high-level fixed effects, multiway clustering, etc.] It's my favourite option not because I tend work with panel data, but also because I find it has the most natural syntax. In fact, it very closely resembles Stata's approach to writing out the first-stage, where you specify the endogenous variable(s) and the instruments only.
+Finally, we get to my personal favourite IV option using the `felm()` function from the **lfe** package. This is actually my favourite option; not only because I work mostly with panel data, but also because I find it has the most natural syntax.^[The **fixest** package that I concentrated on earlier, doesn't yet support IV regression. However, even if it is a little slower, `lfe::felm()` includes basically all of same benefits: support for high-level fixed effects, multiway clustering, etc.] In fact, it very closely resembles Stata's approach to writing out the first-stage, where you specify the endogenous variable(s) and the instruments only.
 
 ```{r iv_felm}
 # library(lfe) ## Already loaded
@@ -449,7 +461,7 @@ Calculating marginal effect in a regression is utterly straightforward in cases 
 
 Consider our earlier interaction effects regression, where we interested in how people's mass varied by height and gender. To get the average marginal effect (AME) of these dependent variables, we can just use the `margins::margins()` function.
 
-```{r margins0}
+```{r margins0, dependson=ols_ie}
 # library(margins) ## Already loaded
 
 margins(ols_ie)
@@ -457,25 +469,25 @@ margins(ols_ie)
 
 You can get standard errors by piping (or wrapping) the above object to the generic `summary()` function. 
 
-```{r margins1}
+```{r margins1, dependson=ols_ie}
 # summary(margins(ols_ie)) ## Also works
 ols_ie %>% margins() %>% summary() 
 ```
 
 If we want to compare marginal effects at specific values --- e.g. how the AME of height on mass differs across genders --- then that's easily done too.
 
-```{r margins2}
+```{r margins2, dependson=ols_ie}
 ols_ie %>% 
   margins(
     variables = "height", ## The main variable we're interested in
-    at = list(gender = c("male", "female")) ## How the main variable is modulated by at specific values of a second variable
+    at = list(gender = c("masculine", "feminine")) ## How the main variable is modulated by at specific values of a second variable
     ) #%>% 
   # summary() ## If you want SEs etc.
 ```
 
 If you're the type of person who prefers visualizations (like me), then you should consider `margins::cplot()`, which is the package's in-built method for constructing *conditional* effect plots.
 
-```{r margins3}
+```{r margins3, dependson=ols_ie}
 cplot(ols_ie, x = "gender", dx = "height", what = "effect")
 ```
 
@@ -483,7 +495,7 @@ In this case,it doesn't make much sense to read a lot into the larger standard e
 
 Finally, you can also use `cplot()` to plot the predicted values of your outcome variable (here: "mass"), conditional on one of your dependent variables. For example:
 
-```{r margins4}
+```{r margins4, dependson=ols_ie}
 par(mfrow=c(1, 2)) ## Just to plot these next two (base) figures side-by-side
 cplot(ols_ie, x = "gender", what = "prediction")
 cplot(ols_ie, x = "height", what = "prediction")
@@ -492,7 +504,7 @@ par(mfrow=c(1, 1)) ## Reset plot defaults
 
 Note that `cplot` automatically produces a data frame of the predicted effects too. This can be used to construct **ggplot2** versions of the figures instead of the (base) `cplot` defaults. See the package documentation for [more information](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html#ggplot2_examples).
 
-*Aside:* One downside that I want to highlight briefly is that **margins** does [not yet work](https://github.com/leeper/margins/issues/73) with `lfe::felm` objects. There are [potential ways](https://stackoverflow.com/questions/30491545/predict-method-for-felm-from-lfe-package) around this, or you can just calculate the marginal effects manually, but it's admittedly a pain.
+*Aside:* One downside that I want to highlight briefly is that **margins** does [not yet work](https://github.com/leeper/margins/issues/128) with **fixest** (or **lfe**) objects, but there are [workarounds](https://github.com/leeper/margins/issues/128#issuecomment-636372023) in the meantime.
 
 ### Probit, logit and other generalized linear models
 
@@ -511,7 +523,7 @@ We could spend a whole course on Bayesian models. The very, very short version i
 library(rstanarm)
 bayes_reg <- 
   stan_glm(
-    mass ~ gender*height,
+    mass ~ gender * height,
     data = humans, 
     family = gaussian(), prior = cauchy(), prior_intercept = cauchy()
     )

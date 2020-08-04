@@ -4,7 +4,7 @@ subtitle: "Lecture 8: Regression analysis in R"
 author:
   name: Grant R. McDermott
   affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
-# date: Lecture 6  #"30 January 2020"
+# date: Lecture 6  #"03 August 2020"
 output: 
   html_document:
     theme: flatly
@@ -18,7 +18,7 @@ output:
 
 
 
-Today's lecture is about the bread-and-butter tool of applied econometrics and data science: regression analysis. My goal is to give you a whirlwind tour of the key functions and packages. I'm going to assume that you already know all of the necessary theoretical background on causal inference, asymptotics, etc. This lecture will *not* cover any of theoretical concepts or seek to justify a particular statistical model. Indeed, most of the models that we're going to run today are pretty silly. We also won't be able to cover some important topics. For example, I'll only provide the briefest example of a Bayesian regression model and I won't touch times series analysis at all. (Although, I will provide links for further reading at the bottom of this document.) These disclaimers aside, let's proceeed...
+Today's lecture is about the bread-and-butter tool of applied econometrics and data science: regression analysis. My goal is to give you a whirlwind tour of the key functions and packages. I'm going to assume that you already know all of the necessary theoretical background on causal inference, asymptotics, etc. This lecture will *not* cover any of theoretical concepts or seek to justify a particular statistical model. Indeed, most of the models that we're going to run today are pretty silly. We also won't be able to cover some important topics. For example, I'll only provide the briefest example of a Bayesian regression model and I won't touch times series analysis at all. (Although, I will provide links for further reading at the bottom of this document.) These disclaimers aside, let's proceed...
 
 ## Software requirements
 
@@ -26,7 +26,7 @@ Today's lecture is about the bread-and-butter tool of applied econometrics and d
 
 It's important to note that "base" R already provides all of the tools we need for basic regression analysis. However, we'll be using several external packages today, because they will make our lives easier and offer increased power for some more sophisticated analyses.
 
-- New: **broom**, **estimatr**, **sandwich**, **lmtest**, **AER**, **lfe**, **plm**, **huxtable**, **margins**
+- New: **broom**, **estimatr**, **fixest**, **sandwich**, **lmtest**, **AER**, **lfe**, **huxtable**, **margins**
 - Already used: **tidyverse**, **hrbrthemes**, **listviewer**
 
 The **broom** package was bundled with the rest of tidyverse and **sandwich** should get installed as a dependency of several of the above packages. Still, a convenient way to install (if necessary) and load everything is by running the below code chunk. 
@@ -51,21 +51,21 @@ starwars
 ```
 
 ```
-## # A tibble: 87 x 13
-##    name  height  mass hair_color skin_color eye_color birth_year gender
-##    <chr>  <int> <dbl> <chr>      <chr>      <chr>          <dbl> <chr> 
-##  1 Luke…    172    77 blond      fair       blue            19   male  
-##  2 C-3PO    167    75 <NA>       gold       yellow         112   <NA>  
-##  3 R2-D2     96    32 <NA>       white, bl… red             33   <NA>  
-##  4 Dart…    202   136 none       white      yellow          41.9 male  
-##  5 Leia…    150    49 brown      light      brown           19   female
-##  6 Owen…    178   120 brown, gr… light      blue            52   male  
-##  7 Beru…    165    75 brown      light      blue            47   female
-##  8 R5-D4     97    32 <NA>       white, red red             NA   <NA>  
-##  9 Bigg…    183    84 black      light      brown           24   male  
-## 10 Obi-…    182    77 auburn, w… fair       blue-gray       57   male  
-## # … with 77 more rows, and 5 more variables: homeworld <chr>,
-## #   species <chr>, films <list>, vehicles <list>, starships <list>
+## # A tibble: 87 x 14
+##    name  height  mass hair_color skin_color eye_color birth_year sex   gender
+##    <chr>  <int> <dbl> <chr>      <chr>      <chr>          <dbl> <chr> <chr> 
+##  1 Luke…    172    77 blond      fair       blue            19   male  mascu…
+##  2 C-3PO    167    75 <NA>       gold       yellow         112   none  mascu…
+##  3 R2-D2     96    32 <NA>       white, bl… red             33   none  mascu…
+##  4 Dart…    202   136 none       white      yellow          41.9 male  mascu…
+##  5 Leia…    150    49 brown      light      brown           19   fema… femin…
+##  6 Owen…    178   120 brown, gr… light      blue            52   male  mascu…
+##  7 Beru…    165    75 brown      light      blue            47   fema… femin…
+##  8 R5-D4     97    32 <NA>       white, red red             NA   none  mascu…
+##  9 Bigg…    183    84 black      light      brown           24   male  mascu…
+## 10 Obi-…    182    77 auburn, w… fair       blue-gray       57   male  mascu…
+## # … with 77 more rows, and 5 more variables: homeworld <chr>, species <chr>,
+## #   films <list>, vehicles <list>, starships <list>
 ```
 
 
@@ -79,7 +79,7 @@ R's workhorse command for running regression models is the built-in `lm()` funct
 lm(y ~ x1 + x2 + x3 + ..., data = df)
 ```
 
-You'll note that the `lm()` call includes a reference to the data source (in this case, a hyopthetical data frame called `df`). We covered this in our earlier lecture on R language basics and object-orientated programming, but the reason is that many objects (e.g. data frames) can exist in your R environment at the same time. So we need to be specific about where our regression variables are coming from --- even if `df` is the only data frame in our global environment at the time. Another option would be to use indexing, but I find it a bit verbose:
+You'll note that the `lm()` call includes a reference to the data source (in this case, a hypothetical data frame called `df`). We covered this in our earlier lecture on R language basics and object-orientated programming, but the reason is that many objects (e.g. data frames) can exist in your R environment at the same time. So we need to be specific about where our regression variables are coming from --- even if `df` is the only data frame in our global environment at the time. Another option would be to use indexing, but I find it a bit verbose:
 
 ```r
 lm(df$y ~ df$x1 + df$x2 + df$x3 + ...)
@@ -112,8 +112,8 @@ The resulting object is pretty terse, but that's only because it buries most of 
 listviewer::jsonedit(ols1, mode="view") ## Interactive option
 ```
 
-<!--html_preserve--><div id="htmlwidget-a195fab94b0cea6dad60" style="width:100%;height:10%;" class="jsonedit html-widget"></div>
-<script type="application/json" data-for="htmlwidget-a195fab94b0cea6dad60">{"x":{"data":{"coefficients":{"(Intercept)":-13.8103136287302,"height":0.638571004587035},"residuals":{"1":-19.0238991602397,"2":-17.8310441373045,"3":-15.4925028116251,"4":20.8189707021492,"5":-32.9753370593249,"6":20.1446748122381,"7":-16.5539021281305,"8":-16.1310738162121,"9":-19.0481802106971,"10":-25.4096092061101,"11":-22.2410352336323,"13":-19.7838754171137,"14":-21.132467196936,"15":-22.6624701648267,"16":1260.060387826,"17":-17.7467571510656,"18":8.86753280306401,"19":-11.335372674014,"20":-19.7467571510656,"21":-24.8481802106971,"22":26.0961127113233,"23":5.48182275719367,"24":-20.2167541831749,"25":-18.9396121740008,"26":-18.132467196936,"29":-22.3839347749288,"30":-20.3610471051953,"31":-20.4338902565674,"32":-18.1567482473934,"34":-45.3496032703285,"35":-47.2295913987655,"39":-17.7096388850176,"42":-17.9396121740008,"44":-44.8553251877619,"45":-1.21536080245099,"47":-25.2767601189564,"48":-22.2410352336323,"49":-30.6267452795026,"50":-24.3496032703285,"52":-53.6867512152841,"55":-26.2410352336323,"57":-19.3253222198712,"60":-23.0481802106971,"61":-38.5467571510656,"62":-42.1924731327175,"64":-29.4338902565674,"66":-24.0481802106971,"67":-38.4696151418916,"68":-10.6267452795026,"69":-44.4224464217007,"72":-21.6367957336455,"74":-61.4338902565674,"76":-42.8553251877619,"77":34.8789766379308,"78":0.384698555364137,"79":-27.2410352336323,"80":-51.8553251877619,"81":-37.7353133161989,"87":-46.5539021281305},"effects":{"(Intercept)":-747.466613505302,"height":172.783889465672,"3":-8.91507473191358,"4":21.4194000157428,"5":-29.4427951434848,"6":22.0983868653301,"7":-13.8671619244768,"8":-9.61003251731305,"9":-17.3764020616673,"10":-23.6814442762678,"11":-20.8511909886646,"12":-20.6495024046433,"13":-19.2915287054689,"14":-20.4268242076726,"15":1262.18326022153,"16":-15.3419508514742,"17":10.7084712945311,"18":-3.06634116992954,"19":-17.3419508514742,"20":-23.1764020616673,"21":26.8093155865418,"22":6.75889344053646,"23":-18.2066553492705,"24":-16.8167397784715,"25":-16.2915287054689,"26":-15.3554124487178,"27":-17.3923729974795,"28":-19.3259799156619,"29":-16.936064344863,"30":-44.4108532718603,"31":-47.8696712630454,"32":-12.0343992983051,"33":-15.8167397784715,"34":-42.9016131346699,"35":5.47484083888535,"36":-22.4772463536779,"37":-20.8511909886646,"38":-29.8007688426593,"39":-23.4108532718603,"40":-52.0713598470667,"41":-24.8511909886646,"42":-17.7663176324662,"43":-21.3764020616673,"44":-36.1419508514742,"45":-39.5621197098763,"46":-28.3259799156619,"47":-22.3764020616673,"48":-35.9520352806753,"49":-9.80076884265928,"50":-45.3444601900428,"51":-14.1007923801226,"52":-60.3259799156619,"53":-40.9016131346699,"54":34.6899910201503,"55":-0.819249117040115,"56":-25.8511909886646,"57":-49.9016131346699,"58":-37.360431125855,"59":-43.8671619244768},"rank":2,"fitted.values":{"1":96.0238991602397,"2":92.8310441373045,"3":47.4925028116251,"4":115.181029297851,"5":81.9753370593249,"6":99.8553251877619,"7":91.5539021281305,"8":48.1310738162121,"9":103.048180210697,"10":102.40960920611,"11":106.241035233632,"13":131.783875417114,"14":101.132467196936,"15":96.6624701648267,"16":97.939612174001,"17":94.7467571510656,"18":101.132467196936,"19":28.335372674014,"20":94.7467571510656,"21":103.048180210697,"22":113.903887288677,"23":107.518177242806,"24":99.2167541831749,"25":97.9396121740008,"26":101.132467196936,"29":42.3839347749288,"30":88.3610471051953,"31":109.433890256567,"32":108.156748247393,"34":111.349603270329,"35":129.229591398766,"39":57.7096388850176,"42":97.9396121740008,"44":99.8553251877619,"45":46.215360802451,"47":90.2767601189564,"48":106.241035233632,"49":112.626745279503,"50":111.349603270329,"52":103.686751215284,"55":106.241035233632,"57":104.325322219871,"60":103.048180210697,"61":94.7467571510656,"62":92.1924731327175,"64":109.433890256567,"66":103.048180210697,"67":93.4696151418916,"68":112.626745279503,"69":132.422446421701,"72":36.6367957336455,"74":109.433890256567,"76":99.8553251877619,"77":124.121023362069,"78":135.615301444636,"79":106.241035233632,"80":99.8553251877619,"81":117.735313316199,"87":91.5539021281305},"assign":[0,1],"qr":{"qr":[[-7.68114574786861,-1336.64954904012],[0.130188910980824,270.578977473948],[0.130188910980824,0.287474707506683],[0.130188910980824,-0.104277826225195],[0.130188910980824,0.0879026620206323],[0.130188910980824,-0.0155791393425052],[0.130188910980824,0.0324659827189515],[0.130188910980824,0.283778928886571],[0.130188910980824,-0.0340580324430655],[0.130188910980824,-0.0303622538229534],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.200368070348108],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.00289975375805507],[0.130188910980824,-0.00449180348216904],[0.130188910980824,0.0139870896183912],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.398348066110045],[0.130188910980824,0.0139870896183912],[0.130188910980824,-0.0340580324430655],[0.130188910980824,-0.0968862689849704],[0.130188910980824,-0.0599284827838499],[0.130188910980824,-0.0118833607223932],[0.130188910980824,-0.00449180348216904],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.31704093646758],[0.130188910980824,0.0509448758195118],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0636242614039619],[0.130188910980824,-0.0821031545045222],[0.130188910980824,-0.18558495586766],[0.130188910980824,0.22834224958489],[0.130188910980824,-0.00449180348216904],[0.130188910980824,-0.0155791393425052],[0.130188910980824,0.294866264746907],[0.130188910980824,0.0398575399591756],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0894947117447463],[0.130188910980824,-0.0821031545045222],[0.130188910980824,-0.0377538110631775],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0414495896832896],[0.130188910980824,-0.0340580324430655],[0.130188910980824,0.0139870896183912],[0.130188910980824,0.0287702040988395],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0340580324430655],[0.130188910980824,0.0213786468586153],[0.130188910980824,-0.0894947117447463],[0.130188910980824,-0.20406384896822],[0.130188910980824,0.350302944048588],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0155791393425052],[0.130188910980824,-0.156018726906763],[0.130188910980824,-0.22254274206878],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0155791393425052],[0.130188910980824,-0.119060940705643],[0.130188910980824,0.0324659827189515]],"qraux":[1.13018891098082,1.02507442547873],"pivot":[1,2],"tol":1e-07,"rank":2},"df.residual":57,"na.action":{},"xlevels":{},"call":{},"terms":{},"model":{"mass":[77,75,32,136,49,120,75,32,84,77,84,112,80,74,1358,77,110,17,75,78.2,140,113,79,79,83,20,68,89,90,66,82,40,80,55,45,65,84,82,87,50,80,85,80,56.2,50,80,79,55,102,88,15,48,57,159,136,79,48,80,45],"height":[172,167,96,202,150,178,165,97,183,182,188,228,180,173,175,170,180,66,170,183,200,190,177,175,180,88,160,193,191,196,224,112,175,178,94,163,188,198,196,184,188,185,183,170,166,193,183,168,198,229,79,193,178,216,234,188,178,206,165]}},"options":{"mode":"view","modes":["code","form","text","tree","view"]}},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
+<!--html_preserve--><div id="htmlwidget-8ef7ddf9d26030504f3e" style="width:100%;height:10%;" class="jsonedit html-widget"></div>
+<script type="application/json" data-for="htmlwidget-8ef7ddf9d26030504f3e">{"x":{"data":{"coefficients":{"(Intercept)":-13.8103136287302,"height":0.638571004587035},"residuals":{"1":-19.0238991602397,"2":-17.8310441373045,"3":-15.4925028116251,"4":20.8189707021492,"5":-32.9753370593249,"6":20.1446748122381,"7":-16.5539021281305,"8":-16.1310738162121,"9":-19.0481802106971,"10":-25.4096092061101,"11":-22.2410352336323,"13":-19.7838754171137,"14":-21.132467196936,"15":-22.6624701648267,"16":1260.060387826,"17":-17.7467571510656,"18":8.86753280306401,"19":-11.335372674014,"20":-19.7467571510656,"21":-24.8481802106971,"22":26.0961127113233,"23":5.48182275719367,"24":-20.2167541831749,"25":-18.9396121740008,"26":-18.132467196936,"29":-22.3839347749288,"30":-20.3610471051953,"31":-20.4338902565674,"32":-18.1567482473934,"34":-45.3496032703285,"35":-47.2295913987655,"39":-17.7096388850176,"42":-17.9396121740008,"44":-44.8553251877619,"45":-1.21536080245099,"47":-25.2767601189564,"48":-22.2410352336323,"49":-30.6267452795026,"50":-24.3496032703285,"52":-53.6867512152841,"55":-26.2410352336323,"57":-19.3253222198712,"60":-23.0481802106971,"61":-38.5467571510656,"62":-42.1924731327175,"64":-29.4338902565674,"66":-24.0481802106971,"67":-38.4696151418916,"68":-10.6267452795026,"69":-44.4224464217007,"72":-21.6367957336455,"74":-61.4338902565674,"76":-42.8553251877619,"77":34.8789766379308,"78":0.384698555364137,"79":-27.2410352336323,"80":-51.8553251877619,"81":-37.7353133161989,"87":-46.5539021281305},"effects":{"(Intercept)":-747.466613505302,"height":172.783889465672,"3":-8.91507473191358,"4":21.4194000157428,"5":-29.4427951434848,"6":22.0983868653301,"7":-13.8671619244768,"8":-9.61003251731305,"9":-17.3764020616673,"10":-23.6814442762678,"11":-20.8511909886646,"12":-20.6495024046433,"13":-19.2915287054689,"14":-20.4268242076726,"15":1262.18326022153,"16":-15.3419508514742,"17":10.7084712945311,"18":-3.06634116992954,"19":-17.3419508514742,"20":-23.1764020616673,"21":26.8093155865418,"22":6.75889344053646,"23":-18.2066553492705,"24":-16.8167397784715,"25":-16.2915287054689,"26":-15.3554124487178,"27":-17.3923729974795,"28":-19.3259799156619,"29":-16.936064344863,"30":-44.4108532718603,"31":-47.8696712630454,"32":-12.0343992983051,"33":-15.8167397784715,"34":-42.9016131346699,"35":5.47484083888535,"36":-22.4772463536779,"37":-20.8511909886646,"38":-29.8007688426593,"39":-23.4108532718603,"40":-52.0713598470667,"41":-24.8511909886646,"42":-17.7663176324662,"43":-21.3764020616673,"44":-36.1419508514742,"45":-39.5621197098763,"46":-28.3259799156619,"47":-22.3764020616673,"48":-35.9520352806753,"49":-9.80076884265928,"50":-45.3444601900428,"51":-14.1007923801226,"52":-60.3259799156619,"53":-40.9016131346699,"54":34.6899910201503,"55":-0.819249117040115,"56":-25.8511909886646,"57":-49.9016131346699,"58":-37.360431125855,"59":-43.8671619244768},"rank":2,"fitted.values":{"1":96.0238991602397,"2":92.8310441373045,"3":47.4925028116251,"4":115.181029297851,"5":81.9753370593249,"6":99.8553251877619,"7":91.5539021281305,"8":48.1310738162121,"9":103.048180210697,"10":102.40960920611,"11":106.241035233632,"13":131.783875417114,"14":101.132467196936,"15":96.6624701648267,"16":97.939612174001,"17":94.7467571510656,"18":101.132467196936,"19":28.335372674014,"20":94.7467571510656,"21":103.048180210697,"22":113.903887288677,"23":107.518177242806,"24":99.2167541831749,"25":97.9396121740008,"26":101.132467196936,"29":42.3839347749288,"30":88.3610471051953,"31":109.433890256567,"32":108.156748247393,"34":111.349603270329,"35":129.229591398766,"39":57.7096388850176,"42":97.9396121740008,"44":99.8553251877619,"45":46.215360802451,"47":90.2767601189564,"48":106.241035233632,"49":112.626745279503,"50":111.349603270329,"52":103.686751215284,"55":106.241035233632,"57":104.325322219871,"60":103.048180210697,"61":94.7467571510656,"62":92.1924731327175,"64":109.433890256567,"66":103.048180210697,"67":93.4696151418916,"68":112.626745279503,"69":132.422446421701,"72":36.6367957336455,"74":109.433890256567,"76":99.8553251877619,"77":124.121023362069,"78":135.615301444636,"79":106.241035233632,"80":99.8553251877619,"81":117.735313316199,"87":91.5539021281305},"assign":[0,1],"qr":{"qr":[[-7.68114574786861,-1336.64954904012],[0.130188910980824,270.578977473948],[0.130188910980824,0.287474707506683],[0.130188910980824,-0.104277826225195],[0.130188910980824,0.0879026620206323],[0.130188910980824,-0.0155791393425052],[0.130188910980824,0.0324659827189515],[0.130188910980824,0.283778928886571],[0.130188910980824,-0.0340580324430655],[0.130188910980824,-0.0303622538229534],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.200368070348108],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.00289975375805507],[0.130188910980824,-0.00449180348216904],[0.130188910980824,0.0139870896183912],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.398348066110045],[0.130188910980824,0.0139870896183912],[0.130188910980824,-0.0340580324430655],[0.130188910980824,-0.0968862689849704],[0.130188910980824,-0.0599284827838499],[0.130188910980824,-0.0118833607223932],[0.130188910980824,-0.00449180348216904],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.31704093646758],[0.130188910980824,0.0509448758195118],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0636242614039619],[0.130188910980824,-0.0821031545045222],[0.130188910980824,-0.18558495586766],[0.130188910980824,0.22834224958489],[0.130188910980824,-0.00449180348216904],[0.130188910980824,-0.0155791393425052],[0.130188910980824,0.294866264746907],[0.130188910980824,0.0398575399591756],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0894947117447463],[0.130188910980824,-0.0821031545045222],[0.130188910980824,-0.0377538110631775],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0414495896832896],[0.130188910980824,-0.0340580324430655],[0.130188910980824,0.0139870896183912],[0.130188910980824,0.0287702040988395],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0340580324430655],[0.130188910980824,0.0213786468586153],[0.130188910980824,-0.0894947117447463],[0.130188910980824,-0.20406384896822],[0.130188910980824,0.350302944048588],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0155791393425052],[0.130188910980824,-0.156018726906763],[0.130188910980824,-0.22254274206878],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0155791393425052],[0.130188910980824,-0.119060940705643],[0.130188910980824,0.0324659827189515]],"qraux":[1.13018891098082,1.02507442547873],"pivot":[1,2],"tol":1e-07,"rank":2},"df.residual":57,"na.action":{},"xlevels":{},"call":{},"terms":{},"model":{"mass":[77,75,32,136,49,120,75,32,84,77,84,112,80,74,1358,77,110,17,75,78.2,140,113,79,79,83,20,68,89,90,66,82,40,80,55,45,65,84,82,87,50,80,85,80,56.2,50,80,79,55,102,88,15,48,57,159,136,79,48,80,45],"height":[172,167,96,202,150,178,165,97,183,182,188,228,180,173,175,170,180,66,170,183,200,190,177,175,180,88,160,193,191,196,224,112,175,178,94,163,188,198,196,184,188,185,183,170,166,193,183,168,198,229,79,193,178,216,234,188,178,206,165]}},"options":{"mode":"view","modes":["code","form","text","tree","view"]}},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
 
 As we can see, this `ols1` object has a bunch of important slots... containing everything from the regression coefficients, to vectors of the residuals and fitted (i.e. predicted) values, to the rank of the design matrix, to the input data, etc. etc. To summarise the key pieces of information, we can use the --- *wait for it* --- generic `summary()` function. This will look pretty similar to the default regression output from Stata that many of you will be used to.
 
@@ -174,7 +174,7 @@ tidy(ols1, conf.int = T)
 ## 2 height         0.639     0.626     1.02    0.312   -0.615      1.89
 ```
 
-Again, I could now pipe this tidied coeffients data frame to a ggplot2 call, using saying `geom_pointrange()` to plot the error bars. Feel free to practice doing this yourself now, but we'll get to some explicit examples further below.
+Again, I could now pipe this tidied coefficients data frame to a ggplot2 call, using saying `geom_pointrange()` to plot the error bars. Feel free to practice doing this yourself now, but we'll get to some explicit examples further below.
 
 A related and also useful function is `broom::glance()`, which summarises the model "meta" data (R<sup>2</sup>, AIC, etc.) in a data frame.
 
@@ -184,11 +184,11 @@ glance(ols1)
 ```
 
 ```
-## # A tibble: 1 x 11
+## # A tibble: 1 x 12
 ##   r.squared adj.r.squared sigma statistic p.value    df logLik   AIC   BIC
-##       <dbl>         <dbl> <dbl>     <dbl>   <dbl> <int>  <dbl> <dbl> <dbl>
-## 1    0.0179      0.000696  169.      1.04   0.312     2  -386.  777.  783.
-## # … with 2 more variables: deviance <dbl>, df.residual <int>
+##       <dbl>         <dbl> <dbl>     <dbl>   <dbl> <dbl>  <dbl> <dbl> <dbl>
+## 1    0.0179      0.000696  169.      1.04   0.312     1  -386.  777.  783.
+## # … with 3 more variables: deviance <dbl>, df.residual <int>, nobs <int>
 ```
 
 (BTW, If you're wondering how to export regression results to other formats (e.g. LaTeX tables), don't worry: We'll get to that at the very end of the lecture.)
@@ -301,7 +301,7 @@ The overall model fit is much improved by the exclusion of this outlier, with R<
 
 Dealing with statistical irregularities (heteroskedasticity, clustering, etc.) is a fact of life for empirical researchers. However, it says something about the economics profession that a random stranger could walk uninvited into a live seminar and ask, "How did you cluster your standard errors?", and it would likely draw approving nods from audience members. 
 
-The good news is that there are *lots* of ways to get robust and clustered standard errors in R. For many years, these have been based on the excellent **sandwich** package ([link](https://cran.r-project.org/web/packages/sandwich/index.html)). However, my prefered way these days is to use the **estimatr** package ([link](https://declaredesign.org/r/estimatr/articles/getting-started.html)), which is both fast and provides convenient aliases for the standard regression functions. For example, you can obtain robust standard errors using `estimatr::lm_robust()`. Let's illustrate by running a robust version of the `ols1` regression that ran earlier.
+The good news is that there are *lots* of ways to get robust and clustered standard errors in R. For many years, these have been based on the excellent **sandwich** package ([link](https://cran.r-project.org/web/packages/sandwich/index.html)). However, my preferred way these days is to use the **estimatr** package ([link](https://declaredesign.org/r/estimatr/articles/getting-started.html)), which is both fast and provides convenient aliases for the standard regression functions. For example, you can obtain robust standard errors using `estimatr::lm_robust()`. Let's illustrate by running a robust version of the `ols1` regression that ran earlier.
 
 
 ```r
@@ -345,7 +345,7 @@ ols1_robust_clustered <- lm_robust(mass ~ height, data = starwars, clusters = ho
 
 ```
 ## Warning in eval(quote({: Some observations have missingness in the cluster
-## variable but not in the outcome or covariates. These observations have been
+## variable(s) but not in the outcome or covariates. These observations have been
 ## dropped.
 ```
 
@@ -387,18 +387,31 @@ sqrt(diag(NeweyWest(ols1))) ## Print the HAC SEs
 ##  21.2694130   0.0774265
 ```
 
-If you wanted to convert it to a tidy data frame of coefficient values, then, I would recommend first piping it to `lmtest::coeftest(..., vcov=NeweyWest)`, which is a convenient way to do hypothesis testing using alternate variance-covariance matrices. Note that in the below, I'm going to manually create my own upper and lower 95% confidence intervals, since `broom::tidy(conf.int=T)` doesn't work with coeftest objects.
+If you plan to use HAC SEs for inference, then I recommend converting the model object with `lmtest::coeftest()`. This function provides a convenient way to do hypothesis testing with a wide variety of alternate variance-covariance (VCOV) matrices. Of course, these alternate VCOV matrices could extended way beyond HAC, but here's how it would work for the present case:
 
 
 ```r
 # library(lmtest) ## Already loaded
-ols1 %>% 
-  lmtest::coeftest(vcov=NeweyWest) %>%
-  tidy() %>% ## "conf.int" doesn't work with coeftest object, so calculate manually...
-  mutate(
-    conf.low = estimate - qt(0.975, df=ols1$df.residual)*std.error,
-    conf.high = estimate + qt(0.975, df=ols1$df.residual)*std.error
-    )
+ols1_hac <- lmtest::coeftest(ols1, vcov=NeweyWest)
+ols1_hac
+```
+
+```
+## 
+## t test of coefficients:
+## 
+##               Estimate Std. Error t value  Pr(>|t|)    
+## (Intercept) -13.810314  21.269413 -0.6493    0.5187    
+## height        0.638571   0.077427  8.2474 2.672e-11 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+Note that its easy to convert `coeftest` adjusted models to tidied broom objects too. 
+
+
+```r
+tidy(ols1_hac, conf.int = TRUE)
 ```
 
 ```
@@ -408,7 +421,6 @@ ols1 %>%
 ## 1 (Intercept)  -13.8     21.3       -0.649 5.19e- 1  -56.4      28.8  
 ## 2 height         0.639    0.0774     8.25  2.67e-11    0.484     0.794
 ```
-
 
 ## Dummy variables and interaction terms
 
@@ -429,22 +441,22 @@ humans
 ```
 
 ```
-## # A tibble: 35 x 14
-##    gender gender_factored name  height  mass hair_color skin_color
-##    <chr>  <fct>           <chr>  <int> <dbl> <chr>      <chr>     
-##  1 male   male            Luke…    172    77 blond      fair      
-##  2 male   male            Dart…    202   136 none       white     
-##  3 female female          Leia…    150    49 brown      light     
-##  4 male   male            Owen…    178   120 brown, gr… light     
-##  5 female female          Beru…    165    75 brown      light     
-##  6 male   male            Bigg…    183    84 black      light     
-##  7 male   male            Obi-…    182    77 auburn, w… fair      
-##  8 male   male            Anak…    188    84 blond      fair      
-##  9 male   male            Wilh…    180    NA auburn, g… fair      
-## 10 male   male            Han …    180    80 brown      fair      
-## # … with 25 more rows, and 7 more variables: eye_color <chr>,
-## #   birth_year <dbl>, homeworld <chr>, species <chr>, films <list>,
-## #   vehicles <list>, starships <list>
+## # A tibble: 35 x 15
+##    gender gender_factored name  height  mass hair_color skin_color eye_color
+##    <chr>  <fct>           <chr>  <int> <dbl> <chr>      <chr>      <chr>    
+##  1 mascu… masculine       Luke…    172    77 blond      fair       blue     
+##  2 mascu… masculine       Dart…    202   136 none       white      yellow   
+##  3 femin… feminine        Leia…    150    49 brown      light      brown    
+##  4 mascu… masculine       Owen…    178   120 brown, gr… light      blue     
+##  5 femin… feminine        Beru…    165    75 brown      light      blue     
+##  6 mascu… masculine       Bigg…    183    84 black      light      brown    
+##  7 mascu… masculine       Obi-…    182    77 auburn, w… fair       blue-gray
+##  8 mascu… masculine       Anak…    188    84 blond      fair       blue     
+##  9 mascu… masculine       Wilh…    180    NA auburn, g… fair       blue     
+## 10 mascu… masculine       Han …    180    80 brown      fair       brown    
+## # … with 25 more rows, and 7 more variables: birth_year <dbl>, sex <chr>,
+## #   homeworld <chr>, species <chr>, films <list>, vehicles <list>,
+## #   starships <list>
 ```
 
 ```r
@@ -462,10 +474,10 @@ summary(ols_dv)
 ## -16.068  -8.130  -3.660   0.702  37.112 
 ## 
 ## Coefficients:
-##                     Estimate Std. Error t value Pr(>|t|)  
-## (Intercept)         -84.2520    65.7856  -1.281   0.2157  
-## height                0.8787     0.4075   2.156   0.0441 *
-## gender_factoredmale  10.7391    13.1968   0.814   0.4259  
+##                          Estimate Std. Error t value Pr(>|t|)  
+## (Intercept)              -84.2520    65.7856  -1.281   0.2157  
+## height                     0.8787     0.4075   2.156   0.0441 *
+## gender_factoredmasculine  10.7391    13.1968   0.814   0.4259  
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
@@ -495,10 +507,10 @@ summary(ols_dv2)
 ## -16.068  -8.130  -3.660   0.702  37.112 
 ## 
 ## Coefficients:
-##             Estimate Std. Error t value Pr(>|t|)  
-## (Intercept) -84.2520    65.7856  -1.281   0.2157  
-## height        0.8787     0.4075   2.156   0.0441 *
-## gendermale   10.7391    13.1968   0.814   0.4259  
+##                 Estimate Std. Error t value Pr(>|t|)  
+## (Intercept)     -84.2520    65.7856  -1.281   0.2157  
+## height            0.8787     0.4075   2.156   0.0441 *
+## gendermasculine  10.7391    13.1968   0.814   0.4259  
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
@@ -535,11 +547,11 @@ summary(ols_ie)
 ## -16.250  -8.158  -3.684  -0.107  37.193 
 ## 
 ## Coefficients:
-##                   Estimate Std. Error t value Pr(>|t|)
-## (Intercept)       -61.0000   204.0565  -0.299    0.768
-## gendermale        -15.7224   219.5440  -0.072    0.944
-## height              0.7333     1.2741   0.576    0.572
-## gendermale:height   0.1629     1.3489   0.121    0.905
+##                        Estimate Std. Error t value Pr(>|t|)
+## (Intercept)            -61.0000   204.0565  -0.299    0.768
+## gendermasculine        -15.7224   219.5440  -0.072    0.944
+## height                   0.7333     1.2741   0.576    0.572
+## gendermasculine:height   0.1629     1.3489   0.121    0.905
 ## 
 ## Residual standard error: 15.6 on 18 degrees of freedom
 ##   (13 observations deleted due to missingness)
@@ -550,83 +562,114 @@ summary(ols_ie)
 
 ## Panel models
 
-### Fixed effects with the **lfe** package
+### Fixed effects with the **fixest** package
 
-The simplest (and least efficient) way to include fixed effects in a regression model is, of course, to use dummy variables. However, it isn't very efficient or scaleable. What's the point learning all that stuff about the Frisch-Waugh-Lovell theorem, within-group transformations, etcetera, etcetera if we can't use them in our software routines? Again, there are several options to choose from here. For example, the venerable **plm** package ([link](https://cran.r-project.org/web//packages/plm/vignettes/plmPackage.html)), which also handles random effects and pooling models. However, I am going to strongly advocate for the **lfe** package ([link](https://cran.r-project.org/web/packages/lfe/index.html)).
+The simplest (and least efficient) way to include fixed effects in a regression model is, of course, to use dummy variables. However, it isn't very efficient or scalable. What's the point learning all that stuff about the Frisch-Waugh-Lovell theorem, within-group transformations, etcetera, etcetera if we can't use them in our software routines? Again, there are several options to choose from here. For example, many of you are probably familiar with the excellent **lfe** package ([link](https://cran.r-project.org/web/packages/lfe/index.html)), which offers near-identical functionality to the popular Stata library, **reghdfe** ([link](http://scorreia.com/software/reghdfe/)). However, for fixed effects models in R, I am going to advocate that you take a look at the **fixest** package ([link](https://github.com/lrberge/fixest)).
 
-`lfe` (i.e. "**l**inear **f**ixed **e**ffects") is one of my packages in the entire R catalogue. It has a boatload of functionality built in to it (instrumental variables support, multilevel clustering, etc.) It is also *fast* because it automatically uses all the available processing power on your machine. We'll return to the idea of multicore implementation when we get to the lecture on parallel processing. For the moment, simply enjoy the fact that `lfe` is optimised to solve big regression problems as quickly as possible.
-
-Let's take a look, starting off with a simple example and then moving on to something more demanding.
+**fixest** is relatively new on the scene and has quickly become one of my packages in the entire R catalogue. It has a boatload of functionality built in to it: support for nonlinear models, high-dimensional fixed effects, multiway clustering, etc. It is also insanely fast... as in, up to *orders of magnitude* faster than **lfe** or **reghdfe**. (See: [benchmarks](https://github.com/lrberge/fixest#benchmarking.) I won't be able to cover all of **fixest**'s features in depth here --- see the [introductory vignette](https://cran.r-project.org/web/packages/fixest/vignettes/fixest_walkthrough.html) for a thorough walkthrough --- but I hope to least give you a sense of why I am so enthusiastic about it. Let's start off with a simple example before moving on to something more demanding.
 
 #### Simple FE model
 
-The package's main function is `lfe::felm()`, which is used for estimating fixed effects linear models. The syntax is such that you first specify the regression model as per normal, and then list the fixed effect(s) after a `|`. An example may help to illustrate. Let's say that we again want to run our simple regression of mass on height, but this time control for species-level fixed effects.
+The package's main function is `fixest::feols()`, which is used for estimating linear fixed effects models. The syntax is such that you first specify the regression model as per normal, and then list the fixed effect(s) after a `|`. An example may help to illustrate. Let's say that we again want to run our simple regression of mass on height, but this time control for species-level fixed effects.^[Since we specify "species" in the fixed effects slot below, `feols()` will automatically coerce it to a factor variable even though we didn't explicitly tell it to.]
 
 
 ```r
-library(lfe)
+library(fixest)
 
-ols_fe <- felm(mass ~ height | species, data = starwars) ## Fixed effect(s) go after the "|"
-coefs_fe <- tidy(ols_fe, conf.int = T)
-summary(ols_fe)
+ols_fe <- feols(mass ~ height | species, data = starwars) ## Fixed effect(s) go after the "|"
+ols_fe
 ```
 
 ```
-## 
-## Call:
-##    felm(formula = mass ~ height | species, data = starwars) 
-## 
-## Residuals:
-##     Min      1Q  Median      3Q     Max 
-## -23.602  -2.862   0.000   0.000  38.725 
-## 
-## Coefficients:
-##        Estimate Std. Error t value Pr(>|t|)    
-## height   0.9749     0.1365   7.144 1.38e-07 ***
+## OLS estimation, Dep. Var.: mass
+## Observations: 58 
+## Fixed-effects: species: 31
+## Standard-errors: Clustered (species) 
+##        Estimate Std. Error t value  Pr(>|t|)    
+## height 0.974876   0.044291   22.01 < 2.2e-16 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## 
-## Residual standard error: 14.47 on 26 degrees of freedom
-##   (29 observations deleted due to missingness)
-## Multiple R-squared(full model): 0.9967   Adjusted R-squared: 0.9928 
-## Multiple R-squared(proj model): 0.6625   Adjusted R-squared: 0.2601 
-## F-statistic(full model):255.2 on 31 and 26 DF, p-value: < 2.2e-16 
-## F-statistic(proj model): 51.04 on 1 and 26 DF, p-value: 1.38e-07
+## Log-likelihood: -214.02   Adj. R2: 0.99282 
+##                         R2-Within: 0.66249
 ```
 
-Note that the resulting `felm` object drops all of the species intercepts, since it has abstracted them away as fixed effects. 
-
-#### High dimensional FEs and (multiway) clustering
-
-One reason that I prefer **lfe** to other options --- e.g. the panel-focused **plm** package (see further below) --- is because it supports high dimensional fixed effects *and* (multiway) clustering.^[It is very similar to the excellent **reghdfe** ([link](http://scorreia.com/software/reghdfe/)) package in Stata.] In the below example, I'm going to add "homeworld" as an additional fixed effect to the model and also cluster according to this variable. I'm not claiming that this is a particularly good or sensible model, but just go with it. Note that, since we specify "homeworld" in the fixed effects slot below, `felm()` automatically converts it to a factor even though we didn't explicitly tell it to.
+Note that the resulting model object has automatically clustered the standard errors by the fixed effect variable (i.e. species). We'll explore some more options for adjusting standard errors in **fixest** objects shortly, but you can specify vanilla standard errors simply by calling the `se` argument in `summary.fixest()` as follows.
 
 
 ```r
-ols_hdfe <- 
-  felm(
-    mass ~ height |
-      species + homeworld | ## Two fixed effects go here after the first "|"
-      0 | ## This is where your IV equation goes, but we put 0 since we aren't instrumenting.
-      homeworld, ## The final slot is where we specify our cluster variables
-    data = starwars)
-coefs_hdfe <- tidy(ols_hdfe, conf.int = T)
-coefs_hdfe
+summary(ols_fe, se = 'standard')
 ```
 
 ```
-## # A tibble: 1 x 7
-##   term   estimate std.error statistic      p.value conf.low conf.high
-##   <chr>     <dbl>     <dbl>     <dbl>        <dbl>    <dbl>     <dbl>
-## 1 height    0.756    0.0622      12.2 0.0000000178    0.634     0.878
+## OLS estimation, Dep. Var.: mass
+## Observations: 58 
+## Fixed-effects: species: 31
+## Standard-errors: Standard 
+##        Estimate Std. Error t value Pr(>|t|)    
+## height 0.974876   0.136463  7.1439 1.38e-07 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## Log-likelihood: -214.02   Adj. R2: 0.99282 
+##                         R2-Within: 0.66249
 ```
 
-Visually, we can easily compare changes in the coefficients across models thanks to the fact that we saved the output in data frames with `broom::tidy()` above.
+Before continuing, let's quickly save a "tidied" data frame of the coefficients for later use. I'll use vanilla standard errors again, if only to show you that the `broom::tidy()` method for `fixest` objects also accepts an `se` argument. This basically just provides another convenient way for you to adjust standard errors for your models on the fly.
 
 
 ```r
+# coefs_fe <- tidy(summary(ols_fe, se = 'standard'), conf.int = TRUE) ## yields same result as below
+coefs_fe <- tidy(ols_fe, se = 'standard', conf.int = TRUE)
+```
+
+#### High dimensional FEs and multiway clustering
+
+As I already mentioned above, **fixest** supports both high-dimensional fixed effects and multiway clustering. To see this in action, let's add "homeworld" as an additional fixed effect to the model.
+
+
+```r
+## We now have two fixed effects: species and homeworld
+ols_hdfe <- feols(mass ~ height |  species + homeworld, data = starwars)
+```
+
+```
+## NOTE: 32 observations removed because of NA values (Breakup: LHS: 28, RHS: 6, Fixed-effects: 13).
+```
+
+Easy enough, but the standard errors of the above model are automatically clustered by species, i.e. the first fixed effect variable. (Print the model to screen to prove this for yourself.) Let's go a step further and cluster by both "species" and "homeworld". ^[I most definitely am not claiming that this is a particularly good or sensible clustering strategy, but just go with it.]. We can do this using either the `se` or `cluster` arguments of `summary.fixest()`. I'll (re)assign the model to the same `ols_hdfe` object, but you could of course create a new object if you so wished.
+
+
+```r
+## Cluster by both species and homeworld
+# ols_hdfe <- summary(ols_hdfe, se = 'twoway') ## Same effect as the next line
+ols_hdfe <- summary(ols_hdfe, cluster = c('species', 'homeworld'))
+ols_hdfe
+```
+
+```
+## OLS estimation, Dep. Var.: mass
+## Observations: 55 
+## Fixed-effects: species: 30,  homeworld: 38
+## Standard-errors: Two-way (species & homeworld) 
+##        Estimate Std. Error t value Pr(>|t|)    
+## height 0.755844   0.117257   6.446  0.09798 .  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## Log-likelihood: -188.55   Adj. R2: 1.00768 
+##                         R2-Within: 0.48723
+```
+
+#### Comparing our model coefficients
+
+**fixest** provides an inbuilt `coefplot()` function that is very useful for visualizing model coefficients and things like event study evolution. (Take a look at the function's help documentation.) In general, however, I like to visualize and compare coefficients across models using **ggplot2**. This leverages the fact that we have saved (or can save) the model output as data frames with `broom::tidy()`. For example,
+
+
+```r
+## First get tidied output of the ols_hdfe object
+coefs_hdfe <- tidy(ols_hdfe, conf.int = TRUE)
+
 bind_rows(
-  coefs_fe %>% mutate(reg = "Model 4 (FE and no clustering)"),
-  coefs_hdfe %>% mutate(reg = "Model 5 (HDFE and clustering)")
+  coefs_fe %>% mutate(reg = "Model 4\nFE and no clustering"),
+  coefs_hdfe %>% mutate(reg = "Model 5\nHDFE and twoway clustering")
   ) %>%
   ggplot(aes(x=reg, y=estimate, ymin=conf.low, ymax=conf.high)) +
   geom_pointrange() +
@@ -642,15 +685,12 @@ bind_rows(
 
 ![](08-regression_files/figure-html/fe_mods_compared-1.png)<!-- -->
 
-Normally we expect our standard errors to blow up with clustering, but here that effect appears to be outweighted by the increased precision brought on by additional fixed effects. (As suggested earlier, our level of clustering probably doesn't make much sense either.)
+Normally we expect our standard errors to blow up with clustering, but here that effect appears to be outweighed by the increased precision brought on by additional fixed effects. As suggested earlier, our level of clustering probably doesn't make much sense either.
 
-#### Instrumental variables
-
-(See further below.)
 
 ### Random effects
 
-Fixed effects models are more common than random effects models in economics (in my experience, anyway). I'd also advocate for [Bayesian hierachical models](http://www.stat.columbia.edu/~gelman/arm/) if we're going down the whole random effects path. However, it's still good to know that R has you covered for random effects models through the **plm** ([link](https://cran.r-project.org/web/packages/plm/)) and **nlme** ([link](https://cran.r-project.org/web/packages/nlme/index.html)) packages.^[As I mentioned above, **plm** also handles fixed effects (and pooling) models. However, I prefer **lfe** for the reasons already discussed.] I won't go into detail , but click on those links (especially the first one) if you would like to see some examples.
+Fixed effects models are more common than random effects models in economics (in my experience, anyway). I'd also advocate for [Bayesian hierachical models](http://www.stat.columbia.edu/~gelman/arm/) if we're going down the whole random effects path. However, it's still good to know that R has you covered for random effects models through the **plm** ([link](https://cran.r-project.org/web/packages/plm/)) and **nlme** ([link](https://cran.r-project.org/web/packages/nlme/index.html)) packages.^[As I mentioned above, **plm** also handles fixed effects (and pooling) models. However, I prefer **fixest** and **lfe** for the reasons already discussed.] I won't go into detail , but click on those links (especially the first one) if you would like to see some examples.
 
 ## Instrumental variables
 
@@ -679,20 +719,19 @@ cigs95
 
 ```
 ## # A tibble: 48 x 13
-##    state year    cpi population packs income   tax price  taxs rprice
-##    <fct> <fct> <dbl>      <dbl> <dbl>  <dbl> <dbl> <dbl> <dbl>  <dbl>
-##  1 AL    1995   1.52    4262731 101.  8.39e7  40.5  158.  41.9   104.
-##  2 AR    1995   1.52    2480121 111.  4.60e7  55.5  176.  63.9   115.
-##  3 AZ    1995   1.52    4306908  72.0 8.89e7  65.3  199.  74.8   130.
-##  4 CA    1995   1.52   31493524  56.9 7.71e8  61    211.  74.8   138.
-##  5 CO    1995   1.52    3738061  82.6 9.29e7  44    167.  44     110.
-##  6 CT    1995   1.52    3265293  79.5 1.04e8  74    218.  86.4   143.
-##  7 DE    1995   1.52     718265 124.  1.82e7  48    166.  48     109.
-##  8 FL    1995   1.52   14185403  93.1 3.34e8  57.9  188.  68.5   123.
-##  9 GA    1995   1.52    7188538  97.5 1.60e8  36    157.  37.4   103.
-## 10 IA    1995   1.52    2840860  92.4 6.02e7  60    191.  69.1   125.
-## # … with 38 more rows, and 3 more variables: rincome <dbl>, rtax <dbl>,
-## #   tdiff <dbl>
+##    state year    cpi population packs income   tax price  taxs rprice rincome
+##    <fct> <fct> <dbl>      <dbl> <dbl>  <dbl> <dbl> <dbl> <dbl>  <dbl>   <dbl>
+##  1 AL    1995   1.52    4262731 101.  8.39e7  40.5  158.  41.9   104.    12.9
+##  2 AR    1995   1.52    2480121 111.  4.60e7  55.5  176.  63.9   115.    12.2
+##  3 AZ    1995   1.52    4306908  72.0 8.89e7  65.3  199.  74.8   130.    13.5
+##  4 CA    1995   1.52   31493524  56.9 7.71e8  61    211.  74.8   138.    16.1
+##  5 CO    1995   1.52    3738061  82.6 9.29e7  44    167.  44     110.    16.3
+##  6 CT    1995   1.52    3265293  79.5 1.04e8  74    218.  86.4   143.    21.0
+##  7 DE    1995   1.52     718265 124.  1.82e7  48    166.  48     109.    16.7
+##  8 FL    1995   1.52   14185403  93.1 3.34e8  57.9  188.  68.5   123.    15.4
+##  9 GA    1995   1.52    7188538  97.5 1.60e8  36    157.  37.4   103.    14.6
+## 10 IA    1995   1.52    2840860  92.4 6.02e7  60    191.  69.1   125.    13.9
+## # … with 38 more rows, and 2 more variables: rtax <dbl>, tdiff <dbl>
 ```
 
 Now, assume that we are interested in regressing the number of cigarettes packs consumed per capita on their average price and people's real incomes. The problem is that the price is endogenous (because it is simultaneously determined by demand and supply), so we need to instrument for it using different tax variables. That is, we want to run the following:
@@ -801,7 +840,7 @@ summary(iv_reg_robust, diagnostics = TRUE)
 
 ### Option 3: `felm::lfe()`
 
-Finally, we get to my personal favourite IV option using the `lfe::felm()` function that we already covered in the panel data section above.^[Needless to say, it includes all of same benefits that we saw earlier: support for high-level fixed effects, multiway clustering, etc.] It's my favourite option not because I tend work with panel data, but also because I find it has the most natural syntax. In fact, it very closely resembles Stata's approach to writing out the first-stage, where you specify the endogenous variable(s) and the instruments only.
+Finally, we get to my personal favourite IV option using the `felm()` function from the **lfe** package. This is actually my favourite option; not only because I work mostly with panel data, but also because I find it has the most natural syntax.^[The **fixest** package that I concentrated on earlier, doesn't yet support IV regression. However, even if it is a little slower, `lfe::felm()` includes basically all of same benefits: support for high-level fixed effects, multiway clustering, etc.] In fact, it very closely resembles Stata's approach to writing out the first-stage, where you specify the endogenous variable(s) and the instruments only.
 
 
 ```r
@@ -884,7 +923,7 @@ summary(iv_felm_all)
 
 ### Marginal effects
 
-Caculating marginal effect in a regression is utterly straightforward in cases where there are no non-linearities; just look at the coefficient values! However, that quickly goes out the window when you have interaction effects or non-linear models like probit, logit, etc. Luckily, the **margins** package ([link](https://cran.r-project.org/web/packages/margins)), which is modeled on its namesake in Stata, goes a long way towards automating the process. You can read more in the package [vignette](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html), but here's a very simple example to illustrate. 
+Calculating marginal effect in a regression is utterly straightforward in cases where there are no non-linearities; just look at the coefficient values! However, that quickly goes out the window when you have interaction effects or non-linear models like probit, logit, etc. Luckily, the **margins** package ([link](https://cran.r-project.org/web/packages/margins)), which is modeled on its namesake in Stata, goes a long way towards automating the process. You can read more in the package [vignette](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html), but here's a very simple example to illustrate. 
 
 Consider our earlier interaction effects regression, where we interested in how people's mass varied by height and gender. To get the average marginal effect (AME) of these dependent variables, we can just use the `margins::margins()` function.
 
@@ -904,8 +943,8 @@ margins(ols_ie)
 ```
 
 ```
-##  height gendermale
-##   0.874      13.53
+##  height gendermasculine
+##   0.874           13.53
 ```
 
 You can get standard errors by piping (or wrapping) the above object to the generic `summary()` function. 
@@ -917,9 +956,9 @@ ols_ie %>% margins() %>% summary()
 ```
 
 ```
-##      factor     AME      SE      z      p    lower   upper
-##  gendermale 13.5253 26.7585 0.5055 0.6132 -38.9203 65.9710
-##      height  0.8740  0.4203 2.0797 0.0376   0.0503  1.6977
+##           factor     AME      SE      z      p    lower   upper
+##  gendermasculine 13.5253 26.7585 0.5055 0.6132 -38.9203 65.9710
+##           height  0.8740  0.4203 2.0797 0.0376   0.0503  1.6977
 ```
 
 If we want to compare marginal effects at specific values --- e.g. how the AME of height on mass differs across genders --- then that's easily done too.
@@ -929,7 +968,7 @@ If we want to compare marginal effects at specific values --- e.g. how the AME o
 ols_ie %>% 
   margins(
     variables = "height", ## The main variable we're interested in
-    at = list(gender = c("male", "female")) ## How the main variable is modulated by at specific values of a second variable
+    at = list(gender = c("masculine", "feminine")) ## How the main variable is modulated by at specific values of a second variable
     ) #%>% 
 ```
 
@@ -943,8 +982,8 @@ ols_ie %>%
 
 ```
 ##  at(gender) height
-##        male 0.8962
-##      female 0.7333
+##   masculine 0.8962
+##    feminine 0.7333
 ```
 
 ```r
@@ -971,9 +1010,9 @@ cplot(ols_ie, x = "gender", what = "prediction")
 ```
 
 ```
-##    xvals    yvals     upper    lower
-## 1   male 84.19201  91.70295 76.68107
-## 2 female 70.66667 122.57168 18.76166
+##       xvals    yvals     upper    lower
+## 1 masculine 84.19201  91.70295 76.68107
+## 2  feminine 70.66667 122.57168 18.76166
 ```
 
 ```r
@@ -1012,7 +1051,7 @@ par(mfrow=c(1, 1)) ## Reset plot defaults
 
 Note that `cplot` automatically produces a data frame of the predicted effects too. This can be used to construct **ggplot2** versions of the figures instead of the (base) `cplot` defaults. See the package documentation for [more information](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html#ggplot2_examples).
 
-*Aside:* One downside that I want to highlight briefly is that **margins** does [not yet work](https://github.com/leeper/margins/issues/73) with `lfe::felm` objects. There are [potential ways](https://stackoverflow.com/questions/30491545/predict-method-for-felm-from-lfe-package) around this, or you can just calculate the marginal effects manually, but it's admittedly a pain.
+*Aside:* One downside that I want to highlight briefly is that **margins** does [not yet work](https://github.com/leeper/margins/issues/128) with **fixest** (or **lfe**) objects, but there are [workarounds](https://github.com/leeper/margins/issues/128#issuecomment-636372023) in the meantime.
 
 ### Probit, logit and other generalized linear models
 
@@ -1032,7 +1071,7 @@ We could spend a whole course on Bayesian models. The very, very short version i
 library(rstanarm)
 bayes_reg <- 
   stan_glm(
-    mass ~ gender*height,
+    mass ~ gender * height,
     data = humans, 
     family = gaussian(), prior = cauchy(), prior_intercept = cauchy()
     )
@@ -1045,35 +1084,38 @@ summary(bayes_reg)
 ```
 ## 
 ## Model Info:
-## 
 ##  function:     stan_glm
 ##  family:       gaussian [identity]
 ##  formula:      mass ~ gender * height
 ##  algorithm:    sampling
-##  priors:       see help('prior_summary')
 ##  sample:       4000 (posterior sample size)
+##  priors:       see help('prior_summary')
 ##  observations: 22
 ##  predictors:   4
 ## 
 ## Estimates:
-##                     mean   sd     2.5%   25%    50%    75%    97.5%
-## (Intercept)        -72.3   87.9 -238.7 -130.0  -73.0  -15.3  102.1 
-## gendermale           0.2   54.6 -118.2  -29.7   -0.4   29.8  117.1 
-## height               0.8    0.6   -0.3    0.4    0.8    1.2    1.9 
-## gendermale:height    0.1    0.3   -0.6   -0.1    0.1    0.3    0.8 
-## sigma               15.9    2.8   11.6   14.0   15.5   17.4   22.6 
-## mean_PPD            82.8    4.9   73.5   79.7   82.8   86.0   92.7 
-## log-posterior     -102.3    1.6 -106.1 -103.1 -101.9 -101.1 -100.3 
+##                          mean   sd     10%    50%    90% 
+## (Intercept)             -65.8   74.5 -158.6  -65.6   28.3
+## gendermasculine          -0.3   10.8   -7.6    0.1    7.8
+## height                    0.8    0.5    0.2    0.8    1.4
+## gendermasculine:height    0.1    0.1   -0.1    0.1    0.2
+## sigma                    15.9    2.7   12.8   15.5   19.5
 ## 
-## Diagnostics:
-##                   mcse Rhat n_eff
-## (Intercept)       2.2  1.0  1609 
-## gendermale        1.7  1.0  1075 
-## height            0.0  1.0  1596 
-## gendermale:height 0.0  1.0  1035 
-## sigma             0.1  1.0  1942 
-## mean_PPD          0.1  1.0  2695 
-## log-posterior     0.0  1.0  1014 
+## Fit Diagnostics:
+##            mean   sd   10%   50%   90%
+## mean_PPD 82.6    5.0 76.4  82.7  89.0 
+## 
+## The mean_ppd is the sample average posterior predictive distribution of the outcome variable (for details see help('summary.stanreg')).
+## 
+## MCMC diagnostics
+##                        mcse Rhat n_eff
+## (Intercept)            1.6  1.0  2239 
+## gendermasculine        0.4  1.0   908 
+## height                 0.0  1.0  2140 
+## gendermasculine:height 0.0  1.0  1167 
+## sigma                  0.1  1.0  2381 
+## mean_PPD               0.1  1.0  3015 
+## log-posterior          0.0  1.0  1373 
 ## 
 ## For each parameter, mcse is Monte Carlo standard error, n_eff is a crude measure of effective sample size, and Rhat is the potential scale reduction factor on split chains (at convergence Rhat=1).
 ```
@@ -1083,13 +1125,7 @@ tidy(bayes_reg)
 ```
 
 ```
-## # A tibble: 4 x 3
-##   term              estimate std.error
-##   <chr>                <dbl>     <dbl>
-## 1 (Intercept)       -73.0       85.0  
-## 2 gendermale         -0.366     44.2  
-## 3 height              0.801      0.535
-## 4 gendermale:height   0.0729     0.286
+## Error: $ operator is invalid for atomic vectors
 ```
 
 
@@ -1104,6 +1140,10 @@ humans %>%
   geom_point(alpha=0.7) +
   geom_smooth(method="lm", se=F) + ## See ?geom_smooth for other methods
   scale_color_brewer(palette = "Set1")
+```
+
+```
+## `geom_smooth()` using formula 'y ~ x'
 ```
 
 ![](08-regression_files/figure-html/smooth-1.png)<!-- -->
@@ -1123,100 +1163,43 @@ library(huxtable)
 huxreg(ols_dv, ols_ie, ols_hdfe)
 ```
 
-<!--html_preserve--><table class="huxtable" style="border-collapse: collapse; margin-bottom: 2em; margin-top: 2em; width: 50%; margin-left: auto; margin-right: auto; ">
+```
+## Warning in sqrt(sigma2): NaNs produced
+```
+
+<!--html_preserve--><table class="huxtable" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  " id="tab:hux">
 <col><col><col><col><tr>
-<td style="vertical-align: top; text-align: center; white-space: nowrap; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0pt 0pt; padding: 4pt 4pt 4pt 4pt;"></td>
-<td style="vertical-align: top; text-align: center; white-space: nowrap; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">(1)</td>
-<td style="vertical-align: top; text-align: center; white-space: nowrap; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">(2)</td>
-<td style="vertical-align: top; text-align: center; white-space: nowrap; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">(3)</td>
-</tr>
+<th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;"></th><th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(1)</th><th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(2)</th><th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(3)</th></tr>
 <tr>
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">(Intercept)</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">-84.252&nbsp;&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">-61.000&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-</tr>
+<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(Intercept)</th><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">-84.252&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">-61.000&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
 <tr>
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;"></td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">(65.786)&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">(204.057)</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-</tr>
+<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;"></th><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(65.786)&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(204.057)</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
 <tr>
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">height</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">0.879 *</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">0.733&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">0.756 ***</td>
-</tr>
+<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">height</th><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.879 *</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.733&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.756&nbsp;</td></tr>
 <tr>
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;"></td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">(0.407)&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">(1.274)</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">(0.062)&nbsp;&nbsp;&nbsp;</td>
-</tr>
+<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;"></th><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(0.407)&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(1.274)</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(0.117)</td></tr>
 <tr>
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">gender_factoredmale</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">10.739&nbsp;&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-</tr>
+<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">gender_factoredmasculine</th><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">10.739&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
 <tr>
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;"></td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">(13.197)&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-</tr>
+<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;"></th><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(13.197)&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
 <tr>
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">gendermale</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">-15.722&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-</tr>
+<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">gendermasculine</th><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">-15.722&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
 <tr>
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;"></td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">(219.544)</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-</tr>
+<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;"></th><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(219.544)</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
 <tr>
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">gendermale:height</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">0.163&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-</tr>
+<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">gendermasculine:height</th><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.163&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
 <tr>
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;"></td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">(1.349)</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-</tr>
+<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;"></th><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(1.349)</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
 <tr>
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">N</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">22&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">22&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">55&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-</tr>
+<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">N</th><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">22&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">22&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">55&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
 <tr>
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">R2</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">0.444&nbsp;&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">0.444&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">0.998&nbsp;&nbsp;&nbsp;&nbsp;</td>
-</tr>
+<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">R2</th><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.444&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.444&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.998&nbsp;</td></tr>
 <tr>
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">logLik</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">-89.465&nbsp;&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">-89.456&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-</tr>
+<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">logLik</th><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">-89.465&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">-89.456&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">-188.552&nbsp;</td></tr>
 <tr>
-<td style="vertical-align: top; text-align: left; white-space: nowrap; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt; padding: 4pt 4pt 4pt 4pt;">AIC</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt; padding: 4pt 4pt 4pt 4pt;">186.929&nbsp;&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt; padding: 4pt 4pt 4pt 4pt;">188.911&nbsp;</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt; padding: 4pt 4pt 4pt 4pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-</tr>
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">AIC</th><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">186.929&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">188.911&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">513.104&nbsp;</td></tr>
 <tr>
-<td colspan="4" style="vertical-align: top; text-align: left; white-space: normal; padding: 4pt 4pt 4pt 4pt;"> *** p &lt; 0.001;  ** p &lt; 0.01;  * p &lt; 0.05.</td>
-</tr>
+<th colspan="4" style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;"> *** p &lt; 0.001;  ** p &lt; 0.01;  * p &lt; 0.05.</th></tr>
 </table>
 <!--/html_preserve-->
 
