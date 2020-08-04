@@ -336,7 +336,7 @@ tidy(ols1_robust_stata, conf.int = TRUE)
 ## 2  0.8111055 57    mass
 ```
 
-**estimatr** also supports (robust) instrumental variable regression and clustered standard errors. I'll return to these issues in the relevant sections below, but here's a quick example of the latter just to illustrate:
+**estimatr** also supports (robust) instrumental variable regression and clustered standard errors. I'm actually going to hold off discussing these issues until we get to the relevant sections below. But here's a quick example of the latter just to illustrate:
 
 
 ```r
@@ -407,7 +407,7 @@ ols1_hac
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
 
-Note that its easy to convert `coeftest` adjusted models to tidied broom objects too. 
+Note that its easy to convert `coeftest()`-adjusted models to tidied **broom** objects too. 
 
 
 ```r
@@ -623,7 +623,7 @@ coefs_fe = tidy(ols_fe, se = 'standard', conf.int = TRUE)
 
 #### High dimensional FEs and multiway clustering
 
-As I already mentioned above, **fixest** supports both high-dimensional fixed effects and multiway clustering. To see this in action, let's add "homeworld" as an additional fixed effect to the model.
+As I already mentioned above, **fixest** supports (arbitrarily) high-dimensional fixed effects and (up to fourway) multiway clustering. To see this in action, let's add "homeworld" as an additional fixed effect to the model.
 
 
 ```r
@@ -687,6 +687,13 @@ bind_rows(
 
 FWIW, we'd normally expect our standard errors to blow up with clustering. Here that effect appears to be outweighed by the increased precision brought on by additional fixed effects. Still, I wouldn't put too much thought into it. Our clustering probably doesn't make much sense and was just used to demonstrate the package syntax.
 
+#### Aside on standard errors
+
+We've now seen some of the different options that **fixest** has for specifying different error structures. In short, run your model and then use either the `se` or `cluster` arguments in `summary.fixest()` (or `broom::tidy()`) if you aren't happy with the default clustering choice. There are two additional points that I want to draw your attention to.
+
+First, if you're coming from another statistical language or package, adjusting the standard errors after the fact rather than in the original model call may seem slightly odd. But this behaviour is actually extremely powerful, because it allows us to analyse the effect of different error structures *on-the-fly* without having to rerun the entire model again. **fixest** is already the fastest game in town, but just think about the implied timesavings for really large models.^[To be clear, adjusting the standard errors via, say, `summary.fixest()` completes instantaneously. It's a testament to how well the package is put together and the [novel estimation method](https://wwwen.uni.lu/content/download/110162/1299525/file/2018_13) that Laurent (the package author) has derived.]
+
+Second, reconciling standard errors across different software is a much more complicated process than you may realise. There are a number of unresolved theoretical issues to consider --- especially when it comes to multiway clustering --- and package maintainers have to make a number of arbitrary decisions about the best way to account for these. (See [here](https://github.com/sgaure/lfe/issues/1#issuecomment-530643808) for a detailed discussion.) Luckily, Laurent has taken the time to write out a [detailed vignette](https://cran.r-project.org/web/packages/fixest/vignettes/standard_errors.html) about how to replicate standard errors from other methods and software packages (including Stata's **reghdfe**).^[If you want a deep dive into the theory with even more simulations, then [this paper](https://cran.r-project.org/web/packages/sandwich/vignettes/sandwich-CL.pdf) by the authors of the **sandwich** paper is another excellent resource.]
 
 ### Random effects
 
