@@ -40,11 +40,6 @@ pacman::p_load(tidyverse, broom, hrbrthemes, estimatr, fixest, sandwich, lmtest,
 ## My preferred ggplot2 plotting theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
-```{r cache=F, include=F}
-## Switch off automatic "pretty printing" of DFs
-## See: https://hughjonesd.github.io/huxtable/huxtable.html#automatic-pretty-printing-of-data-frames
-options(huxtable.knit_print_df = FALSE)
-```
 
 While we've already loaded all of the required packages for today, I'll try to be as explicit about where a particular function is coming from, whenever I use it below. 
 
@@ -79,7 +74,7 @@ ols1 = lm(mass ~ height, data = starwars)
 ols1
 ```
 
-The resulting object is pretty terse, but that's only because it buries most of its valuable information --- of which there is a lot --- within its internal list structure. You can use the `str()` function to view this structure. Or, if you want to be fancy, the interactive `listviewer::jsonedit()` function that we saw in the previous lecture is nice option.
+The resulting object is pretty terse, but that's only because it buries most of its valuable information --- of which there is a lot --- within its internal list structure. You can use the `str()` function to view this structure. Or, if you want to be fancy, the interactive `listviewer::jsonedit()` function that we saw in the previous lecture is a nice option.
 
 ```{r ols1_str, message=F, out.width="100%", out.height="10%"}
 # str(ols1) ## Static option
@@ -108,7 +103,7 @@ library(broom)
 tidy(ols1, conf.int = TRUE)
 ```
 
-Again, I could now pipe this tidied coefficients data frame to a ggplot2 call, using saying `geom_pointrange()` to plot the error bars. Feel free to practice doing this yourself now, but we'll get to some explicit examples further below.
+Again, I could now pipe this tidied coefficients data frame to a **ggplot2** call, using saying `geom_pointrange()` to plot the error bars. Feel free to practice doing this yourself now, but we'll get to some explicit examples further below.
 
 A related and also useful function is `broom::glance()`, which summarises the model "meta" data (R<sup>2</sup>, AIC, etc.) in a data frame.
 
@@ -585,9 +580,11 @@ st(starwars)
 ```
 
 
-### Visualizing regression output and models
+### Figures
 
-We've already worked through several visualization examples today. For example, we saw how to extract and compare model coefficients [here](#Comparing_our_model_coefficients). I use this "manual" approach to visualizing coefficient estimates all the time. However, our focus on **modelsummary** in the preceding section provides a nice segue to another one of the package's features: [`modelplot()`](https://vincentarelbundock.github.io/modelsummary/articles/modelplot.html). Consider the following, which shows both the degree to which `modelplot()` automates everything and the fact that it readily accepts regular **ggplot2** syntax.
+#### Coefficient plots
+
+We've already worked through several examples of how to extract and compare model coefficients (e.g. [here](#Comparing_our_model_coefficients)). I use this "manual" approach to visualizing coefficient estimates all the time. However, our focus on **modelsummary** in the preceding section provides a nice segue to another one of the package's features: [`modelplot()`](https://vincentarelbundock.github.io/modelsummary/articles/modelplot.html). Consider the following, which shows both the degree to which `modelplot()` automates everything and the fact that it readily accepts regular **ggplot2** syntax.
 
 ```{r modplot, warning=FALSE}
 # library(modelsummary) ## Already loaded
@@ -598,17 +595,19 @@ modelplot(mods) +
   coord_flip() ## You can modify with normal ggplot2 commands
 ```
 
-With respect to visual model validation and prediction, you should already be familiar with `geom_smooth()` from our earlier lectures. For instance,
+#### Model validation and prediction
+
+The easiest way to visually inspect model performance (i.e. validation and prediction) is with **ggplot2**. In particular, you should already be familiar with `geom_smooth()` from our earlier lectures. For instance,
 
 ```{r smooth, warning=F}
 humans %>%
-  ggplot(aes(x=mass, y=height, col=gender)) + 
-  geom_point(alpha=0.7) +
-  geom_smooth(method="lm", se=F) + ## See ?geom_smooth for other methods
+  ggplot(aes(x = mass, y = height, col = gender)) + 
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE) + ## See ?geom_smooth for other methods
   scale_color_brewer(palette = "Set1")
 ```
 
-For further reference, I highly encourage you to look over Chapter 6 of Kieran Healy's [*Data Visualization: A Practical Guide*](https://socviz.co/modeling.html#plot-marginal-effects). You will not only learn how to produce beautiful and effective model visualizations, but also pick up a variety of technical tips. You may want to pay particular attention attention to the section on [generating and plotting predictions](https://socviz.co/modeling.html#generate-predictions-to-graph), since that will form part of your next assignment.
+For further reference on data visualization with models, I highly encourage you to look over Chapter 6 of Kieran Healy's [*Data Visualization: A Practical Guide*](https://socviz.co/modeling.html). You will not only learn how to produce beautiful and effective model visualizations, but also pick up a variety of technical tips. I recommend that you pay particular attention attention to the section on [generating and plotting predictions](https://socviz.co/modeling.html#generate-predictions-to-graph), since that will form part of your next assignment.
 
 ## Further resources
 

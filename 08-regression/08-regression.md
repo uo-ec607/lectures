@@ -104,7 +104,7 @@ ols1
 ##    -13.8103       0.6386
 ```
 
-The resulting object is pretty terse, but that's only because it buries most of its valuable information --- of which there is a lot --- within its internal list structure. You can use the `str()` function to view this structure. Or, if you want to be fancy, the interactive `listviewer::jsonedit()` function that we saw in the previous lecture is nice option.
+The resulting object is pretty terse, but that's only because it buries most of its valuable information --- of which there is a lot --- within its internal list structure. You can use the `str()` function to view this structure. Or, if you want to be fancy, the interactive `listviewer::jsonedit()` function that we saw in the previous lecture is a nice option.
 
 
 ```r
@@ -174,7 +174,7 @@ tidy(ols1, conf.int = TRUE)
 ## 2 height         0.639     0.626     1.02    0.312   -0.615      1.89
 ```
 
-Again, I could now pipe this tidied coefficients data frame to a ggplot2 call, using saying `geom_pointrange()` to plot the error bars. Feel free to practice doing this yourself now, but we'll get to some explicit examples further below.
+Again, I could now pipe this tidied coefficients data frame to a **ggplot2** call, using saying `geom_pointrange()` to plot the error bars. Feel free to practice doing this yourself now, but we'll get to some explicit examples further below.
 
 A related and also useful function is `broom::glance()`, which summarises the model "meta" data (R<sup>2</sup>, AIC, etc.) in a data frame.
 
@@ -1539,7 +1539,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
       <td class="gt_row gt_left">(0.117)</td>
     </tr>
     <tr>
-      <td class="gt_row gt_left">gendermasculine:height</td>
+      <td class="gt_row gt_left">gendermasculine × height</td>
       <td class="gt_row gt_left"></td>
       <td class="gt_row gt_left">0.163</td>
       <td class="gt_row gt_left"></td>
@@ -1607,6 +1607,20 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
       <td class="gt_row gt_left">-89.456</td>
       <td class="gt_row gt_left">-214.026</td>
       <td class="gt_row gt_left">-188.552</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">FE ×   homeworld</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">X</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">FE ×   species</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">X</td>
+      <td class="gt_row gt_left">X</td>
     </tr>
   </tbody>
   

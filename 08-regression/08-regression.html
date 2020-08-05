@@ -2645,7 +2645,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 ## Coefficients:
 ## (Intercept)       height  
 ##    -13.8103       0.6386</code></pre>
-<p>The resulting object is pretty terse, but that’s only because it buries most of its valuable information — of which there is a lot — within its internal list structure. You can use the <code>str()</code> function to view this structure. Or, if you want to be fancy, the interactive <code>listviewer::jsonedit()</code> function that we saw in the previous lecture is nice option.</p>
+<p>The resulting object is pretty terse, but that’s only because it buries most of its valuable information — of which there is a lot — within its internal list structure. You can use the <code>str()</code> function to view this structure. Or, if you want to be fancy, the interactive <code>listviewer::jsonedit()</code> function that we saw in the previous lecture is a nice option.</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a><span class="co"># str(ols1) ## Static option</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a>listviewer<span class="op">::</span><span class="kw">jsonedit</span>(ols1, <span class="dt">mode=</span><span class="st">&quot;view&quot;</span>) <span class="co">## Interactive option</span></span></code></pre></div>
 <div id="htmlwidget-8ef7ddf9d26030504f3e" style="width:100%;height:10%;" class="jsonedit html-widget"></div>
@@ -2686,7 +2686,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 ##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
 ## 1 (Intercept)  -13.8     111.       -0.124   0.902 -236.       209.  
 ## 2 height         0.639     0.626     1.02    0.312   -0.615      1.89</code></pre>
-<p>Again, I could now pipe this tidied coefficients data frame to a ggplot2 call, using saying <code>geom_pointrange()</code> to plot the error bars. Feel free to practice doing this yourself now, but we’ll get to some explicit examples further below.</p>
+<p>Again, I could now pipe this tidied coefficients data frame to a <strong>ggplot2</strong> call, using saying <code>geom_pointrange()</code> to plot the error bars. Feel free to practice doing this yourself now, but we’ll get to some explicit examples further below.</p>
 <p>A related and also useful function is <code>broom::glance()</code>, which summarises the model “meta” data (R<sup>2</sup>, AIC, etc.) in a data frame.</p>
 <div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true"></a><span class="kw">glance</span>(ols1)</span></code></pre></div>
 <pre><code>## # A tibble: 1 x 12
@@ -3748,7 +3748,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
       <td class="gt_row gt_left">(0.117)</td>
     </tr>
     <tr>
-      <td class="gt_row gt_left">gendermasculine:height</td>
+      <td class="gt_row gt_left">gendermasculine × height</td>
       <td class="gt_row gt_left"></td>
       <td class="gt_row gt_left">0.163</td>
       <td class="gt_row gt_left"></td>
@@ -3816,6 +3816,20 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
       <td class="gt_row gt_left">-89.456</td>
       <td class="gt_row gt_left">-214.026</td>
       <td class="gt_row gt_left">-188.552</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">FE ×   homeworld</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">X</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">FE ×   species</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">X</td>
+      <td class="gt_row gt_left">X</td>
     </tr>
   </tbody>
   
