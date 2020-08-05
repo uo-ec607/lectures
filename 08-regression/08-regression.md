@@ -40,7 +40,6 @@ pacman::p_load(tidyverse, broom, hrbrthemes, estimatr, fixest, sandwich, lmtest,
 theme_set(hrbrthemes::theme_ipsum())
 ```
 
-
 While we've already loaded all of the required packages for today, I'll try to be as explicit about where a particular function is coming from, whenever I use it below. 
 
 Something else that I want to mention up front is that we'll mostly be working with the `starwars` data frame that we've already seen from previous lectures. Here's a quick reminder of what it looks like to refresh your memory.
@@ -2352,9 +2351,11 @@ st(starwars)
 </table>
 
 
-### Visualizing regression output and models
+### Figures
 
-We've already worked through several visualization examples today. For example, we saw how to extract and compare model coefficients [here](#Comparing_our_model_coefficients). I use this "manual" approach to visualizing coefficient estimates all the time. However, our focus on **modelsummary** in the preceding section provides a nice segue to another one of the package's features: [`modelplot()`](https://vincentarelbundock.github.io/modelsummary/articles/modelplot.html). Consider the following, which shows both the degree to which `modelplot()` automates everything and the fact that it readily accepts regular **ggplot2** syntax.
+#### Coefficient plots
+
+We've already worked through several examples of how to extract and compare model coefficients (e.g. [here](#Comparing_our_model_coefficients)). I use this "manual" approach to visualizing coefficient estimates all the time. However, our focus on **modelsummary** in the preceding section provides a nice segue to another one of the package's features: [`modelplot()`](https://vincentarelbundock.github.io/modelsummary/articles/modelplot.html). Consider the following, which shows both the degree to which `modelplot()` automates everything and the fact that it readily accepts regular **ggplot2** syntax.
 
 
 ```r
@@ -2368,14 +2369,16 @@ modelplot(mods) +
 
 ![](08-regression_files/figure-html/modplot-1.png)<!-- -->
 
-With respect to visual model validation and prediction, you should already be familiar with `geom_smooth()` from our earlier lectures. For instance,
+#### Model validation and prediction
+
+The easiest way to visually inspect model performance (i.e. validation and prediction) is with **ggplot2**. In particular, you should already be familiar with `geom_smooth()` from our earlier lectures. For instance,
 
 
 ```r
 humans %>%
-  ggplot(aes(x=mass, y=height, col=gender)) + 
-  geom_point(alpha=0.7) +
-  geom_smooth(method="lm", se=F) + ## See ?geom_smooth for other methods
+  ggplot(aes(x = mass, y = height, col = gender)) + 
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE) + ## See ?geom_smooth for other methods
   scale_color_brewer(palette = "Set1")
 ```
 
@@ -2385,7 +2388,7 @@ humans %>%
 
 ![](08-regression_files/figure-html/smooth-1.png)<!-- -->
 
-For further reference, I highly encourage you to look over Chapter 6 of Kieran Healy's [*Data Visualization: A Practical Guide*](https://socviz.co/modeling.html#plot-marginal-effects). You will not only learn how to produce beautiful and effective model visualizations, but also pick up a variety of technical tips. You may want to pay particular attention attention to the section on [generating and plotting predictions](https://socviz.co/modeling.html#generate-predictions-to-graph), since that will form part of your next assignment.
+For further reference on data visualization with models, I highly encourage you to look over Chapter 6 of Kieran Healy's [*Data Visualization: A Practical Guide*](https://socviz.co/modeling.html). You will not only learn how to produce beautiful and effective model visualizations, but also pick up a variety of technical tips. I recommend that you pay particular attention attention to the section on [generating and plotting predictions](https://socviz.co/modeling.html#generate-predictions-to-graph), since that will form part of your next assignment.
 
 ## Further resources
 
