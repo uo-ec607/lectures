@@ -4,7 +4,7 @@ subtitle: "Lecture 8: Regression analysis in R"
 author:
   name: Grant R. McDermott
   affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
-# date: Lecture 6  #"04 August 2020"
+# date: Lecture 6  #"20 August 2020"
 output: 
   html_document:
     theme: flatly
@@ -26,19 +26,22 @@ Today's lecture is about the bread-and-butter tool of applied econometrics and d
 
 It's important to note that "base" R already provides all of the tools we need for basic regression analysis. However, we'll be using several external packages today, because they will make our lives easier and offer increased power for some more sophisticated analyses.
 
-- New: **broom**, **estimatr**, **fixest**, **sandwich**, **lmtest**, **AER**, **lfe**, **margins**, **modelsummary**, **vt**
+- New: **broom**, **estimatr**, **fixest**, **sandwich**, **lmtest**, **AER**, **lfe**, **margins**, **modelsummary**, **vtable**
 - Already used: **tidyverse**, **hrbrthemes**, **listviewer**
 
-The **broom** package was bundled with the rest of tidyverse and **sandwich** should get installed as a dependency of several of the above packages. Still, a convenient way to install (if necessary) and load everything is by running the below code chunk. 
+A convenient way to install (if necessary) and load everything is by running the below code chunk. Note that I'm opting for the development versions of **broom** and **modelsummary** because these contain a few features that aren't available in the respective CRAN releases at the time of writing.
 
 
 ```r
 ## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(tidyverse, broom, hrbrthemes, estimatr, fixest, sandwich, lmtest, AER, lfe, margins, modelsummary, vtable)
+pacman::p_load(tidyverse, hrbrthemes, estimatr, fixest, sandwich, lmtest, AER, lfe, margins, vtable)
+pacman::p_install_gh("tidymodels/broom") ## Use dev version
+pacman::p_install_gh("vincentarelbundock/modelsummary") ## Use dev version
 ## My preferred ggplot2 plotting theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
+
 
 While we've already loaded all of the required packages for today, I'll try to be as explicit about where a particular function is coming from, whenever I use it below. 
 
@@ -72,7 +75,7 @@ starwars
 
 ### The `lm()` function
 
-R's workhorse command for running regression models is the built-in `lm()` function. The "**lm**" stands for "**l**inear **m**odels" and the syntax is very intuitive.^[Indeed, all other regression packages in R that I'm aware of --- including those that allow for much more advanced and flexible models --- closely follow the `lm()` syntax.] 
+R's workhorse command for running regression models is the built-in `lm()` function. The "**lm**" stands for "**l**inear **m**odels" and the syntax is very intuitive.
 
 ```r
 lm(y ~ x1 + x2 + x3 + ..., data = df)
@@ -103,16 +106,16 @@ ols1
 ##    -13.8103       0.6386
 ```
 
-The resulting object is pretty terse, but that's only because it buries most of its valuable information --- of which there is a lot --- within its internal list structure. You can use the `str()` function to view this structure. Or, if you want to be fancy, the interactive `listviewer::jsonedit()` function that we saw in the previous lecture is a nice option.
+The resulting object is pretty terse, but that's only because it buries most of its valuable information --- of which there is a lot --- within its internal list structure. If you're in RStudio, you can inspect this structure by typing `View(ols1)` or simply clicking on the "ols1" object in your environment pane. Doing so will prompt an interactive panel to pop up for you to play around with. That approach won't work for this knitted R Markdown document, though so I'll use the `listviewer::jsonedit()` function that we saw in the previous lecture instead.
 
 
 ```r
-# str(ols1) ## Static option
-listviewer::jsonedit(ols1, mode="view") ## Interactive option
+# View(ols1) ## Run this instead if you're in a live session
+listviewer::jsonedit(ols1, mode="view") ## Better for R Markdown
 ```
 
-<!--html_preserve--><div id="htmlwidget-8ef7ddf9d26030504f3e" style="width:100%;height:10%;" class="jsonedit html-widget"></div>
-<script type="application/json" data-for="htmlwidget-8ef7ddf9d26030504f3e">{"x":{"data":{"coefficients":{"(Intercept)":-13.8103136287302,"height":0.638571004587035},"residuals":{"1":-19.0238991602397,"2":-17.8310441373045,"3":-15.4925028116251,"4":20.8189707021492,"5":-32.9753370593249,"6":20.1446748122381,"7":-16.5539021281305,"8":-16.1310738162121,"9":-19.0481802106971,"10":-25.4096092061101,"11":-22.2410352336323,"13":-19.7838754171137,"14":-21.132467196936,"15":-22.6624701648267,"16":1260.060387826,"17":-17.7467571510656,"18":8.86753280306401,"19":-11.335372674014,"20":-19.7467571510656,"21":-24.8481802106971,"22":26.0961127113233,"23":5.48182275719367,"24":-20.2167541831749,"25":-18.9396121740008,"26":-18.132467196936,"29":-22.3839347749288,"30":-20.3610471051953,"31":-20.4338902565674,"32":-18.1567482473934,"34":-45.3496032703285,"35":-47.2295913987655,"39":-17.7096388850176,"42":-17.9396121740008,"44":-44.8553251877619,"45":-1.21536080245099,"47":-25.2767601189564,"48":-22.2410352336323,"49":-30.6267452795026,"50":-24.3496032703285,"52":-53.6867512152841,"55":-26.2410352336323,"57":-19.3253222198712,"60":-23.0481802106971,"61":-38.5467571510656,"62":-42.1924731327175,"64":-29.4338902565674,"66":-24.0481802106971,"67":-38.4696151418916,"68":-10.6267452795026,"69":-44.4224464217007,"72":-21.6367957336455,"74":-61.4338902565674,"76":-42.8553251877619,"77":34.8789766379308,"78":0.384698555364137,"79":-27.2410352336323,"80":-51.8553251877619,"81":-37.7353133161989,"87":-46.5539021281305},"effects":{"(Intercept)":-747.466613505302,"height":172.783889465672,"3":-8.91507473191358,"4":21.4194000157428,"5":-29.4427951434848,"6":22.0983868653301,"7":-13.8671619244768,"8":-9.61003251731305,"9":-17.3764020616673,"10":-23.6814442762678,"11":-20.8511909886646,"12":-20.6495024046433,"13":-19.2915287054689,"14":-20.4268242076726,"15":1262.18326022153,"16":-15.3419508514742,"17":10.7084712945311,"18":-3.06634116992954,"19":-17.3419508514742,"20":-23.1764020616673,"21":26.8093155865418,"22":6.75889344053646,"23":-18.2066553492705,"24":-16.8167397784715,"25":-16.2915287054689,"26":-15.3554124487178,"27":-17.3923729974795,"28":-19.3259799156619,"29":-16.936064344863,"30":-44.4108532718603,"31":-47.8696712630454,"32":-12.0343992983051,"33":-15.8167397784715,"34":-42.9016131346699,"35":5.47484083888535,"36":-22.4772463536779,"37":-20.8511909886646,"38":-29.8007688426593,"39":-23.4108532718603,"40":-52.0713598470667,"41":-24.8511909886646,"42":-17.7663176324662,"43":-21.3764020616673,"44":-36.1419508514742,"45":-39.5621197098763,"46":-28.3259799156619,"47":-22.3764020616673,"48":-35.9520352806753,"49":-9.80076884265928,"50":-45.3444601900428,"51":-14.1007923801226,"52":-60.3259799156619,"53":-40.9016131346699,"54":34.6899910201503,"55":-0.819249117040115,"56":-25.8511909886646,"57":-49.9016131346699,"58":-37.360431125855,"59":-43.8671619244768},"rank":2,"fitted.values":{"1":96.0238991602397,"2":92.8310441373045,"3":47.4925028116251,"4":115.181029297851,"5":81.9753370593249,"6":99.8553251877619,"7":91.5539021281305,"8":48.1310738162121,"9":103.048180210697,"10":102.40960920611,"11":106.241035233632,"13":131.783875417114,"14":101.132467196936,"15":96.6624701648267,"16":97.939612174001,"17":94.7467571510656,"18":101.132467196936,"19":28.335372674014,"20":94.7467571510656,"21":103.048180210697,"22":113.903887288677,"23":107.518177242806,"24":99.2167541831749,"25":97.9396121740008,"26":101.132467196936,"29":42.3839347749288,"30":88.3610471051953,"31":109.433890256567,"32":108.156748247393,"34":111.349603270329,"35":129.229591398766,"39":57.7096388850176,"42":97.9396121740008,"44":99.8553251877619,"45":46.215360802451,"47":90.2767601189564,"48":106.241035233632,"49":112.626745279503,"50":111.349603270329,"52":103.686751215284,"55":106.241035233632,"57":104.325322219871,"60":103.048180210697,"61":94.7467571510656,"62":92.1924731327175,"64":109.433890256567,"66":103.048180210697,"67":93.4696151418916,"68":112.626745279503,"69":132.422446421701,"72":36.6367957336455,"74":109.433890256567,"76":99.8553251877619,"77":124.121023362069,"78":135.615301444636,"79":106.241035233632,"80":99.8553251877619,"81":117.735313316199,"87":91.5539021281305},"assign":[0,1],"qr":{"qr":[[-7.68114574786861,-1336.64954904012],[0.130188910980824,270.578977473948],[0.130188910980824,0.287474707506683],[0.130188910980824,-0.104277826225195],[0.130188910980824,0.0879026620206323],[0.130188910980824,-0.0155791393425052],[0.130188910980824,0.0324659827189515],[0.130188910980824,0.283778928886571],[0.130188910980824,-0.0340580324430655],[0.130188910980824,-0.0303622538229534],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.200368070348108],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.00289975375805507],[0.130188910980824,-0.00449180348216904],[0.130188910980824,0.0139870896183912],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.398348066110045],[0.130188910980824,0.0139870896183912],[0.130188910980824,-0.0340580324430655],[0.130188910980824,-0.0968862689849704],[0.130188910980824,-0.0599284827838499],[0.130188910980824,-0.0118833607223932],[0.130188910980824,-0.00449180348216904],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.31704093646758],[0.130188910980824,0.0509448758195118],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0636242614039619],[0.130188910980824,-0.0821031545045222],[0.130188910980824,-0.18558495586766],[0.130188910980824,0.22834224958489],[0.130188910980824,-0.00449180348216904],[0.130188910980824,-0.0155791393425052],[0.130188910980824,0.294866264746907],[0.130188910980824,0.0398575399591756],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0894947117447463],[0.130188910980824,-0.0821031545045222],[0.130188910980824,-0.0377538110631775],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0414495896832896],[0.130188910980824,-0.0340580324430655],[0.130188910980824,0.0139870896183912],[0.130188910980824,0.0287702040988395],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0340580324430655],[0.130188910980824,0.0213786468586153],[0.130188910980824,-0.0894947117447463],[0.130188910980824,-0.20406384896822],[0.130188910980824,0.350302944048588],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0155791393425052],[0.130188910980824,-0.156018726906763],[0.130188910980824,-0.22254274206878],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0155791393425052],[0.130188910980824,-0.119060940705643],[0.130188910980824,0.0324659827189515]],"qraux":[1.13018891098082,1.02507442547873],"pivot":[1,2],"tol":1e-07,"rank":2},"df.residual":57,"na.action":{},"xlevels":{},"call":{},"terms":{},"model":{"mass":[77,75,32,136,49,120,75,32,84,77,84,112,80,74,1358,77,110,17,75,78.2,140,113,79,79,83,20,68,89,90,66,82,40,80,55,45,65,84,82,87,50,80,85,80,56.2,50,80,79,55,102,88,15,48,57,159,136,79,48,80,45],"height":[172,167,96,202,150,178,165,97,183,182,188,228,180,173,175,170,180,66,170,183,200,190,177,175,180,88,160,193,191,196,224,112,175,178,94,163,188,198,196,184,188,185,183,170,166,193,183,168,198,229,79,193,178,216,234,188,178,206,165]}},"options":{"mode":"view","modes":["code","form","text","tree","view"]}},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
+<!--html_preserve--><div id="htmlwidget-9b7f0b31c82a85e5023d" style="width:100%;height:10%;" class="jsonedit html-widget"></div>
+<script type="application/json" data-for="htmlwidget-9b7f0b31c82a85e5023d">{"x":{"data":{"coefficients":{"(Intercept)":-13.8103136287302,"height":0.638571004587035},"residuals":{"1":-19.0238991602397,"2":-17.8310441373045,"3":-15.4925028116251,"4":20.8189707021492,"5":-32.9753370593249,"6":20.1446748122381,"7":-16.5539021281305,"8":-16.1310738162121,"9":-19.0481802106971,"10":-25.4096092061101,"11":-22.2410352336323,"13":-19.7838754171137,"14":-21.132467196936,"15":-22.6624701648267,"16":1260.060387826,"17":-17.7467571510656,"18":8.86753280306401,"19":-11.335372674014,"20":-19.7467571510656,"21":-24.8481802106971,"22":26.0961127113233,"23":5.48182275719367,"24":-20.2167541831749,"25":-18.9396121740008,"26":-18.132467196936,"29":-22.3839347749288,"30":-20.3610471051953,"31":-20.4338902565674,"32":-18.1567482473934,"34":-45.3496032703285,"35":-47.2295913987655,"39":-17.7096388850176,"42":-17.9396121740008,"44":-44.8553251877619,"45":-1.21536080245099,"47":-25.2767601189564,"48":-22.2410352336323,"49":-30.6267452795026,"50":-24.3496032703285,"52":-53.6867512152841,"55":-26.2410352336323,"57":-19.3253222198712,"60":-23.0481802106971,"61":-38.5467571510656,"62":-42.1924731327175,"64":-29.4338902565674,"66":-24.0481802106971,"67":-38.4696151418916,"68":-10.6267452795026,"69":-44.4224464217007,"72":-21.6367957336455,"74":-61.4338902565674,"76":-42.8553251877619,"77":34.8789766379308,"78":0.384698555364137,"79":-27.2410352336323,"80":-51.8553251877619,"81":-37.7353133161989,"87":-46.5539021281305},"effects":{"(Intercept)":-747.466613505302,"height":172.783889465672,"3":-8.91507473191358,"4":21.4194000157428,"5":-29.4427951434848,"6":22.0983868653301,"7":-13.8671619244768,"8":-9.61003251731305,"9":-17.3764020616673,"10":-23.6814442762678,"11":-20.8511909886646,"12":-20.6495024046433,"13":-19.2915287054689,"14":-20.4268242076726,"15":1262.18326022153,"16":-15.3419508514742,"17":10.7084712945311,"18":-3.06634116992954,"19":-17.3419508514742,"20":-23.1764020616673,"21":26.8093155865418,"22":6.75889344053646,"23":-18.2066553492705,"24":-16.8167397784715,"25":-16.2915287054689,"26":-15.3554124487178,"27":-17.3923729974795,"28":-19.3259799156619,"29":-16.936064344863,"30":-44.4108532718603,"31":-47.8696712630454,"32":-12.0343992983051,"33":-15.8167397784715,"34":-42.9016131346699,"35":5.47484083888535,"36":-22.4772463536779,"37":-20.8511909886646,"38":-29.8007688426593,"39":-23.4108532718603,"40":-52.0713598470667,"41":-24.8511909886646,"42":-17.7663176324662,"43":-21.3764020616673,"44":-36.1419508514742,"45":-39.5621197098763,"46":-28.3259799156619,"47":-22.3764020616673,"48":-35.9520352806753,"49":-9.80076884265928,"50":-45.3444601900428,"51":-14.1007923801226,"52":-60.3259799156619,"53":-40.9016131346699,"54":34.6899910201503,"55":-0.819249117040115,"56":-25.8511909886646,"57":-49.9016131346699,"58":-37.360431125855,"59":-43.8671619244768},"rank":2,"fitted.values":{"1":96.0238991602397,"2":92.8310441373045,"3":47.4925028116251,"4":115.181029297851,"5":81.9753370593249,"6":99.8553251877619,"7":91.5539021281305,"8":48.1310738162121,"9":103.048180210697,"10":102.40960920611,"11":106.241035233632,"13":131.783875417114,"14":101.132467196936,"15":96.6624701648267,"16":97.939612174001,"17":94.7467571510656,"18":101.132467196936,"19":28.335372674014,"20":94.7467571510656,"21":103.048180210697,"22":113.903887288677,"23":107.518177242806,"24":99.2167541831749,"25":97.9396121740008,"26":101.132467196936,"29":42.3839347749288,"30":88.3610471051953,"31":109.433890256567,"32":108.156748247393,"34":111.349603270329,"35":129.229591398766,"39":57.7096388850176,"42":97.9396121740008,"44":99.8553251877619,"45":46.215360802451,"47":90.2767601189564,"48":106.241035233632,"49":112.626745279503,"50":111.349603270329,"52":103.686751215284,"55":106.241035233632,"57":104.325322219871,"60":103.048180210697,"61":94.7467571510656,"62":92.1924731327175,"64":109.433890256567,"66":103.048180210697,"67":93.4696151418916,"68":112.626745279503,"69":132.422446421701,"72":36.6367957336455,"74":109.433890256567,"76":99.8553251877619,"77":124.121023362069,"78":135.615301444636,"79":106.241035233632,"80":99.8553251877619,"81":117.735313316199,"87":91.5539021281305},"assign":[0,1],"qr":{"qr":[[-7.68114574786861,-1336.64954904012],[0.130188910980824,270.578977473948],[0.130188910980824,0.287474707506683],[0.130188910980824,-0.104277826225195],[0.130188910980824,0.0879026620206323],[0.130188910980824,-0.0155791393425052],[0.130188910980824,0.0324659827189515],[0.130188910980824,0.283778928886571],[0.130188910980824,-0.0340580324430655],[0.130188910980824,-0.0303622538229534],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.200368070348108],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.00289975375805507],[0.130188910980824,-0.00449180348216904],[0.130188910980824,0.0139870896183912],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.398348066110045],[0.130188910980824,0.0139870896183912],[0.130188910980824,-0.0340580324430655],[0.130188910980824,-0.0968862689849704],[0.130188910980824,-0.0599284827838499],[0.130188910980824,-0.0118833607223932],[0.130188910980824,-0.00449180348216904],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.31704093646758],[0.130188910980824,0.0509448758195118],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0636242614039619],[0.130188910980824,-0.0821031545045222],[0.130188910980824,-0.18558495586766],[0.130188910980824,0.22834224958489],[0.130188910980824,-0.00449180348216904],[0.130188910980824,-0.0155791393425052],[0.130188910980824,0.294866264746907],[0.130188910980824,0.0398575399591756],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0894947117447463],[0.130188910980824,-0.0821031545045222],[0.130188910980824,-0.0377538110631775],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0414495896832896],[0.130188910980824,-0.0340580324430655],[0.130188910980824,0.0139870896183912],[0.130188910980824,0.0287702040988395],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0340580324430655],[0.130188910980824,0.0213786468586153],[0.130188910980824,-0.0894947117447463],[0.130188910980824,-0.20406384896822],[0.130188910980824,0.350302944048588],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0155791393425052],[0.130188910980824,-0.156018726906763],[0.130188910980824,-0.22254274206878],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0155791393425052],[0.130188910980824,-0.119060940705643],[0.130188910980824,0.0324659827189515]],"qraux":[1.13018891098082,1.02507442547873],"pivot":[1,2],"tol":1e-07,"rank":2},"df.residual":57,"na.action":{},"xlevels":{},"call":{},"terms":{},"model":{"mass":[77,75,32,136,49,120,75,32,84,77,84,112,80,74,1358,77,110,17,75,78.2,140,113,79,79,83,20,68,89,90,66,82,40,80,55,45,65,84,82,87,50,80,85,80,56.2,50,80,79,55,102,88,15,48,57,159,136,79,48,80,45],"height":[172,167,96,202,150,178,165,97,183,182,188,228,180,173,175,170,180,66,170,183,200,190,177,175,180,88,160,193,191,196,224,112,175,178,94,163,188,198,196,184,188,185,183,170,166,193,183,168,198,229,79,193,178,216,234,188,178,206,165]}},"options":{"mode":"view","modes":["code","form","text","tree","view"]}},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
 
 As we can see, this `ols1` object has a bunch of important slots... containing everything from the regression coefficients, to vectors of the residuals and fitted (i.e. predicted) values, to the rank of the design matrix, to the input data, etc. etc. To summarise the key pieces of information, we can use the --- *wait for it* --- generic `summary()` function. This will look pretty similar to the default regression output from Stata that many of you will be used to.
 
@@ -196,37 +199,13 @@ glance(ols1)
 
 Our simple model isn't particularly good; our R<sup>2</sup> is only 0.018. Different species and homeworlds aside, we may have an extreme outlier in our midst...
 
-
-```r
-starwars %>%
-  ggplot(aes(x=height, y=mass)) +
-  geom_point(alpha=0.5) +
-  geom_point(
-    data = starwars %>% filter(mass==max(mass, na.rm=T)), 
-    col="red"
-    ) +
-  geom_text(
-    aes(label=name),
-    data = starwars %>% filter(mass==max(mass, na.rm=T)), 
-    col="red", vjust = 0, nudge_y = 25
-    ) +
-  labs(
-    title = "Spot the outlier...",
-    caption = "Aside: Always plot your data!"
-    )
-```
-
-```
-## Warning: Removed 28 rows containing missing values (geom_point).
-```
-
 ![](08-regression_files/figure-html/jabba-1.png)<!-- -->
 
 Maybe we should exclude Jabba from our regression? You can do this in two ways: 1) Create a new data frame and then regress, or 2) Subset the original data frame directly in the `lm()` call.
 
 #### 1) Create a new data frame
 
-Recall that we can keep multiple objects in memory in R. So we can easily create a new data frame that excludes Jabba using `dplyr::filter()`.
+Recall that we can keep multiple objects in memory in R. So we can easily create a new data frame that excludes Jabba using, say, **dplyr** or **data.table**. For these lecture notes, I'll stick with the former commands since that's where our starwars dataset is coming from. But it would be trivial to switch if you prefer the latter.
 
 
 ```r
@@ -335,7 +314,7 @@ tidy(ols1_robust_stata, conf.int = TRUE)
 ## 2  0.8111055 57    mass
 ```
 
-**estimatr** also supports (robust) instrumental variable regression and clustered standard errors. I'm actually going to hold off discussing these issues until we get to the relevant sections below. But here's a quick example of the latter just to illustrate:
+**estimatr** also supports (robust) instrumental variable regression and clustered standard errors. I'm going to hold off discussing these two issues until we get to the more relevant sections below (see: [here](#High_dimensional_FEs_and_multiway_clustering) and [here](#Instrumental_variables)). But here's a quick example of the latter just to illustrate:
 
 
 ```r
@@ -659,7 +638,7 @@ ols_hdfe
 
 #### Comparing our model coefficients
 
-**fixest** provides an inbuilt `coefplot()` function for plotting estimation results. This is especially useful for tracing the evolution of treatment effects over time. (Take a look [here](https://cran.r-project.org/web/packages/fixest/vignettes/fixest_walkthrough.html#23_adding_interactions:_yearly_treatment_effect.) When it comes to comparing coefficients across models, however, I personally prefer to do this "manually" with **ggplot2**. Consider the below example, which leverages the fact that we have saved (or can save) regression models as data frames with `broom::tidy()`.
+**fixest** provides an inbuilt `coefplot()` function for plotting estimation results. This is especially useful for tracing the evolution of treatment effects over time. (Take a look [here](https://cran.r-project.org/web/packages/fixest/vignettes/fixest_walkthrough.html#23_adding_interactions:_yearly_treatment_effect).) When it comes to comparing coefficients across models, however, I personally prefer to do this "manually" with **ggplot2**. Consider the below example, which leverages the fact that we have saved (or can save) regression models as data frames with `broom::tidy()`.
 
 
 ```r
@@ -1101,27 +1080,27 @@ summary(bayes_reg)
 ## 
 ## Estimates:
 ##                          mean   sd     10%    50%    90% 
-## (Intercept)             -65.8   74.5 -158.6  -65.6   28.3
-## gendermasculine          -0.3   10.8   -7.6    0.1    7.8
+## (Intercept)             -67.7   76.7 -163.7  -68.7   30.1
+## gendermasculine           0.2    9.6   -6.4    0.0    7.0
 ## height                    0.8    0.5    0.2    0.8    1.4
 ## gendermasculine:height    0.1    0.1   -0.1    0.1    0.2
-## sigma                    15.9    2.7   12.8   15.5   19.5
+## sigma                    15.8    2.6   12.7   15.5   19.2
 ## 
 ## Fit Diagnostics:
 ##            mean   sd   10%   50%   90%
-## mean_PPD 82.6    5.0 76.4  82.7  89.0 
+## mean_PPD 82.5    4.9 76.5  82.5  88.6 
 ## 
 ## The mean_ppd is the sample average posterior predictive distribution of the outcome variable (for details see help('summary.stanreg')).
 ## 
 ## MCMC diagnostics
 ##                        mcse Rhat n_eff
-## (Intercept)            1.6  1.0  2239 
-## gendermasculine        0.4  1.0   908 
-## height                 0.0  1.0  2140 
-## gendermasculine:height 0.0  1.0  1167 
-## sigma                  0.1  1.0  2381 
-## mean_PPD               0.1  1.0  3015 
-## log-posterior          0.0  1.0  1373 
+## (Intercept)            1.8  1.0  1884 
+## gendermasculine        0.4  1.0   702 
+## height                 0.0  1.0  1826 
+## gendermasculine:height 0.0  1.0  1093 
+## sigma                  0.1  1.0  2001 
+## mean_PPD               0.1  1.0  3341 
+## log-posterior          0.0  1.0  1545 
 ## 
 ## For each parameter, mcse is Monte Carlo standard error, n_eff is a crude measure of effective sample size, and Rhat is the potential scale reduction factor on split chains (at convergence Rhat=1).
 ```
@@ -1153,13 +1132,15 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#ykllpknaij .gt_table {
+#wozkrkaiiu .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
   margin-right: auto;
   color: #333333;
   font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
   background-color: #FFFFFF;
   width: auto;
   border-top-style: solid;
@@ -1176,7 +1157,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   border-left-color: #D3D3D3;
 }
 
-#ykllpknaij .gt_heading {
+#wozkrkaiiu .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1188,7 +1169,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   border-right-color: #D3D3D3;
 }
 
-#ykllpknaij .gt_title {
+#wozkrkaiiu .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1198,7 +1179,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   border-bottom-width: 0;
 }
 
-#ykllpknaij .gt_subtitle {
+#wozkrkaiiu .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1208,13 +1189,13 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   border-top-width: 0;
 }
 
-#ykllpknaij .gt_bottom_border {
+#wozkrkaiiu .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#ykllpknaij .gt_col_headings {
+#wozkrkaiiu .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1229,7 +1210,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   border-right-color: #D3D3D3;
 }
 
-#ykllpknaij .gt_col_heading {
+#wozkrkaiiu .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1249,7 +1230,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   overflow-x: hidden;
 }
 
-#ykllpknaij .gt_column_spanner_outer {
+#wozkrkaiiu .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1261,15 +1242,15 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   padding-right: 4px;
 }
 
-#ykllpknaij .gt_column_spanner_outer:first-child {
+#wozkrkaiiu .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#ykllpknaij .gt_column_spanner_outer:last-child {
+#wozkrkaiiu .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#ykllpknaij .gt_column_spanner {
+#wozkrkaiiu .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1281,7 +1262,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   width: 100%;
 }
 
-#ykllpknaij .gt_group_heading {
+#wozkrkaiiu .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1303,7 +1284,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   vertical-align: middle;
 }
 
-#ykllpknaij .gt_empty_group_heading {
+#wozkrkaiiu .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1318,19 +1299,15 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   vertical-align: middle;
 }
 
-#ykllpknaij .gt_striped {
-  background-color: rgba(128, 128, 128, 0.05);
-}
-
-#ykllpknaij .gt_from_md > :first-child {
+#wozkrkaiiu .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#ykllpknaij .gt_from_md > :last-child {
+#wozkrkaiiu .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#ykllpknaij .gt_row {
+#wozkrkaiiu .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1349,7 +1326,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   overflow-x: hidden;
 }
 
-#ykllpknaij .gt_stub {
+#wozkrkaiiu .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1361,7 +1338,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   padding-left: 12px;
 }
 
-#ykllpknaij .gt_summary_row {
+#wozkrkaiiu .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1371,7 +1348,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   padding-right: 5px;
 }
 
-#ykllpknaij .gt_first_summary_row {
+#wozkrkaiiu .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1381,7 +1358,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   border-top-color: #D3D3D3;
 }
 
-#ykllpknaij .gt_grand_summary_row {
+#wozkrkaiiu .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1391,7 +1368,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   padding-right: 5px;
 }
 
-#ykllpknaij .gt_first_grand_summary_row {
+#wozkrkaiiu .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1401,7 +1378,11 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   border-top-color: #D3D3D3;
 }
 
-#ykllpknaij .gt_table_body {
+#wozkrkaiiu .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#wozkrkaiiu .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1410,7 +1391,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   border-bottom-color: #D3D3D3;
 }
 
-#ykllpknaij .gt_footnotes {
+#wozkrkaiiu .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1424,13 +1405,13 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   border-right-color: #D3D3D3;
 }
 
-#ykllpknaij .gt_footnote {
+#wozkrkaiiu .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#ykllpknaij .gt_sourcenotes {
+#wozkrkaiiu .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1444,46 +1425,46 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   border-right-color: #D3D3D3;
 }
 
-#ykllpknaij .gt_sourcenote {
+#wozkrkaiiu .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#ykllpknaij .gt_left {
+#wozkrkaiiu .gt_left {
   text-align: left;
 }
 
-#ykllpknaij .gt_center {
+#wozkrkaiiu .gt_center {
   text-align: center;
 }
 
-#ykllpknaij .gt_right {
+#wozkrkaiiu .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#ykllpknaij .gt_font_normal {
+#wozkrkaiiu .gt_font_normal {
   font-weight: normal;
 }
 
-#ykllpknaij .gt_font_bold {
+#wozkrkaiiu .gt_font_bold {
   font-weight: bold;
 }
 
-#ykllpknaij .gt_font_italic {
+#wozkrkaiiu .gt_font_italic {
   font-style: italic;
 }
 
-#ykllpknaij .gt_super {
+#wozkrkaiiu .gt_super {
   font-size: 65%;
 }
 
-#ykllpknaij .gt_footnote_marks {
+#wozkrkaiiu .gt_footnote_marks {
   font-style: italic;
   font-size: 65%;
 }
 </style>
-<div id="ykllpknaij" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
+<div id="wozkrkaiiu" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
   
   <thead class="gt_col_headings">
     <tr>
@@ -1608,18 +1589,32 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
       <td class="gt_row gt_left">-188.552</td>
     </tr>
     <tr>
-      <td class="gt_row gt_left">FE ×   homeworld</td>
+      <td class="gt_row gt_left">F</td>
+      <td class="gt_row gt_left">7.587</td>
+      <td class="gt_row gt_left">4.801</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">FE:  homeworld</td>
       <td class="gt_row gt_left"></td>
       <td class="gt_row gt_left"></td>
       <td class="gt_row gt_left"></td>
       <td class="gt_row gt_left">X</td>
     </tr>
     <tr>
-      <td class="gt_row gt_left">FE ×   species</td>
+      <td class="gt_row gt_left">FE:  species</td>
       <td class="gt_row gt_left"></td>
       <td class="gt_row gt_left"></td>
       <td class="gt_row gt_left">X</td>
       <td class="gt_row gt_left">X</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">Std. errors</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">Clustered (species)</td>
+      <td class="gt_row gt_left">Two-way (species &amp; homeworld)</td>
     </tr>
   </tbody>
   
@@ -1643,13 +1638,15 @@ datasummary_balance(~ gender,
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#nqftesesrs .gt_table {
+#mpqiurobyt .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
   margin-right: auto;
   color: #333333;
   font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
   background-color: #FFFFFF;
   width: auto;
   border-top-style: solid;
@@ -1666,7 +1663,7 @@ datasummary_balance(~ gender,
   border-left-color: #D3D3D3;
 }
 
-#nqftesesrs .gt_heading {
+#mpqiurobyt .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1678,7 +1675,7 @@ datasummary_balance(~ gender,
   border-right-color: #D3D3D3;
 }
 
-#nqftesesrs .gt_title {
+#mpqiurobyt .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1688,7 +1685,7 @@ datasummary_balance(~ gender,
   border-bottom-width: 0;
 }
 
-#nqftesesrs .gt_subtitle {
+#mpqiurobyt .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1698,13 +1695,13 @@ datasummary_balance(~ gender,
   border-top-width: 0;
 }
 
-#nqftesesrs .gt_bottom_border {
+#mpqiurobyt .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#nqftesesrs .gt_col_headings {
+#mpqiurobyt .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1719,7 +1716,7 @@ datasummary_balance(~ gender,
   border-right-color: #D3D3D3;
 }
 
-#nqftesesrs .gt_col_heading {
+#mpqiurobyt .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1739,7 +1736,7 @@ datasummary_balance(~ gender,
   overflow-x: hidden;
 }
 
-#nqftesesrs .gt_column_spanner_outer {
+#mpqiurobyt .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1751,15 +1748,15 @@ datasummary_balance(~ gender,
   padding-right: 4px;
 }
 
-#nqftesesrs .gt_column_spanner_outer:first-child {
+#mpqiurobyt .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#nqftesesrs .gt_column_spanner_outer:last-child {
+#mpqiurobyt .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#nqftesesrs .gt_column_spanner {
+#mpqiurobyt .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1771,7 +1768,7 @@ datasummary_balance(~ gender,
   width: 100%;
 }
 
-#nqftesesrs .gt_group_heading {
+#mpqiurobyt .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1793,7 +1790,7 @@ datasummary_balance(~ gender,
   vertical-align: middle;
 }
 
-#nqftesesrs .gt_empty_group_heading {
+#mpqiurobyt .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1808,19 +1805,15 @@ datasummary_balance(~ gender,
   vertical-align: middle;
 }
 
-#nqftesesrs .gt_striped {
-  background-color: rgba(128, 128, 128, 0.05);
-}
-
-#nqftesesrs .gt_from_md > :first-child {
+#mpqiurobyt .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#nqftesesrs .gt_from_md > :last-child {
+#mpqiurobyt .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#nqftesesrs .gt_row {
+#mpqiurobyt .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1839,7 +1832,7 @@ datasummary_balance(~ gender,
   overflow-x: hidden;
 }
 
-#nqftesesrs .gt_stub {
+#mpqiurobyt .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1851,7 +1844,7 @@ datasummary_balance(~ gender,
   padding-left: 12px;
 }
 
-#nqftesesrs .gt_summary_row {
+#mpqiurobyt .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1861,7 +1854,7 @@ datasummary_balance(~ gender,
   padding-right: 5px;
 }
 
-#nqftesesrs .gt_first_summary_row {
+#mpqiurobyt .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1871,7 +1864,7 @@ datasummary_balance(~ gender,
   border-top-color: #D3D3D3;
 }
 
-#nqftesesrs .gt_grand_summary_row {
+#mpqiurobyt .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1881,7 +1874,7 @@ datasummary_balance(~ gender,
   padding-right: 5px;
 }
 
-#nqftesesrs .gt_first_grand_summary_row {
+#mpqiurobyt .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1891,7 +1884,11 @@ datasummary_balance(~ gender,
   border-top-color: #D3D3D3;
 }
 
-#nqftesesrs .gt_table_body {
+#mpqiurobyt .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#mpqiurobyt .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1900,7 +1897,7 @@ datasummary_balance(~ gender,
   border-bottom-color: #D3D3D3;
 }
 
-#nqftesesrs .gt_footnotes {
+#mpqiurobyt .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1914,13 +1911,13 @@ datasummary_balance(~ gender,
   border-right-color: #D3D3D3;
 }
 
-#nqftesesrs .gt_footnote {
+#mpqiurobyt .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#nqftesesrs .gt_sourcenotes {
+#mpqiurobyt .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1934,46 +1931,46 @@ datasummary_balance(~ gender,
   border-right-color: #D3D3D3;
 }
 
-#nqftesesrs .gt_sourcenote {
+#mpqiurobyt .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#nqftesesrs .gt_left {
+#mpqiurobyt .gt_left {
   text-align: left;
 }
 
-#nqftesesrs .gt_center {
+#mpqiurobyt .gt_center {
   text-align: center;
 }
 
-#nqftesesrs .gt_right {
+#mpqiurobyt .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#nqftesesrs .gt_font_normal {
+#mpqiurobyt .gt_font_normal {
   font-weight: normal;
 }
 
-#nqftesesrs .gt_font_bold {
+#mpqiurobyt .gt_font_bold {
   font-weight: bold;
 }
 
-#nqftesesrs .gt_font_italic {
+#mpqiurobyt .gt_font_italic {
   font-style: italic;
 }
 
-#nqftesesrs .gt_super {
+#mpqiurobyt .gt_super {
   font-size: 65%;
 }
 
-#nqftesesrs .gt_footnote_marks {
+#mpqiurobyt .gt_footnote_marks {
   font-style: italic;
   font-size: 65%;
 }
 </style>
-<div id="nqftesesrs" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
+<div id="mpqiurobyt" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
   
   <thead class="gt_col_headings">
     <tr>
@@ -2369,17 +2366,15 @@ modelplot(mods) +
 
 ![](08-regression_files/figure-html/modplot-1.png)<!-- -->
 
-#### Model validation and prediction
+#### Prediction and model validation
 
-The easiest way to visually inspect model performance (i.e. validation and prediction) is with **ggplot2**. In particular, you should already be familiar with `geom_smooth()` from our earlier lectures. For instance,
+The easiest way to visually inspect model performance (i.e. validation and prediction) is with **ggplot2**. In particular, you should already be familiar with `geom_smooth()` from our earlier lectures, which allows you to feed a model type directly in the plot call. For instance, using our `starwars2` data frame that excludes that slimy outlier, Jabba the Hutt:
 
 
 ```r
-humans %>%
-  ggplot(aes(x = mass, y = height, col = gender)) + 
-  geom_point(alpha = 0.7) +
-  geom_smooth(method = "lm", se = FALSE) + ## See ?geom_smooth for other methods
-  scale_color_brewer(palette = "Set1")
+ggplot(starwars2, aes(x = height, y = mass)) + 
+    geom_point(alpha = 0.7) +
+    geom_smooth(method = "lm") ## See ?geom_smooth for other methods/options
 ```
 
 ```
@@ -2388,7 +2383,71 @@ humans %>%
 
 ![](08-regression_files/figure-html/smooth-1.png)<!-- -->
 
-For further reference on data visualization with models, I highly encourage you to look over Chapter 6 of Kieran Healy's [*Data Visualization: A Practical Guide*](https://socviz.co/modeling.html). You will not only learn how to produce beautiful and effective model visualizations, but also pick up a variety of technical tips. I recommend that you pay particular attention attention to the section on [generating and plotting predictions](https://socviz.co/modeling.html#generate-predictions-to-graph), since that will form part of your next assignment.
+Now, I should say that `geom_smooth()` isn't particularly helpful when you've already constructed a (potentially complicated) model outside of the plot call. Similarly, it's not useful when you want to use a model for making predictions on a *new* dataset (e.g. evaluating out-of-sample fit). 
+
+The good news is that the generic `predict()` function in base R has you covered. For example, let's say that we want to re-estimate our simple `` bivariate regression of mass on height from earlier.^[I'm sticking to a bivariate regression model for these examples because we're going to be evaluating a 2D plot below.] This time, however, we'll estimate our model on a training dataset that only consists of the first 30 characters ranked by height. Here's how you would do it.
+
+
+```r
+## Estimate a model on a training sample of the data (shortest 30 characters)
+ols1_train = lm(mass ~ height, data = starwars %>% filter(rank(height) <=30))
+
+## Use our model to predict the mass for all starwars characters (excl. Jabba).
+## Note that I'm including a 95% prediction interval. See ?predict.lm for other
+## intervals and options.
+predict(ols1_train, newdata = starwars2, interval = "prediction") %>%
+  head(5) ## Just print the first few rows
+```
+
+```
+##        fit       lwr       upr
+## 1 68.00019 46.307267  89.69311
+## 2 65.55178 43.966301  87.13725
+## 3 30.78434  8.791601  52.77708
+## 4 82.69065 60.001764 105.37954
+## 5 57.22718 35.874679  78.57968
+```
+
+Hopefully, you can already see how the above data frame could easily be combined with the original data in a **ggplot2** call. (I encourage you to try it yourself before continuing.) At the same time, it is perhaps a minor annoyance to have to combine the original and predicted datasets before plotting. If this describes your thinking, then there's even more good news because the **broom** package does more than tidy statistical models. It also ships the `augment()` function, which provides a convenient way to append model predictions to your dataset. Note that `augment()` accepts exactly the same arguments as `predict()`, although the appended variable names are slightly different.^[Specifically, we' re adding ".fitted", ".resid", ".conf.low", and ".conf.high" columns to our data frame. The convention adopted by `augment()` is to always prefix added variables with a "." to avoid overwriting existing variables.]
+
+
+```r
+## Alternative to predict(): Use augment() to add .fitted and .resid, as well as 
+## .conf.low and .conf.high prediction interval variables to the data.
+starwars2 = augment(ols1_train, newdata = starwars2, interval = "prediction")
+## Show the new variables (all have a "." prefix)
+starwars2 %>% select(contains("."), everything()) %>% head()
+```
+
+```
+## # A tibble: 6 x 18
+##   .fitted .conf.low .conf.high .resid name  height  mass hair_color skin_color
+##     <dbl>     <dbl>      <dbl>  <dbl> <chr>  <int> <dbl> <chr>      <chr>     
+## 1    68.0     46.3        89.7   9.00 Luke…    172    77 blond      fair      
+## 2    65.6     44.0        87.1   9.45 C-3PO    167    75 <NA>       gold      
+## 3    30.8      8.79       52.8   1.22 R2-D2     96    32 <NA>       white, bl…
+## 4    82.7     60.0       105.   53.3  Dart…    202   136 none       white     
+## 5    57.2     35.9        78.6  -8.23 Leia…    150    49 brown      light     
+## 6    70.9     49.1        92.8  49.1  Owen…    178   120 brown, gr… light     
+## # … with 9 more variables: eye_color <chr>, birth_year <dbl>, sex <chr>,
+## #   gender <chr>, homeworld <chr>, species <chr>, films <list>,
+## #   vehicles <list>, starships <list>
+```
+
+We can now see how well our model --- again, only estimated on the shortest 30 characters --- performs against all of the data.
+
+
+```r
+## Alternative to predict(): Use augment() to add .fitted and .resid, as well as 
+## .conf.low and .conf.high prediction interval variables to the data.
+ggplot(starwars2, aes(x = height, y = mass, col = rank(height)<=30, fill = rank(height)<=30)) +
+  geom_point() +
+  geom_line(aes(y = .fitted)) +
+  geom_ribbon(aes(ymin = .conf.low, ymax = .conf.high), alpha = 0.3) +
+  scale_color_discrete(name = "Training sample?", aesthetics = c("colour", "fill"))
+```
+
+![](08-regression_files/figure-html/augment2-1.png)<!-- -->
 
 ## Further resources
 
@@ -2397,3 +2456,4 @@ For further reference on data visualization with models, I highly encourage you 
 - [Tyler Ransom](https://twitter.com/tyleransom) has a nice [cheat sheet](https://github.com/tyleransom/EconometricsLabs/blob/master/tidyRcheatsheet.pdf) for common regression tasks and specifications.
 - [Itamar Caspi](https://twitter.com/itamarcaspi) has written a neat unofficial appendix to this lecture, [*recipes for Dummies*](https://itamarcaspi.rbind.io/post/recipes-for-dummies/). The title might be a little inscrutable if you haven't heard of the `recipes` package before, but basically it handles "tidy" data preprocessing, which is an especially important topic for machine learning methods. We'll get to that later in course, but check out Itamar's post for a good introduction.
 - I promised to provide some links to time series analysis. The good news is that R's support for time series is very, very good. The [Time Series Analysis](https://cran.r-project.org/web/views/TimeSeries.html) task view on CRAN offers an excellent overview of available packages and their functionality.
+- Lastly, for more on visualizing regression output, I highly encourage you to look over Chapter 6 of Kieran Healy's [*Data Visualization: A Practical Guide*](https://socviz.co/modeling.html). Not only will learn how to produce beautiful and effective model visualizations, but you'll also pick up a variety of technical tips.

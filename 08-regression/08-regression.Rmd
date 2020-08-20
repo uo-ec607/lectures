@@ -28,15 +28,24 @@ Today's lecture is about the bread-and-butter tool of applied econometrics and d
 
 It's important to note that "base" R already provides all of the tools we need for basic regression analysis. However, we'll be using several external packages today, because they will make our lives easier and offer increased power for some more sophisticated analyses.
 
-- New: **broom**, **estimatr**, **fixest**, **sandwich**, **lmtest**, **AER**, **lfe**, **margins**, **modelsummary**, **vt**
+- New: **broom**, **estimatr**, **fixest**, **sandwich**, **lmtest**, **AER**, **lfe**, **margins**, **modelsummary**, **vtable**
 - Already used: **tidyverse**, **hrbrthemes**, **listviewer**
 
-The **broom** package was bundled with the rest of tidyverse and **sandwich** should get installed as a dependency of several of the above packages. Still, a convenient way to install (if necessary) and load everything is by running the below code chunk. 
+A convenient way to install (if necessary) and load everything is by running the below code chunk. Note that I'm opting for the development versions of **broom** and **modelsummary** because these contain a few features that aren't available in the respective CRAN releases at the time of writing.
 
-```{r, cache=F, message=F}
+```{r libs_print, cache=FALSE, eval=FALSE}
 ## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(tidyverse, broom, hrbrthemes, estimatr, fixest, sandwich, lmtest, AER, lfe, margins, modelsummary, vtable)
+pacman::p_load(tidyverse, hrbrthemes, estimatr, fixest, sandwich, lmtest, AER, lfe, margins, vtable)
+pacman::p_install_gh("tidymodels/broom") ## Use dev version
+pacman::p_install_gh("vincentarelbundock/modelsummary") ## Use dev version
+## My preferred ggplot2 plotting theme (optional)
+theme_set(hrbrthemes::theme_ipsum())
+```
+```{r libs, cache=FALSE, message=FALSE, echo=FALSE}
+## Load and install the packages that we'll be using today
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, hrbrthemes, estimatr, fixest, sandwich, lmtest, AER, lfe, margins, vtable, broom, modelsummary)
 ## My preferred ggplot2 plotting theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
@@ -54,7 +63,7 @@ starwars
 
 ### The `lm()` function
 
-R's workhorse command for running regression models is the built-in `lm()` function. The "**lm**" stands for "**l**inear **m**odels" and the syntax is very intuitive.^[Indeed, all other regression packages in R that I'm aware of --- including those that allow for much more advanced and flexible models --- closely follow the `lm()` syntax.] 
+R's workhorse command for running regression models is the built-in `lm()` function. The "**lm**" stands for "**l**inear **m**odels" and the syntax is very intuitive.
 
 ```r
 lm(y ~ x1 + x2 + x3 + ..., data = df)
@@ -74,11 +83,11 @@ ols1 = lm(mass ~ height, data = starwars)
 ols1
 ```
 
-The resulting object is pretty terse, but that's only because it buries most of its valuable information --- of which there is a lot --- within its internal list structure. You can use the `str()` function to view this structure. Or, if you want to be fancy, the interactive `listviewer::jsonedit()` function that we saw in the previous lecture is a nice option.
+The resulting object is pretty terse, but that's only because it buries most of its valuable information --- of which there is a lot --- within its internal list structure. If you're in RStudio, you can inspect this structure by typing `View(ols1)` or simply clicking on the "ols1" object in your environment pane. Doing so will prompt an interactive panel to pop up for you to play around with. That approach won't work for this knitted R Markdown document, though so I'll use the `listviewer::jsonedit()` function that we saw in the previous lecture instead.
 
 ```{r ols1_str, message=F, out.width="100%", out.height="10%"}
-# str(ols1) ## Static option
-listviewer::jsonedit(ols1, mode="view") ## Interactive option
+# View(ols1) ## Run this instead if you're in a live session
+listviewer::jsonedit(ols1, mode="view") ## Better for R Markdown
 ```
 
 As we can see, this `ols1` object has a bunch of important slots... containing everything from the regression coefficients, to vectors of the residuals and fitted (i.e. predicted) values, to the rank of the design matrix, to the input data, etc. etc. To summarise the key pieces of information, we can use the --- *wait for it* --- generic `summary()` function. This will look pretty similar to the default regression output from Stata that many of you will be used to.
@@ -117,7 +126,7 @@ glance(ols1)
 
 Our simple model isn't particularly good; our R<sup>2</sup> is only `r I(round(glance(ols1)$r.squared, 3))`. Different species and homeworlds aside, we may have an extreme outlier in our midst...
 
-```{r jabba, message=F}
+```{r jabba, message=FALSE, echo=FALSE, warning=FALSE}
 starwars %>%
   ggplot(aes(x=height, y=mass)) +
   geom_point(alpha=0.5) +
@@ -140,7 +149,7 @@ Maybe we should exclude Jabba from our regression? You can do this in two ways: 
 
 #### 1) Create a new data frame
 
-Recall that we can keep multiple objects in memory in R. So we can easily create a new data frame that excludes Jabba using `dplyr::filter()`.
+Recall that we can keep multiple objects in memory in R. So we can easily create a new data frame that excludes Jabba using, say, **dplyr** or **data.table**. For these lecture notes, I'll stick with the former commands since that's where our starwars dataset is coming from. But it would be trivial to switch if you prefer the latter.
 
 ```{r ols2}
 starwars2 =
@@ -182,7 +191,7 @@ ols1_robust_stata = lm_robust(mass ~ height, data = starwars, se_type = "stata")
 tidy(ols1_robust_stata, conf.int = TRUE)
 ```
 
-**estimatr** also supports (robust) instrumental variable regression and clustered standard errors. I'm actually going to hold off discussing these issues until we get to the relevant sections below. But here's a quick example of the latter just to illustrate:
+**estimatr** also supports (robust) instrumental variable regression and clustered standard errors. I'm going to hold off discussing these two issues until we get to the more relevant sections below (see: [here](#High_dimensional_FEs_and_multiway_clustering) and [here](#Instrumental_variables)). But here's a quick example of the latter just to illustrate:
 
 ```{r ols1_robust_clustered}
 ols1_robust_clustered = lm_robust(mass ~ height, data = starwars, clusters = homeworld)
@@ -311,7 +320,7 @@ ols_hdfe
 
 #### Comparing our model coefficients
 
-**fixest** provides an inbuilt `coefplot()` function for plotting estimation results. This is especially useful for tracing the evolution of treatment effects over time. (Take a look [here](https://cran.r-project.org/web/packages/fixest/vignettes/fixest_walkthrough.html#23_adding_interactions:_yearly_treatment_effect.) When it comes to comparing coefficients across models, however, I personally prefer to do this "manually" with **ggplot2**. Consider the below example, which leverages the fact that we have saved (or can save) regression models as data frames with `broom::tidy()`.
+**fixest** provides an inbuilt `coefplot()` function for plotting estimation results. This is especially useful for tracing the evolution of treatment effects over time. (Take a look [here](https://cran.r-project.org/web/packages/fixest/vignettes/fixest_walkthrough.html#23_adding_interactions:_yearly_treatment_effect).) When it comes to comparing coefficients across models, however, I personally prefer to do this "manually" with **ggplot2**. Consider the below example, which leverages the fact that we have saved (or can save) regression models as data frames with `broom::tidy()`.
 
 ```{r fe_mods_compared}
 ## First get tidied output of the ols_hdfe object
@@ -595,19 +604,52 @@ modelplot(mods) +
   coord_flip() ## You can modify with normal ggplot2 commands
 ```
 
-#### Model validation and prediction
+#### Prediction and model validation
 
-The easiest way to visually inspect model performance (i.e. validation and prediction) is with **ggplot2**. In particular, you should already be familiar with `geom_smooth()` from our earlier lectures. For instance,
+The easiest way to visually inspect model performance (i.e. validation and prediction) is with **ggplot2**. In particular, you should already be familiar with `geom_smooth()` from our earlier lectures, which allows you to feed a model type directly in the plot call. For instance, using our `starwars2` data frame that excludes that slimy outlier, Jabba the Hutt:
 
-```{r smooth, warning=F}
-humans %>%
-  ggplot(aes(x = mass, y = height, col = gender)) + 
-  geom_point(alpha = 0.7) +
-  geom_smooth(method = "lm", se = FALSE) + ## See ?geom_smooth for other methods
-  scale_color_brewer(palette = "Set1")
+```{r smooth, warning=FALSE}
+ggplot(starwars2, aes(x = height, y = mass)) + 
+    geom_point(alpha = 0.7) +
+    geom_smooth(method = "lm") ## See ?geom_smooth for other methods/options
 ```
 
-For further reference on data visualization with models, I highly encourage you to look over Chapter 6 of Kieran Healy's [*Data Visualization: A Practical Guide*](https://socviz.co/modeling.html). You will not only learn how to produce beautiful and effective model visualizations, but also pick up a variety of technical tips. I recommend that you pay particular attention attention to the section on [generating and plotting predictions](https://socviz.co/modeling.html#generate-predictions-to-graph), since that will form part of your next assignment.
+Now, I should say that `geom_smooth()` isn't particularly helpful when you've already constructed a (potentially complicated) model outside of the plot call. Similarly, it's not useful when you want to use a model for making predictions on a *new* dataset (e.g. evaluating out-of-sample fit). 
+
+The good news is that the generic `predict()` function in base R has you covered. For example, let's say that we want to re-estimate our simple `` bivariate regression of mass on height from earlier.^[I'm sticking to a bivariate regression model for these examples because we're going to be evaluating a 2D plot below.] This time, however, we'll estimate our model on a training dataset that only consists of the first 30 characters ranked by height. Here's how you would do it.
+
+```{r predict}
+## Estimate a model on a training sample of the data (shortest 30 characters)
+ols1_train = lm(mass ~ height, data = starwars %>% filter(rank(height) <=30))
+
+## Use our model to predict the mass for all starwars characters (excl. Jabba).
+## Note that I'm including a 95% prediction interval. See ?predict.lm for other
+## intervals and options.
+predict(ols1_train, newdata = starwars2, interval = "prediction") %>%
+  head(5) ## Just print the first few rows
+```
+
+Hopefully, you can already see how the above data frame could easily be combined with the original data in a **ggplot2** call. (I encourage you to try it yourself before continuing.) At the same time, it is perhaps a minor annoyance to have to combine the original and predicted datasets before plotting. If this describes your thinking, then there's even more good news because the **broom** package does more than tidy statistical models. It also ships the `augment()` function, which provides a convenient way to append model predictions to your dataset. Note that `augment()` accepts exactly the same arguments as `predict()`, although the appended variable names are slightly different.^[Specifically, we' re adding ".fitted", ".resid", ".conf.low", and ".conf.high" columns to our data frame. The convention adopted by `augment()` is to always prefix added variables with a "." to avoid overwriting existing variables.]
+
+```{r augment1}
+## Alternative to predict(): Use augment() to add .fitted and .resid, as well as 
+## .conf.low and .conf.high prediction interval variables to the data.
+starwars2 = augment(ols1_train, newdata = starwars2, interval = "prediction")
+## Show the new variables (all have a "." prefix)
+starwars2 %>% select(contains("."), everything()) %>% head()
+```
+
+We can now see how well our model --- again, only estimated on the shortest 30 characters --- performs against all of the data.
+
+```{r augment2, warning=FALSE}
+## Alternative to predict(): Use augment() to add .fitted and .resid, as well as 
+## .conf.low and .conf.high prediction interval variables to the data.
+ggplot(starwars2, aes(x = height, y = mass, col = rank(height)<=30, fill = rank(height)<=30)) +
+  geom_point() +
+  geom_line(aes(y = .fitted)) +
+  geom_ribbon(aes(ymin = .conf.low, ymax = .conf.high), alpha = 0.3) +
+  scale_color_discrete(name = "Training sample?", aesthetics = c("colour", "fill"))
+```
 
 ## Further resources
 
@@ -616,3 +658,4 @@ For further reference on data visualization with models, I highly encourage you 
 - [Tyler Ransom](https://twitter.com/tyleransom) has a nice [cheat sheet](https://github.com/tyleransom/EconometricsLabs/blob/master/tidyRcheatsheet.pdf) for common regression tasks and specifications.
 - [Itamar Caspi](https://twitter.com/itamarcaspi) has written a neat unofficial appendix to this lecture, [*recipes for Dummies*](https://itamarcaspi.rbind.io/post/recipes-for-dummies/). The title might be a little inscrutable if you haven't heard of the `recipes` package before, but basically it handles "tidy" data preprocessing, which is an especially important topic for machine learning methods. We'll get to that later in course, but check out Itamar's post for a good introduction.
 - I promised to provide some links to time series analysis. The good news is that R's support for time series is very, very good. The [Time Series Analysis](https://cran.r-project.org/web/views/TimeSeries.html) task view on CRAN offers an excellent overview of available packages and their functionality.
+- Lastly, for more on visualizing regression output, I highly encourage you to look over Chapter 6 of Kieran Healy's [*Data Visualization: A Practical Guide*](https://socviz.co/modeling.html). Not only will learn how to produce beautiful and effective model visualizations, but you'll also pick up a variety of technical tips.
