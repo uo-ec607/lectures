@@ -26,7 +26,7 @@ Today's lecture is about the bread-and-butter tool of applied econometrics and d
 
 It's important to note that "base" R already provides all of the tools we need for basic regression analysis. However, we'll be using several external packages today, because they will make our lives easier and offer increased power for some more sophisticated analyses.
 
-- New: **broom**, **estimatr**, **fixest**, **sandwich**, **lmtest**, **AER**, **lfe**, **margins**, **modelsummary**, **vtable**
+- New: **broom**, **estimatr**, **fixest**, **sandwich**, **lmtest**, **AER**, **lfe**, **mfx**, **margins**, **modelsummary**, **vtable**
 - Already used: **tidyverse**, **hrbrthemes**, **listviewer**
 
 A convenient way to install (if necessary) and load everything is by running the below code chunk. Note that I'm opting for the development versions of **broom** and **modelsummary** because these contain a few features that aren't available in the respective CRAN releases at the time of writing.
@@ -35,7 +35,7 @@ A convenient way to install (if necessary) and load everything is by running the
 ```r
 ## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(tidyverse, hrbrthemes, estimatr, fixest, sandwich, lmtest, AER, lfe, margins, vtable)
+pacman::p_load(mfx, tidyverse, hrbrthemes, estimatr, fixest, sandwich, lmtest, AER, lfe, margins, vtable)
 pacman::p_install_gh("tidymodels/broom") ## Use dev version
 pacman::p_install_gh("vincentarelbundock/modelsummary") ## Use dev version
 ## My preferred ggplot2 plotting theme (optional)
@@ -279,7 +279,11 @@ The overall model fit is much improved by the exclusion of this outlier, with R<
 
 Dealing with statistical irregularities (heteroskedasticity, clustering, etc.) is a fact of life for empirical researchers. However, it says something about the economics profession that a random stranger could walk uninvited into a live seminar and ask, "How did you cluster your standard errors?", and it would likely draw approving nods from audience members. 
 
-The good news is that there are *lots* of ways to get nonstandard errors in R. For many years, these have been based on the excellent **sandwich** package ([link](https://cran.r-project.org/web/packages/sandwich/index.html)). However, my preferred way these days is to use the **estimatr** package ([link](https://declaredesign.org/r/estimatr/articles/getting-started.html)), which is both fast and provides convenient aliases for the standard regression functions. For example, you can obtain robust standard errors using `estimatr::lm_robust()`. Let's illustrate by implementing a robust version of the `ols1` regression that we ran earlier.
+The good news is that there are *lots* of ways to get nonstandard errors in R. For many years, these have been based on the excellent **sandwich** package ([link](https://cran.r-project.org/web/packages/sandwich/index.html)). However, my preferred way these days is to use the **estimatr** package ([link](https://declaredesign.org/r/estimatr/articles/getting-started.html)), which is both fast and provides convenient aliases for the standard regression functions. Some examples follow below. 
+
+### Robust standard errors
+
+You can obtain heteroskedasticity-consistent (HC) "robust" standard errors using `estimatr::lm_robust()`. Let's illustrate by implementing a robust version of the `ols1` regression that we ran earlier.
 
 
 ```r
@@ -314,35 +318,11 @@ tidy(ols1_robust_stata, conf.int = TRUE)
 ## 2  0.8111055 57    mass
 ```
 
-**estimatr** also supports (robust) instrumental variable regression and clustered standard errors. I'm going to hold off discussing these two issues until we get to the more relevant sections below (see: [here](#high-dimensional-fes-and-multiway-clustering) and [here](#instrumental-variables)). But here's a quick example of the latter just to illustrate:
+**estimatr** also supports robust instrumental variable (IV) regression. I'm going to hold off discussing these until we get to the [IV section](#instrumental-variables) below. 
 
+#### Aside on HAC (Newey-West) standard errors
 
-```r
-ols1_robust_clustered = lm_robust(mass ~ height, data = starwars, clusters = homeworld)
-```
-
-```
-## Warning in eval(quote({: Some observations have missingness in the cluster
-## variable(s) but not in the outcome or covariates. These observations have been
-## dropped.
-```
-
-```r
-tidy(ols1_robust_clustered, conf.int = TRUE)
-```
-
-```
-##          term   estimate   std.error  statistic      p.value    conf.low
-## 1 (Intercept) -9.3014938 28.84436408 -0.3224718 0.7559158751 -76.6200628
-## 2      height  0.6134058  0.09911832  6.1886211 0.0002378887   0.3857824
-##    conf.high       df outcome
-## 1 58.0170751 7.486034    mass
-## 2  0.8410291 8.195141    mass
-```
-
-### Aside on HAC (Newey-West) standard errors
-
-On thing I want to flag is that **estimatr** does not yet offer support for HAC (i.e. heteroskedasticity and autocorrelation consistent) standard errors *a la* [Newey-West](https://en.wikipedia.org/wiki/Newey%E2%80%93West_estimator). I've submitted a [feature request](https://github.com/DeclareDesign/estimatr/issues/272) on GitHub --- vote up if you would like to see it added sooner! --- but you can still obtain these pretty easily using the aforementioned **sandwich** package. For example, we can use `sandwich::NeweyWest()` on our existing `ols1` object to obtain HAC SEs for it.
+On thing I want to flag is that **estimatr** does not yet offer support for heteroskedasticity and autocorrelation consistent (HAC) standard errors *a la* [Newey-West](https://en.wikipedia.org/wiki/Newey%E2%80%93West_estimator). I've submitted a [feature request](https://github.com/DeclareDesign/estimatr/issues/272) on GitHub --- vote up if you would like to see it added sooner! --- but you can still obtain these pretty easily using the aforementioned **sandwich** package. For example, we can use `sandwich::NeweyWest()` on our existing `ols1` object to obtain HAC SEs for it.
 
 
 ```r
@@ -398,6 +378,34 @@ tidy(ols1_hac, conf.int = TRUE)
 ##   <chr>          <dbl>     <dbl>     <dbl>    <dbl>    <dbl>     <dbl>
 ## 1 (Intercept)  -13.8     21.3       -0.649 5.19e- 1  -56.4      28.8  
 ## 2 height         0.639    0.0774     8.25  2.67e-11    0.484     0.794
+```
+
+### Clustered standard errors
+
+Clustered standard errors is an issue that most commonly affects panel data. As such, I'm going to hold off discussing clustering until we get to the [panel data section](#high-dimensional-fes-and-multiway-clustering) below. But here's a quick example of clustering with `estimatr::lm_robust()` just to illustrate:
+
+
+```r
+ols1_robust_clustered = lm_robust(mass ~ height, data = starwars, clusters = homeworld)
+```
+
+```
+## Warning in eval(quote({: Some observations have missingness in the cluster
+## variable(s) but not in the outcome or covariates. These observations have been
+## dropped.
+```
+
+```r
+tidy(ols1_robust_clustered, conf.int = TRUE)
+```
+
+```
+##          term   estimate   std.error  statistic      p.value    conf.low
+## 1 (Intercept) -9.3014938 28.84436408 -0.3224718 0.7559158751 -76.6200628
+## 2      height  0.6134058  0.09911832  6.1886211 0.0002378887   0.3857824
+##    conf.high       df outcome
+## 1 58.0170751 7.486034    mass
+## 2  0.8410291 8.195141    mass
 ```
 
 ## Dummy variables and interaction terms
@@ -673,9 +681,9 @@ First, if you're coming from another statistical language or package, adjusting 
 
 Second, reconciling standard errors across different software is a much more complicated process than you may realise. There are a number of unresolved theoretical issues to consider --- especially when it comes to multiway clustering --- and package maintainers have to make a number of arbitrary decisions about the best way to account for these. (See [here](https://github.com/sgaure/lfe/issues/1#issuecomment-530643808) for a detailed discussion.) Luckily, Laurent has taken the time to write out a [detailed vignette](https://cran.r-project.org/web/packages/fixest/vignettes/standard_errors.html) about how to replicate standard errors from other methods and software packages (including Stata's **reghdfe**).^[If you want a deep dive into the theory with even more simulations, then [this paper](https://cran.r-project.org/web/packages/sandwich/vignettes/sandwich-CL.pdf) by the authors of the **sandwich** paper is another excellent resource.]
 
-### Random effects
+### Random and mixed effects
 
-Fixed effects models are more common than random effects models in economics (in my experience, anyway). I'd also advocate for [Bayesian hierachical models](http://www.stat.columbia.edu/~gelman/arm/) if we're going down the whole random effects path. However, it's still good to know that R has you covered for random effects models through the **plm** ([link](https://cran.r-project.org/web/packages/plm/)) and **nlme** ([link](https://cran.r-project.org/web/packages/nlme/index.html)) packages.^[As I mentioned above, **plm** also handles fixed effects (and pooling) models. However, I prefer **fixest** and **lfe** for the reasons already discussed.] I won't go into detail , but click on those links (especially the first one) if you would like to see some examples.
+Fixed effects models are more common than random or mixed effects models in economics (in my experience, anyway). I'd also advocate for [Bayesian hierachical models](http://www.stat.columbia.edu/~gelman/arm/) if we're going down the whole random effects path. However, it's still good to know that R has you covered for random effects models through the **plm** ([link](https://cran.r-project.org/web/packages/plm/)) and **nlme** ([link](https://cran.r-project.org/web/packages/nlme/index.html)) packages.^[As I mentioned above, **plm** also handles fixed effects (and pooling) models. However, I prefer **fixest** and **lfe** for the reasons already discussed.] I won't go into detail , but click on those links if you would like to see some examples.
 
 ## Instrumental variables
 
@@ -904,9 +912,127 @@ summary(iv_felm_all)
 ## F-statistic(endog. vars):49.33 on 1 and 45 DF, p-value: 9.399e-09
 ```
 
-## Other topics
+## Other models
 
-### Marginal effects
+### Generalised linear models (logit, etc.)
+
+To run a generalised linear model (GLM), we use the in-built `glm()` function and simply assign an appropriate [family](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/family.html) (which describes the error distribution and corresponding link function). For example, here's a simple logit model.
+
+
+```r
+glm_logit = glm(am ~ cyl + hp + wt, data = mtcars, family = binomial)
+tidy(glm_logit, conf.int = TRUE)
+```
+
+```
+## # A tibble: 4 x 7
+##   term        estimate std.error statistic p.value  conf.low conf.high
+##   <chr>          <dbl>     <dbl>     <dbl>   <dbl>     <dbl>     <dbl>
+## 1 (Intercept)  19.7       8.12       2.43   0.0152   8.56      44.3   
+## 2 cyl           0.488     1.07       0.455  0.649   -1.53       3.12  
+## 3 hp            0.0326    0.0189     1.73   0.0840   0.00332    0.0884
+## 4 wt           -9.15      4.15      -2.20   0.0276 -21.4       -3.48
+```
+
+Remember that the estimates above simply reflect the naive coefficient values, which enter multiplicatively via the link function. We'll get a dedicated section on [marginal effects](#marginal-effects) in a moment. But I do want to flag the **mfx** package ([link](https://cran.r-project.org/web/packages/mfx/vignettes/mfxarticle.pdf)), which provides convenient aliases for a variety of GLMs. For example,
+
+
+```r
+# library(mfx) ## Already loaded
+## Be careful: mfx loads the MASS package, which produces a namespace conflict
+## with dplyr for select(). You probably want to be explicit about which one you 
+## want, e.g. `select = dplyr::select`
+
+## Get marginal effects for the above logit model
+glm_logitmfx = logitmfx(glm_logit, atmean = TRUE, data = mtcars)
+## Could also plug in the original formula directly
+# glm_logitmfx = logitmfx(am ~ cyl + hp + wt, atmean = TRUE, data = mtcars)
+tidy(glm_logitmfx, conf.int = TRUE)
+```
+
+```
+## # A tibble: 3 x 8
+##   term  atmean estimate std.error statistic p.value conf.low conf.high
+##   <chr> <lgl>     <dbl>     <dbl>     <dbl>   <dbl>    <dbl>     <dbl>
+## 1 cyl   TRUE    0.0538    0.113       0.475   0.635 -0.178     0.286  
+## 2 hp    TRUE    0.00359   0.00290     1.24    0.216 -0.00236   0.00954
+## 3 wt    TRUE   -1.01      0.668      -1.51    0.131 -2.38      0.359
+```
+
+
+### Bayesian regression
+
+We could spend a whole course on Bayesian models. The very, very short version is that R offers outstanding support for Bayesian models and data analysis. You will find convenient interfaces to all of the major MCMC and Bayesian software engines: [Stan](https://mc-stan.org/users/interfaces/rstan), [JAGS](http://mcmc-jags.sourceforge.net/), TensorFlow (via [Greta](https://greta-stats.org/)), etc. Here follows a *super* simple example using the **rstanarm** package ([link](http://mc-stan.org/rstanarm/)). Note that we did not install this package with the others above, as it can take fairly long and involve some minor troubleshooting.^[FWIW, on my machine (running Arch Linux) I had to install `stan` (and thus `rstanarm`) by running R through the shell. For some reason, RStudio kept closing midway through the installation process.]
+
+
+```r
+# install.packages("rstanarm") ## Run this first if you want to try yourself
+library(rstanarm)
+bayes_reg = 
+  stan_glm(
+    mass ~ gender * height,
+    data = humans, 
+    family = gaussian(), prior = cauchy(), prior_intercept = cauchy()
+    )
+```
+
+```r
+summary(bayes_reg)
+```
+
+```
+## 
+## Model Info:
+##  function:     stan_glm
+##  family:       gaussian [identity]
+##  formula:      mass ~ gender * height
+##  algorithm:    sampling
+##  sample:       4000 (posterior sample size)
+##  priors:       see help('prior_summary')
+##  observations: 22
+##  predictors:   4
+## 
+## Estimates:
+##                          mean   sd     10%    50%    90% 
+## (Intercept)             -67.7   76.7 -163.7  -68.7   30.1
+## gendermasculine           0.2    9.6   -6.4    0.0    7.0
+## height                    0.8    0.5    0.2    0.8    1.4
+## gendermasculine:height    0.1    0.1   -0.1    0.1    0.2
+## sigma                    15.8    2.6   12.7   15.5   19.2
+## 
+## Fit Diagnostics:
+##            mean   sd   10%   50%   90%
+## mean_PPD 82.5    4.9 76.5  82.5  88.6 
+## 
+## The mean_ppd is the sample average posterior predictive distribution of the outcome variable (for details see help('summary.stanreg')).
+## 
+## MCMC diagnostics
+##                        mcse Rhat n_eff
+## (Intercept)            1.8  1.0  1884 
+## gendermasculine        0.4  1.0   702 
+## height                 0.0  1.0  1826 
+## gendermasculine:height 0.0  1.0  1093 
+## sigma                  0.1  1.0  2001 
+## mean_PPD               0.1  1.0  3341 
+## log-posterior          0.0  1.0  1545 
+## 
+## For each parameter, mcse is Monte Carlo standard error, n_eff is a crude measure of effective sample size, and Rhat is the potential scale reduction factor on split chains (at convergence Rhat=1).
+```
+
+### Even more other models
+
+Okay, there are simply too many other models and other estimation procedures to cover in this lecture. A lot of these other models that you might be thinking of come bundled with the base R installation. But just to highlight a few, mostly new packages that I like a lot for specific estimation procedures:
+
+- Difference-in-differences (with variable timing, etc.): **did** ([link](https://github.com/bcallaway11/did)) and **DRDID** ([link](https://pedrohcgs.github.io/DRDID/))
+- Synthetic control: **gsynth** ([link](https://yiqingxu.org/software/gsynth/gsynth_examples.html)) and **scul** ([link](https://hollina.github.io/scul/))
+- Count data (hurdle models, etc.): **pscl** ([link](https://cran.r-project.org/web/packages/pscl/vignettes/countreg.pdf))
+- Lasso: **biglasso** ([link](https://github.com/YaohuiZeng/biglasso))
+- Causal forests: **grf** ([link](https://grf-labs.github.io/grf/))
+- etc.
+
+Finally, just a reminder to take a look at the [Further Resources](#further-resources) links at the bottom of this document to get a sense of where to go for full-length econometrics courses and textbooks.
+
+## Marginal effects
 
 Calculating marginal effect in a regression is utterly straightforward in cases where there are no non-linearities; just look at the coefficient values! However, that quickly goes out the window when you have interaction effects or non-linear models like probit, logit, etc. Luckily, the **margins** package ([link](https://cran.r-project.org/web/packages/margins)), which is modeled on its namesake in Stata, goes a long way towards automating the process. You can read more in the package [vignette](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html), but here's a very simple example to illustrate. 
 
@@ -1038,81 +1164,8 @@ Note that `cplot` automatically produces a data frame of the predicted effects t
 
 *Aside:* One downside that I want to highlight briefly is that **margins** does [not yet work](https://github.com/leeper/margins/issues/128) with **fixest** (or **lfe**) objects, but there are [workarounds](https://github.com/leeper/margins/issues/128#issuecomment-636372023) in the meantime.
 
-### Probit, logit and other generalized linear models
 
-See `?stats::glm`.
-
-### Synthetic control
-
-See the **gsynth** package ([link](https://yiqingxu.org/software/gsynth/gsynth_examples.html)).
-
-### Bayesian regression
-
-We could spend a whole course on Bayesian models. The very, very short version is that R offers outstanding support for Bayesian models and data analysis. You will find convenient interfaces to all of the major MCMC and Bayesian software engines: [Stan](https://mc-stan.org/users/interfaces/rstan), [JAGS](http://mcmc-jags.sourceforge.net/), TensorFlow (via [Greta](https://greta-stats.org/)), etc. Here follows a *super* simple example using the **rstanarm** package ([link](http://mc-stan.org/rstanarm/)). Note that we did not install this package with the others above, as it can take fairly long and involve some minor troubleshooting.^[FWIW, on my machine (running Arch Linux) I had to install `stan` (and thus `rstanarm`) by running R through the shell. For some reason, RStudio kept closing midway through the installation process.]
-
-
-```r
-# install.packages("rstanarm") ## Run this first if you want to try yourself
-library(rstanarm)
-bayes_reg = 
-  stan_glm(
-    mass ~ gender * height,
-    data = humans, 
-    family = gaussian(), prior = cauchy(), prior_intercept = cauchy()
-    )
-```
-
-```r
-summary(bayes_reg)
-```
-
-```
-## 
-## Model Info:
-##  function:     stan_glm
-##  family:       gaussian [identity]
-##  formula:      mass ~ gender * height
-##  algorithm:    sampling
-##  sample:       4000 (posterior sample size)
-##  priors:       see help('prior_summary')
-##  observations: 22
-##  predictors:   4
-## 
-## Estimates:
-##                          mean   sd     10%    50%    90% 
-## (Intercept)             -67.7   76.7 -163.7  -68.7   30.1
-## gendermasculine           0.2    9.6   -6.4    0.0    7.0
-## height                    0.8    0.5    0.2    0.8    1.4
-## gendermasculine:height    0.1    0.1   -0.1    0.1    0.2
-## sigma                    15.8    2.6   12.7   15.5   19.2
-## 
-## Fit Diagnostics:
-##            mean   sd   10%   50%   90%
-## mean_PPD 82.5    4.9 76.5  82.5  88.6 
-## 
-## The mean_ppd is the sample average posterior predictive distribution of the outcome variable (for details see help('summary.stanreg')).
-## 
-## MCMC diagnostics
-##                        mcse Rhat n_eff
-## (Intercept)            1.8  1.0  1884 
-## gendermasculine        0.4  1.0   702 
-## height                 0.0  1.0  1826 
-## gendermasculine:height 0.0  1.0  1093 
-## sigma                  0.1  1.0  2001 
-## mean_PPD               0.1  1.0  3341 
-## log-posterior          0.0  1.0  1545 
-## 
-## For each parameter, mcse is Monte Carlo standard error, n_eff is a crude measure of effective sample size, and Rhat is the potential scale reduction factor on split chains (at convergence Rhat=1).
-```
-
-```r
-tidy(bayes_reg)
-```
-
-```
-## Error: $ operator is invalid for atomic vectors
-```
-
+## Presentation
 
 ### Tables
 
