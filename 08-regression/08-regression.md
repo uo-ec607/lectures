@@ -275,11 +275,11 @@ summary(ols2a)
 
 The overall model fit is much improved by the exclusion of this outlier, with R<sup>2</sup> increasing to 0.58. Still, we should be cautious about throwing out data. Another approach is to handle or account for outliers with statistical methods. Which provides a nice segue to robust and clustered standard errors.
 
-## Robust and clustered standard errors
+## Nonstandard errors
 
 Dealing with statistical irregularities (heteroskedasticity, clustering, etc.) is a fact of life for empirical researchers. However, it says something about the economics profession that a random stranger could walk uninvited into a live seminar and ask, "How did you cluster your standard errors?", and it would likely draw approving nods from audience members. 
 
-The good news is that there are *lots* of ways to get robust and clustered standard errors in R. For many years, these have been based on the excellent **sandwich** package ([link](https://cran.r-project.org/web/packages/sandwich/index.html)). However, my preferred way these days is to use the **estimatr** package ([link](https://declaredesign.org/r/estimatr/articles/getting-started.html)), which is both fast and provides convenient aliases for the standard regression functions. For example, you can obtain robust standard errors using `estimatr::lm_robust()`. Let's illustrate by implementing a robust version of the `ols1` regression that we ran earlier.
+The good news is that there are *lots* of ways to get nonstandard errors in R. For many years, these have been based on the excellent **sandwich** package ([link](https://cran.r-project.org/web/packages/sandwich/index.html)). However, my preferred way these days is to use the **estimatr** package ([link](https://declaredesign.org/r/estimatr/articles/getting-started.html)), which is both fast and provides convenient aliases for the standard regression functions. For example, you can obtain robust standard errors using `estimatr::lm_robust()`. Let's illustrate by implementing a robust version of the `ols1` regression that we ran earlier.
 
 
 ```r
@@ -314,7 +314,7 @@ tidy(ols1_robust_stata, conf.int = TRUE)
 ## 2  0.8111055 57    mass
 ```
 
-**estimatr** also supports (robust) instrumental variable regression and clustered standard errors. I'm going to hold off discussing these two issues until we get to the more relevant sections below (see: [here](#High_dimensional_FEs_and_multiway_clustering) and [here](#Instrumental_variables)). But here's a quick example of the latter just to illustrate:
+**estimatr** also supports (robust) instrumental variable regression and clustered standard errors. I'm going to hold off discussing these two issues until we get to the more relevant sections below (see: [here](#high-dimensional-fes-and-multiway-clustering) and [here](#instrumental-variables)). But here's a quick example of the latter just to illustrate:
 
 
 ```r
@@ -2352,7 +2352,7 @@ st(starwars)
 
 #### Coefficient plots
 
-We've already worked through several examples of how to extract and compare model coefficients (e.g. [here](#Comparing_our_model_coefficients)). I use this "manual" approach to visualizing coefficient estimates all the time. However, our focus on **modelsummary** in the preceding section provides a nice segue to another one of the package's features: [`modelplot()`](https://vincentarelbundock.github.io/modelsummary/articles/modelplot.html). Consider the following, which shows both the degree to which `modelplot()` automates everything and the fact that it readily accepts regular **ggplot2** syntax.
+We've already worked through an example of how to extract and compare model coefficients [here](#comparing-our-model-coefficients). I use this "manual" approach to visualizing coefficient estimates all the time. However, our focus on **modelsummary** in the preceding section provides a nice segue to another one of the package's features: [`modelplot()`](https://vincentarelbundock.github.io/modelsummary/articles/modelplot.html). Consider the following, which shows both the degree to which `modelplot()` automates everything and the fact that it readily accepts regular **ggplot2** syntax.
 
 
 ```r
