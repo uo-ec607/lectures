@@ -120,7 +120,7 @@ A related and also useful function is `broom::glance()`, which summarises the mo
 glance(ols1)
 ```
 
-(BTW, If you're wondering how to export regression results to other formats (e.g. LaTeX tables), don't worry: We'll get to that at the very end of the lecture.)
+By the way, if you're wondering how to export regression results to other formats (e.g. LaTeX tables), don't worry: We'll [get to that](#regression-tables) at the end of the lecture.
 
 ### Regressing on subsetted or different data
 
@@ -134,15 +134,16 @@ starwars %>%
     data = starwars %>% filter(mass==max(mass, na.rm=T)), 
     col="red"
     ) +
-  geom_text(
-    aes(label=name),
-    data = starwars %>% filter(mass==max(mass, na.rm=T)), 
-    col="red", vjust = 0, nudge_y = 25
+  geom_curve(
+    x = 212, y = 1150, xend = 180, yend = max(starwars$mass, na.rm=T), 
+    curvature = 0.25, col = 'red', hjust = 1,
+    arrow = arrow(length = unit(0.03, "npc"))
     ) +
+  annotate("text", x = 212, y = 1100, label = "Jabba!", col = 'red') +
   labs(
-    title = "Spot the outlier...",
-    caption = "Aside: Always plot your data!"
-    )
+    title = "Spot the outlier",
+    caption = "Remember: Always plot your data..."
+  )
 ```
 
 Maybe we should exclude Jabba from our regression? You can do this in two ways: 1) Create a new data frame and then regress, or 2) Subset the original data frame directly in the `lm()` call.
@@ -559,7 +560,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
 ```
 
 </br>
-One nice thing about **modelsummary** is that it plays very well with Rmarkdown and will automatically coerce your tables to the format that matches your document output: HTML, LaTeX/PDF, RTF, etc. Of course, you can also [specify the output type](https://vincentarelbundock.github.io/modelsummary/#saving-and-viewing-output-formats) if you aren't using Rmarkdown and want to export a table for later use. Finally, you can even specify special table formats like *threepartable* for LaTeX and, provided that you have called the necessary packages in your preamble, it will render correctly (see example [here](https://twitter.com/VincentAB/status/1265255622943150081)).
+One nice thing about **modelsummary** is that it plays very well with R Markdown and will automatically coerce your tables to the format that matches your document output: HTML, LaTeX/PDF, RTF, etc. Of course, you can also [specify the output type](https://vincentarelbundock.github.io/modelsummary/#saving-and-viewing-output-formats) if you aren't using R Markdown and want to export a table for later use. Finally, you can even specify special table formats like *threepartable* for LaTeX and, provided that you have called the necessary packages in your preamble, it will render correctly (see example [here](https://twitter.com/VincentAB/status/1265255622943150081)).
 
 #### Summary tables
 

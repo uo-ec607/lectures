@@ -193,7 +193,7 @@ glance(ols1)
 ## # … with 3 more variables: deviance <dbl>, df.residual <int>, nobs <int>
 ```
 
-(BTW, If you're wondering how to export regression results to other formats (e.g. LaTeX tables), don't worry: We'll get to that at the very end of the lecture.)
+By the way, if you're wondering how to export regression results to other formats (e.g. LaTeX tables), don't worry: We'll [get to that](#regression-tables) at the end of the lecture.
 
 ### Regressing on subsetted or different data
 
@@ -1622,7 +1622,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
 </table></div><!--/html_preserve-->
 
 </br>
-One nice thing about **modelsummary** is that it plays very well with Rmarkdown and will automatically coerce your tables to the format that matches your document output: HTML, LaTeX/PDF, RTF, etc. Of course, you can also [specify the output type](https://vincentarelbundock.github.io/modelsummary/#saving-and-viewing-output-formats) if you aren't using Rmarkdown and want to export a table for later use. Finally, you can even specify special table formats like *threepartable* for LaTeX and, provided that you have called the necessary packages in your preamble, it will render correctly (see example [here](https://twitter.com/VincentAB/status/1265255622943150081)).
+One nice thing about **modelsummary** is that it plays very well with R Markdown and will automatically coerce your tables to the format that matches your document output: HTML, LaTeX/PDF, RTF, etc. Of course, you can also [specify the output type](https://vincentarelbundock.github.io/modelsummary/#saving-and-viewing-output-formats) if you aren't using R Markdown and want to export a table for later use. Finally, you can even specify special table formats like *threepartable* for LaTeX and, provided that you have called the necessary packages in your preamble, it will render correctly (see example [here](https://twitter.com/VincentAB/status/1265255622943150081)).
 
 #### Summary tables
 
