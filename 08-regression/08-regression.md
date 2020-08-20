@@ -1034,7 +1034,7 @@ Finally, just a reminder to take a look at the [Further Resources](#further-reso
 
 ## Marginal effects
 
-Calculating marginal effect in a regression is utterly straightforward in cases where there are no non-linearities; just look at the coefficient values! However, that quickly goes out the window when you have interaction effects or non-linear models like probit, logit, etc. Luckily, the **margins** package ([link](https://cran.r-project.org/web/packages/margins)), which is modeled on its namesake in Stata, goes a long way towards automating the process. You can read more in the package [vignette](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html), but here's a very simple example to illustrate. 
+Calculating marginal effect in a regression is utterly straightforward in cases where there are no non-linearities... just look at the coefficient values. However, that quickly goes out the window when you have interaction effects or non-linear models like probit, logit, etc. Luckily, the **margins** package ([link](https://cran.r-project.org/web/packages/margins)), which is modeled on its namesake in Stata, goes a long way towards automating the process.^[One downside that I want to highlight briefly is that **margins** does [not yet work](https://github.com/leeper/margins/issues/128) with **fixest** (or **lfe**) objects, but there are [workarounds](https://github.com/leeper/margins/issues/128#issuecomment-636372023) in the meantime.] You can read more in the package [vignette](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html), but here's a very simple example to illustrate. 
 
 Consider our earlier interaction effects regression, where we interested in how people's mass varied by height and gender. To get the average marginal effect (AME) of these dependent variables, we can just use the `margins::margins()` function.
 
@@ -1042,34 +1042,23 @@ Consider our earlier interaction effects regression, where we interested in how 
 ```r
 # library(margins) ## Already loaded
 
-margins(ols_ie)
+ols_ie_marg = margins(ols_ie)
 ```
 
-```
-## Average marginal effects
-```
-
-```
-## lm(formula = mass ~ gender * height, data = humans)
-```
-
-```
-##  height gendermasculine
-##   0.874           13.53
-```
-
-You can get standard errors by piping (or wrapping) the above object to the generic `summary()` function. 
+Like a normal regression object, we can get a nice print-out display of the above object by summarising or tidying it.
 
 
 ```r
-# summary(margins(ols_ie)) ## Also works
-ols_ie %>% margins() %>% summary() 
+# summary(ols_ie_marg) ## Same effect
+tidy(ols_ie_marg, conf.int = TRUE)
 ```
 
 ```
-##           factor     AME      SE      z      p    lower   upper
-##  gendermasculine 13.5253 26.7585 0.5055 0.6132 -38.9203 65.9710
-##           height  0.8740  0.4203 2.0797 0.0376   0.0503  1.6977
+## # A tibble: 2 x 7
+##   term            estimate std.error statistic p.value conf.low conf.high
+##   <chr>              <dbl>     <dbl>     <dbl>   <dbl>    <dbl>     <dbl>
+## 1 gendermasculine   13.5      26.8       0.505  0.613  -38.9        66.0 
+## 2 height             0.874     0.420     2.08   0.0376   0.0503      1.70
 ```
 
 If we want to compare marginal effects at specific values --- e.g. how the AME of height on mass differs across genders --- then that's easily done too.
@@ -1080,25 +1069,17 @@ ols_ie %>%
   margins(
     variables = "height", ## The main variable we're interested in
     at = list(gender = c("masculine", "feminine")) ## How the main variable is modulated by at specific values of a second variable
-    ) #%>% 
+    ) %>% 
+  tidy(conf.int = TRUE) ## Tidy it (optional)
 ```
 
 ```
-## Average marginal effects at specified values
-```
-
-```
-## lm(formula = mass ~ gender * height, data = humans)
-```
-
-```
-##  at(gender) height
-##   masculine 0.8962
-##    feminine 0.7333
-```
-
-```r
-  # summary() ## If you want SEs etc.
+## # A tibble: 2 x 9
+##   term  at.variable at.value estimate std.error statistic p.value conf.low
+##   <chr> <chr>       <fct>       <dbl>     <dbl>     <dbl>   <dbl>    <dbl>
+## 1 heig… gender      masculi…    0.896     0.443     2.02   0.0431   0.0278
+## 2 heig… gender      feminine    0.733     1.27      0.576  0.565   -1.76  
+## # … with 1 more variable: conf.high <dbl>
 ```
 
 If you're the type of person who prefers visualizations (like me), then you should consider `margins::cplot()`, which is the package's in-built method for constructing *conditional* effect plots.
@@ -1160,9 +1141,7 @@ cplot(ols_ie, x = "height", what = "prediction")
 par(mfrow=c(1, 1)) ## Reset plot defaults
 ```
 
-Note that `cplot` automatically produces a data frame of the predicted effects too. This can be used to construct **ggplot2** versions of the figures instead of the (base) `cplot` defaults. See the package documentation for [more information](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html#ggplot2_examples).
-
-*Aside:* One downside that I want to highlight briefly is that **margins** does [not yet work](https://github.com/leeper/margins/issues/128) with **fixest** (or **lfe**) objects, but there are [workarounds](https://github.com/leeper/margins/issues/128#issuecomment-636372023) in the meantime.
+Note that `cplot()` uses the base R plotting method. If you'd prefer **ggplot2** equivalents, take a look at the **marginsplot** package ([link](https://github.com/vincentarelbundock/marginsplot)).
 
 
 ## Presentation
@@ -1178,14 +1157,14 @@ There are loads of [different options](https://hughjonesd.github.io/huxtable/des
 # library(modelsummary) ## Already loaded
 
 ## Note: msummary() is an alias for modelsummary()
-msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
+msummary(list(ols1, ols_ie, ols_fe, ols_hdfe))
 ```
 
 <!--html_preserve--><style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#wozkrkaiiu .gt_table {
+#xvgvcvafof .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -1210,7 +1189,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   border-left-color: #D3D3D3;
 }
 
-#wozkrkaiiu .gt_heading {
+#xvgvcvafof .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1222,7 +1201,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   border-right-color: #D3D3D3;
 }
 
-#wozkrkaiiu .gt_title {
+#xvgvcvafof .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1232,7 +1211,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   border-bottom-width: 0;
 }
 
-#wozkrkaiiu .gt_subtitle {
+#xvgvcvafof .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1242,13 +1221,13 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   border-top-width: 0;
 }
 
-#wozkrkaiiu .gt_bottom_border {
+#xvgvcvafof .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#wozkrkaiiu .gt_col_headings {
+#xvgvcvafof .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1263,7 +1242,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   border-right-color: #D3D3D3;
 }
 
-#wozkrkaiiu .gt_col_heading {
+#xvgvcvafof .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1283,7 +1262,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   overflow-x: hidden;
 }
 
-#wozkrkaiiu .gt_column_spanner_outer {
+#xvgvcvafof .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1295,15 +1274,15 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   padding-right: 4px;
 }
 
-#wozkrkaiiu .gt_column_spanner_outer:first-child {
+#xvgvcvafof .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#wozkrkaiiu .gt_column_spanner_outer:last-child {
+#xvgvcvafof .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#wozkrkaiiu .gt_column_spanner {
+#xvgvcvafof .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1315,7 +1294,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   width: 100%;
 }
 
-#wozkrkaiiu .gt_group_heading {
+#xvgvcvafof .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1337,7 +1316,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   vertical-align: middle;
 }
 
-#wozkrkaiiu .gt_empty_group_heading {
+#xvgvcvafof .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1352,15 +1331,15 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   vertical-align: middle;
 }
 
-#wozkrkaiiu .gt_from_md > :first-child {
+#xvgvcvafof .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#wozkrkaiiu .gt_from_md > :last-child {
+#xvgvcvafof .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#wozkrkaiiu .gt_row {
+#xvgvcvafof .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1379,7 +1358,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   overflow-x: hidden;
 }
 
-#wozkrkaiiu .gt_stub {
+#xvgvcvafof .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1391,7 +1370,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   padding-left: 12px;
 }
 
-#wozkrkaiiu .gt_summary_row {
+#xvgvcvafof .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1401,7 +1380,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   padding-right: 5px;
 }
 
-#wozkrkaiiu .gt_first_summary_row {
+#xvgvcvafof .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1411,7 +1390,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   border-top-color: #D3D3D3;
 }
 
-#wozkrkaiiu .gt_grand_summary_row {
+#xvgvcvafof .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1421,7 +1400,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   padding-right: 5px;
 }
 
-#wozkrkaiiu .gt_first_grand_summary_row {
+#xvgvcvafof .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1431,11 +1410,11 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   border-top-color: #D3D3D3;
 }
 
-#wozkrkaiiu .gt_striped {
+#xvgvcvafof .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#wozkrkaiiu .gt_table_body {
+#xvgvcvafof .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1444,7 +1423,7 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   border-bottom-color: #D3D3D3;
 }
 
-#wozkrkaiiu .gt_footnotes {
+#xvgvcvafof .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1458,13 +1437,13 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   border-right-color: #D3D3D3;
 }
 
-#wozkrkaiiu .gt_footnote {
+#xvgvcvafof .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#wozkrkaiiu .gt_sourcenotes {
+#xvgvcvafof .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1478,46 +1457,46 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   border-right-color: #D3D3D3;
 }
 
-#wozkrkaiiu .gt_sourcenote {
+#xvgvcvafof .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#wozkrkaiiu .gt_left {
+#xvgvcvafof .gt_left {
   text-align: left;
 }
 
-#wozkrkaiiu .gt_center {
+#xvgvcvafof .gt_center {
   text-align: center;
 }
 
-#wozkrkaiiu .gt_right {
+#xvgvcvafof .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#wozkrkaiiu .gt_font_normal {
+#xvgvcvafof .gt_font_normal {
   font-weight: normal;
 }
 
-#wozkrkaiiu .gt_font_bold {
+#xvgvcvafof .gt_font_bold {
   font-weight: bold;
 }
 
-#wozkrkaiiu .gt_font_italic {
+#xvgvcvafof .gt_font_italic {
   font-style: italic;
 }
 
-#wozkrkaiiu .gt_super {
+#xvgvcvafof .gt_super {
   font-size: 65%;
 }
 
-#wozkrkaiiu .gt_footnote_marks {
+#xvgvcvafof .gt_footnote_marks {
   font-style: italic;
   font-size: 65%;
 }
 </style>
-<div id="wozkrkaiiu" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
+<div id="xvgvcvafof" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
   
   <thead class="gt_col_headings">
     <tr>
@@ -1531,45 +1510,45 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
   <tbody class="gt_table_body">
     <tr>
       <td class="gt_row gt_left">(Intercept)</td>
-      <td class="gt_row gt_left">-84.252</td>
+      <td class="gt_row gt_left">-13.810</td>
       <td class="gt_row gt_left">-61.000</td>
       <td class="gt_row gt_left"></td>
       <td class="gt_row gt_left"></td>
     </tr>
     <tr>
       <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left">(65.786)</td>
+      <td class="gt_row gt_left">(111.155)</td>
       <td class="gt_row gt_left">(204.057)</td>
       <td class="gt_row gt_left"></td>
       <td class="gt_row gt_left"></td>
     </tr>
     <tr>
-      <td class="gt_row gt_left">gendermasculine</td>
-      <td class="gt_row gt_left">10.739</td>
-      <td class="gt_row gt_left">-15.722</td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left"></td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left">(13.197)</td>
-      <td class="gt_row gt_left">(219.544)</td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left"></td>
-    </tr>
-    <tr>
       <td class="gt_row gt_left">height</td>
-      <td class="gt_row gt_left">0.879</td>
+      <td class="gt_row gt_left">0.639</td>
       <td class="gt_row gt_left">0.733</td>
       <td class="gt_row gt_left">0.975</td>
       <td class="gt_row gt_left">0.756</td>
     </tr>
     <tr>
       <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left">(0.407)</td>
+      <td class="gt_row gt_left">(0.626)</td>
       <td class="gt_row gt_left">(1.274)</td>
       <td class="gt_row gt_left">(0.044)</td>
       <td class="gt_row gt_left">(0.117)</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">gendermasculine</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">-15.722</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">(219.544)</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
     </tr>
     <tr>
       <td class="gt_row gt_left">gendermasculine × height</td>
@@ -1587,21 +1566,21 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
     </tr>
     <tr>
       <td class="gt_row gt_left">Num.Obs.</td>
-      <td class="gt_row gt_left">22</td>
+      <td class="gt_row gt_left">59</td>
       <td class="gt_row gt_left">22</td>
       <td class="gt_row gt_left">58</td>
       <td class="gt_row gt_left">55</td>
     </tr>
     <tr>
       <td class="gt_row gt_left">R2</td>
-      <td class="gt_row gt_left">0.444</td>
+      <td class="gt_row gt_left">0.018</td>
       <td class="gt_row gt_left">0.444</td>
       <td class="gt_row gt_left">0.997</td>
       <td class="gt_row gt_left">0.998</td>
     </tr>
     <tr>
       <td class="gt_row gt_left">R2 Adj.</td>
-      <td class="gt_row gt_left">0.386</td>
+      <td class="gt_row gt_left">0.001</td>
       <td class="gt_row gt_left">0.352</td>
       <td class="gt_row gt_left">0.993</td>
       <td class="gt_row gt_left">1.008</td>
@@ -1622,28 +1601,28 @@ msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
     </tr>
     <tr>
       <td class="gt_row gt_left">AIC</td>
-      <td class="gt_row gt_left">186.9</td>
+      <td class="gt_row gt_left">777.0</td>
       <td class="gt_row gt_left">188.9</td>
       <td class="gt_row gt_left">492.1</td>
       <td class="gt_row gt_left">513.1</td>
     </tr>
     <tr>
       <td class="gt_row gt_left">BIC</td>
-      <td class="gt_row gt_left">191.3</td>
+      <td class="gt_row gt_left">783.2</td>
       <td class="gt_row gt_left">194.4</td>
       <td class="gt_row gt_left">558.0</td>
       <td class="gt_row gt_left">649.6</td>
     </tr>
     <tr>
       <td class="gt_row gt_left">Log.Lik.</td>
-      <td class="gt_row gt_left">-89.465</td>
+      <td class="gt_row gt_left">-385.503</td>
       <td class="gt_row gt_left">-89.456</td>
       <td class="gt_row gt_left">-214.026</td>
       <td class="gt_row gt_left">-188.552</td>
     </tr>
     <tr>
       <td class="gt_row gt_left">F</td>
-      <td class="gt_row gt_left">7.587</td>
+      <td class="gt_row gt_left">1.040</td>
       <td class="gt_row gt_left">4.801</td>
       <td class="gt_row gt_left"></td>
       <td class="gt_row gt_left"></td>

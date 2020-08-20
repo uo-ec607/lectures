@@ -533,21 +533,21 @@ Finally, just a reminder to take a look at the [Further Resources](#further-reso
 
 ## Marginal effects
 
-Calculating marginal effect in a regression is utterly straightforward in cases where there are no non-linearities; just look at the coefficient values! However, that quickly goes out the window when you have interaction effects or non-linear models like probit, logit, etc. Luckily, the **margins** package ([link](https://cran.r-project.org/web/packages/margins)), which is modeled on its namesake in Stata, goes a long way towards automating the process. You can read more in the package [vignette](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html), but here's a very simple example to illustrate. 
+Calculating marginal effect in a regression is utterly straightforward in cases where there are no non-linearities... just look at the coefficient values. However, that quickly goes out the window when you have interaction effects or non-linear models like probit, logit, etc. Luckily, the **margins** package ([link](https://cran.r-project.org/web/packages/margins)), which is modeled on its namesake in Stata, goes a long way towards automating the process.^[One downside that I want to highlight briefly is that **margins** does [not yet work](https://github.com/leeper/margins/issues/128) with **fixest** (or **lfe**) objects, but there are [workarounds](https://github.com/leeper/margins/issues/128#issuecomment-636372023) in the meantime.] You can read more in the package [vignette](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html), but here's a very simple example to illustrate. 
 
 Consider our earlier interaction effects regression, where we interested in how people's mass varied by height and gender. To get the average marginal effect (AME) of these dependent variables, we can just use the `margins::margins()` function.
 
 ```{r margins0, dependson=ols_ie}
 # library(margins) ## Already loaded
 
-margins(ols_ie)
+ols_ie_marg = margins(ols_ie)
 ```
 
-You can get standard errors by piping (or wrapping) the above object to the generic `summary()` function. 
+Like a normal regression object, we can get a nice print-out display of the above object by summarising or tidying it.
 
 ```{r margins1, dependson=ols_ie}
-# summary(margins(ols_ie)) ## Also works
-ols_ie %>% margins() %>% summary() 
+# summary(ols_ie_marg) ## Same effect
+tidy(ols_ie_marg, conf.int = TRUE)
 ```
 
 If we want to compare marginal effects at specific values --- e.g. how the AME of height on mass differs across genders --- then that's easily done too.
@@ -557,8 +557,8 @@ ols_ie %>%
   margins(
     variables = "height", ## The main variable we're interested in
     at = list(gender = c("masculine", "feminine")) ## How the main variable is modulated by at specific values of a second variable
-    ) #%>% 
-  # summary() ## If you want SEs etc.
+    ) %>% 
+  tidy(conf.int = TRUE) ## Tidy it (optional)
 ```
 
 If you're the type of person who prefers visualizations (like me), then you should consider `margins::cplot()`, which is the package's in-built method for constructing *conditional* effect plots.
@@ -578,9 +578,7 @@ cplot(ols_ie, x = "height", what = "prediction")
 par(mfrow=c(1, 1)) ## Reset plot defaults
 ```
 
-Note that `cplot` automatically produces a data frame of the predicted effects too. This can be used to construct **ggplot2** versions of the figures instead of the (base) `cplot` defaults. See the package documentation for [more information](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html#ggplot2_examples).
-
-*Aside:* One downside that I want to highlight briefly is that **margins** does [not yet work](https://github.com/leeper/margins/issues/128) with **fixest** (or **lfe**) objects, but there are [workarounds](https://github.com/leeper/margins/issues/128#issuecomment-636372023) in the meantime.
+Note that `cplot()` uses the base R plotting method. If you'd prefer **ggplot2** equivalents, take a look at the **marginsplot** package ([link](https://github.com/vincentarelbundock/marginsplot)).
 
 
 ## Presentation
@@ -595,7 +593,7 @@ There are loads of [different options](https://hughjonesd.github.io/huxtable/des
 # library(modelsummary) ## Already loaded
 
 ## Note: msummary() is an alias for modelsummary()
-msummary(list(ols_dv2, ols_ie, ols_fe, ols_hdfe))
+msummary(list(ols1, ols_ie, ols_fe, ols_hdfe))
 ```
 
 </br>
