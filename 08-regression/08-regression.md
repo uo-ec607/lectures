@@ -412,9 +412,9 @@ tidy(ols1_robust_clustered, conf.int = TRUE)
 
 ### Dummy variables as *factors*
 
-Dummy variables are a core component of many regression models. However, these can be a pain to create in many statistical languages, since you first have to tabulate a whole new matrix of binary variables and then append it to the original data frame. In contrast, R has a much more convenient framework for creating and evaluating dummy variables in a regression. You simply specify the variable of interest as a [factor](https://r4ds.had.co.nz/factors.html).^[Factors are variables that have distinct qualitative levels, e.g. "male", "female", "hermaphrodite", etc.]
+Dummy variables are a core component of many regression models. However, these can be a pain to create in some statistical languages, since you first have to tabulate a whole new matrix of binary variables and then append it to the original data frame. In contrast, R has a very convenient framework for creating and evaluating dummy variables in a regression. You simply specify the variable of interest as a [factor](https://r4ds.had.co.nz/factors.html).^[Factors are variables that have distinct qualitative levels, e.g. "male", "female", "hermaphrodite", etc.]
 
-For this next section, it will be convenient to demonstrate using a subsample of the data that comprises only humans. I'll first create this `humans` data frame and then demonstrate the dummy-variables-as-factors approach.
+For this next section, it will be convenient to demonstrate using a subsample of the starwars data that comprises only the human characters. I'll first create this `humans` data frame and then demonstrate the dummy-variables-as-factors approach.
  
 
 ```r
@@ -509,7 +509,13 @@ summary(ols_dv2)
 
 ### Interaction effects
 
-Like dummy variables, R provides a convenient syntax for specifying interaction terms directly in the regression model without having to create them manually beforehand.^[Although there are very good reasons that you might want to modify your parent variables before doing so (e.g. centering them). As it happens, I'm [on record](https://twitter.com/grant_mcdermott/status/903691491414917122) as stating that interaction effects are most widely misunderstood and misapplied concept in econometrics. However, that's a topic for another day. (Read the paper in the link!)] You can just use `x1:x2` (to include only the interaction term) or `x1*x2` (to include the parent terms and interaction terms). Generally speaking, you are best advised to include the parent terms alongside an interaction term. This makes the `*` option a good default. 
+Like dummy variables, R provides a convenient syntax for specifying interaction terms directly in the regression model without having to create them manually beforehand.^[Although there are very good reasons that you might want to modify your parent variables before doing so (e.g. centering them). As it happens, I'm [on record](https://twitter.com/grant_mcdermott/status/903691491414917122) as stating that interaction effects are most widely misunderstood and misapplied concept in econometrics. However, that's a topic for another day. (Read the paper in the link!)] You can use any of the following expansion operators:
+
+- `x1:x2` "crosses" the variables (equivalent to including only the x1 × x2 interaction term)
+- `x1/x2` "nests" the second variable within the first (equivalent to `x1 + x1:x2`; more on this [later](#nestedmarg))
+- `x1*x2` includes all parent and interaction terms (equivalent to `x1 + x2 + x1:x2`) 
+
+Generally speaking, if [not always](#nestedmarg), it is advisable to include the all parent terms alongside their interactions. This makes the `*` option a good default. 
 
 For example, we might wonder whether the relationship between a person's body mass and their height is modulated by their gender. That is, we want to run a regression of the form
 
@@ -1034,9 +1040,13 @@ Finally, just a reminder to take a look at the [Further Resources](#further-reso
 
 ## Marginal effects
 
-Calculating marginal effect in a regression is utterly straightforward in cases where there are no non-linearities... just look at the coefficient values. However, that quickly goes out the window when you have interaction effects or non-linear models like probit, logit, etc. Luckily, the **margins** package ([link](https://cran.r-project.org/web/packages/margins)), which is modeled on its namesake in Stata, goes a long way towards automating the process.^[One downside that I want to highlight briefly is that **margins** does [not yet work](https://github.com/leeper/margins/issues/128) with **fixest** (or **lfe**) objects, but there are [workarounds](https://github.com/leeper/margins/issues/128#issuecomment-636372023) in the meantime.] You can read more in the package [vignette](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html), but here's a very simple example to illustrate. 
+Calculating marginal effect in a regression is utterly straightforward in cases where there are no non-linearities... just look at the coefficient values. However, that quickly goes out the window when you have interaction effects or non-linear models like probit, logit, etc. Luckily, there are various ways to obtain these from R models. For example, we already saw the **mfx** package above for obtaining marginal effects from GLM models. I want to briefly focus on two of my favourite methods for obtaining marginal effects across different model classes: 1) The **margins** package and 2) a shortcut that works particularly well for a certain class of interaction models.
 
-Consider our earlier interaction effects regression, where we interested in how people's mass varied by height and gender. To get the average marginal effect (AME) of these dependent variables, we can just use the `margins::margins()` function.
+### The **margins** package
+
+The **margins** package ([link](https://cran.r-project.org/web/packages/margins)), which is modeled on its namesake in Stata, is great for obtaining marginal effects across an entire range of models.^[I do, however, want to flag that it does [not yet support](https://github.com/leeper/margins/issues/128) **fixest** (or **lfe**) models. But there are [workarounds](https://github.com/leeper/margins/issues/128#issuecomment-636372023) in the meantime.] You can read more in the package [vignette](https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html), but here's a very simple example to illustrate. 
+
+Consider our interaction effects regression [from earlier](#interaction-effects), where we were interested in how people's mass varied by height and gender. To get the average marginal effect (AME) of these dependent variables, we can just use the `margins::margins()` function.
 
 
 ```r
@@ -1143,6 +1153,34 @@ par(mfrow=c(1, 1)) ## Reset plot defaults
 
 Note that `cplot()` uses the base R plotting method. If you'd prefer **ggplot2** equivalents, take a look at the **marginsplot** package ([link](https://github.com/vincentarelbundock/marginsplot)).
 
+Finally, I also want to draw your attention to the **emmeans** package ([link](https://cran.r-project.org/web/packages/emmeans/index.html)), which provides very similar functionality to **margins**. I'm not as familiar with it myself, but I know that it has many fans.
+
+### Special case: `/` shortcut for interaction terms {#nestedmarg}
+
+I'll keep this one brief, but I wanted to mention one of my favourite R shortcuts: Obtaining the full marginal effects for interaction terms by using the `/` expansion operator. I've [tweeted](https://twitter.com/grant_mcdermott/status/1202084676439085056?s=20) about this and even wrote an [whole blog post](https://grantmcdermott.com/2019/12/16/interaction-effects/) about it too (which you should totally read). But the very short version is that you can switch out the normal `f1 * x2` interaction terms syntax for `f1 / x2` and it automatically returns the full marginal effects. (The formal way to describe it is that the model variables have been "nested".)
+
+Here's a super simple example, using the same interaction effects model from before.
+
+
+```r
+# ols_ie = lm(mass ~ gender * height, data = humans) ## Original model
+ols_ie_marg2 = lm(mass ~ gender / height, data = humans)
+tidy(ols_ie_marg2, conf.int = TRUE)
+```
+
+```
+## # A tibble: 4 x 7
+##   term                   estimate std.error statistic p.value conf.low conf.high
+##   <chr>                     <dbl>     <dbl>     <dbl>   <dbl>    <dbl>     <dbl>
+## 1 (Intercept)             -61.      204.      -0.299   0.768  -4.90e+2    368.  
+## 2 gendermasculine         -15.7     220.      -0.0716  0.944  -4.77e+2    446.  
+## 3 genderfeminine:height     0.733     1.27     0.576   0.572  -1.94e+0      3.41
+## 4 gendermasculine:height    0.896     0.443    2.02    0.0582 -3.46e-2      1.83
+```
+
+Note that the marginal effects on the two gender × height interactions (i.e. 0.733 and 0.896) are the same as we got with the `margins::margins()` function [above](#the-margins-package). 
+
+Where this approach really shines is when you are estimating interaction terms in large models. The **margins** pacakge relies on a numerical delta method which can be very computationally intensive, whereas using `/` adds no additional overhead beyond calculating the model itself. Still, that's about as much as say it here. Read my aforementioned [blog post](https://grantmcdermott.com/2019/12/16/interaction-effects/) if you'd like to learn more.
 
 ## Presentation
 
@@ -2393,10 +2431,32 @@ mods = list('FE, no clustering' = summary(ols_fe, se = 'standard'),  # Don't clu
             'HDFE, twoway clustering' = ols_hdfe)
 
 modelplot(mods) +
-  coord_flip() ## You can modify with normal ggplot2 commands
+  ## You can further modify with normal ggplot2 commands...
+  coord_flip() + 
+  labs(
+    title = "'Effect' of height on mass",
+    subtitle = "Comparing fixed effect models"
+    )
 ```
 
 ![](08-regression_files/figure-html/modplot-1.png)<!-- -->
+
+Or, here's another example where we compare the (partial) Masculine × Height coefficient from our earlier interaction model, with the (full) marginal effect that we obtained later on.
+
+
+```r
+ie_mods = list('Partial effect' = ols_ie, 'Marginal effect' = ols_ie_marg2)
+
+modelplot(ie_mods, coef_map = c("gendermasculine:height" = "Masculine × Height")) +
+  coord_flip() + 
+  labs(
+    title = "'Effect' of height on mass",
+    subtitle = "Comparing partial vs marginal effects"
+    )
+```
+
+![](08-regression_files/figure-html/modplot2-1.png)<!-- -->
+
 
 #### Prediction and model validation
 
