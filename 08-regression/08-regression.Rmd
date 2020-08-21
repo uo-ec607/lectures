@@ -725,7 +725,7 @@ starwars2 %>% select(contains("."), everything()) %>% head()
 
 We can now see how well our model --- again, only estimated on the shortest 30 characters --- performs against all of the data.
 
-```{r augment2, warning=FALSE}
+```{r predict_plot, warning=FALSE}
 ## Alternative to predict(): Use augment() to add .fitted and .resid, as well as 
 ## .conf.low and .conf.high prediction interval variables to the data.
 starwars2 %>%
@@ -735,7 +735,7 @@ starwars2 %>%
   geom_ribbon(aes(ymin = .conf.low, ymax = .conf.high), alpha = 0.3, col = NA) +
   scale_color_discrete(name = "Training sample?", aesthetics = c("colour", "fill")) +
   labs(
-    title = "Predicting mass with height",
+    title = "Predicting mass from height",
     caption = "Line of best fit, with shaded regions denoting 95% prediction interval."
     )
 ```

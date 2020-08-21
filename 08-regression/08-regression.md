@@ -2539,12 +2539,12 @@ starwars2 %>%
   geom_ribbon(aes(ymin = .conf.low, ymax = .conf.high), alpha = 0.3, col = NA) +
   scale_color_discrete(name = "Training sample?", aesthetics = c("colour", "fill")) +
   labs(
-    title = "Predicting mass with height",
+    title = "Predicting mass from height",
     caption = "Line of best fit, with shaded regions denoting 95% prediction interval."
     )
 ```
 
-![](08-regression_files/figure-html/augment2-1.png)<!-- -->
+![](08-regression_files/figure-html/predict_plot-1.png)<!-- -->
 
 ## Further resources
 
