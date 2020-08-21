@@ -728,11 +728,16 @@ We can now see how well our model --- again, only estimated on the shortest 30 c
 ```{r augment2, warning=FALSE}
 ## Alternative to predict(): Use augment() to add .fitted and .resid, as well as 
 ## .conf.low and .conf.high prediction interval variables to the data.
-ggplot(starwars2, aes(x = height, y = mass, col = rank(height)<=30, fill = rank(height)<=30)) +
-  geom_point() +
+starwars2 %>%
+  ggplot(aes(x = height, y = mass, col = rank(height)<=30, fill = rank(height)<=30)) +
+  geom_point(alpha = 0.7) +
   geom_line(aes(y = .fitted)) +
-  geom_ribbon(aes(ymin = .conf.low, ymax = .conf.high), alpha = 0.3) +
-  scale_color_discrete(name = "Training sample?", aesthetics = c("colour", "fill"))
+  geom_ribbon(aes(ymin = .conf.low, ymax = .conf.high), alpha = 0.3, col = NA) +
+  scale_color_discrete(name = "Training sample?", aesthetics = c("colour", "fill")) +
+  labs(
+    title = "Predicting mass with height",
+    caption = "Line of best fit, with shaded regions denoting 95% prediction interval."
+    )
 ```
 
 ## Further resources
