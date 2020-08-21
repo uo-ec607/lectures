@@ -1039,7 +1039,7 @@ Finally, just a reminder to take a look at the [Further Resources](#further-reso
 
 ## Marginal effects
 
-Calculating marginal effect in a regression is utterly straightforward in cases where there are no non-linearities... just look at the coefficient values. However, that quickly goes out the window when you have interaction effects or non-linear models like probit, logit, etc. Luckily, there are various ways to obtain these from R models. For example, we already saw the **mfx** package above for obtaining marginal effects from GLM models. I want to briefly focus on two of my favourite methods for obtaining marginal effects across different model classes: 1) The **margins** package and 2) a shortcut that works particularly well for a certain class of interaction models.
+Calculating marginal effects in a regression is utterly straightforward in cases where there are no non-linearities... just look at the coefficient values. However, that quickly goes out the window when you have interaction effects or non-linear models like probit, logit, etc. Luckily, there are various ways to obtain these from R models. For example, we already saw the **mfx** package above for obtaining marginal effects from GLM models. I want to briefly focus on two of my favourite methods for obtaining marginal effects across different model classes: 1) The **margins** package and 2) a shortcut that works particularly well for models with interaction terms.
 
 ### The **margins** package
 
