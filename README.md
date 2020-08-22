@@ -24,7 +24,7 @@
 
 ## Details
 
-This is a graduate economics seminar taught by me [Grant McDermott](http://grantmcdermott.com) at the University of Oregon. It is basically a collection of all the things I wish someone had taught me in graduate school.
+This is a graduate economics seminar taught by me ([Grant McDermott](http://grantmcdermott.com)) at the University of Oregon. It's basically a collection of all the things I wish someone had taught me in graduate school.
 
 Please read the [syllabus](https://github.com/uo-ec607/syllabus/blob/master/syllabus.pdf) before you go through any of the lectures. This will detail software requirements and installation, and give you a better sense of the full aims and scope of the course. I also have an "FAQ" section at the end that covers frequently asked questions (or, at least, potentially asked questions). Speaking of which, here follow answers to some questions that are more specifically related to this repo.
 
