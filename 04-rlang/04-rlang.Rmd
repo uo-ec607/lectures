@@ -23,7 +23,6 @@ opts_chunk$set(
   cache=F#, echo=F, warning=F, message=F
   )
 
-
 ```
 
 # Mundarija
@@ -62,7 +61,7 @@ name: prologue
 
 --
 
-### New package(s) you will need for today.
+### Bugun kerak bo'luvchi yangi package(s).
 
 We're going to focus specifically on the [tidyverse](https://www.tidyverse.org/) next class. However, I'll use some functions (and datasets) from it today to illustrate a few general principles.
 - Install it now from your R console: `install.packages("tidyverse")` 
@@ -70,7 +69,7 @@ We're going to focus specifically on the [tidyverse](https://www.tidyverse.org/)
 
 ---
 
-# Agenda
+# Agenda kun tartibi 
 
 Today and the next lecture are going to be very hands on. 
 
@@ -406,7 +405,7 @@ Uh-oh. What went wrong here? (Answer on next slide.)
 
 ---
 
-# Global environment (cont.)
+# Asosiy Global environment (cont.)
 
 The error message provides the answer to our question:
 
