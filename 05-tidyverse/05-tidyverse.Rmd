@@ -402,7 +402,7 @@ starwars %>%
 ---
 
 
-# 4) dplyr::mutate *cont*
+# 4) dplyr::mutate *cont.*
 
 *Note:* `mutate` is order aware. So you can chain multiple mutates in a single call.
 ```{r mutate2}
@@ -473,7 +473,7 @@ starwars %>%
 
 ---
 
-# 4) dplyr::summarise *cont.*
+# 5) dplyr::summarise *cont.*
 
 The same `across`-based workflow that we saw with `mutate` a few slides back also works with `summarise`. For example:
 
