@@ -396,7 +396,7 @@ m
 
 ---
 
-# Object class, type and, structure
+# Object class, type, and structure
 
 Use the `class`, `typeof`, and `str` commands if you want understand more about a particular object.
 
