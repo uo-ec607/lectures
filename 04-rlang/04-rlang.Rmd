@@ -124,8 +124,9 @@ R also comes equipped with a full set of logical operators (and Boolean function
 
 ```{r}
 1 > 2
-1 > 2 | 0.5 ## The "|" stands for "or" (not a pipe a la the shell)
-1 > 2 & 0.5 ## The "&" stands for "and"
+1 > 2 & 1 > 0.5 ## The "&" stands for "and"
+1 > 2 | 1 > 0.5 ## The "|" stands for "or" (not a pipe a la the shell)
+# Note the operator precedence (">" is evaluated before "&" and "|")
 isTRUE (1 < 2)
 ```
 Etc.
