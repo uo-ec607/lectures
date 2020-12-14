@@ -1041,8 +1041,8 @@ P.S. We'll get there later in the course, but keys are also the secret sauce in 
 
 You can set a key when you first create a data.table. E.g.
 - `DT = data.table(x = 1:10, y = LETTERS[1:10], key = "x")`
-- `DT = as.data.table(DF, key = "x")`
-- `setDT(DF, key = "x")`
+- `DT = as.data.table(DT, key = "x")`
+- `setDT(DT, key = "x")`
 
 --
 
@@ -1106,7 +1106,7 @@ mb_key ## print result
 
 --
 
-The keyed data.table version is now **`r round(mb_key_dt[expr=="collapse_dplyr()", median(time)]/mb_key_dt[expr=="collapse_dt_key()", median(time)])`** (!!!) faster than dplyr.
+The keyed data.table version is now **`r round(mb_key_dt[expr=="collapse_dplyr()", median(time)]/mb_key_dt[expr=="collapse_dt_key()", median(time)])`** times(!!!) faster than dplyr.
 --
 
 - That thing you feel... is your face melting.
