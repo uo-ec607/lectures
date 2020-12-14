@@ -385,7 +385,7 @@ Fixed effects models are more common than random or mixed effects models in econ
 
 As you would have guessed by now, there are a number of ways to run instrumental variable (IV) regressions in R. I'll walk through three different options using the `AER::ivreg()`, `estimatr::iv_robust()`, and `lfe::felm()` functions, respectively. These are all going to follow a similar syntax, where the IV first-stage regression is specified after a **`|`** following the main regression. However, there are also some subtle and important differences, which is why I want to go through each of them. After that, I'll let you decide which of the three options is your favourite.
 
-The dataset that we'll be using here is a panel of US cigarette consumption by state, which is taken from the **AER** package ([link](https://cran.r-project.org/web/packages/AER/vignettes/AER.pdf)). Let's load the data, add some modified variables, and then take a quick look at it. Note that I'm going to limit the dataset to 2005 only, given that I want to focus the IV syntax and don't want to deal with the panel structure of the data. (Though that's very easily done, as we've already seen.)
+The dataset that we'll be using here is a panel of US cigarette consumption by state, which is taken from the **AER** package ([link](https://cran.r-project.org/web/packages/AER/vignettes/AER.pdf)). Let's load the data, add some modified variables, and then take a quick look at it. Note that I'm going to limit the dataset to 1995 only, given that I want to focus the IV syntax and don't want to deal with the panel structure of the data. (Though that's very easily done, as we've already seen.)
 
 ```{r, cigs}
 ## Get the data
@@ -407,7 +407,7 @@ cigs95
 
 Now, assume that we are interested in regressing the number of cigarettes packs consumed per capita on their average price and people's real incomes. The problem is that the price is endogenous, because it is simultaneously determined by demand and supply. So we need to instrument for it using different tax variables. That is, we want to run the following two-stage IV regression.
 
-$$price_i = \pi_0 + \pi_1 tdiff_i + + \pi_2 rtax_i + v_i  \hspace{1cm} \text{(First stage)}$$
+$$price_i = \pi_0 + \pi_1 tdiff_i + \pi_2 rtax_i + v_i  \hspace{1cm} \text{(First stage)}$$
 $$packs_i = \beta_0 + \beta_2\widehat{price_i} + \beta_1 rincome_i + u_i \hspace{1cm} \text{(Second stage)}$$
 
 ### Option 1: `AER::ivreg()`
