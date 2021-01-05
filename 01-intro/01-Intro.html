@@ -119,7 +119,7 @@ school."*
 
 - You can swap out one homework assignment for an (approved) final presentation of your own research.
 - [Short presentations](https://github.com/uo-ec607/presentations) summarize either a key lecture reading, or an (approved) software package/platform.
-- We'll get to OSS contribution later in the course, but this year I'm particularly encouraging contributions to [LOST](lost-stats.github.io/).
+- We'll get to OSS contribution later in the course, but I particularly encourage contributions to [LOST](lost-stats.github.io/).
 
 --
 
@@ -136,7 +136,7 @@ PS &amp;mdash; I'll also award a class participation bonus (2.5%) at my discreti
 - Version control with Git(Hub)
 - Learning to love the shell
 - R language basics
-- Data cleaning and wrangling with the "Tidyverse"
+- Data cleaning and wrangling: 1) tidyverse and 2) data.table
 - Webscraping: (1) Server-side and CSS
 - Webscraping: (2) Client-side and APIs
 
@@ -158,9 +158,10 @@ PS &amp;mdash; I'll also award a class participation bonus (2.5%) at my discreti
 - High performance computing (Talapas cluster) 
 - Databases: SQL(ite) and BigQuery
 - Spark
-- Machine learning: (1)
-- Machine learning: (2)... Or, student project presentations (demand dependent)
-- Peer-review and student project presentations (demand dependent)
+- **Options**
+  - Project workflow and automation
+  - Machine learning
+  - Peer-review and student project presentations (demand dependent)
 
 ---
 class: inverse, center, middle
@@ -209,7 +210,7 @@ I'll detail further software requirements as and when the need arises. However, 
   ```
   
   ```
-  ## [1] "R version 3.6.2 (2019-12-12)"
+  ## [1] "R version 4.0.3 (2020-10-10)"
   ```
 
 
@@ -217,7 +218,7 @@ I'll detail further software requirements as and when the need arises. However, 
   
   ```r
   RStudio.Version()$version
-  ## Requires an interactive session but should return something like "[1] ‘1.2.5001’"
+  ## Requires an interactive session but should return something like "[1] ‘1.4.1100’"
   ```
 
 ☑ Have you updated all of your R packages? 
@@ -240,7 +241,7 @@ Open up the [shell](http://happygitwithr.com/shell.html#shell).
   ```
   
   ```
-  ## git version 2.25.0
+  ## git version 2.30.0
   ```
 
 ☑ Did you introduce yourself to Git? (Substitute in your details.)
@@ -667,7 +668,7 @@ But it bears repeating: You can build out some truly impressive complexity and t
 
 ```r
 p2 =
-  p + 
+  p +
   geom_point(aes(size = pop, col = continent), alpha = 0.3) +
   scale_color_brewer(name = "Continent", palette = "Set1") + ## Different colour scale
   scale_size(name = "Population", labels = scales::comma) + ## Different point (i.e. legend) scale
@@ -813,30 +814,20 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
 })();
 (function() {
   "use strict"
-  /* Replace <script> tags in slides area to make them executable
-   *
-   * Runs after post-processing of markdown source into slides and replaces only
-   * <script>s on the last slide of continued slides using the .has-continuation
-   * class added by xaringan. Finally, any <script>s in the slides area that
-   * aren't executed are commented out.
-   */
+  // Replace <script> tags in slides area to make them executable
   var scripts = document.querySelectorAll(
-    '.remark-slides-area .remark-slide-container:not(.has-continuation) script'
+    '.remark-slides-area .remark-slide-container script'
   );
   if (!scripts.length) return;
   for (var i = 0; i < scripts.length; i++) {
     var s = document.createElement('script');
     var code = document.createTextNode(scripts[i].textContent);
     s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
     scripts[i].parentElement.replaceChild(s, scripts[i]);
-  }
-  var scriptsNotExecuted = document.querySelectorAll(
-    '.remark-slides-area .remark-slide-container.has-continuation script'
-  );
-  if (!scriptsNotExecuted.length) return;
-  for (var i = 0; i < scriptsNotExecuted.length; i++) {
-    var comment = document.createComment(scriptsNotExecuted[i].outerHTML)
-    scriptsNotExecuted[i].parentElement.replaceChild(comment, scriptsNotExecuted[i])
   }
 })();
 (function() {

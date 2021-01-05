@@ -125,7 +125,7 @@ school."*
 
 - You can swap out one homework assignment for an (approved) final presentation of your own research.
 - [Short presentations](https://github.com/uo-ec607/presentations) summarize either a key lecture reading, or an (approved) software package/platform.
-- We'll get to OSS contribution later in the course, but this year I'm particularly encouraging contributions to [LOST](lost-stats.github.io/).
+- We'll get to OSS contribution later in the course, but I particularly encourage contributions to [LOST](lost-stats.github.io/).
 
 --
 
@@ -142,7 +142,7 @@ PS &mdash; I'll also award a class participation bonus (2.5%) at my discretion.
 - Version control with Git(Hub)
 - Learning to love the shell
 - R language basics
-- Data cleaning and wrangling with the "Tidyverse"
+- Data cleaning and wrangling: 1) tidyverse and 2) data.table
 - Webscraping: (1) Server-side and CSS
 - Webscraping: (2) Client-side and APIs
 
@@ -164,9 +164,10 @@ PS &mdash; I'll also award a class participation bonus (2.5%) at my discretion.
 - High performance computing (Talapas cluster) 
 - Databases: SQL(ite) and BigQuery
 - Spark
-- Machine learning: (1)
-- Machine learning: (2)... Or, student project presentations (demand dependent)
-- Peer-review and student project presentations (demand dependent)
+- **Options**
+  - Project workflow and automation
+  - Machine learning
+  - Peer-review and student project presentations (demand dependent)
 
 ---
 class: inverse, center, middle
@@ -209,7 +210,7 @@ I'll detail further software requirements as and when the need arises. However, 
 # Checklist
 
 ☑ Do you have the most recent version of R?
-  ```{r}
+  ```{r, cache=FALSE}
   version$version.string
   ```
 
@@ -217,7 +218,7 @@ I'll detail further software requirements as and when the need arises. However, 
 ☑ Do you have the most recent version of RStudio? (The [preview version](https://www.rstudio.com/products/rstudio/download/preview/) is fine.)
   ```{r eval=FALSE}
   RStudio.Version()$version
-  ## Requires an interactive session but should return something like "[1] ‘1.2.5001’"
+  ## Requires an interactive session but should return something like "[1] ‘1.4.1100’"
   ```
 
 ☑ Have you updated all of your R packages? 
@@ -233,7 +234,7 @@ Open up the [shell](http://happygitwithr.com/shell.html#shell).
 - Windows users, make sure that you installed a Bash-compatible version of the shell. If you installed [Git for Windows](https://gitforwindows.org), then you should be good to go.
 
 ☑ Which version of Git have you installed?
-  ```{bash}
+  ```{bash, cache=FALSE}
   git --version
   ```
 
@@ -273,7 +274,7 @@ name: r4ds
 # Why R and RStudio? (cont.)
 ```{R, indeeddotcom, echo = F, fig.height = 6, fig.width = 9, dev = "svg"}
 # The popularity data
-pop_df <- 
+pop_df = 
   data.frame(
   lang = c("SQL", "Python", "R", "SAS", "Matlab", "SPSS", "Stata"),
   n_jobs = c(107130, 66976, 48772, 25644, 11464, 3717, 1624),
@@ -609,7 +610,7 @@ But it bears repeating: You can build out some truly impressive complexity and t
 
 ```{r layers1}
 p2 =
-  p + 
+  p +
   geom_point(aes(size = pop, col = continent), alpha = 0.3) +
   scale_color_brewer(name = "Continent", palette = "Set1") + ## Different colour scale
   scale_size(name = "Population", labels = scales::comma) + ## Different point (i.e. legend) scale
