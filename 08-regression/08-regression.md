@@ -26,21 +26,16 @@ Today's lecture is about the bread-and-butter tool of applied econometrics and d
 
 It's important to note that "base" R already provides all of the tools we need for basic regression analysis. However, we'll be using several additional packages today, because they will make our lives easier and offer increased power for some more sophisticated analyses.
 
-- New: **broom**, **estimatr**, **fixest**, **sandwich**, **lmtest**, **AER**, **lfe**, **mfx**, **margins**, **modelsummary**, **vtable**
+- New: **broom**, **estimatr**, **fixest**, **sandwich**, **lmtest**, **AER**, **mfx**, **margins**, **modelsummary**, **vtable**
 - Already used: **tidyverse**, **hrbrthemes**, **listviewer**
 
-A convenient way to install (if necessary) and load everything is by running the below code chunk. Note that I'm opting for the development versions of **broom** and **modelsummary** because these contain a few features that aren't available in the respective CRAN releases at the time of writing.
+A convenient way to install (if necessary) and load everything is by running the below code chunk.
 
 
 ```r
 ## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(mfx, tidyverse, hrbrthemes, estimatr, fixest, sandwich, lmtest, AER, lfe, margins, vtable)
-
-## Use dev versions of these two packages for some extra features
-pacman::p_install_gh("tidymodels/broom") 
-pacman::p_install_gh("vincentarelbundock/modelsummary")
-
+pacman::p_load(mfx, tidyverse, hrbrthemes, estimatr, fixest, sandwich, lmtest, AER, margins, vtable, broom, modelsummary)
 ## My preferred ggplot2 plotting theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
@@ -117,8 +112,8 @@ The resulting object is pretty terse, but that's only because it buries most of 
 listviewer::jsonedit(ols1, mode="view") ## Better for R Markdown
 ```
 
-<!--html_preserve--><div id="htmlwidget-9b7f0b31c82a85e5023d" style="width:100%;height:10%;" class="jsonedit html-widget"></div>
-<script type="application/json" data-for="htmlwidget-9b7f0b31c82a85e5023d">{"x":{"data":{"coefficients":{"(Intercept)":-13.8103136287302,"height":0.638571004587035},"residuals":{"1":-19.0238991602397,"2":-17.8310441373045,"3":-15.4925028116251,"4":20.8189707021492,"5":-32.9753370593249,"6":20.1446748122381,"7":-16.5539021281305,"8":-16.1310738162121,"9":-19.0481802106971,"10":-25.4096092061101,"11":-22.2410352336323,"13":-19.7838754171137,"14":-21.132467196936,"15":-22.6624701648267,"16":1260.060387826,"17":-17.7467571510656,"18":8.86753280306401,"19":-11.335372674014,"20":-19.7467571510656,"21":-24.8481802106971,"22":26.0961127113233,"23":5.48182275719367,"24":-20.2167541831749,"25":-18.9396121740008,"26":-18.132467196936,"29":-22.3839347749288,"30":-20.3610471051953,"31":-20.4338902565674,"32":-18.1567482473934,"34":-45.3496032703285,"35":-47.2295913987655,"39":-17.7096388850176,"42":-17.9396121740008,"44":-44.8553251877619,"45":-1.21536080245099,"47":-25.2767601189564,"48":-22.2410352336323,"49":-30.6267452795026,"50":-24.3496032703285,"52":-53.6867512152841,"55":-26.2410352336323,"57":-19.3253222198712,"60":-23.0481802106971,"61":-38.5467571510656,"62":-42.1924731327175,"64":-29.4338902565674,"66":-24.0481802106971,"67":-38.4696151418916,"68":-10.6267452795026,"69":-44.4224464217007,"72":-21.6367957336455,"74":-61.4338902565674,"76":-42.8553251877619,"77":34.8789766379308,"78":0.384698555364137,"79":-27.2410352336323,"80":-51.8553251877619,"81":-37.7353133161989,"87":-46.5539021281305},"effects":{"(Intercept)":-747.466613505302,"height":172.783889465672,"3":-8.91507473191358,"4":21.4194000157428,"5":-29.4427951434848,"6":22.0983868653301,"7":-13.8671619244768,"8":-9.61003251731305,"9":-17.3764020616673,"10":-23.6814442762678,"11":-20.8511909886646,"12":-20.6495024046433,"13":-19.2915287054689,"14":-20.4268242076726,"15":1262.18326022153,"16":-15.3419508514742,"17":10.7084712945311,"18":-3.06634116992954,"19":-17.3419508514742,"20":-23.1764020616673,"21":26.8093155865418,"22":6.75889344053646,"23":-18.2066553492705,"24":-16.8167397784715,"25":-16.2915287054689,"26":-15.3554124487178,"27":-17.3923729974795,"28":-19.3259799156619,"29":-16.936064344863,"30":-44.4108532718603,"31":-47.8696712630454,"32":-12.0343992983051,"33":-15.8167397784715,"34":-42.9016131346699,"35":5.47484083888535,"36":-22.4772463536779,"37":-20.8511909886646,"38":-29.8007688426593,"39":-23.4108532718603,"40":-52.0713598470667,"41":-24.8511909886646,"42":-17.7663176324662,"43":-21.3764020616673,"44":-36.1419508514742,"45":-39.5621197098763,"46":-28.3259799156619,"47":-22.3764020616673,"48":-35.9520352806753,"49":-9.80076884265928,"50":-45.3444601900428,"51":-14.1007923801226,"52":-60.3259799156619,"53":-40.9016131346699,"54":34.6899910201503,"55":-0.819249117040115,"56":-25.8511909886646,"57":-49.9016131346699,"58":-37.360431125855,"59":-43.8671619244768},"rank":2,"fitted.values":{"1":96.0238991602397,"2":92.8310441373045,"3":47.4925028116251,"4":115.181029297851,"5":81.9753370593249,"6":99.8553251877619,"7":91.5539021281305,"8":48.1310738162121,"9":103.048180210697,"10":102.40960920611,"11":106.241035233632,"13":131.783875417114,"14":101.132467196936,"15":96.6624701648267,"16":97.939612174001,"17":94.7467571510656,"18":101.132467196936,"19":28.335372674014,"20":94.7467571510656,"21":103.048180210697,"22":113.903887288677,"23":107.518177242806,"24":99.2167541831749,"25":97.9396121740008,"26":101.132467196936,"29":42.3839347749288,"30":88.3610471051953,"31":109.433890256567,"32":108.156748247393,"34":111.349603270329,"35":129.229591398766,"39":57.7096388850176,"42":97.9396121740008,"44":99.8553251877619,"45":46.215360802451,"47":90.2767601189564,"48":106.241035233632,"49":112.626745279503,"50":111.349603270329,"52":103.686751215284,"55":106.241035233632,"57":104.325322219871,"60":103.048180210697,"61":94.7467571510656,"62":92.1924731327175,"64":109.433890256567,"66":103.048180210697,"67":93.4696151418916,"68":112.626745279503,"69":132.422446421701,"72":36.6367957336455,"74":109.433890256567,"76":99.8553251877619,"77":124.121023362069,"78":135.615301444636,"79":106.241035233632,"80":99.8553251877619,"81":117.735313316199,"87":91.5539021281305},"assign":[0,1],"qr":{"qr":[[-7.68114574786861,-1336.64954904012],[0.130188910980824,270.578977473948],[0.130188910980824,0.287474707506683],[0.130188910980824,-0.104277826225195],[0.130188910980824,0.0879026620206323],[0.130188910980824,-0.0155791393425052],[0.130188910980824,0.0324659827189515],[0.130188910980824,0.283778928886571],[0.130188910980824,-0.0340580324430655],[0.130188910980824,-0.0303622538229534],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.200368070348108],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.00289975375805507],[0.130188910980824,-0.00449180348216904],[0.130188910980824,0.0139870896183912],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.398348066110045],[0.130188910980824,0.0139870896183912],[0.130188910980824,-0.0340580324430655],[0.130188910980824,-0.0968862689849704],[0.130188910980824,-0.0599284827838499],[0.130188910980824,-0.0118833607223932],[0.130188910980824,-0.00449180348216904],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.31704093646758],[0.130188910980824,0.0509448758195118],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0636242614039619],[0.130188910980824,-0.0821031545045222],[0.130188910980824,-0.18558495586766],[0.130188910980824,0.22834224958489],[0.130188910980824,-0.00449180348216904],[0.130188910980824,-0.0155791393425052],[0.130188910980824,0.294866264746907],[0.130188910980824,0.0398575399591756],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0894947117447463],[0.130188910980824,-0.0821031545045222],[0.130188910980824,-0.0377538110631775],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0414495896832896],[0.130188910980824,-0.0340580324430655],[0.130188910980824,0.0139870896183912],[0.130188910980824,0.0287702040988395],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0340580324430655],[0.130188910980824,0.0213786468586153],[0.130188910980824,-0.0894947117447463],[0.130188910980824,-0.20406384896822],[0.130188910980824,0.350302944048588],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0155791393425052],[0.130188910980824,-0.156018726906763],[0.130188910980824,-0.22254274206878],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0155791393425052],[0.130188910980824,-0.119060940705643],[0.130188910980824,0.0324659827189515]],"qraux":[1.13018891098082,1.02507442547873],"pivot":[1,2],"tol":1e-07,"rank":2},"df.residual":57,"na.action":{},"xlevels":{},"call":{},"terms":{},"model":{"mass":[77,75,32,136,49,120,75,32,84,77,84,112,80,74,1358,77,110,17,75,78.2,140,113,79,79,83,20,68,89,90,66,82,40,80,55,45,65,84,82,87,50,80,85,80,56.2,50,80,79,55,102,88,15,48,57,159,136,79,48,80,45],"height":[172,167,96,202,150,178,165,97,183,182,188,228,180,173,175,170,180,66,170,183,200,190,177,175,180,88,160,193,191,196,224,112,175,178,94,163,188,198,196,184,188,185,183,170,166,193,183,168,198,229,79,193,178,216,234,188,178,206,165]}},"options":{"mode":"view","modes":["code","form","text","tree","view"]}},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
+<!--html_preserve--><div id="htmlwidget-a43abc11068780b418bf" style="width:100%;height:10%;" class="jsonedit html-widget"></div>
+<script type="application/json" data-for="htmlwidget-a43abc11068780b418bf">{"x":{"data":{"coefficients":{"(Intercept)":-13.8103136287302,"height":0.638571004587035},"residuals":{"1":-19.0238991602397,"2":-17.8310441373045,"3":-15.4925028116251,"4":20.8189707021492,"5":-32.9753370593249,"6":20.1446748122381,"7":-16.5539021281305,"8":-16.1310738162121,"9":-19.0481802106971,"10":-25.4096092061101,"11":-22.2410352336323,"13":-19.7838754171137,"14":-21.132467196936,"15":-22.6624701648267,"16":1260.060387826,"17":-17.7467571510656,"18":8.86753280306401,"19":-11.335372674014,"20":-19.7467571510656,"21":-24.8481802106971,"22":26.0961127113233,"23":5.48182275719367,"24":-20.2167541831749,"25":-18.9396121740008,"26":-18.132467196936,"29":-22.3839347749288,"30":-20.3610471051953,"31":-20.4338902565674,"32":-18.1567482473934,"34":-45.3496032703285,"35":-47.2295913987655,"39":-17.7096388850176,"42":-17.9396121740008,"44":-44.8553251877619,"45":-1.21536080245099,"47":-25.2767601189564,"48":-22.2410352336323,"49":-30.6267452795026,"50":-24.3496032703285,"52":-53.6867512152841,"55":-26.2410352336323,"57":-19.3253222198712,"60":-23.0481802106971,"61":-38.5467571510656,"62":-42.1924731327175,"64":-29.4338902565674,"66":-24.0481802106971,"67":-38.4696151418916,"68":-10.6267452795026,"69":-44.4224464217007,"72":-21.6367957336455,"74":-61.4338902565674,"76":-42.8553251877619,"77":34.8789766379308,"78":0.384698555364137,"79":-27.2410352336323,"80":-51.8553251877619,"81":-37.7353133161989,"87":-46.5539021281305},"effects":{"(Intercept)":-747.466613505302,"height":172.783889465672,"3":-8.91507473191358,"4":21.4194000157428,"5":-29.4427951434848,"6":22.0983868653301,"7":-13.8671619244768,"8":-9.61003251731305,"9":-17.3764020616673,"10":-23.6814442762678,"11":-20.8511909886646,"12":-20.6495024046433,"13":-19.2915287054689,"14":-20.4268242076726,"15":1262.18326022153,"16":-15.3419508514742,"17":10.7084712945311,"18":-3.06634116992954,"19":-17.3419508514742,"20":-23.1764020616673,"21":26.8093155865418,"22":6.75889344053646,"23":-18.2066553492705,"24":-16.8167397784715,"25":-16.2915287054689,"26":-15.3554124487178,"27":-17.3923729974795,"28":-19.3259799156619,"29":-16.936064344863,"30":-44.4108532718603,"31":-47.8696712630454,"32":-12.0343992983051,"33":-15.8167397784715,"34":-42.9016131346699,"35":5.47484083888535,"36":-22.4772463536779,"37":-20.8511909886646,"38":-29.8007688426593,"39":-23.4108532718603,"40":-52.0713598470667,"41":-24.8511909886646,"42":-17.7663176324662,"43":-21.3764020616673,"44":-36.1419508514742,"45":-39.5621197098763,"46":-28.3259799156619,"47":-22.3764020616673,"48":-35.9520352806753,"49":-9.80076884265928,"50":-45.3444601900428,"51":-14.1007923801226,"52":-60.3259799156619,"53":-40.9016131346699,"54":34.6899910201503,"55":-0.819249117040115,"56":-25.8511909886646,"57":-49.9016131346699,"58":-37.360431125855,"59":-43.8671619244768},"rank":2,"fitted.values":{"1":96.0238991602397,"2":92.8310441373045,"3":47.4925028116251,"4":115.181029297851,"5":81.9753370593249,"6":99.8553251877619,"7":91.5539021281305,"8":48.1310738162121,"9":103.048180210697,"10":102.40960920611,"11":106.241035233632,"13":131.783875417114,"14":101.132467196936,"15":96.6624701648267,"16":97.939612174001,"17":94.7467571510656,"18":101.132467196936,"19":28.335372674014,"20":94.7467571510656,"21":103.048180210697,"22":113.903887288677,"23":107.518177242806,"24":99.2167541831749,"25":97.9396121740008,"26":101.132467196936,"29":42.3839347749288,"30":88.3610471051953,"31":109.433890256567,"32":108.156748247393,"34":111.349603270329,"35":129.229591398766,"39":57.7096388850176,"42":97.9396121740008,"44":99.8553251877619,"45":46.215360802451,"47":90.2767601189564,"48":106.241035233632,"49":112.626745279503,"50":111.349603270329,"52":103.686751215284,"55":106.241035233632,"57":104.325322219871,"60":103.048180210697,"61":94.7467571510656,"62":92.1924731327175,"64":109.433890256567,"66":103.048180210697,"67":93.4696151418916,"68":112.626745279503,"69":132.422446421701,"72":36.6367957336455,"74":109.433890256567,"76":99.8553251877619,"77":124.121023362069,"78":135.615301444636,"79":106.241035233632,"80":99.8553251877619,"81":117.735313316199,"87":91.5539021281305},"assign":[0,1],"qr":{"qr":[[-7.68114574786861,-1336.64954904012],[0.130188910980824,270.578977473948],[0.130188910980824,0.287474707506683],[0.130188910980824,-0.104277826225195],[0.130188910980824,0.0879026620206323],[0.130188910980824,-0.0155791393425052],[0.130188910980824,0.0324659827189515],[0.130188910980824,0.283778928886571],[0.130188910980824,-0.0340580324430655],[0.130188910980824,-0.0303622538229534],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.200368070348108],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.00289975375805507],[0.130188910980824,-0.00449180348216904],[0.130188910980824,0.0139870896183912],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.398348066110045],[0.130188910980824,0.0139870896183912],[0.130188910980824,-0.0340580324430655],[0.130188910980824,-0.0968862689849704],[0.130188910980824,-0.0599284827838499],[0.130188910980824,-0.0118833607223932],[0.130188910980824,-0.00449180348216904],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.31704093646758],[0.130188910980824,0.0509448758195118],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0636242614039619],[0.130188910980824,-0.0821031545045222],[0.130188910980824,-0.18558495586766],[0.130188910980824,0.22834224958489],[0.130188910980824,-0.00449180348216904],[0.130188910980824,-0.0155791393425052],[0.130188910980824,0.294866264746907],[0.130188910980824,0.0398575399591756],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0894947117447463],[0.130188910980824,-0.0821031545045222],[0.130188910980824,-0.0377538110631775],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0414495896832896],[0.130188910980824,-0.0340580324430655],[0.130188910980824,0.0139870896183912],[0.130188910980824,0.0287702040988395],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0340580324430655],[0.130188910980824,0.0213786468586153],[0.130188910980824,-0.0894947117447463],[0.130188910980824,-0.20406384896822],[0.130188910980824,0.350302944048588],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0155791393425052],[0.130188910980824,-0.156018726906763],[0.130188910980824,-0.22254274206878],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0155791393425052],[0.130188910980824,-0.119060940705643],[0.130188910980824,0.0324659827189515]],"qraux":[1.13018891098082,1.02507442547873],"pivot":[1,2],"tol":1e-07,"rank":2},"df.residual":57,"na.action":{},"xlevels":{},"call":{},"terms":{},"model":{"mass":[77,75,32,136,49,120,75,32,84,77,84,112,80,74,1358,77,110,17,75,78.2,140,113,79,79,83,20,68,89,90,66,82,40,80,55,45,65,84,82,87,50,80,85,80,56.2,50,80,79,55,102,88,15,48,57,159,136,79,48,80,45],"height":[172,167,96,202,150,178,165,97,183,182,188,228,180,173,175,170,180,66,170,183,200,190,177,175,180,88,160,193,191,196,224,112,175,178,94,163,188,198,196,184,188,185,183,170,166,193,183,168,198,229,79,193,178,216,234,188,178,206,165]}},"options":{"mode":"view","modes":["code","form","text","tree","view"]}},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
 
 As we can see, this `ols1` object has a bunch of important slots... containing everything from the regression coefficients, to vectors of the residuals and fitted (i.e. predicted) values, to the rank of the design matrix, to the input data, etc. etc. To summarise the key pieces of information, we can use the --- *wait for it* --- generic `summary()` function. This will look pretty similar to the default regression output from Stata that many of you will be used to.
 
@@ -569,8 +564,8 @@ ols_fe
 ## height 0.974876   0.044291   22.01 < 2.2e-16 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## Log-likelihood: -214.02   Adj. R2: 0.99282 
-##                         R2-Within: 0.66249
+## RMSE: 9.6906     Adj. R2: 0.99282 
+##                Within R2: 0.662493
 ```
 
 Note that the resulting model object has automatically clustered the standard errors by the fixed effect variable (i.e. species). We'll explore some more options for adjusting standard errors in **fixest** objects shortly, but you can specify vanilla standard errors simply by calling the `se` argument in `summary.fixest()` as follows.
@@ -589,8 +584,8 @@ summary(ols_fe, se = 'standard')
 ## height 0.974876   0.136463  7.1439 1.38e-07 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## Log-likelihood: -214.02   Adj. R2: 0.99282 
-##                         R2-Within: 0.66249
+## RMSE: 9.6906     Adj. R2: 0.99282 
+##                Within R2: 0.662493
 ```
 
 Before continuing, let's quickly save a "tidied" data frame of the coefficients for later use. I'll use vanilla standard errors again, if only to show you that the `broom::tidy()` method for `fixest` objects also accepts an `se` argument. This basically just provides another convenient way for you to adjust standard errors for your models on the fly.
@@ -617,12 +612,12 @@ ols_hdfe
 ## Observations: 55 
 ## Fixed-effects: species: 30,  homeworld: 38
 ## Standard-errors: Clustered (species) 
-##        Estimate Std. Error t value Pr(>|t|) 
-## height 0.755844   0.332888  2.2706 0.264107 
+##        Estimate Std. Error t value Pr(>|t|)    
+## height 0.755844   0.332888  2.2706  0.03078 *  
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## Log-likelihood: -188.55   Adj. R2: 1.00768 
-##                         R2-Within: 0.48723
+## RMSE: 7.4579     Adj. R2: 1.0077  
+##                Within R2: 0.487231
 ```
 
 Easy enough, but the standard errors of the above model are automatically clustered by species, i.e. the first fixed effect variable. Let's go a step further and cluster by both "species" and "homeworld". ^[I most definitely am not claiming that this is a particularly good or sensible clustering strategy, but just go with it.] We can do this using either the `se` or `cluster` arguments of `summary.fixest()`. I'll (re)assign the model to the same `ols_hdfe` object, but you could, of course, create a new object if you so wished.
@@ -641,11 +636,11 @@ ols_hdfe
 ## Fixed-effects: species: 30,  homeworld: 38
 ## Standard-errors: Two-way (species & homeworld) 
 ##        Estimate Std. Error t value Pr(>|t|)    
-## height 0.755844   0.117257   6.446  0.09798 .  
+## height 0.755844   0.116416  6.4926 4.16e-07 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## Log-likelihood: -188.55   Adj. R2: 1.00768 
-##                         R2-Within: 0.48723
+## RMSE: 7.4579     Adj. R2: 1.0077  
+##                Within R2: 0.487231
 ```
 
 #### Comparing our model coefficients
@@ -693,7 +688,7 @@ Fixed effects models are more common than random or mixed effects models in econ
 
 ## Instrumental variables
 
-As you would have guessed by now, there are a number of ways to run instrumental variable (IV) regressions in R. I'll walk through three different options using the `AER::ivreg()`, `estimatr::iv_robust()`, and `lfe::felm()` functions, respectively. These are all going to follow a similar syntax, where the IV first-stage regression is specified after a **`|`** following the main regression. However, there are also some subtle and important differences, which is why I want to go through each of them. After that, I'll let you decide which of the three options is your favourite.
+As you would have guessed by now, there are a number of ways to run instrumental variable (IV) regressions in R. I'll walk through three different options using the `AER::ivreg()`, `estimatr::iv_robust()`, and `fixest::feols()` functions, respectively. These are all going to follow a similar syntax, where the IV first-stage regression is specified after a **`|`** following the main regression. However, there are also some subtle and important differences, which is why I want to go through each of them. After that, I'll let you decide which of the three options is your favourite.
 
 The dataset that we'll be using here is a panel of US cigarette consumption by state, which is taken from the **AER** package ([link](https://cran.r-project.org/web/packages/AER/vignettes/AER.pdf)). Let's load the data, add some modified variables, and then take a quick look at it. Note that I'm going to limit the dataset to 1995 only, given that I want to focus the IV syntax and don't want to deal with the panel structure of the data. (Though that's very easily done, as we've already seen.)
 
@@ -837,84 +832,69 @@ summary(iv_reg_robust, diagnostics = TRUE)
 ## F-statistic:  15.5 on 2 and 45 DF,  p-value: 7.55e-06
 ```
 
-### Option 3: `felm::lfe()`
+### Option 3: `fixest::feols()`
 
-Finally, we get to my personal favourite IV option using the `felm()` function from the **lfe** package. This is actually my favourite option; not only because I work mostly with panel data, but also because I find it has the most natural syntax.^[The **fixest** package that I concentrated on earlier, doesn't yet support IV regression. However, even if it is a little slower, `lfe::felm()` includes basically all of same benefits: support for high-level fixed effects, multiway clustering, etc.] In fact, it very closely resembles Stata's approach to writing out the first-stage, where you specify the endogenous variable(s) and the instruments only.
+Finally, we get to the `feols()` function from the aforementioned **fixest** package. This is actually my favourite option; not only because I work mostly with panel data, but also because I find it has the most natural syntax. In fact, it very closely resembles Stata's approach to writing out the first-stage, where you specify the endogenous variable(s) and the instruments only.
 
 
 ```r
-# library(lfe) ## Already loaded
-
-iv_felm = 
-  felm(
+# library(fixest) ## Already loaded
+iv_feols = 
+  feols(
     log(packs) ~ log(rincome) |
-      0 | ## No FEs
-      (log(rprice) ~ tdiff + rtax), ## First-stage. Note the surrounding parentheses
+      log(rprice) ~ tdiff + rtax, ## First-stage (must be in the final slot, although here we don't have FEs) 
     data = cigs95
   )
-summary(iv_felm)
+# summary(iv_feols_all, stage = 1) ## Show the 1st stage in detail
+iv_feols
 ```
 
 ```
-## 
-## Call:
-##    felm(formula = log(packs) ~ log(rincome) | 0 | (log(rprice) ~      tdiff + rtax), data = cigs95) 
-## 
-## Residuals:
-##      Min       1Q   Median       3Q      Max 
-## -0.60069 -0.08622 -0.00100  0.11647  0.37342 
-## 
-## Coefficients:
-##                    Estimate Std. Error t value Pr(>|t|)    
-## (Intercept)          9.8950     1.0586   9.348 4.12e-12 ***
-## log(rincome)         0.2804     0.2386   1.175    0.246    
-## `log(rprice)(fit)`  -1.2774     0.2632  -4.853 1.50e-05 ***
+## TSLS estimation, Dep. Var.: log(packs), Endo.: log(rprice), Instr.: tdiff, rtax
+## Second stage: Dep. Var.: log(packs)
+## Observations: 48 
+## Standard-errors: Standard 
+##                  Estimate Std. Error t value    Pr(>|t|)    
+## (Intercept)      9.895000   1.058600  9.3476 4.12000e-12 ***
+## fit_log(rprice) -1.277400   0.263199 -4.8535 1.50000e-05 ***
+## log(rincome)     0.280405   0.238565  1.1754 2.46025e-01    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## 
-## Residual standard error: 0.1879 on 45 degrees of freedom
-## Multiple R-squared(full model): 0.4294   Adjusted R-squared: 0.4041 
-## Multiple R-squared(proj model): 0.4294   Adjusted R-squared: 0.4041 
-## F-statistic(full model):13.28 on 2 and 45 DF, p-value: 2.931e-05 
-## F-statistic(proj model): 13.28 on 2 and 45 DF, p-value: 2.931e-05 
-## F-statistic(endog. vars):23.56 on 1 and 45 DF, p-value: 1.496e-05
+## RMSE: 0.181891   Adj. R2: 0.404063
+## F-test (1st stage): stat = 244.73    , p < 2.2e-16 , on 2 and 44 DoF.
+##         Wu-Hausman: stat =   3.0678  , p = 0.086825, on 1 and 44 DoF.
+##             Sargan: stat =   0.332622, p = 0.564119, on 1 DoF.
 ```
-Note that in the above example, we inserted a "0" where the fixed effect slot goes, since we only used a subset of the data. Just for fun then, here's another IV regression with `felm()`. This time, I'll use the whole `cigs` data frame (i.e. not subsetting to 1995), and use both year and state fixed effects to control for the panel structure.
+Note that in the above example, we don't any fixed effects. However, `feols()` automatically recognizes the IV first-stage, which *must* come last in the formula. Just to emphasise --- and to demonstrate how easy it is to extend **fixest**'s performance to panel IV cases --- here's a final `feols()` example. This time, I'll use the whole `cigs` data frame (i.e. not subsetting to 1995), and use both year and state fixed effects to control for the panel structure.
 
 
 ```r
-iv_felm_all = 
-  felm(
+iv_feols_all = 
+  feols(
     log(packs) ~ log(rincome) |
-      year + state | ## Now include FEs
-      (log(rprice) ~ tdiff + rtax), 
-    data = cigs ## Use whole panel data set
+      year + state |               ## Now include FEs
+      log(rprice) ~ tdiff + rtax,  ## 
+    data = cigs                    ## Use whole panel data set
   )
-summary(iv_felm_all)
+iv_feols_all
 ```
 
 ```
-## 
-## Call:
-##    felm(formula = log(packs) ~ log(rincome) | year + state | (log(rprice) ~      tdiff + rtax), data = cigs) 
-## 
-## Residuals:
-##      Min       1Q   Median       3Q      Max 
-## -0.08393 -0.03851  0.00000  0.03851  0.08393 
-## 
-## Coefficients:
-##                    Estimate Std. Error t value Pr(>|t|)    
-## log(rincome)         0.4620     0.3081   1.500    0.141    
-## `log(rprice)(fit)`  -1.2024     0.1712  -7.024  9.4e-09 ***
+## TSLS estimation, Dep. Var.: log(packs), Endo.: log(rprice), Instr.: tdiff, rtax
+## Second stage: Dep. Var.: log(packs)
+## Observations: 96 
+## Fixed-effects: year: 2,  state: 48
+## Standard-errors: Clustered (year) 
+##                 Estimate Std. Error       t value Pr(>|t|)    
+## fit_log(rprice) -1.20240   1.01e-15 -1.189742e+15 5.35e-16 ***
+## log(rincome)     0.46203   5.83e-16  7.920824e+14 8.04e-16 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## 
-## Residual standard error: 0.06453 on 45 degrees of freedom
-## Multiple R-squared(full model): 0.9668   Adjusted R-squared: 0.9299 
-## Multiple R-squared(proj model): 0.5466   Adjusted R-squared: 0.04281 
-## F-statistic(full model):26.21 on 50 and 45 DF, p-value: < 2.2e-16 
-## F-statistic(proj model): 27.71 on 2 and 45 DF, p-value: 1.436e-08 
-## F-statistic(endog. vars):49.33 on 1 and 45 DF, p-value: 9.399e-09
+## RMSE: 0.044178     Adj. R2: 0.929864
+##                  Within R2: 0.546593
+## F-test (1st stage): stat = 75.65  , p = 5.758e-15, on 2 and 44 DoF.
+##         Wu-Hausman: stat =  3.5015, p = 0.067972 , on 1 and 44 DoF.
+##             Sargan: stat =  9.6761, p = 0.001867 , on 1 DoF.
 ```
 
 ## Other models
@@ -1197,498 +1177,159 @@ There are loads of [different options](https://hughjonesd.github.io/huxtable/des
 msummary(list(ols1, ols_ie, ols_fe, ols_hdfe))
 ```
 
-<!--html_preserve--><style>html {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
-}
-
-#xvgvcvafof .gt_table {
-  display: table;
-  border-collapse: collapse;
-  margin-left: auto;
-  margin-right: auto;
-  color: #333333;
-  font-size: 16px;
-  font-weight: normal;
-  font-style: normal;
-  background-color: #FFFFFF;
-  width: auto;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #A8A8A8;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #A8A8A8;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-}
-
-#xvgvcvafof .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#xvgvcvafof .gt_title {
-  color: #333333;
-  font-size: 125%;
-  font-weight: initial;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  border-bottom-color: #FFFFFF;
-  border-bottom-width: 0;
-}
-
-#xvgvcvafof .gt_subtitle {
-  color: #333333;
-  font-size: 85%;
-  font-weight: initial;
-  padding-top: 0;
-  padding-bottom: 4px;
-  border-top-color: #FFFFFF;
-  border-top-width: 0;
-}
-
-#xvgvcvafof .gt_bottom_border {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#xvgvcvafof .gt_col_headings {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#xvgvcvafof .gt_col_heading {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 6px;
-  padding-left: 5px;
-  padding-right: 5px;
-  overflow-x: hidden;
-}
-
-#xvgvcvafof .gt_column_spanner_outer {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: 4px;
-  padding-right: 4px;
-}
-
-#xvgvcvafof .gt_column_spanner_outer:first-child {
-  padding-left: 0;
-}
-
-#xvgvcvafof .gt_column_spanner_outer:last-child {
-  padding-right: 0;
-}
-
-#xvgvcvafof .gt_column_spanner {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 6px;
-  overflow-x: hidden;
-  display: inline-block;
-  width: 100%;
-}
-
-#xvgvcvafof .gt_group_heading {
-  padding: 8px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-}
-
-#xvgvcvafof .gt_empty_group_heading {
-  padding: 0.5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: middle;
-}
-
-#xvgvcvafof .gt_from_md > :first-child {
-  margin-top: 0;
-}
-
-#xvgvcvafof .gt_from_md > :last-child {
-  margin-bottom: 0;
-}
-
-#xvgvcvafof .gt_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  margin: 10px;
-  border-top-style: solid;
-  border-top-width: 1px;
-  border-top-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  overflow-x: hidden;
-}
-
-#xvgvcvafof .gt_stub {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 12px;
-}
-
-#xvgvcvafof .gt_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#xvgvcvafof .gt_first_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-}
-
-#xvgvcvafof .gt_grand_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#xvgvcvafof .gt_first_grand_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-style: double;
-  border-top-width: 6px;
-  border-top-color: #D3D3D3;
-}
-
-#xvgvcvafof .gt_striped {
-  background-color: rgba(128, 128, 128, 0.05);
-}
-
-#xvgvcvafof .gt_table_body {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#xvgvcvafof .gt_footnotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#xvgvcvafof .gt_footnote {
-  margin: 0px;
-  font-size: 90%;
-  padding: 4px;
-}
-
-#xvgvcvafof .gt_sourcenotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#xvgvcvafof .gt_sourcenote {
-  font-size: 90%;
-  padding: 4px;
-}
-
-#xvgvcvafof .gt_left {
-  text-align: left;
-}
-
-#xvgvcvafof .gt_center {
-  text-align: center;
-}
-
-#xvgvcvafof .gt_right {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-#xvgvcvafof .gt_font_normal {
-  font-weight: normal;
-}
-
-#xvgvcvafof .gt_font_bold {
-  font-weight: bold;
-}
-
-#xvgvcvafof .gt_font_italic {
-  font-style: italic;
-}
-
-#xvgvcvafof .gt_super {
-  font-size: 65%;
-}
-
-#xvgvcvafof .gt_footnote_marks {
-  font-style: italic;
-  font-size: 65%;
-}
-</style>
-<div id="xvgvcvafof" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
-  
-  <thead class="gt_col_headings">
-    <tr>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1"> </th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">Model 1</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">Model 2</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">Model 3</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">Model 4</th>
-    </tr>
-  </thead>
-  <tbody class="gt_table_body">
-    <tr>
-      <td class="gt_row gt_left">(Intercept)</td>
-      <td class="gt_row gt_left">-13.810</td>
-      <td class="gt_row gt_left">-61.000</td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left"></td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left">(111.155)</td>
-      <td class="gt_row gt_left">(204.057)</td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left"></td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left">height</td>
-      <td class="gt_row gt_left">0.639</td>
-      <td class="gt_row gt_left">0.733</td>
-      <td class="gt_row gt_left">0.975</td>
-      <td class="gt_row gt_left">0.756</td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left">(0.626)</td>
-      <td class="gt_row gt_left">(1.274)</td>
-      <td class="gt_row gt_left">(0.044)</td>
-      <td class="gt_row gt_left">(0.117)</td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left">gendermasculine</td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left">-15.722</td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left"></td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left">(219.544)</td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left"></td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left">gendermasculine × height</td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left">0.163</td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left"></td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;"></td>
-      <td class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;"></td>
-      <td class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;">(1.349)</td>
-      <td class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;"></td>
-      <td class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;"></td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left">Num.Obs.</td>
-      <td class="gt_row gt_left">59</td>
-      <td class="gt_row gt_left">22</td>
-      <td class="gt_row gt_left">58</td>
-      <td class="gt_row gt_left">55</td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left">R2</td>
-      <td class="gt_row gt_left">0.018</td>
-      <td class="gt_row gt_left">0.444</td>
-      <td class="gt_row gt_left">0.997</td>
-      <td class="gt_row gt_left">0.998</td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left">R2 Adj.</td>
-      <td class="gt_row gt_left">0.001</td>
-      <td class="gt_row gt_left">0.352</td>
-      <td class="gt_row gt_left">0.993</td>
-      <td class="gt_row gt_left">1.008</td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left">R2 Pseudo</td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left"></td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left">R2 Within</td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left">0.662</td>
-      <td class="gt_row gt_left">0.487</td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left">AIC</td>
-      <td class="gt_row gt_left">777.0</td>
-      <td class="gt_row gt_left">188.9</td>
-      <td class="gt_row gt_left">492.1</td>
-      <td class="gt_row gt_left">513.1</td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left">BIC</td>
-      <td class="gt_row gt_left">783.2</td>
-      <td class="gt_row gt_left">194.4</td>
-      <td class="gt_row gt_left">558.0</td>
-      <td class="gt_row gt_left">649.6</td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left">Log.Lik.</td>
-      <td class="gt_row gt_left">-385.503</td>
-      <td class="gt_row gt_left">-89.456</td>
-      <td class="gt_row gt_left">-214.026</td>
-      <td class="gt_row gt_left">-188.552</td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left">F</td>
-      <td class="gt_row gt_left">1.040</td>
-      <td class="gt_row gt_left">4.801</td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left"></td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left">FE:  homeworld</td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left">X</td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left">FE:  species</td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left">X</td>
-      <td class="gt_row gt_left">X</td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left">Std. errors</td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_left">Clustered (species)</td>
-      <td class="gt_row gt_left">Two-way (species &amp; homeworld)</td>
-    </tr>
-  </tbody>
-  
-  
-</table></div><!--/html_preserve-->
+<table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;">
+ <thead>
+  <tr>
+   <th style="text-align:left;">   </th>
+   <th style="text-align:center;"> Model 1 </th>
+   <th style="text-align:center;"> Model 2 </th>
+   <th style="text-align:center;"> Model 3 </th>
+   <th style="text-align:center;"> Model 4 </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> (Intercept) </td>
+   <td style="text-align:center;"> -13.810 </td>
+   <td style="text-align:center;"> -61.000 </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:center;"> (111.155) </td>
+   <td style="text-align:center;"> (204.057) </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> height </td>
+   <td style="text-align:center;"> 0.639 </td>
+   <td style="text-align:center;"> 0.733 </td>
+   <td style="text-align:center;"> 0.975 </td>
+   <td style="text-align:center;"> 0.756 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:center;"> (0.626) </td>
+   <td style="text-align:center;"> (1.274) </td>
+   <td style="text-align:center;"> (0.044) </td>
+   <td style="text-align:center;"> (0.116) </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> gendermasculine </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;"> -15.722 </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;"> (219.544) </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> gendermasculine × height </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;"> 0.163 </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;"> (1.349) </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Num.Obs. </td>
+   <td style="text-align:center;"> 59 </td>
+   <td style="text-align:center;"> 22 </td>
+   <td style="text-align:center;"> 58 </td>
+   <td style="text-align:center;"> 55 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> R2 </td>
+   <td style="text-align:center;"> 0.018 </td>
+   <td style="text-align:center;"> 0.444 </td>
+   <td style="text-align:center;"> 0.997 </td>
+   <td style="text-align:center;"> 0.998 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> R2 Adj. </td>
+   <td style="text-align:center;"> 0.001 </td>
+   <td style="text-align:center;"> 0.352 </td>
+   <td style="text-align:center;"> 0.993 </td>
+   <td style="text-align:center;"> 1.008 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> R2 Within </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;"> 0.662 </td>
+   <td style="text-align:center;"> 0.487 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> R2 Pseudo </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> AIC </td>
+   <td style="text-align:center;"> 777.0 </td>
+   <td style="text-align:center;"> 188.9 </td>
+   <td style="text-align:center;"> 492.1 </td>
+   <td style="text-align:center;"> 513.1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> BIC </td>
+   <td style="text-align:center;"> 783.2 </td>
+   <td style="text-align:center;"> 194.4 </td>
+   <td style="text-align:center;"> 558.0 </td>
+   <td style="text-align:center;"> 649.6 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Log.Lik. </td>
+   <td style="text-align:center;"> -385.503 </td>
+   <td style="text-align:center;"> -89.456 </td>
+   <td style="text-align:center;"> -214.026 </td>
+   <td style="text-align:center;"> -188.552 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> F </td>
+   <td style="text-align:center;"> 1.040 </td>
+   <td style="text-align:center;"> 4.801 </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> FE: homeworld </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;"> X </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> FE: species </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> X </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Std. errors </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;"> Clustered (species) </td>
+   <td style="text-align:center;"> Two-way (species &amp; homeworld) </td>
+  </tr>
+</tbody>
+</table>
 
 </br>
 One nice thing about **modelsummary** is that it plays very well with R Markdown and will automatically coerce your tables to the format that matches your document output: HTML, LaTeX/PDF, RTF, etc. Of course, you can also [specify the output type](https://vincentarelbundock.github.io/modelsummary/#saving-and-viewing-output-formats) if you aren't using R Markdown and want to export a table for later use. Finally, you can even specify special table formats like *threepartable* for LaTeX and, provided that you have called the necessary packages in your preamble, it will render correctly (see example [here](https://twitter.com/VincentAB/status/1265255622943150081)).
@@ -1703,458 +1344,128 @@ datasummary_balance(~ gender,
                     data = select(humans, gender, height, mass, birth_year, eye_color))
 ```
 
-<!--html_preserve--><style>html {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
-}
-
-#mpqiurobyt .gt_table {
-  display: table;
-  border-collapse: collapse;
-  margin-left: auto;
-  margin-right: auto;
-  color: #333333;
-  font-size: 16px;
-  font-weight: normal;
-  font-style: normal;
-  background-color: #FFFFFF;
-  width: auto;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #A8A8A8;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #A8A8A8;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-}
-
-#mpqiurobyt .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#mpqiurobyt .gt_title {
-  color: #333333;
-  font-size: 125%;
-  font-weight: initial;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  border-bottom-color: #FFFFFF;
-  border-bottom-width: 0;
-}
-
-#mpqiurobyt .gt_subtitle {
-  color: #333333;
-  font-size: 85%;
-  font-weight: initial;
-  padding-top: 0;
-  padding-bottom: 4px;
-  border-top-color: #FFFFFF;
-  border-top-width: 0;
-}
-
-#mpqiurobyt .gt_bottom_border {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#mpqiurobyt .gt_col_headings {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#mpqiurobyt .gt_col_heading {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 6px;
-  padding-left: 5px;
-  padding-right: 5px;
-  overflow-x: hidden;
-}
-
-#mpqiurobyt .gt_column_spanner_outer {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: 4px;
-  padding-right: 4px;
-}
-
-#mpqiurobyt .gt_column_spanner_outer:first-child {
-  padding-left: 0;
-}
-
-#mpqiurobyt .gt_column_spanner_outer:last-child {
-  padding-right: 0;
-}
-
-#mpqiurobyt .gt_column_spanner {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 6px;
-  overflow-x: hidden;
-  display: inline-block;
-  width: 100%;
-}
-
-#mpqiurobyt .gt_group_heading {
-  padding: 8px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-}
-
-#mpqiurobyt .gt_empty_group_heading {
-  padding: 0.5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: middle;
-}
-
-#mpqiurobyt .gt_from_md > :first-child {
-  margin-top: 0;
-}
-
-#mpqiurobyt .gt_from_md > :last-child {
-  margin-bottom: 0;
-}
-
-#mpqiurobyt .gt_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  margin: 10px;
-  border-top-style: solid;
-  border-top-width: 1px;
-  border-top-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  overflow-x: hidden;
-}
-
-#mpqiurobyt .gt_stub {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 12px;
-}
-
-#mpqiurobyt .gt_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mpqiurobyt .gt_first_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-}
-
-#mpqiurobyt .gt_grand_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mpqiurobyt .gt_first_grand_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-style: double;
-  border-top-width: 6px;
-  border-top-color: #D3D3D3;
-}
-
-#mpqiurobyt .gt_striped {
-  background-color: rgba(128, 128, 128, 0.05);
-}
-
-#mpqiurobyt .gt_table_body {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#mpqiurobyt .gt_footnotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#mpqiurobyt .gt_footnote {
-  margin: 0px;
-  font-size: 90%;
-  padding: 4px;
-}
-
-#mpqiurobyt .gt_sourcenotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#mpqiurobyt .gt_sourcenote {
-  font-size: 90%;
-  padding: 4px;
-}
-
-#mpqiurobyt .gt_left {
-  text-align: left;
-}
-
-#mpqiurobyt .gt_center {
-  text-align: center;
-}
-
-#mpqiurobyt .gt_right {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-#mpqiurobyt .gt_font_normal {
-  font-weight: normal;
-}
-
-#mpqiurobyt .gt_font_bold {
-  font-weight: bold;
-}
-
-#mpqiurobyt .gt_font_italic {
-  font-style: italic;
-}
-
-#mpqiurobyt .gt_super {
-  font-size: 65%;
-}
-
-#mpqiurobyt .gt_footnote_marks {
-  font-style: italic;
-  font-size: 65%;
-}
-</style>
-<div id="mpqiurobyt" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
-  
-  <thead class="gt_col_headings">
-    <tr>
-      <th class="gt_col_heading gt_center gt_columns_bottom_border" rowspan="2" colspan="1"> </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2">
-        <span class="gt_column_spanner">feminine (N=9)</span>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2">
-        <span class="gt_column_spanner">masculine (N=26)</span>
-      </th>
-      <th class="gt_col_heading gt_center gt_columns_bottom_border" rowspan="2" colspan="1">Diff. in Means</th>
-      <th class="gt_col_heading gt_center gt_columns_bottom_border" rowspan="2" colspan="1">Std. Error</th>
-    </tr>
-    <tr>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1">Mean</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1">Std. Dev.</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1">Mean </th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1">Std. Dev. </th>
-    </tr>
-  </thead>
-  <tbody class="gt_table_body">
-    <tr>
-      <td class="gt_row gt_left">height</td>
-      <td class="gt_row gt_right">160.2</td>
-      <td class="gt_row gt_right">7.0</td>
-      <td class="gt_row gt_right">182.3</td>
-      <td class="gt_row gt_right">8.2</td>
-      <td class="gt_row gt_right">22.1</td>
-      <td class="gt_row gt_right">3.0</td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left">mass</td>
-      <td class="gt_row gt_right">56.3</td>
-      <td class="gt_row gt_right">16.3</td>
-      <td class="gt_row gt_right">87.0</td>
-      <td class="gt_row gt_right">16.5</td>
-      <td class="gt_row gt_right">30.6</td>
-      <td class="gt_row gt_right">10.1</td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;">birth_year</td>
-      <td class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;">46.4</td>
-      <td class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;">18.8</td>
-      <td class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;">55.2</td>
-      <td class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;">26.0</td>
-      <td class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;">8.8</td>
-      <td class="gt_row gt_right" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;">10.2</td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left"></td>
-      <td class="gt_row gt_right">N</td>
-      <td class="gt_row gt_right">%</td>
-      <td class="gt_row gt_right">N</td>
-      <td class="gt_row gt_right">%</td>
-      <td class="gt_row gt_right"></td>
-      <td class="gt_row gt_right"></td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left">blue</td>
-      <td class="gt_row gt_right">3</td>
-      <td class="gt_row gt_right">33</td>
-      <td class="gt_row gt_right">9</td>
-      <td class="gt_row gt_right">35</td>
-      <td class="gt_row gt_right"></td>
-      <td class="gt_row gt_right"></td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left">blue-gray</td>
-      <td class="gt_row gt_right">0</td>
-      <td class="gt_row gt_right">0</td>
-      <td class="gt_row gt_right">1</td>
-      <td class="gt_row gt_right">4</td>
-      <td class="gt_row gt_right"></td>
-      <td class="gt_row gt_right"></td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left">brown</td>
-      <td class="gt_row gt_right">5</td>
-      <td class="gt_row gt_right">56</td>
-      <td class="gt_row gt_right">12</td>
-      <td class="gt_row gt_right">46</td>
-      <td class="gt_row gt_right"></td>
-      <td class="gt_row gt_right"></td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left">dark</td>
-      <td class="gt_row gt_right">0</td>
-      <td class="gt_row gt_right">0</td>
-      <td class="gt_row gt_right">1</td>
-      <td class="gt_row gt_right">4</td>
-      <td class="gt_row gt_right"></td>
-      <td class="gt_row gt_right"></td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left">hazel</td>
-      <td class="gt_row gt_right">1</td>
-      <td class="gt_row gt_right">11</td>
-      <td class="gt_row gt_right">1</td>
-      <td class="gt_row gt_right">4</td>
-      <td class="gt_row gt_right"></td>
-      <td class="gt_row gt_right"></td>
-    </tr>
-    <tr>
-      <td class="gt_row gt_left">yellow</td>
-      <td class="gt_row gt_right">0</td>
-      <td class="gt_row gt_right">0</td>
-      <td class="gt_row gt_right">2</td>
-      <td class="gt_row gt_right">8</td>
-      <td class="gt_row gt_right"></td>
-      <td class="gt_row gt_right"></td>
-    </tr>
-  </tbody>
-  
-  
-</table></div><!--/html_preserve-->
+<table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;">
+ <thead>
+<tr>
+<th style="empty-cells: hide;border-bottom:hidden;" colspan="2"></th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2"><div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">feminine (N=9)</div></th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2"><div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">masculine (N=26)</div></th>
+<th style="empty-cells: hide;border-bottom:hidden;" colspan="2"></th>
+</tr>
+  <tr>
+   <th style="text-align:left;">   </th>
+   <th style="text-align:left;">    </th>
+   <th style="text-align:left;"> Mean </th>
+   <th style="text-align:left;"> Std. Dev. </th>
+   <th style="text-align:left;"> Mean  </th>
+   <th style="text-align:left;"> Std. Dev.  </th>
+   <th style="text-align:left;"> Diff. in Means </th>
+   <th style="text-align:left;"> Std. Error </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> height </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;"> 160.2 </td>
+   <td style="text-align:left;"> 7.0 </td>
+   <td style="text-align:left;"> 182.3 </td>
+   <td style="text-align:left;"> 8.2 </td>
+   <td style="text-align:left;"> 22.1 </td>
+   <td style="text-align:left;"> 3.0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> mass </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;"> 56.3 </td>
+   <td style="text-align:left;"> 16.3 </td>
+   <td style="text-align:left;"> 87.0 </td>
+   <td style="text-align:left;"> 16.5 </td>
+   <td style="text-align:left;"> 30.6 </td>
+   <td style="text-align:left;"> 10.1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> birth_year </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;"> 46.4 </td>
+   <td style="text-align:left;"> 18.8 </td>
+   <td style="text-align:left;"> 55.2 </td>
+   <td style="text-align:left;"> 26.0 </td>
+   <td style="text-align:left;"> 8.8 </td>
+   <td style="text-align:left;"> 10.2 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;"> N </td>
+   <td style="text-align:left;"> % </td>
+   <td style="text-align:left;"> N </td>
+   <td style="text-align:left;"> % </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eye_color </td>
+   <td style="text-align:left;"> blue </td>
+   <td style="text-align:left;"> 3 </td>
+   <td style="text-align:left;"> 33.3 </td>
+   <td style="text-align:left;"> 9 </td>
+   <td style="text-align:left;"> 34.6 </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;"> blue-gray </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:left;"> 0.0 </td>
+   <td style="text-align:left;"> 1 </td>
+   <td style="text-align:left;"> 3.8 </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;"> brown </td>
+   <td style="text-align:left;"> 5 </td>
+   <td style="text-align:left;"> 55.6 </td>
+   <td style="text-align:left;"> 12 </td>
+   <td style="text-align:left;"> 46.2 </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;"> dark </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:left;"> 0.0 </td>
+   <td style="text-align:left;"> 1 </td>
+   <td style="text-align:left;"> 3.8 </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;"> hazel </td>
+   <td style="text-align:left;"> 1 </td>
+   <td style="text-align:left;"> 11.1 </td>
+   <td style="text-align:left;"> 1 </td>
+   <td style="text-align:left;"> 3.8 </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;"> yellow </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:left;"> 0.0 </td>
+   <td style="text-align:left;"> 2 </td>
+   <td style="text-align:left;"> 7.7 </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+</tbody>
+</table>
 
 </br>
 Another package that I like a lot in this regard is **vtable** ([link](https://nickch-k.github.io/vtable)). Not only can it be used to construct descriptive labels like you'd find in Stata's "Variables" pane, but it is also very good at producing the type of "out of the box" summary tables that economists like. For example, here's the equivalent version of the above balance table.
@@ -2172,9 +1483,9 @@ st(select(humans, gender, height, mass, birth_year, eye_color),
 <caption>Summary Statistics</caption>
  <thead>
 <tr>
-<th style="border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="1"><div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">gender</div></th>
-<th style="border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="3"><div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">feminine</div></th>
-<th style="border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="3"><div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">masculine</div></th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="1"><div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">gender</div></th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="3"><div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">feminine</div></th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="3"><div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">masculine</div></th>
 </tr>
   <tr>
    <th style="text-align:left;"> Variable </th>
@@ -2499,7 +1810,7 @@ predict(ols1_train, newdata = starwars2, interval = "prediction") %>%
 ## 5 57.22718 35.874679  78.57968
 ```
 
-Hopefully, you can already see how the above data frame could easily be combined with the original data in a **ggplot2** call. (I encourage you to try it yourself before continuing.) At the same time, it is perhaps a minor annoyance to have to combine the original and predicted datasets before plotting. If this describes your thinking, then there's even more good news because the **broom** package does more than tidy statistical models. It also ships the `augment()` function, which provides a convenient way to append model predictions to your dataset. Note that `augment()` accepts exactly the same arguments as `predict()`, although the appended variable names are slightly different.^[Specifically, we' re adding ".fitted", ".resid", ".conf.low", and ".conf.high" columns to our data frame. The convention adopted by `augment()` is to always prefix added variables with a "." to avoid overwriting existing variables.]
+Hopefully, you can already see how the above data frame could easily be combined with the original data in a **ggplot2** call. (I encourage you to try it yourself before continuing.) At the same time, it is perhaps a minor annoyance to have to combine the original and predicted datasets before plotting. If this describes your thinking, then there's even more good news because the **broom** package does more than tidy statistical models. It also ships the `augment()` function, which provides a convenient way to append model predictions to your dataset. Note that `augment()` accepts exactly the same arguments as `predict()`, although the appended variable names are slightly different.^[Specifically, we' re adding ".fitted", ".resid", ".lower", and ".upper" columns to our data frame. The convention adopted by `augment()` is to always prefix added variables with a "." to avoid overwriting existing variables.]
 
 
 ```r
@@ -2513,14 +1824,14 @@ starwars2 %>% select(contains("."), everything()) %>% head()
 
 ```
 ## # A tibble: 6 x 18
-##   .fitted .conf.low .conf.high .resid name  height  mass hair_color skin_color
-##     <dbl>     <dbl>      <dbl>  <dbl> <chr>  <int> <dbl> <chr>      <chr>     
-## 1    68.0     46.3        89.7   9.00 Luke…    172    77 blond      fair      
-## 2    65.6     44.0        87.1   9.45 C-3PO    167    75 <NA>       gold      
-## 3    30.8      8.79       52.8   1.22 R2-D2     96    32 <NA>       white, bl…
-## 4    82.7     60.0       105.   53.3  Dart…    202   136 none       white     
-## 5    57.2     35.9        78.6  -8.23 Leia…    150    49 brown      light     
-## 6    70.9     49.1        92.8  49.1  Owen…    178   120 brown, gr… light     
+##   .fitted .lower .upper .resid name  height  mass hair_color skin_color
+##     <dbl>  <dbl>  <dbl>  <dbl> <chr>  <int> <dbl> <chr>      <chr>     
+## 1    68.0  46.3    89.7   9.00 Luke…    172    77 blond      fair      
+## 2    65.6  44.0    87.1   9.45 C-3PO    167    75 <NA>       gold      
+## 3    30.8   8.79   52.8   1.22 R2-D2     96    32 <NA>       white, bl…
+## 4    82.7  60.0   105.   53.3  Dart…    202   136 none       white     
+## 5    57.2  35.9    78.6  -8.23 Leia…    150    49 brown      light     
+## 6    70.9  49.1    92.8  49.1  Owen…    178   120 brown, gr… light     
 ## # … with 9 more variables: eye_color <chr>, birth_year <dbl>, sex <chr>,
 ## #   gender <chr>, homeworld <chr>, species <chr>, films <list>,
 ## #   vehicles <list>, starships <list>
@@ -2534,7 +1845,7 @@ starwars2 %>%
   ggplot(aes(x = height, y = mass, col = rank(height)<=30, fill = rank(height)<=30)) +
   geom_point(alpha = 0.7) +
   geom_line(aes(y = .fitted)) +
-  geom_ribbon(aes(ymin = .conf.low, ymax = .conf.high), alpha = 0.3, col = NA) +
+  geom_ribbon(aes(ymin = .lower, ymax = .upper), alpha = 0.3, col = NA) +
   scale_color_discrete(name = "Training sample?", aesthetics = c("colour", "fill")) +
   labs(
     title = "Predicting mass from height",

@@ -28,27 +28,22 @@ Today's lecture is about the bread-and-butter tool of applied econometrics and d
 
 It's important to note that "base" R already provides all of the tools we need for basic regression analysis. However, we'll be using several additional packages today, because they will make our lives easier and offer increased power for some more sophisticated analyses.
 
-- New: **broom**, **estimatr**, **fixest**, **sandwich**, **lmtest**, **AER**, **lfe**, **mfx**, **margins**, **modelsummary**, **vtable**
+- New: **broom**, **estimatr**, **fixest**, **sandwich**, **lmtest**, **AER**, **mfx**, **margins**, **modelsummary**, **vtable**
 - Already used: **tidyverse**, **hrbrthemes**, **listviewer**
 
-A convenient way to install (if necessary) and load everything is by running the below code chunk. Note that I'm opting for the development versions of **broom** and **modelsummary** because these contain a few features that aren't available in the respective CRAN releases at the time of writing.
+A convenient way to install (if necessary) and load everything is by running the below code chunk.
 
 ```{r libs_print, cache=FALSE, eval=FALSE}
 ## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(mfx, tidyverse, hrbrthemes, estimatr, fixest, sandwich, lmtest, AER, lfe, margins, vtable)
-
-## Use dev versions of these two packages for some extra features
-pacman::p_install_gh("tidymodels/broom") 
-pacman::p_install_gh("vincentarelbundock/modelsummary")
-
+pacman::p_load(mfx, tidyverse, hrbrthemes, estimatr, fixest, sandwich, lmtest, AER, margins, vtable, broom, modelsummary)
 ## My preferred ggplot2 plotting theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
 ```{r libs, cache=FALSE, message=FALSE, echo=FALSE}
 ## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(mfx, tidyverse, hrbrthemes, estimatr, fixest, sandwich, lmtest, AER, lfe, margins, vtable, broom, modelsummary)
+pacman::p_load(mfx, tidyverse, hrbrthemes, estimatr, fixest, sandwich, lmtest, AER, margins, vtable, broom, modelsummary)
 ## My preferred ggplot2 plotting theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
@@ -383,7 +378,7 @@ Fixed effects models are more common than random or mixed effects models in econ
 
 ## Instrumental variables
 
-As you would have guessed by now, there are a number of ways to run instrumental variable (IV) regressions in R. I'll walk through three different options using the `AER::ivreg()`, `estimatr::iv_robust()`, and `lfe::felm()` functions, respectively. These are all going to follow a similar syntax, where the IV first-stage regression is specified after a **`|`** following the main regression. However, there are also some subtle and important differences, which is why I want to go through each of them. After that, I'll let you decide which of the three options is your favourite.
+As you would have guessed by now, there are a number of ways to run instrumental variable (IV) regressions in R. I'll walk through three different options using the `AER::ivreg()`, `estimatr::iv_robust()`, and `fixest::feols()` functions, respectively. These are all going to follow a similar syntax, where the IV first-stage regression is specified after a **`|`** following the main regression. However, there are also some subtle and important differences, which is why I want to go through each of them. After that, I'll let you decide which of the three options is your favourite.
 
 The dataset that we'll be using here is a panel of US cigarette consumption by state, which is taken from the **AER** package ([link](https://cran.r-project.org/web/packages/AER/vignettes/AER.pdf)). Let's load the data, add some modified variables, and then take a quick look at it. Note that I'm going to limit the dataset to 1995 only, given that I want to focus the IV syntax and don't want to deal with the panel structure of the data. (Though that's very easily done, as we've already seen.)
 
@@ -459,33 +454,32 @@ iv_reg_robust =
 summary(iv_reg_robust, diagnostics = TRUE)
 ```
 
-### Option 3: `felm::lfe()`
+### Option 3: `fixest::feols()`
 
-Finally, we get to my personal favourite IV option using the `felm()` function from the **lfe** package. This is actually my favourite option; not only because I work mostly with panel data, but also because I find it has the most natural syntax.^[The **fixest** package that I concentrated on earlier, doesn't yet support IV regression. However, even if it is a little slower, `lfe::felm()` includes basically all of same benefits: support for high-level fixed effects, multiway clustering, etc.] In fact, it very closely resembles Stata's approach to writing out the first-stage, where you specify the endogenous variable(s) and the instruments only.
+Finally, we get to the `feols()` function from the aforementioned **fixest** package. This is actually my favourite option; not only because I work mostly with panel data, but also because I find it has the most natural syntax. In fact, it very closely resembles Stata's approach to writing out the first-stage, where you specify the endogenous variable(s) and the instruments only.
 
-```{r iv_felm}
-# library(lfe) ## Already loaded
-
-iv_felm = 
-  felm(
+```{r iv_feols}
+# library(fixest) ## Already loaded
+iv_feols = 
+  feols(
     log(packs) ~ log(rincome) |
-      0 | ## No FEs
-      (log(rprice) ~ tdiff + rtax), ## First-stage. Note the surrounding parentheses
+      log(rprice) ~ tdiff + rtax, ## First-stage (must be in the final slot, although here we don't have FEs) 
     data = cigs95
   )
-summary(iv_felm)
+# summary(iv_feols_all, stage = 1) ## Show the 1st stage in detail
+iv_feols
 ```
-Note that in the above example, we inserted a "0" where the fixed effect slot goes, since we only used a subset of the data. Just for fun then, here's another IV regression with `felm()`. This time, I'll use the whole `cigs` data frame (i.e. not subsetting to 1995), and use both year and state fixed effects to control for the panel structure.
+Note that in the above example, we don't any fixed effects. However, `feols()` automatically recognizes the IV first-stage, which *must* come last in the formula. Just to emphasise --- and to demonstrate how easy it is to extend **fixest**'s performance to panel IV cases --- here's a final `feols()` example. This time, I'll use the whole `cigs` data frame (i.e. not subsetting to 1995), and use both year and state fixed effects to control for the panel structure.
 
-```{r iv_felm_all}
-iv_felm_all = 
-  felm(
+```{r iv_feols_all}
+iv_feols_all = 
+  feols(
     log(packs) ~ log(rincome) |
-      year + state | ## Now include FEs
-      (log(rprice) ~ tdiff + rtax), 
-    data = cigs ## Use whole panel data set
+      year + state |               ## Now include FEs
+      log(rprice) ~ tdiff + rtax,  ## 
+    data = cigs                    ## Use whole panel data set
   )
-summary(iv_felm_all)
+iv_feols_all
 ```
 
 ## Other models
@@ -519,7 +513,7 @@ tidy(glm_logitmfx, conf.int = TRUE)
 
 We could spend a whole course on Bayesian models. The very, very short version is that R offers outstanding support for Bayesian models and data analysis. You will find convenient interfaces to all of the major MCMC and Bayesian software engines: [Stan](https://mc-stan.org/users/interfaces/rstan), [JAGS](http://mcmc-jags.sourceforge.net/), TensorFlow (via [Greta](https://greta-stats.org/)), etc. Here follows a *super* simple example using the **rstanarm** package ([link](http://mc-stan.org/rstanarm/)). Note that we did not install this package with the others above, as it can take fairly long and involve some minor troubleshooting.^[FWIW, on my machine (running Arch Linux) I had to install `stan` (and thus `rstanarm`) by running R through the shell. For some reason, RStudio kept closing midway through the installation process.]
 
-```{r bayes_reg, error=T, message=F, warning=F, results="hide"}
+```{r bayes_reg, error=T, message=F, warning=F, results="hide", eval=FALSE}
 # install.packages("rstanarm") ## Run this first if you want to try yourself
 library(rstanarm)
 bayes_reg = 
@@ -722,7 +716,7 @@ predict(ols1_train, newdata = starwars2, interval = "prediction") %>%
   head(5) ## Just print the first few rows
 ```
 
-Hopefully, you can already see how the above data frame could easily be combined with the original data in a **ggplot2** call. (I encourage you to try it yourself before continuing.) At the same time, it is perhaps a minor annoyance to have to combine the original and predicted datasets before plotting. If this describes your thinking, then there's even more good news because the **broom** package does more than tidy statistical models. It also ships the `augment()` function, which provides a convenient way to append model predictions to your dataset. Note that `augment()` accepts exactly the same arguments as `predict()`, although the appended variable names are slightly different.^[Specifically, we' re adding ".fitted", ".resid", ".conf.low", and ".conf.high" columns to our data frame. The convention adopted by `augment()` is to always prefix added variables with a "." to avoid overwriting existing variables.]
+Hopefully, you can already see how the above data frame could easily be combined with the original data in a **ggplot2** call. (I encourage you to try it yourself before continuing.) At the same time, it is perhaps a minor annoyance to have to combine the original and predicted datasets before plotting. If this describes your thinking, then there's even more good news because the **broom** package does more than tidy statistical models. It also ships the `augment()` function, which provides a convenient way to append model predictions to your dataset. Note that `augment()` accepts exactly the same arguments as `predict()`, although the appended variable names are slightly different.^[Specifically, we' re adding ".fitted", ".resid", ".lower", and ".upper" columns to our data frame. The convention adopted by `augment()` is to always prefix added variables with a "." to avoid overwriting existing variables.]
 
 ```{r augment1}
 ## Alternative to predict(): Use augment() to add .fitted and .resid, as well as 
@@ -740,7 +734,7 @@ starwars2 %>%
   ggplot(aes(x = height, y = mass, col = rank(height)<=30, fill = rank(height)<=30)) +
   geom_point(alpha = 0.7) +
   geom_line(aes(y = .fitted)) +
-  geom_ribbon(aes(ymin = .conf.low, ymax = .conf.high), alpha = 0.3, col = NA) +
+  geom_ribbon(aes(ymin = .lower, ymax = .upper), alpha = 0.3, col = NA) +
   scale_color_discrete(name = "Training sample?", aesthetics = c("colour", "fill")) +
   labs(
     title = "Predicting mass from height",
