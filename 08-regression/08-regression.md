@@ -111,7 +111,6 @@ ols1
 
 The resulting object is pretty terse, but that's only because it buries most of its valuable information --- of which there is a lot --- within its internal list structure. If you're in RStudio, you can inspect this structure by typing `View(ols1)` or simply clicking on the "ols1" object in your environment pane. Doing so will prompt an interactive panel to pop up for you to play around with. That approach won't work for this knitted R Markdown document, however, so I'll use the `listviewer::jsonedit()` function that we saw in the previous lecture instead.
 
-
 ```r
 # View(ols1) ## Run this instead if you're in a live session
 listviewer::jsonedit(ols1, mode="view") ## Better for R Markdown
