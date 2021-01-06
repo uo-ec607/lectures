@@ -4,7 +4,7 @@ subtitle: "Lecture 9: Spatial analysis in R"
 author:
   name: Grant R. McDermott
   affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
-# date: Lecture 9  #"06 February 2020"
+# date: Lecture 9  #"06 January 2021"
 output: 
   html_document:
     theme: flatly
@@ -769,6 +769,11 @@ oregon %>%
     title = "Population percentiles",
     opacity = 1
     )
+```
+
+```
+## Warning in CPL_crs_from_input(x): GDAL Message 1: +init=epsg:XXXX syntax is
+## deprecated. It might return a CRS with a non-EPSG compliant axis order.
 ```
 
 <!--html_preserve--><div id="htmlwidget-9dc25d4c47b4e188be5c" style="width:100%;height:1500px;" class="leaflet html-widget"></div>

@@ -4,7 +4,7 @@ subtitle: "Lecture 8: Regression analysis in R"
 author:
   name: Grant R. McDermott
   affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
-# date: Lecture 6  #"21 August 2020"
+# date: Lecture 6  #"06 January 2021"
 output: 
   html_document:
     theme: flatly
@@ -110,6 +110,7 @@ ols1
 ```
 
 The resulting object is pretty terse, but that's only because it buries most of its valuable information --- of which there is a lot --- within its internal list structure. If you're in RStudio, you can inspect this structure by typing `View(ols1)` or simply clicking on the "ols1" object in your environment pane. Doing so will prompt an interactive panel to pop up for you to play around with. That approach won't work for this knitted R Markdown document, however, so I'll use the `listviewer::jsonedit()` function that we saw in the previous lecture instead.
+
 
 ```r
 # View(ols1) ## Run this instead if you're in a live session
@@ -694,7 +695,7 @@ Fixed effects models are more common than random or mixed effects models in econ
 
 As you would have guessed by now, there are a number of ways to run instrumental variable (IV) regressions in R. I'll walk through three different options using the `AER::ivreg()`, `estimatr::iv_robust()`, and `lfe::felm()` functions, respectively. These are all going to follow a similar syntax, where the IV first-stage regression is specified after a **`|`** following the main regression. However, there are also some subtle and important differences, which is why I want to go through each of them. After that, I'll let you decide which of the three options is your favourite.
 
-The dataset that we'll be using here is a panel of US cigarette consumption by state, which is taken from the **AER** package ([link](https://cran.r-project.org/web/packages/AER/vignettes/AER.pdf)). Let's load the data, add some modified variables, and then take a quick look at it. Note that I'm going to limit the dataset to 2005 only, given that I want to focus the IV syntax and don't want to deal with the panel structure of the data. (Though that's very easily done, as we've already seen.)
+The dataset that we'll be using here is a panel of US cigarette consumption by state, which is taken from the **AER** package ([link](https://cran.r-project.org/web/packages/AER/vignettes/AER.pdf)). Let's load the data, add some modified variables, and then take a quick look at it. Note that I'm going to limit the dataset to 1995 only, given that I want to focus the IV syntax and don't want to deal with the panel structure of the data. (Though that's very easily done, as we've already seen.)
 
 
 ```r
@@ -734,7 +735,7 @@ cigs95
 
 Now, assume that we are interested in regressing the number of cigarettes packs consumed per capita on their average price and people's real incomes. The problem is that the price is endogenous, because it is simultaneously determined by demand and supply. So we need to instrument for it using different tax variables. That is, we want to run the following two-stage IV regression.
 
-$$price_i = \pi_0 + \pi_1 tdiff_i + + \pi_2 rtax_i + v_i  \hspace{1cm} \text{(First stage)}$$
+$$price_i = \pi_0 + \pi_1 tdiff_i + \pi_2 rtax_i + v_i  \hspace{1cm} \text{(First stage)}$$
 $$packs_i = \beta_0 + \beta_2\widehat{price_i} + \beta_1 rincome_i + u_i \hspace{1cm} \text{(Second stage)}$$
 
 ### Option 1: `AER::ivreg()`

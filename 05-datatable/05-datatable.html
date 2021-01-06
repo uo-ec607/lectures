@@ -255,8 +255,8 @@ The same is true for data.table. In fact, data.table functions only work on obje
 To create a data.table, we have a couple of options:
 - `fread('mydata.csv')` reads a CSV into R as a data.table (and is very fast).&lt;sup&gt;1&lt;/sup&gt;
 - `data.table(x = 1:10)` creates a new data.table from scratch
-- `as.data.table(df)` coerces an existing data frame (here: `df`) to a data.table.
-- `setDT(df)` coerces an existing data frame to a data.table *by reference*; i.e. we don't have to (re)assign it.
+- `as.data.table(d)` coerces an existing data frame (`d`) to a data.table.
+- `setDT(d)` coerces an existing data frame to a data.table *by reference*; i.e. we don't have to (re)assign it.
 
 
 .footnote[&lt;sup&gt;1&lt;/sup&gt; We'll cover `fread()` in more depth in the next lecture on data I/O.]
@@ -1260,8 +1260,8 @@ P.S. We'll get there later in the course, but keys are also the secret sauce in 
 
 You can set a key when you first create a data.table. E.g.
 - `DT = data.table(x = 1:10, y = LETTERS[1:10], key = "x")`
-- `DT = as.data.table(DF, key = "x")`
-- `setDT(DF, key = "x")`
+- `DT = as.data.table(d, key = "x")`
+- `setDT(d, key = "x")`
 
 --
 
@@ -1327,7 +1327,7 @@ microbenchmark(collapse_dplyr(), collapse_dt(), collapse_dt_key(), times = 10)
 
 --
 
-The keyed data.table version is now **141** (!!!) faster than dplyr.
+The keyed data.table version is now **141** times(!!!) faster than dplyr.
 --
 
 - That thing you feel... is your face melting.
