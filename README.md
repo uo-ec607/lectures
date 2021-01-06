@@ -6,7 +6,7 @@
 2. Version control with Git(Hub) \[[Slides](https://raw.githack.com/uo-ec607/lectures/master/02-git/02-Git.html)\]
 3. Learning to love the shell \[[Slides](https://raw.githack.com/uo-ec607/lectures/master/03-shell/03-shell.html)\]
 4. R language basics \[[Slides](https://raw.githack.com/uo-ec607/lectures/master/04-rlang/04-rlang.html)\]
-5. Data wrangling and tidying with the “Tidyverse” \[[Slides](https://raw.githack.com/uo-ec607/lectures/master/05-tidyverse/05-tidyverse.html) / [Notebook](https://raw.githack.com/uo-ec607/lectures/master/05-tidyverse/html_document/05-tidyverse.html)\]
+5. Data wrangling & tidying: (1) Tidyverse \[[Slides](https://raw.githack.com/uo-ec607/lectures/master/05-tidyverse/05-tidyverse.html)\] and (2) data.table \[[Slides](https://raw.githack.com/uo-ec607/lectures/master/05-datatable/05-datatable.html)\]
 6. Webscraping: (1) Server-side and CSS \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/06-web-css/06-web-css.html)\]
 7. Webscraping: (2) Client-side and APIs \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/07-web-apis/07-web-apis.html)\]
 8. Regression analysis in R \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/08-regression/08-regression.html)\]
@@ -24,9 +24,11 @@
 
 ## Details
 
-This is a graduate economics seminar taught by [Grant McDermott](http://grantmcdermott.com) at the University of Oregon. 
+This is a graduate course taught by [Grant McDermott](http://grantmcdermott.com) at the University of Oregon. Here is the course description, taken from the [syllabus](https://github.com/uo-ec607/syllabus/blob/master/syllabus.pdf):
 
-Please read the [syllabus](https://github.com/uo-ec607/syllabus/blob/master/syllabus.pdf) before you go through any of the lectures. This will detail software requirements and installation, and give you a better sense of the aims and scope of the course. I also have an "FAQ" section at the end that covers frequently asked questions (or, at least, potentially asked questions). Speaking of which, here follow answers to some questions that are more specifically related to this repo.
+> This seminar is targeted at economics PhD students and will introduce you to the modern data science toolkit. While some material will likely overlap with your other quantitative and empirical methods courses, this is not just another econometrics course. Rather, my goal is bring you up to speed on the practical tools and techniques that I feel will most benefit your dissertation work and future research career. This includes seemingly mundane skills, generally excluded from the core graduate curriculum, which are nevertheless *essential* to any scientific project. We will cover topics like version control (Git) and project management; data acquisition, cleaning and visualization; efficient programming; and tools for big data analysis (e.g. relational databases, cloud computation and machine learning). **In short, we will cover things that I wish someone had taught me when I was starting out in graduate school.** While I will occasionally draw on examples from own research (environmental economics), the tools and methods apply broadly. Students from other fields and specialisations are thus welcome to register.
+
+Please do read the rest of the [syllabus](https://github.com/uo-ec607/syllabus/blob/master/syllabus.pdf) before you go through the lectures. This will detail software requirements and installation, and give you a better sense of the full aims and scope of the course. I also have an "FAQ" section at the end that covers frequently asked questions (or, at least, potentially asked questions). Speaking of which, here follow answers to some questions that are more specifically related to this repo.
 
 ## FAQ
 

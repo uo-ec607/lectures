@@ -102,6 +102,7 @@ R is a powerful calculator and recognizes all of the standard arithmetic operato
 6-7 ## Subtraction
 5/2 ## Division
 2^3 ## Exponentiation
+2+4*1^3 ## Standard order of precedence (`*` before `+`, etc.)
 ```
 
 ---
@@ -118,23 +119,51 @@ We can also invoke modulo operators (integer division & remainder).
 
 ---
 
-# Logical operators
+# Logic
 
-R also comes equipped with a full set of logical operators (and Boolean functions), which follow standard programming protocol. For example:
+R also comes equipped with a full set of logical operators and Booleans, which follow standard programming protocol. For example:
 
 ```{r}
 1 > 2
-1 > 2 | 0.5 ## The "|" stands for "or" (not a pipe a la the shell)
-1 > 2 & 0.5 ## The "&" stands for "and"
+1 > 2 & 1 > 0.5 ## The "&" stands for "and"
+1 > 2 | 1 > 0.5 ## The "|" stands for "or" (not a pipe a la the shell)
 isTRUE (1 < 2)
 ```
-Etc.
+
+--
+
+You can read more about logical operators and types <a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/Logic.html" target="_blank">here</a> and <a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/logical.html" target="_blank">here</a>. In the next few slides, however, I want to emphasise some special concepts and gotchas...
 
 ---
 
-# Logical operators (cont.)
+# Logic (cont.)
 
-You can read more about these logical operators <a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/logical.html" target="_blank">here</a> and <a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/Logic.html" target="_blank">here</a>. For the moment, I'll just emphasise a select few of them...
+### Order of precedence
+
+Much like standard arithmetic, logic statements follow a strict order of precedence. Logical operators (`>`, `==`, etc) are evaluated before Boolean operators (`&` and `|`). Failure to recognise this can lead to unexpected behaviour...
+
+```{r}
+1 > 0.5 & 2
+```
+
+--
+
+What's happening here is that R is evaluating two separate "logical" statements: 
+ - `1 > 0.5`, which is is obviously TRUE.
+ - `2`, which is TRUE(!) because R is "helpfully" converting it to `as.logical(2)`.
+ 
+--
+
+**Solution:** Be explicit about each component of your logic statement(s).
+
+```{r}
+1 > 0.5 & 1 > 2
+```
+
+
+---
+
+# Logic (cont.)
 
 ### Negation: `!`
 
@@ -145,6 +174,8 @@ is.na(1:10)
 !is.na(1:10)
 # Negate(is.na)(1:10) ## This also works. Try it yourself.
 ```
+
+
 
 ---
 
