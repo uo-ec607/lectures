@@ -63,13 +63,13 @@ Resources:
 
 Other points:
 - You will be submitting all of your assignments as R Markdown documents.
-- FWIW, my lecture slides and notes are all written in R Markdown too. (E.g. This slide deck is built using the [xaringan package](https://github.com/yihui/xaringan/wiki) with the metropolis theme.)
+- FWIW, my lecture slides and notes are all written in R Markdown too. (E.g. This slide deck is built using the [**xaringan**](https://github.com/yihui/xaringan/wiki) package with the metropolis theme.)
 
 ---
 
 # Before we start
 
-We went through a sofware installation check during the previous lecture. By now you should have:
+We went through a software installation check during the previous lecture. By now you should have:
 
 ☑ Installed [R](https://www.r-project.org/).
 
@@ -123,14 +123,14 @@ name: git
 
 ### From software development...
 
-Git and GitHub's role in global software develoment is not in question.
+Git and GitHub's role in global software development is not in question.
 - There's a high probability that your favourite app, program or package is built using Git-based tools. (RStudio is a case in point.)
 
 ### ... to scientific research
 
 Scientists and academic researchers are cottoning on too. 
 - Benefits of VC and collaboration tools aside, Git(Hub) helps to operationalise the ideals of open science and reproducibility.
-- Journals have increasingly strict requirements regarding reproducibility and data access. GH makes this easy (DOI integration, off-the-shelf licences, etc.)
+- Journals have increasingly strict requirements regarding reproducibility and data access. GH makes this easy (DOI integration, off-the-shelf licenses, etc.)
 - I host all of the code and data for my [papers](http://grantmcdermott.com/research/) on GH. Same for teaching materials. I even use it to host and maintain my [website](https://github.com/grantmcdermott/grantmcdermott.github.io).
 - *Nature:* "[Democratic databases: science on GitHub](https://www.nature.com/news/democratic-databases-science-on-github-1.20719)" (Perkel, 2016).
 
@@ -143,7 +143,7 @@ name: rstudio
 
 ---
 
-# Seemless integration
+# Seamless integration
 
 One of the (many) great features of RStudio is how well it integrates version control into your everyday workflow.
 - Even though Git is a completely separate program to R, they feel like part of the same "thing" in RStudio.
@@ -221,7 +221,7 @@ Now that you've cloned your first repo and made some local changes, it's time to
 3. **Pull**
   - Get any new changes made on the GitHub repo (i.e. the upstream remote), either by your collaborators or you on another machine.
 4. **Push**
-  - Push any (commited) local changes to the GitHub repo
+  - Push any (committed) local changes to the GitHub repo
 
 --
 
@@ -288,7 +288,7 @@ Creating the repo on GitHub first means that it will always be "upstream" of you
 - If you would like to move an existing project to GitHub, my advice is still to create an empty repo there first, clone it locally, and then copy all your files across.
 
 RStudio Projects are great. 
-- Again, they interact seemlessly with Git(Hub), as we've just seen. 
+- Again, they interact seamlessly with Git(Hub), as we've just seen. 
 - They also solve absolute vs. relative path problems, since the .Rproj file acts as an anchor point for all other files in the repo.&lt;sup&gt;1&lt;/sup&gt;
 
 .footnote[&lt;sup&gt;1&lt;/sup&gt; You know that calling files from `YourComputer/YourName/Documents/Special-Subfolder/etc` in your scripts makes you a bad person, right?]
@@ -321,7 +321,7 @@ However, I want to go over Git &lt;a href="http://happygitwithr.com/ssh-keys.htm
 
 # Main Git shell commands
 
-Clone the repo.
+Clone a repo.
 ```bash
 $ git clone REPOSITORY-URL
 ```
@@ -373,7 +373,7 @@ Pull from the upstream repository (i.e. GitHub).
 $ git pull
 ```
 
-Push any local changes that you've commited to the upstream repo (i.e. GitHub).
+Push any local changes that you've committed to the upstream repo (i.e. GitHub).
 ```bash
 $ git push
 ```
