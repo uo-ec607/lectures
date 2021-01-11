@@ -146,14 +146,14 @@ Don't be thrown off by terminology: *shell*, *terminal*, *tty*, *command prompt*
 --
 
 There are many shell variants, but we're going to focus on [**Bash**](https://www.gnu.org/software/bash/) (i.e. **B**ourne **a**gain **sh**ell).
-- Default shell on Linux and MacOS.
+- Included by default on Linux and MacOS.
 - Windows users need to install a Bash-compatible shell first (again, see [here](#windows)).
 
 --
 
 </br>
 
-(For the record, I primarily use [Zsh (i.e. Z shell)](https://ohmyz.sh/), which is why my shell might look slightly different to yours during live coding sessions. The commands will stay the same, though.)
+(For the record, I primarily use [zsh](https://ohmyz.sh/) (i.e. the "Z shell") &mdash; which is now also the [default shell](https://support.apple.com/en-us/HT208050) on MacOS. As a result, my shell might look slightly different to yours during live coding sessions. The commands will stay the same, though.)
 
 
 ---
@@ -1173,7 +1173,7 @@ What happens if you type `$ cat ~/.bash_history | grep head`?
 
 </br>
 
-FWIW, I use this approach often to remind myself of certain shell commands that I tend to forget.
+FWIW, I use this approach often to remind myself of certain shell commands that I tend to forget. A related and extremely useful command is [`Ctrl`+`R`](https://unix.stackexchange.com/questions/73498/how-to-cycle-through-reverse-i-search-in-bash), which lets you search and cycle through your shell history.
 
 ---
 class: inverse, center, middle
