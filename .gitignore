@@ -13,3 +13,4 @@
 /Assignments/**/*.xlsx
 /Lectures/13-Spark/Spark_files/
 /Lectures/13-Spark/data/*.csv
+TEST/*
