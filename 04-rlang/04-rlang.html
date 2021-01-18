@@ -566,9 +566,9 @@ Each object class has its own set of rules governing how that object can be used
 
 
 ```r
-## Create a small data frame called "df".
-df = data.frame(x = 1:2, y = 3:4) 
-df
+## Create a small data frame called "d".
+d = data.frame(x = 1:2, y = 3:4) 
+d
 ```
 
 ```
@@ -580,7 +580,7 @@ df
 
 ```r
 ## Convert it to (i.e. create) a matrix call "m".
-m = as.matrix(df)
+m = as.matrix(d)
 m
 ```
 
@@ -598,8 +598,8 @@ Use the `class`, `typeof`, and `str` commands if you want understand more about 
 
 
 ```r
-# df = data.frame(x = 1:2, y = 3:4) ## Create a small data frame called "df".
-class(df) ## Evaluate its class.
+# d = data.frame(x = 1:2, y = 3:4) ## Create a small data frame called "d".
+class(d) ## Evaluate its class.
 ```
 
 ```
@@ -607,7 +607,7 @@ class(df) ## Evaluate its class.
 ```
 
 ```r
-typeof(df) ## Evaluate its type.
+typeof(d) ## Evaluate its type.
 ```
 
 ```
@@ -615,7 +615,7 @@ typeof(df) ## Evaluate its type.
 ```
 
 ```r
-str(df) ## Show its structure.
+str(d) ## Show its structure.
 ```
 
 ```
@@ -626,18 +626,18 @@ str(df) ## Show its structure.
 
 --
 
-PS — Confused by the fact that `typeof(df)` returns "list"? See [here](https://stackoverflow.com/questions/45396538/typeofdata-frame-shows-list-in-r).
+PS — Confused by the fact that `typeof(d)` returns "list"? See [here](https://stackoverflow.com/questions/45396538/typeofdata-frame-shows-list-in-r).
 
 ---
 
 # Object class, type, and structure (cont.)
 
 Of course, you can always just inspect/print an object directly in the console.
-- E.g. Type `df` and hit Enter.
+- E.g. Type `d` and hit Enter.
 
 
 The `View()` function is also very helpful.
-- E.g. `View(df)`.
+- E.g. `View(d)`.
 
 ---
 
@@ -646,7 +646,7 @@ The `View()` function is also very helpful.
 Let's go back to the simple data frame that we created a few slides earlier.
 
 ```r
-df
+d
 ```
 
 ```
@@ -694,7 +694,7 @@ R can't find the variables that we've supplied in our [Global Environment](https
 
 --
 
-Put differently: Because the variables "x" and "y" live as separate objects in the global environment, we have to tell R that they belong to the object `df`.
+Put differently: Because the variables "x" and "y" live as separate objects in the global environment, we have to tell R that they belong to the object `d`.
 - Think about how you might do this before clicking through to the next slide.
 
 ---
@@ -705,13 +705,13 @@ There are a various ways to solve this problem. One is to simply specify the dat
 
 
 ```r
-lm(y ~ x, data = df) ## Works when we add "data = df"!
+lm(y ~ x, data = d) ## Works when we add "data = d"!
 ```
 
 ```
 ## 
 ## Call:
-## lm(formula = y ~ x, data = df)
+## lm(formula = y ~ x, data = d)
 ## 
 ## Coefficients:
 ## (Intercept)            x  
@@ -735,10 +735,10 @@ As I keep saying, R's ability to keep multiple objects in memory at the same tim
 
 
 ```r
-df2 = data.frame(x = rnorm(10), y = runif(10))
+d2 = data.frame(x = rnorm(10), y = runif(10))
 ```
 
-![Now with df2 added](pics/environment2.png)
+![Now with d2 added](pics/environment2.png)
 
 --
 
@@ -1183,16 +1183,16 @@ lm(y ~ x) ## Doesn't work
 ```
 
 ```r
-lm(df$y ~ df$x) ## Works!
+lm(d$y ~ d$x) ## Works!
 ```
 
 ```
 ## 
 ## Call:
-## lm(formula = df$y ~ df$x)
+## lm(formula = d$y ~ d$x)
 ## 
 ## Coefficients:
-## (Intercept)         df$x  
+## (Intercept)          d$x  
 ##           2            1
 ```
 

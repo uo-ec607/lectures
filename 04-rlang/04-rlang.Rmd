@@ -413,15 +413,15 @@ Each object class has its own set of rules governing how that object can be used
 - For example, you can perform many of the same operations on matrices and data frames. But there are some operations that only work on a matrix, and vice versa.
 - At the same time, you can (often) convert an object from one type to another.
 
-```{r df}
-## Create a small data frame called "df".
-df = data.frame(x = 1:2, y = 3:4) 
-df
+```{r d}
+## Create a small data frame called "d".
+d = data.frame(x = 1:2, y = 3:4) 
+d
 ```
 
-```{r, m}
+```{r m}
 ## Convert it to (i.e. create) a matrix call "m".
-m = as.matrix(df)
+m = as.matrix(d)
 m
 ```
 
@@ -432,26 +432,26 @@ m
 Use the `class`, `typeof`, and `str` commands if you want understand more about a particular object.
 
 ```{r}
-# df = data.frame(x = 1:2, y = 3:4) ## Create a small data frame called "df".
-class(df) ## Evaluate its class.
-typeof(df) ## Evaluate its type.
-str(df) ## Show its structure.
+# d = data.frame(x = 1:2, y = 3:4) ## Create a small data frame called "d".
+class(d) ## Evaluate its class.
+typeof(d) ## Evaluate its type.
+str(d) ## Show its structure.
 ```
 
 --
 
-PS — Confused by the fact that `typeof(df)` returns "list"? See [here](https://stackoverflow.com/questions/45396538/typeofdata-frame-shows-list-in-r).
+PS — Confused by the fact that `typeof(d)` returns "list"? See [here](https://stackoverflow.com/questions/45396538/typeofdata-frame-shows-list-in-r).
 
 ---
 
 # Object class, type, and structure (cont.)
 
 Of course, you can always just inspect/print an object directly in the console.
-- E.g. Type `df` and hit Enter.
+- E.g. Type `d` and hit Enter.
 
 
 The `View()` function is also very helpful.
-- E.g. `View(df)`.
+- E.g. `View(d)`.
 
 ---
 
@@ -459,7 +459,7 @@ The `View()` function is also very helpful.
 
 Let's go back to the simple data frame that we created a few slides earlier.
 ```{r}
-df
+d
 ```
 
 --
@@ -496,7 +496,7 @@ R can't find the variables that we've supplied in our [Global Environment](https
 
 --
 
-Put differently: Because the variables "x" and "y" live as separate objects in the global environment, we have to tell R that they belong to the object `df`.
+Put differently: Because the variables "x" and "y" live as separate objects in the global environment, we have to tell R that they belong to the object `d`.
 - Think about how you might do this before clicking through to the next slide.
 
 ---
@@ -506,7 +506,7 @@ Put differently: Because the variables "x" and "y" live as separate objects in t
 There are a various ways to solve this problem. One is to simply specify the datasource:
 
 ```{r}
-lm(y ~ x, data = df) ## Works when we add "data = df"!
+lm(y ~ x, data = d) ## Works when we add "data = d"!
 ```
 
 --
@@ -524,11 +524,11 @@ I wanted to emphasize this global environment issue, because it is something tha
 As I keep saying, R's ability to keep multiple objects in memory at the same time is a huge plus when it comes to effective data work. 
 - E.g. We can create a new data frame that exists happily with our existing objects in the global environment.
 
-```{r df2}
-df2 = data.frame(x = rnorm(10), y = runif(10))
+```{r d2}
+d2 = data.frame(x = rnorm(10), y = runif(10))
 ```
 
-![Now with df2 added](pics/environment2.png)
+![Now with d2 added](pics/environment2.png)
 
 --
 
@@ -840,7 +840,7 @@ The last thing that I want to say about `$` is that it provides another way to a
 
 ```{r, error=T}
 lm(y ~ x) ## Doesn't work
-lm(df$y ~ df$x) ## Works!
+lm(d$y ~ d$x) ## Works!
 ```
 
 ---
