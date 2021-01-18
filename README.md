@@ -10,7 +10,7 @@
 6. Webscraping: (1) Server-side and CSS \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/06-web-css/06-web-css.html)\]
 7. Webscraping: (2) Client-side and APIs \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/07-web-apis/07-web-apis.html)\]
 8. Regression analysis in R \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/08-regression/08-regression.html)\]
-9. Spatial analysis in R \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/09-spatial/09-spatial.html)\]
+9. Spatial analysis in R \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/09-spatial/09-spatial.html)\] ([Bonus](https://raw.githack.com/uo-ec607/lectures/master/09a-spatial-rasters/09a-spatial-rasters.html))
 10. Functions in R: (1) Introductory concepts \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/10-funcs-intro/10-funcs-intro.html)\]
 11. Functions in R: (2) Advanced concepts \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/11-funcs-adv/11-funcs-adv.html)\]
 12. Parallel programming \[[Notebook](https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html)\]

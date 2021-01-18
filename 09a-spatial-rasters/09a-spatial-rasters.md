@@ -18,7 +18,7 @@ output:
 
 
 
-*Note: This is a bonus set of notes, meant to read alongside the main spatial lecture. Yes, I know I said we won't have time for rasters, but I caved. I might turn these notes into a formal lecture down the road. We'll see.*
+*Note: This is a bonus set of notes, meant to read alongside our main [spatial lecture on vectors](https://raw.githack.com/uo-ec607/lectures/master/09-spatial/09-spatial.html). Yes, I know I said we won't have time for rasters, but I caved. I might turn these notes into a formal lecture down the road. We'll see.*
 
 ## Requirements
 
