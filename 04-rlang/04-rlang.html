@@ -60,11 +60,11 @@ name: prologue
 
 --
 
-### New package(s) you will need for today.
+### Packages that you will need for today.
 
-Next class is when we're specifically going to focus on the [tidyverse](https://www.tidyverse.org/). However, I'll be using some functions and datasets from it today to illustrate a few general principles.
-- Install it now, either through RStudio (recommended) or directly from your R console (`install.packages("tidyverse"), dependencies = TRUE`). 
-- (It may take a while.)
+We're going to work almost exclusively in **base** R today.
+- I'll also use the [**dplyr**](https://dplyr.tidyverse.org/) package, but only to demonstrate a few additional considerations for working with non-base libraries. Install/update it now, either through RStudio (recommended) or from your R console (`install.packages("dplyr"), dependencies = TRUE`). 
+- (P.S. If you're on Linux, I recommend installing the pre-compiled binary version of **dplyr** from [RSPM](https://packagemanager.rstudio.com/client/#/repos/1/overview). This avoids the need to build the package from source, greatly reducing your installation time. See related example [here](https://twitter.com/grant_mcdermott/status/1263951531461603328).)
 
 ---
 
@@ -388,10 +388,10 @@ all.equal(0.1 + 0.2, 0.3)
 
 # Assignment
 
-In R, we can use either `=` or `=` to handle assignment.&lt;sup&gt;1&lt;/sup&gt;
+In R, we can use either `&lt;-` or `=` to handle assignment.&lt;sup&gt;1&lt;/sup&gt;
 
 .footnote[
-&lt;sup&gt;1&lt;/sup&gt; The `=` is really a `&lt;` followed by a `-`. It just looks like one thing b/c of the [font](https://github.com/tonsky/FiraCode) I'm using here.
+&lt;sup&gt;1&lt;/sup&gt; The `&lt;-` is really a `&lt;` followed by a `-`. It just looks like one thing b/c of the [font](https://github.com/tonsky/FiraCode) I'm using here.
 ]
 
 --
@@ -442,7 +442,7 @@ b
 
 Most R users (purists?) seem to prefer `&lt;-` for assignment, since `=` also has specific role for evaluation *within* functions. 
 - We'll see lots of examples of this later.
-- However, I don't think it matters. E.g. `=` is quicker to type and makes more sense if you're coming from another programming language. (More discussion [here](https://github.com/Robinlovelace/geocompr/issues/319#issuecomment-427376764) and [here](https://www.separatinghyperplanes.com/2018/02/why-you-should-use-and-never.html).)
+- But I don't think it matters; `=` is quicker to type and is more intuitive if you're coming from another programming language. (More discussion [here](https://github.com/Robinlovelace/geocompr/issues/319#issuecomment-427376764) and [here](https://www.separatinghyperplanes.com/2018/02/why-you-should-use-and-never.html).)
 
 **Bottom line:** Use whichever you prefer. Just be consistent.
 
