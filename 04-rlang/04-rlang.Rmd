@@ -299,29 +299,36 @@ Most R users (purists?) seem to prefer `<-` for assignment, since `=` also has s
 
 # Help
 
-If you are struggling with a (named) function or object in R, simply type "help", e.g.
+For more information on a (named) function or object in R, consult the "help" documentation. For example:
 
 ```R
-help(solve)
+help(plot)
 ```
 
-Or, more simply, just use "?":
+Or, more simply, just use `?`:
   
 ```R
 # This is what most people use.
-?solve 
+?plot 
 ```
 
 --
 
 </br>
 
-**Aside:** Comments in R are demarcated by `#`. 
+**Aside 1:** Comments in R are demarcated by `#`. 
 - Hit `Ctrl+Shift+c` in RStudio to (un)comment whole sections of highlighted code.
+
+--
+
+**Aside 2:** See the *Examples* section at the bottom of the help file?
+- You can run them with the `example()` function. Try it: `example(plot)`.
 
 ---
 
 # Help (cont.)
+
+### Vignettes
 
 For many packages, you can also try the `vignette()` function, which will provide an introduction to a package and it's purpose through a series of helpful examples.
 - Try running `vignette("dplyr")` in your console now.
@@ -337,6 +344,32 @@ One complication is that you need to know the exact name of the package vignette
 - E.g. The `dplyr` package actually has several vignettes associated with it: "dplyr", "window-functions", "programming", etc.
 - You can run `vignette()` (i.e. without any arguments) to list the available vignettes of every *installed* package installed on your system. 
 - Or, run `vignette(all = FALSE)` if you only want to see the vignettes of any *loaded* packages.
+
+---
+
+# Help (cont.)
+
+### Demos
+
+Similar to vignettes, many packages come with built-in, interactive demos.
+
+To list all available demos on your system:<sup>1</sup> 
+
+```r
+demo(package = .packages(all.available = TRUE))
+```
+
+.footnote[
+<sup>1</sup> How would you limit the demos to one particular package?
+]
+
+--
+
+To run a particular demo, just tell R which one and the name of the parent package. For example:
+
+```r
+demo("graphics", package = "graphics")
+```
 
 ---
 class: inverse, center, middle
