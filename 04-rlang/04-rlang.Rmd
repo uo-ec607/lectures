@@ -197,7 +197,7 @@ There's no equivalent "not in" command, but how might we go about creating one?
 --
 
 ```{r}
-`%ni%` <- Negate(`%in%`) ## The backticks (`) help to specify functions.
+`%ni%` = Negate(`%in%`) ## The backticks (`) help to specify functions.
 4 %ni% 5:10
 ```
 
@@ -248,10 +248,10 @@ all.equal(0.1 + 0.2, 0.3)
 
 # Assignment
 
-In R, we can use either `=` or `<-` to handle assignment.<sup>1</sup>
+In R, we can use either `=` or `=` to handle assignment.<sup>1</sup>
 
 .footnote[
-<sup>1</sup> The `<-` is really a `<` followed by a `-`. It just looks like one thing b/c of the [font](https://github.com/tonsky/FiraCode) I'm using here.
+<sup>1</sup> The `=` is really a `<` followed by a `-`. It just looks like one thing b/c of the [font](https://github.com/tonsky/FiraCode) I'm using here.
 ]
 
 --
@@ -415,13 +415,13 @@ Each object class has its own set of rules governing how that object can be used
 
 ```{r df}
 ## Create a small data frame called "df".
-df <- data.frame(x = 1:2, y = 3:4) 
+df = data.frame(x = 1:2, y = 3:4) 
 df
 ```
 
 ```{r, m}
 ## Convert it to (i.e. create) a matrix call "m".
-m <- as.matrix(df)
+m = as.matrix(df)
 m
 ```
 
@@ -432,7 +432,7 @@ m
 Use the `class`, `typeof`, and `str` commands if you want understand more about a particular object.
 
 ```{r}
-# df <- data.frame(x = 1:2, y = 3:4) ## Create a small data frame called "df".
+# df = data.frame(x = 1:2, y = 3:4) ## Create a small data frame called "df".
 class(df) ## Evaluate its class.
 typeof(df) ## Evaluate its type.
 str(df) ## Show its structure.
@@ -525,7 +525,7 @@ As I keep saying, R's ability to keep multiple objects in memory at the same tim
 - E.g. We can create a new data frame that exists happily with our existing objects in the global environment.
 
 ```{r df2}
-df2 <- data.frame(x = rnorm(10), y = runif(10))
+df2 = data.frame(x = rnorm(10), y = runif(10))
 ```
 
 ![Now with df2 added](pics/environment2.png)
@@ -576,7 +576,7 @@ In addition to the list of strictly reserved words, there is a class of words an
 Arguably the most important semi-reserved character is `c()`, which we use for concatenation; i.e. creating vectors and binding different objects together.
 
 ```{r}
-my_vector <- c(1, 2, 5)
+my_vector = c(1, 2, 5)
 my_vector
 ```
 
@@ -585,7 +585,7 @@ my_vector
 What happens if you type the following? (Try it in your console.)
 
 ```R
-c <- 4
+c = 4
 c(1, 2 ,5)
 ```
 
@@ -600,12 +600,12 @@ Vectors are very important in R, because the language has been optimised for the
 
 *(Continued from previous slide.)*
 
-In this case, thankfully nothing. R is "smart" enough to distinguish between the variable `c <- 4` that we created and the built-in function `c()` that calls for concatenation.
+In this case, thankfully nothing. R is "smart" enough to distinguish between the variable `c = 4` that we created and the built-in function `c()` that calls for concatenation.
 
 However, this is still *extremely* sloppy coding. R won't always be able to distinguish between conflicting definitions. And neither will you. For example:
 ```{r}
 pi
-pi <- 2
+pi = 2
 pi
 ```
 --
@@ -643,7 +643,7 @@ Whenever a namespace conflict arises, the most recently loaded package will gain
 
 But what if we want the `stats` variant? Well, we have two options:
 1. Temporarily use `stats::filter()`
-2. Permanently assign `filter <- stats::filter`
+2. Permanently assign `filter = stats::filter`
 
 ---
 
@@ -674,12 +674,12 @@ The `::` syntax also means that we can call functions without loading package fi
 
 # Solving namespace conflicts (cont.)
 
-### 2. Assign `function <- package::function`
+### 2. Assign `function = package::function`
   
 A more permanent solution is to assign a conflicted function name to a particular package. This will hold for the remainder of your current R session, or until you change it back. E.g.
 ```{r, eval=F}
-filter <- stats::filter ## Note the lack of parentheses.
-filter <- dplyr::filter ## Change it back again.
+filter = stats::filter ## Note the lack of parentheses.
+filter = dplyr::filter ## Change it back again.
 ```
 
 --
@@ -731,7 +731,7 @@ rnorm(n = 100, mean = 0, sd = 1)
 
 More importantly, we can also use `[]` to index objects that we create in R.
 ```{r}
-a <- 1:10
+a = 1:10
 a[4] ## Get the 4th element of object "a"
 a[c(4, 6)] ## Get the 4th and 6th elements
 ```
@@ -757,7 +757,7 @@ We haven't covered them properly yet (patience), but **lists** are a more comple
 
 The relevance to indexing is that lists require two square brackets `[[]]` to index the parent list item and then the standard `[]` within that parent item. An example might help to illustrate:
 ```{r my_list, cache=T}
-my_list <- list(a = "hello", b = c(1,2,3), c = data.frame(x = 1:5, y = 6:10))
+my_list = list(a = "hello", b = c(1,2,3), c = data.frame(x = 1:5, y = 6:10))
 my_list[[1]] ## Return the 1st list object
 my_list[[2]][3] ## Return the 3rd element of the 2nd list object
 ```
@@ -857,8 +857,8 @@ name: cleaning
 
 Use `rm()` to remove an object or objects from your working environment.
 ```{r}
-a <- "hello"
-b <- "world"
+a = "hello"
+b = "world"
 rm(a, b)
 ```
 

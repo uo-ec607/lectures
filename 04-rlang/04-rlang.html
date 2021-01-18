@@ -8,8 +8,6 @@
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
     <link href="libs/remark-css/metropolis-fonts.css" rel="stylesheet" />
-    <link href="libs/anchor-sections/anchor-sections.css" rel="stylesheet" />
-    <script src="libs/anchor-sections/anchor-sections.js"></script>
   </head>
   <body>
     <textarea id="source">
@@ -306,7 +304,7 @@ There's no equivalent "not in" command, but how might we go about creating one?
 
 
 ```r
-`%ni%` &lt;- Negate(`%in%`) ## The backticks (`) help to specify functions.
+`%ni%` = Negate(`%in%`) ## The backticks (`) help to specify functions.
 4 %ni% 5:10
 ```
 
@@ -390,10 +388,10 @@ all.equal(0.1 + 0.2, 0.3)
 
 # Assignment
 
-In R, we can use either `=` or `&lt;-` to handle assignment.&lt;sup&gt;1&lt;/sup&gt;
+In R, we can use either `=` or `=` to handle assignment.&lt;sup&gt;1&lt;/sup&gt;
 
 .footnote[
-&lt;sup&gt;1&lt;/sup&gt; The `&lt;-` is really a `&lt;` followed by a `-`. It just looks like one thing b/c of the [font](https://github.com/tonsky/FiraCode) I'm using here.
+&lt;sup&gt;1&lt;/sup&gt; The `=` is really a `&lt;` followed by a `-`. It just looks like one thing b/c of the [font](https://github.com/tonsky/FiraCode) I'm using here.
 ]
 
 --
@@ -569,7 +567,7 @@ Each object class has its own set of rules governing how that object can be used
 
 ```r
 ## Create a small data frame called "df".
-df &lt;- data.frame(x = 1:2, y = 3:4) 
+df = data.frame(x = 1:2, y = 3:4) 
 df
 ```
 
@@ -582,7 +580,7 @@ df
 
 ```r
 ## Convert it to (i.e. create) a matrix call "m".
-m &lt;- as.matrix(df)
+m = as.matrix(df)
 m
 ```
 
@@ -594,13 +592,13 @@ m
 
 ---
 
-# Object class, type and, structure
+# Object class, type, and structure
 
 Use the `class`, `typeof`, and `str` commands if you want understand more about a particular object.
 
 
 ```r
-# df &lt;- data.frame(x = 1:2, y = 3:4) ## Create a small data frame called "df".
+# df = data.frame(x = 1:2, y = 3:4) ## Create a small data frame called "df".
 class(df) ## Evaluate its class.
 ```
 
@@ -737,7 +735,7 @@ As I keep saying, R's ability to keep multiple objects in memory at the same tim
 
 
 ```r
-df2 &lt;- data.frame(x = rnorm(10), y = runif(10))
+df2 = data.frame(x = rnorm(10), y = runif(10))
 ```
 
 ![Now with df2 added](pics/environment2.png)
@@ -789,7 +787,7 @@ Arguably the most important semi-reserved character is `c()`, which we use for c
 
 
 ```r
-my_vector &lt;- c(1, 2, 5)
+my_vector = c(1, 2, 5)
 my_vector
 ```
 
@@ -802,7 +800,7 @@ my_vector
 What happens if you type the following? (Try it in your console.)
 
 ```R
-c &lt;- 4
+c = 4
 c(1, 2 ,5)
 ```
 
@@ -817,7 +815,7 @@ Vectors are very important in R, because the language has been optimised for the
 
 *(Continued from previous slide.)*
 
-In this case, thankfully nothing. R is "smart" enough to distinguish between the variable `c &lt;- 4` that we created and the built-in function `c()` that calls for concatenation.
+In this case, thankfully nothing. R is "smart" enough to distinguish between the variable `c = 4` that we created and the built-in function `c()` that calls for concatenation.
 
 However, this is still *extremely* sloppy coding. R won't always be able to distinguish between conflicting definitions. And neither will you. For example:
 
@@ -830,7 +828,7 @@ pi
 ```
 
 ```r
-pi &lt;- 2
+pi = 2
 pi
 ```
 
@@ -890,7 +888,7 @@ Whenever a namespace conflict arises, the most recently loaded package will gain
 
 But what if we want the `stats` variant? Well, we have two options:
 1. Temporarily use `stats::filter()`
-2. Permanently assign `filter &lt;- stats::filter`
+2. Permanently assign `filter = stats::filter`
 
 ---
 
@@ -930,13 +928,13 @@ The `::` syntax also means that we can call functions without loading package fi
 
 # Solving namespace conflicts (cont.)
 
-### 2. Assign `function &lt;- package::function`
+### 2. Assign `function = package::function`
   
 A more permanent solution is to assign a conflicted function name to a particular package. This will hold for the remainder of your current R session, or until you change it back. E.g.
 
 ```r
-filter &lt;- stats::filter ## Note the lack of parentheses.
-filter &lt;- dplyr::filter ## Change it back again.
+filter = stats::filter ## Note the lack of parentheses.
+filter = dplyr::filter ## Change it back again.
 ```
 
 --
@@ -995,7 +993,7 @@ rnorm(n = 100, mean = 0, sd = 1)
 More importantly, we can also use `[]` to index objects that we create in R.
 
 ```r
-a &lt;- 1:10
+a = 1:10
 a[4] ## Get the 4th element of object "a"
 ```
 
@@ -1041,7 +1039,7 @@ We haven't covered them properly yet (patience), but **lists** are a more comple
 The relevance to indexing is that lists require two square brackets `[[]]` to index the parent list item and then the standard `[]` within that parent item. An example might help to illustrate:
 
 ```r
-my_list &lt;- list(a = "hello", b = c(1,2,3), c = data.frame(x = 1:5, y = 6:10))
+my_list = list(a = "hello", b = c(1,2,3), c = data.frame(x = 1:5, y = 6:10))
 my_list[[1]] ## Return the 1st list object
 ```
 
@@ -1213,8 +1211,8 @@ name: cleaning
 Use `rm()` to remove an object or objects from your working environment.
 
 ```r
-a &lt;- "hello"
-b &lt;- "world"
+a = "hello"
+b = "world"
 rm(a, b)
 ```
 
