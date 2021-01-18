@@ -34,21 +34,6 @@ I know that there are a lot of packages here, but don't worry: There are only a 
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(raster, stars, tidyverse, httr, hrbrthemes, viridis, rcartocolor, remotes, rayshader, here)
 pacman::p_load_gh("Nowosad/spDataLarge")
-```
-
-```
-## sp (1.4-4 -> 1.4-5) [CRAN]
-##      checking for file ‘/tmp/RtmplAMKkp/remotes21cc3c26b05e/Nowosad-spDataLarge-9ff2d30/DESCRIPTION’ ...  ✓  checking for file ‘/tmp/RtmplAMKkp/remotes21cc3c26b05e/Nowosad-spDataLarge-9ff2d30/DESCRIPTION’
-##   ─  preparing ‘spDataLarge’:
-##    checking DESCRIPTION meta-information ...  ✓  checking DESCRIPTION meta-information
-##   ─  checking for LF line-endings in source and make files and shell scripts
-##   ─  checking for empty or unneeded directories
-##   ─  building ‘spDataLarge_0.5.1.tar.gz’
-##      
-## 
-```
-
-```r
 theme_set(hrbrthemes::theme_ipsum()) ## Optional: my preferred ggplot2 theme
 ```
 
@@ -217,7 +202,7 @@ render_snapshot(clear=TRUE)
 
 ### Another example: Cape Town
 
-Let's walk through another example to see how we can download, extract, and then view (part of) a large GeoTIFF file. Naturally, I'm going to choose my home city of Cape Town because it has really neat topography and is also objectively the best city. The digitial elevation raster that we're going to use comes courtesy of the City of Cape Town's [Open Data Portal](https://odp-cctegis.opendata.arcgis.com/).  https://web1.capetown.gov.za/web1/opendataportal/DatasetDetail?DatasetName=Digital%20elevation%20model
+Let's walk through another example to see how we can download, extract, and then view (part of) a large GeoTIFF file. Naturally, I'm going to choose my home city of Cape Town because it has really neat topography and is also objectively the best city. The digitial elevation raster that we're going to use comes courtesy of the City of Cape Town's [Open Data Portal](https://odp-cctegis.opendata.arcgis.com/).  https://web1.capetown.gov.za/web1/opendataportal/DatasetDetail?DatasetName=Digital%20elevation%20model).
 
 You can download the file manually [here](https://web1.capetown.gov.za/web1/opendataportal/DatasetDetail?DatasetName=Digital%20elevation%20model) and then unzip it, but here some commands to do everything from R. *Warning:* Depending on your internet connection, the next code chunk might take a minute or two to run.
 
@@ -294,8 +279,8 @@ cpt_cb %>%
 ```
 
 ![](09a-spatial-rasters_files/figure-html/cpt_cb_rayshader-1.png)<!-- -->
-
-For the iconic image, looking out to the flat table top of the mountain from the harbour, we just need to just our camera angle a little bit.
+[
+For the iconic image --- i.e. looking out to the flat table top of the mountain from the harbour --- we just need to just our camera angle a little bit.
 
 
 ```r
@@ -303,8 +288,7 @@ cpt_cb %>%
   sphere_shade(sunangle = 45, texture = "desert") %>%
   add_water(detect_water(cpt_cb), color = "desert") %>%
   plot_3d(
-    cpt_cb, zscale = 10, fov = 0, theta = 180, phi = 0, zoom = 0.5,
-    windowsize = c(1000, 1000)
+    cpt_cb, zscale = 10, fov = 0, theta = 180, phi = 0, zoom = 0.5
     )
 Sys.sleep(0.2)
 render_snapshot(clear=TRUE)
@@ -312,6 +296,9 @@ render_snapshot(clear=TRUE)
 
 ![](09a-spatial-rasters_files/figure-html/cpt_cb_rayshader_3d-1.png)<!-- -->
 
+FWIW, here's the real thing, courtesy of [Wikipedia](https://en.wikipedia.org/wiki/Table_Mountain). Ain't she a beauty?
+
+![](https://upload.wikimedia.org/wikipedia/commons/d/dc/Table_Mountain_DanieVDM.jpg)
 
 
 
