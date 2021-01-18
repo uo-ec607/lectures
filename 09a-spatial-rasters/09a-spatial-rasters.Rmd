@@ -1,0 +1,232 @@
+---
+title: "Data Science for Economists"
+subtitle: "Lecture 9 (bonus): Spatial analysis: Rasters"
+author:
+  name: Grant R. McDermott
+  affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
+# date: Lecture 10  #"`r format(Sys.time(), '%d %B %Y')`"
+output: 
+  html_document:
+    theme: flatly
+    highlight: haddock 
+    # code_folding: show
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
+```
+
+*Note: This is a bonus set of notes, meant to read alongside the main spatial lecture. Yes, I know I said we won't have time for rasters, but I caved. I might turn these notes into a formal lecture down the road. We'll see.*
+
+## Requirements
+
+### R packages 
+
+- New: **stars**, **raster**, **sp**, **spDataLarge**, **rcartocolor**, **rayshader**
+- Already used: **sf**, **tidyverse**, **httr**, **hrbrthemes**, **viridis**, **remotes**, **here**
+
+I know that there are a lot of packages here, but don't worry: There are only a few core raster spatial packages that we need to care about. The rest are mostly just for adding a few bells and whistles to these notes. As always, I'll try to be explicit about why I'm using a particular function and which package it belongs to. I should also say that the **sf** package that we used in the previous lecture, will automatically get loaded alongside **stars**. Same for the **sp** package, which will get loaded alongside **raster**. The following code chunk should take care of all of that for you.
+
+```{r libs, cache=F, message=F}
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(raster, stars, tidyverse, httr, hrbrthemes, viridis, rcartocolor, remotes, rayshader, here)
+pacman::p_load_gh("Nowosad/spDataLarge")
+theme_set(hrbrthemes::theme_ipsum()) ## Optional: my preferred ggplot2 theme
+```
+
+
+## Introduction: Raster basics
+
+### Tesselation (gridding)
+
+Additional dimensions for vector datacubes, e.g. satellite data typically comes with time dimension too.
+
+
+### Files types (GeoTIFF, NetCDF, etc.)
+
+Raster (and datacube) data come in many different formats. The two most common file types that you are likely to encounter are: 
+
+- **GeoTIFFs** (`.tif`) Geographic Tagged Image File Format
+- **NetCDF** (`.nc`), or "Network Common Data Form". 
+
+## Packages for raster data in R
+
+```{r ob}
+ob_tif = system.file("tif/L7_ETMs.tif", package = "stars")
+ob = read_stars(ob_tif)
+ob
+```
+
+As mentioned earlier, **stars** is tightly integrated with **sf**. Many of the corresponding `st_SOMETHING()` functions that we learnt about last lecture will hence work on raster arrays and datacubes too. For example,  we can get the spatial extent (or "bounding box") of our `ob` object.
+
+```{r ob_bbox}
+st_bbox(ob)
+```
+
+
+```{r ob_plot}
+plot(ob)
+```
+
+
+```{r zion}
+# srtm = raster::raster(system.file("raster/srtm.tif", package = "spDataLarge"))
+srtm = read_stars(system.file("raster/srtm.tif", package = "spDataLarge"))
+zion = st_read(system.file("vector/zion.gpkg", package = "spDataLarge"))
+# zion = st_transform(zion, raster::projection(srtm))
+zion = st_transform(zion, st_crs(srtm))
+```
+
+
+```{r srtm_cropped}
+# srtm_cropped = raster::crop(srtm, zion)
+srtm_cropped = st_crop(srtm, zion)
+srtm_cropped2 = srtm[zion] ## another option
+# srtm_masked = raster::mask(srtm, zion)
+srtm_masked = st_crop(srtm, zion, crop = FALSE) ## keep full extent, but convert outside values to NA
+```
+
+
+```{r srtm_cropped_plot}
+# plot(srtm_cropped, col = terrain.colors(100))
+# plot(srtm_cropped, col = viridis::magma(100))
+plot(srtm_cropped, col = rcartocolor::carto_pal(name="TealRose"))
+```
+
+
+```{r srtm_cropped_ggplot}
+ggplot() +
+  geom_stars(data = srtm_cropped) +
+  scale_fill_carto_c(
+    name = "Elevation", palette = "Geyser", 
+    na.value = "transparent" ## Optional
+    ) +
+  theme_void()
+```
+
+## Fun stuff: rayshader
+
+```{r strm_rayshader}
+# library(rayshader)  ## Already loaded
+
+srtm_mat = raster_to_matrix(as(srtm, "Raster"))
+srtm_mat %>%
+  sphere_shade(sunangle = 45, texture = "desert") %>%
+  add_shadow(ambient_shade(srtm_mat), 0) %>%
+  plot_map()
+```
+
+```{r strm__rayshader_3d}
+srtm_mat %>%
+    sphere_shade(sunangle = 45, texture = "desert") %>%
+    add_shadow(ambient_shade(srtm_mat), 0) %>%
+    plot_3d(srtm_mat, zscale = 30, fov = 0, theta = 135, zoom = 0.75, phi = 45, windowsize = c(1000, 800))
+Sys.sleep(0.2)
+render_snapshot(clear=TRUE)
+```
+
+### Another example: Cape Town
+
+Let's walk through another example to see how we can download, extract, and then view (part of) a large GeoTIFF file. Naturally, I'm going to choose my home city of Cape Town because it has really neat topography and is also objectively the best city. The digitial elevation raster that we're going to use comes courtesy of the City of Cape Town's [Open Data Portal](https://odp-cctegis.opendata.arcgis.com/).  https://web1.capetown.gov.za/web1/opendataportal/DatasetDetail?DatasetName=Digital%20elevation%20model
+
+You can download the file manually [here](https://web1.capetown.gov.za/web1/opendataportal/DatasetDetail?DatasetName=Digital%20elevation%20model) and then unzip it, but here some commands to do everything from R. *Warning:* Depending on your internet connection, the next code chunk might take a minute or two to run.
+
+```{r cpt_dwnld}
+# library(httr) ## Already loaded 
+# library(here) ## Already loaded. Just to help with relative directory paths for file downloading.
+
+## Download the file from the City of Cape Town (but only if needed)
+if(!file.exists(here("09a-spatial-rasters/data/10m_Grid_GeoTiff.zip"))) {
+  httr::GET(
+    'https://www.capetown.gov.za/_layouts/OpenDataPortalHandler/DownloadHandler.ashx?DocumentName=10m_Grid_GeoTiff.zip&DatasetDocument=http%3a%2f%2fcityapps.capetown.gov.za%2fsites%2fopendatacatalog%2fDocuments%2fDigital%2520elevation%2520model%2f10m_Grid_GeoTiff.zip', 
+    httr::write_disk(here("09a-spatial-rasters/data/10m_Grid_GeoTiff.zip"))
+    )
+}
+
+## Upzip it (but only if needed)
+if(!dir.exists(here("09a-spatial-rasters/data/10m_Grid_GeoTiff"))) {
+  unzip(
+  here("09a-spatial-rasters/data/10m_Grid_GeoTiff.zip"),
+  exdir = here("09a-spatial-rasters/data/10m_Grid_GeoTiff")
+  )
+}
+```
+
+Now we read in the whole file (+/- 130 MB).
+
+```{r cpt}
+cpt = read_stars(here("09a-spatial-rasters/data/10m_Grid_GeoTiff/10m_Grid_GeoTiff/10m_BA.tif"))
+```
+
+Let's plot it. The object size will cause this to take a few seconds to render.
+
+```{r cpt_plot, dependson=cpt}
+plot(cpt, col = viridis::magma(20))
+```
+
+Here we see the whole peninsula and greater metropolitan area: northern suburbs, etc. However, the part that I (and thus you) are particularly interested in is the [City Bowl](https://en.wikipedia.org/wiki/City_Bowl).^[This is the natural ampitheatre formed by Table Bay and the surrounding mountains, including most famously, Table Mountain.] There are several ways to limit our elevation data to this extent. In the below code chunk I've taken the shortcut of providing a reasonable bounding box that we can use to crop against.
+
+
+```{r cpt_cb, dependson=cpt}
+bb = 
+  st_bbox(
+    c(xmin = -60000, ymin = -3761000, xmax = -50000, ymax = -3751500),
+    crs = st_crs(cpt)
+    ) %>%
+  st_make_grid(n = 1)
+
+## Crop to the City Bowl
+cpt_cb = st_crop(cpt, bb)
+
+## Plot (have to use less colours b/c there's less elevation breaks in the cropped data)
+plot(cpt_cb, col = viridis::magma(18))
+```
+
+
+Let's rayshade this bad boy.
+
+```{r cpt_cb_rayshader, dependson=cpt_cb}
+cpt_cb = raster_to_matrix(as(cpt_cb, "Raster"))
+cpt_cb %>%
+  sphere_shade(sunangle = 45, texture = "desert") %>%
+  add_shadow(ambient_shade(cpt_cb), 0) %>% ## comment out if rendering takes a while
+  add_water(detect_water(cpt_cb), color = "desert") %>%
+  plot_map()
+```
+
+For the iconic image, looking out to the flat table top of the mountain from the harbour, we just need to just our camera angle a little bit.
+
+```{r cpt_cb_rayshader_3d, dependson=cpt_cb}
+cpt_cb %>%
+  sphere_shade(sunangle = 45, texture = "desert") %>%
+  add_water(detect_water(cpt_cb), color = "desert") %>%
+  plot_3d(
+    cpt_cb, zscale = 10, fov = 0, theta = 180, phi = 0, zoom = 0.5,
+    windowsize = c(1000, 1000)
+    )
+Sys.sleep(0.2)
+render_snapshot(clear=TRUE)
+```
+
+
+```{r cpt_cont, include=FALSE, eval=FALSE}
+cpt_cont = 
+  jsonlite::fromJSON("https://citymaps.capetown.gov.za/agsext1/rest/services/Theme_Based/Open_Data_Service/MapServer/15/query?where=1%3D1&outFields=*&outSR=4326&f=json") 
+
+```
+
+```{r cpt_cont_sf, include=FALSE, eval=FALSE}
+library(geojsonio)
+cpt_cont = geojson_read("https://opendata.arcgis.com/datasets/d179f9e0faf145a2957617da1b231892_15.geojson")
+
+url <- "https://opendata.arcgis.com/datasets/d179f9e0faf145a2957617da1b231892_15.geojson"
+geojson_read(url)
+geojson_read(url, parse = TRUE)
+
+cpt_cont_sf = st_as_sf(cpt_cont)
+cpt_cont_sf
+```
