@@ -516,7 +516,7 @@ demo(package = .packages(all.available = TRUE))
 
 --
 
-To run a particular demo, just tell R which one and the name of the parent package. For example:
+To run a specific demo, just tell R which one and the name of the parent package. For example:
 
 ```r
 demo("graphics", package = "graphics")
@@ -587,15 +587,15 @@ We'll revisit the issue of "type" vs "class" in a slide or two. For the moment, 
 
 Most likely, you already have a good idea of what distinguishes these objects and how to use them.
 - However, bear in mind that there subtleties that may confuse while you're still getting used to R. 
-- E.g. There are different kinds of data frames; you'll soon encounter "[tibbles](https://tibble.tidyverse.org/)", which are an enhanced data frame provided by the tidyverse.
+- E.g. There are different kinds of data frames. We'll soon encounter "[tibbles](https://tibble.tidyverse.org/)" and "[data.tables](https://rdatatable.gitlab.io/data.table/articles/datatable-intro.html#what-is-datatable-1a)", which are enhanced versions of the standard data frame in R. 
 
 ---
 
 # What are objects? (cont.)
 
-Each object class has its own set of rules governing how that object can be used in R.
+Each object class has its own set of rules ("methods") for determining valid operations.
 - For example, you can perform many of the same operations on matrices and data frames. But there are some operations that only work on a matrix, and vice versa.
-- At the same time, you can (often) convert an object from one type to another.
+- At the same time, you can (usually) convert an object from one type to another.
 
 
 ```r
@@ -669,7 +669,7 @@ Of course, you can always just inspect/print an object directly in the console.
 - E.g. Type `d` and hit Enter.
 
 
-The `View()` function is also very helpful.
+The `View()` function is also very helpful. This is the same as clicking on the object in your RStudio *Environment* pane. (Try both methods now.)
 - E.g. `View(d)`.
 
 ---
@@ -753,7 +753,7 @@ lm(y ~ x, data = d) ## Works when we add "data = d"!
 
 --
 
-I wanted to emphasize this global environment issue, because it is something that Stata users (i.e. most economists) struggle with when they first come to R.
+I wanted to emphasize this global environment issue, because it is something that Stata users (i.e. many economists) struggle with when they first come to R.
 - In Stata, the entire workspace essentially consists of one (and only one) data frame. So there can be no ambiguity where variables are coming from.
 - However, that "convenience" comes at a really high price IMO. You can never read more than two separate datasets (let alone object types) into memory at the same time, have to resort all sorts of hacks to add summary variables to your dataset, etc. 
 - Speaking of which...
@@ -764,7 +764,7 @@ I wanted to emphasize this global environment issue, because it is something tha
 # Working with multiple objects
 
 As I keep saying, R's ability to keep multiple objects in memory at the same time is a huge plus when it comes to effective data work. 
-- E.g. We can create a new data frame that exists happily with our existing objects in the global environment.
+- E.g. We can copy an exiting data frame, or create new one entirely from scratch. Either will exist happily with our existing objects in the global environment.
 
 
 ```r
@@ -773,9 +773,12 @@ d2 = data.frame(x = rnorm(10), y = runif(10))
 
 ![Now with d2 added](pics/environment2.png)
 
---
+---
+
+# Working with multiple objects (cont.)
 
 Again, however, it does mean that you have to pay attention to the names of those distinct data frames and be specific about which objects you are referring to.
+- Do we want to run a regression of "y" on "x" from data frame `d` or data frame `d2`?
 
 ---
 class: inverse, center, middle
@@ -849,6 +852,8 @@ Vectors are very important in R, because the language has been optimised for the
 *(Continued from previous slide.)*
 
 In this case, thankfully nothing. R is "smart" enough to distinguish between the variable `c = 4` that we created and the built-in function `c()` that calls for concatenation.
+
+--
 
 However, this is still *extremely* sloppy coding. R won't always be able to distinguish between conflicting definitions. And neither will you. For example:
 
@@ -981,6 +986,23 @@ Another good rule of thumb is that you want to load your most important packages
 Other than that, simply pay attention to any warnings when loading a new package and `?` is your friend if you're ever unsure. (E.g. `?filter` will tell you which variant is being used.)
 - In truth, problematic namespace conflicts are rare. But it's good to be aware of them. 
   
+---
+
+# User-side namespace conflicts
+
+A final thing to say about namespace conflicts is that they don't only arise from loading packages. They can arise when users create their own functions with a conflicting name.
+- E.g. If I was naive enough to create a new function called `c()`.
+
+--
+
+&lt;/br&gt;
+
+In a similar vein, one of the most common and confusing errors that even experienced R programmers run into is related to the habit of calling objects "df" or "data"... both of which are functions in base R!
+- See for yourself by typing `?df` or `?data`.
+
+Again, R will figure out what you mean if you are clear/lucky enough. But, much the same as with `c()`, it's relatively easy to run into problems.
+- Case in point: Triggering the infamous "object of type closure is not subsettable" error message. (See from 1:45 [here](https://rstudio.com/resources/rstudioconf-2020/object-of-type-closure-is-not-subsettable/).)
+
 ---
 class: inverse, center, middle
 name: indexing
@@ -1179,6 +1201,12 @@ my_list$c$x ## Return column "x" of list object "c"
 ## [1] 1 2 3 4 5
 ```
 
+--
+
+&lt;/br&gt;
+
+**Aside:** Typing `View(my_list)` (or, equivalently, clicking on the object in RStudio's environment pane) provides a nice interactive window for exploring the nested structure of lists.
+
 ---
 
 # Option 2: $ (cont.)
@@ -1278,7 +1306,7 @@ You may also have noticed that RStudio has convenient buttons for clearing your 
 
 class: inverse, center, middle
 
-# Next class: Data wrangling and cleaning with the Tidyverse
+# Next lecture(s): Data wrangling and cleaning
 
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
 
