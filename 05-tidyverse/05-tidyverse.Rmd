@@ -52,7 +52,7 @@ name: prologue
 
 # What is "tidy" data?
 
-Resources:
+### Resources:
 - [Vignette](https://cran.r-project.org/web/packages/tidyr/vignettes/tidy-data.html) (from the **tidyr** package)
 - [Original paper](https://vita.had.co.nz/papers/tidy-data.pdf) (Hadley Wickham, 2014 JSS)
 
@@ -60,7 +60,7 @@ Resources:
 
 </br>
 
-Key points:
+### Key points:
 1. Each variable forms a column.
 2. Each observation forms a row.
 3. Each type of observational unit forms a table.
@@ -75,11 +75,27 @@ Basically, tidy data is more likely to be [long (i.e. narrow) format](https://en
 
 # Checklist
 
-☑ You should already have installed the [**tidyverse**](https://www.tidyverse.org/) in the first lecture.
-- I'll hold off loading for now, but we'll get there in a few slides.
+### R packages you'll need today
 
-☑ You will also need the [**nycflights13**](hhttps://github.com/hadley/nycflights13) package.
-- Install it now: `install.packages('nycflights13', repos = 'https://cran.rstudio.com')`
+☑ [**tidyverse**](https://www.tidyverse.org/)
+
+☑ [**nycflights13**](hhttps://github.com/hadley/nycflights13)
+
+--
+
+</br>
+
+I'll hold off loading these libraries for now. But you can install/update them both with the following command.
+
+```r
+install.packages(c('tidyverse', 'nycflights13'), repos = 'https://cran.rstudio.com', dependencies  = TRUE)
+```
+
+**Tip:** If you're on Linux, then I _strongly_ recommend installing the pre-compiled binary versions of these packages from [RSPM](https://packagemanager.rstudio.com/client/#/repos/1/overview) instead of CRAN. The exact repo mirror varies by distro (see the link). But on Ubuntu 20.04, for example, you'd use: 
+
+```r
+install.packages(c('tidyverse', 'nycflights13'), repos = 'https://packagemanager.rstudio.com/all/__linux__/focal/latest', dependencies  = TRUE)
+```
 
 ---
 class: inverse, center, middle
@@ -97,22 +113,23 @@ Much digital ink has been spilled over the "tidyverse vs. base R" debate.
 
 --
 
-I won't delve into this debate here, because I think the answer is [obvious](http://varianceexplained.org/r/teach-tidyverse/): We should teach the tidyverse first (or, at least, early).
+I won't delve into this debate here, because I think the answer is [clear](http://varianceexplained.org/r/teach-tidyverse/): We should teach the tidyverse first (or, at least, early).
 - The documentation and community support are outstanding.
-- Having a consistent philosophy and syntax makes it much easier to learn.
-- The tidyverse provides a convenient "front-end" to some key big-data tools that we'll use later in the course.
-- For data cleaning, wrangling and plotting... the tidyverse is really a no-brainer.<sup>1</sup>
+- Having a consistent philosophy and syntax makes it easier to learn.
+- Provides a convenient "front-end" to big data tools that we'll use later in the course.
+- For data cleaning, wrangling, and plotting, the tidyverse really is a no-brainer.<sup>1</sup>
 
 .footnote[
-<sup>1</sup> I'm also a huge fan of [**data.table**](http://r-datatable.com/). This package will be the subject of our next lecture...
+<sup>1</sup> I'm also a huge fan of [**data.table**](http://r-datatable.com/). This package will be the subject of our next lecture.
 ]
 
 --
 
-But this certainly shouldn't put you off learning base R alternatives.
-- Base R is extremely flexible and powerful, esp. when combined with other libraries.
+**But**... this certainly shouldn't put you off learning base R alternatives.
+- Base R is extremely flexible and powerful (and stable).
 - There are some things that you'll have to venture outside of the tidyverse for.
 - A combination of tidyverse and base R is often the best solution to a problem.
+- Excellent base R data manipulation tutorials: [here](https://www.rspatial.org/intr/index.html) and [here](https://github.com/matloff/fasteR).
 
 ---
 
@@ -130,7 +147,10 @@ These generally follow a `tidyverse::snake_case` vs `base::period.case` rule. E.
 Etcetera.
   
 If you call up the above examples, you'll see that the tidyverse alternative typically offers some enhancements or other useful options (and sometimes restrictions) over its base counterpart.
-- Remember: There are always many ways to achieve a single goal in R.
+
+--
+
+**Remember:** There are (almost) always multiple ways to achieve a single goal in R.
 
 ---
 
@@ -156,12 +176,13 @@ tidyverse_packages()
 ```
 
 We'll use several of these additional packages during the remainder of this course.
-— E.g. The **lubridate** package for working with dates and the **rvest** package for webscraping.
+
+- E.g. The **lubridate** package for working with dates and the **rvest** package for webscraping.
 - However, bear in mind that these packages will have to be loaded separately.
 
 .footnote[
-<sup>1</sup> It also includes a *lot* of dependencies upon installation. This is a topic of some [controversy](http://www.tinyverse.org/).
-].
+<sup>1</sup> It also includes a *lot* of dependencies upon installation. This is a matter of some [controversy](http://www.tinyverse.org/).
+]
 
 ---
 
@@ -180,7 +201,7 @@ These are the workhorse packages for cleaning and wrangling data. They are thus 
 
 # An aside on pipes: %>%
 
-We already learned about pipes in our lecture on the bash shell. In R, the pipe operator is denoted `%>%` and is automatically loaded with the tidyverse.
+We already learned about pipes in our [lecture](https://raw.githack.com/uo-ec607/lectures/master/03-shell/03-shell.html#91) on the bash shell. The tidyverse loads its own pipe operator, denoted `%>%`.
   
 I want to reiterate how cool pipes are, and how using them can dramatically improve the experience of reading and writing code. Compare:
 
@@ -193,7 +214,7 @@ summarise(group_by(filter(mpg, manufacturer=="audi"), model), hwy_mean = mean(hw
 --
 
 The first line reads from left to right, exactly how I thought of the operations in my head. 
-- Take this object (mpg), do this (filter), then do this (group by), etc.
+- Take this object (`mpg`), do this (`filter`), then do this (`group_by`), etc.
 
 The second line totally inverts this logical order (the final operation comes first!) 
 - Who wants to read things inside out?
@@ -217,6 +238,25 @@ Remember: Using vertical space costs nothing and makes for much more readable/wr
 
 PS — The pipe is originally from the [**magrittr**](https://magrittr.tidyverse.org/) package ([geddit?](https://en.wikipedia.org/wiki/The_Treachery_of_Images)), which can do some other cool things if you're inclined to explore.
 
+---
+
+# A further aside on the base R pipe: |>
+
+The magrittr pipe has proven so successful and popular, that the R core team [recently announced](https://t.co/HVECPENQ5C?amp=1) a "native" pipe would be coming to base R, denoted `|>`.<sup>1</sup> For example:
+
+```r
+mtcars |> subset(cyl==4) |> head()
+mtcars |> subset(cyl==4) |> d => lm(mpg ~ disp, data = d)
+```
+
+.footnote[<sup>1</sup> That's actually a `|` followed by a `>`. The default font on these slides just makes it look extra fancy.]
+
+--
+
+At the time of writing this native pipe is only available in the [development](https://stat.ethz.ch/R-manual/R-devel/library/base/html/pipeOp.html) version of R. (I'll show an in-class demo.)
+
+This native pipe complements some other new cool features, like support for ["lambda" functions](https://stackoverflow.com/questions/16501/what-is-a-lambda-function) in R.
+- So, worth watching this space.
 
 ---
 class: inverse, center, middle
@@ -241,7 +281,7 @@ packageVersion('dplyr')
 
 --
 
-*Note:* dplyr 1.0.0 also notifies you about grouping variables every time you do operations on or with them. YMMV, but, personally, I find these messages annoying and so prefer to [switch them off](https://twitter.com/MattCowgill/status/1278463099272491008).
+*Note:* **dplyr** 1.0.0 also notifies you about grouping variables every time you do operations on or with them. YMMV, but, personally, I find these messages annoying and so prefer to [switch them off](https://twitter.com/MattCowgill/status/1278463099272491008).
 
 ```r
 options(dplyr.summarise.inform = FALSE) ## Add to .Rprofile to make permanent
@@ -668,7 +708,7 @@ Let's practice these verbs together in class.
 # 1) tidyr::pivot_longer
 
 ```{r pivot_longer1}
-stocks <- data.frame( ## Could use "tibble" instead of "data.frame" if you prefer
+stocks = data.frame( ## Could use "tibble" instead of "data.frame" if you prefer
   time = as.Date('2009-01-01') + 0:1,
   X = rnorm(2, 0, 1),
   Y = rnorm(2, 0, 2),
@@ -686,7 +726,7 @@ Let's quickly save the "tidy" (i.e. long) stocks data frame for use on the next 
 
 ```{r pivot_longer2}
 ## Write out the argument names this time: i.e. "names_to=" and "values_to="
-tidy_stocks <- 
+tidy_stocks = 
   stocks %>% 
   pivot_longer(-time, names_to="stock", values_to="price")
 ```
@@ -710,7 +750,7 @@ Note that the second example &mdash; which has combined different pivoting argum
 
 # Aside: Remembering the pivot_* syntax 
 
-There's a long-running joke about no-one being able to remember Stata's "reshape" command. ([Exhibit A](https://twitter.com/scottimberman/status/1036801308785864704).)
+There's a long-running joke about no-one being able to remember Stata's "reshape" command. ([Exhibit A](https://twitter.com/helleringer143/status/1117234887902285836).)
 
 It's easy to see this happening with the `pivot_*` functions too. However, I find that I never forget the commands as long as I remember the argument order is *"names"* then *"values"*.
 
@@ -719,7 +759,7 @@ It's easy to see this happening with the `pivot_*` functions too. However, I fin
 # 3) tidyr::separate
 
 ```{r sep1}
-economists <- data.frame(name = c("Adam.Smith", "Paul.Samuelson", "Milton.Friedman"))
+economists = data.frame(name = c("Adam.Smith", "Paul.Samuelson", "Milton.Friedman"))
 economists
 economists %>% separate(name, c("first_name", "last_name")) 
 ```
@@ -736,7 +776,7 @@ This command is pretty smart. But to avoid ambiguity, you can also specify the s
 
 A related function is `separate_rows`, for splitting up cells that contain multiple fields or observations (a frustratingly common occurence with survey data).
 ```{r sep2}
-jobs <- data.frame(
+jobs = data.frame(
   name = c("Jack", "Jill"),
   occupation = c("Homemaker", "Philosopher, Philanthropist, Troublemaker") 
   ) 
@@ -749,7 +789,7 @@ jobs %>% separate_rows(occupation)
 # 4) tidyr::unite
 
 ```{r unite1}
-gdp <- data.frame(
+gdp = data.frame(
   yr = rep(2016, times = 4),
   mnth = rep(1, times = 4),
   dy = 1:4,
@@ -766,7 +806,7 @@ gdp %>% unite(date, c("yr", "mnth", "dy"), sep = "-")
 
 Note that `unite` will automatically create a character variable. You can see this better if we convert it to a tibble. 
 ```{r unite2}
-gdp_u <- gdp %>% unite(date, c("yr", "mnth", "dy"), sep = "-") %>% as_tibble()
+gdp_u = gdp %>% unite(date, c("yr", "mnth", "dy"), sep = "-") %>% as_tibble()
 gdp_u
 ```
 
