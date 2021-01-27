@@ -4,7 +4,7 @@ subtitle: "Lecture 6: Webscraping: (1) Server-side and CSS"
 author:
   name: Grant R. McDermott
   affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
-# date: Lecture 6  #"06 January 2021"
+# date: Lecture 6  #"27 January 2021"
 output: 
   html_document:
     theme: flatly
@@ -29,10 +29,14 @@ Today we'll be using [SelectorGadget](https://selectorgadget.com/), which is a C
 - New: **rvest**, **janitor**
 - Already used: **tidyverse**, **lubridate**, **hrbrthemes**
 
-Recall that **rvest** was automatically installed with the rest of the tidyverse. Still, here is a convenient way to install (if necessary) and load all of the above packages.
+Recall that **rvest** was automatically installed with the rest of the tidyverse. However, these lecture notes assume that you have **rvest** 1.0.0, which --- at the time of writing --- has to installed as the development version from GitHub. The code chunk below should take care of installing (if necessary) and loading the packages that you need for today's lecture.
 
 
 ```r
+## Install development version of rvest if necessary
+if (numeric_version(packageVersion("rvest")) < numeric_version('0.99.0')) {
+  remotes::install_github('tidyverse/rvest')
+}
 ## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(tidyverse, rvest, lubridate, janitor, hrbrthemes)
@@ -92,13 +96,13 @@ Okay, let's get to an application. Say that we want to scrape the Wikipedia page
 
 First, open up this page in your browser. Take a look at its structure: What type of objects does it contain? How many tables does it have? Do these tables all share the same columns? What row- and columns-spans? Etc.
 
-Once you've familised yourself with the structure, read the whole page into R using the `rvest::read_html()` function.
+Once you've familiarised yourself with the structure, read the whole page into R using the `rvest::read_html()` function.
 
 
 ```r
 # library(rvest) ## Already loaded
 
-m100 <- read_html("http://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression") 
+m100 = read_html("http://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression") 
 m100
 ```
 
@@ -113,112 +117,15 @@ As you can see, this is an [XML](https://en.wikipedia.org/wiki/XML) document^[XM
 
 ### Table 1: Pre-IAAF (1881--1912)
 
-Let's try to isolate the first table on the page, which documents the [unofficial progression before the IAAF](https://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression#Unofficial_progression_before_the_IAAF). As per the rvest vignette, we can use `rvest::html_nodes()` to isolate and extract this table from the rest of the HTML document by providing the relevant CSS selector. We should then be able to convert it into a data frame using `rvest::html_table()`. I also recommend using the `fill=TRUE` option here, because otherwise we'll run into formatting problems due to row spans in the Wiki table.
-
-I'll use [SelectorGadget](http://selectorgadget.com/) to identify the CSS selector. In this case, I get "div+ .wikitable :nth-child(1)", so let's check if that works.
+Let's try to isolate the first table on the page, which documents the [unofficial progression before the IAAF](https://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression#Unofficial_progression_before_the_IAAF). The core function that we'll use to isolate and extract this table from the rest of the HTML document is `rvest::html_element()`. I'll use [SelectorGadget](http://selectorgadget.com/) to identify the table's CSS selector (in this case I get "div+ .wikitable :nth-child(1)"). Finally, we should then be able to convert the scraped table into a data frame using `rvest::html_table()`. I'll assign this object as `pre_iaaf`.
 
 
 ```r
-m100 %>%
-  html_nodes("div+ .wikitable :nth-child(1)") %>%
-  html_table(fill=TRUE) 
-```
-
-```
-## Error in html_table.xml_node(X[[i]], ...): html_name(x) == "table" is not TRUE
-```
-
-Uh-oh! It seems that we immediately run into an error. I won't go into details here, but we have to be cautious with SelectorGadget sometimes. It's a great tool and usually works perfectly. However, occasionally what looks like the right selection (i.e. the highlighted stuff in yellow) is not exactly what we're looking for. I deliberately chose this Wikipedia 100m example because I wanted to showcase this potential pitfall.  Again: Webscraping is as much art as it is science.
-
-Fortunately, there's a more precise way of determing the right selectors using the "inspect web element" feature that is [available in all modern browsers](https://www.lifewire.com/get-inspect-element-tool-for-browser-756549). In this case, I'm going to use Google Chrome (**Ctrl+Shift+I**, or right-click and choose "Inspect"). I proceed by scrolling over the source elements until Chrome highlights the table of interest. Then right-click again and choose **Copy -> Copy selector**. Here's a GIF animation of these steps:
-
-![](pics/inspect100m.gif)
-
-Using this method, I get "#mw-content-text > div > table:nth-child(8)". Let's see whether it works this time. Again, I'll be using the `rvest::html_table(fill=TRUE)` function to coerce the resulting table into a data frame.
-
-
-```r
-m100 %>%
-  html_nodes("#mw-content-text > div > table:nth-child(8)") %>%
-  html_table(fill=TRUE) 
-```
-
-```
-## [[1]]
-##    Time               Athlete    Nationality           Location of races
-## 1  10.8           Luther Cary  United States               Paris, France
-## 2  10.8             Cecil Lee United Kingdom           Brussels, Belgium
-## 3  10.8         Étienne De Ré        Belgium           Brussels, Belgium
-## 4  10.8          L. Atcherley United Kingdom     Frankfurt/Main, Germany
-## 5  10.8          Harry Beaton United Kingdom      Rotterdam, Netherlands
-## 6  10.8 Harald Anderson-Arbin         Sweden         Helsingborg, Sweden
-## 7  10.8      Isaac Westergren         Sweden               Gävle, Sweden
-## 8  10.8                  10.8         Sweden               Gävle, Sweden
-## 9  10.8          Frank Jarvis  United States               Paris, France
-## 10 10.8      Walter Tewksbury  United States               Paris, France
-## 11 10.8            Carl Ljung         Sweden           Stockholm, Sweden
-## 12 10.8      Walter Tewksbury  United States Philadelphia, United States
-## 13 10.8          André Passat         France            Bordeaux, France
-## 14 10.8            Louis Kuhn    Switzerland            Bordeaux, France
-## 15 10.8      Harald Grønfeldt        Denmark             Aarhus, Denmark
-## 16 10.8            Eric Frick         Sweden           Jönköping, Sweden
-## 17 10.6         Knut Lindberg         Sweden          Gothenburg, Sweden
-## 18 10.5         Emil Ketterer        Germany          Karlsruhe, Germany
-## 19 10.5           Richard Rau        Germany       Braunschweig, Germany
-## 20 10.5           Richard Rau        Germany             Munich, Germany
-## 21 10.5            Erwin Kern        Germany             Munich, Germany
-##                  Date
-## 1        July 4, 1891
-## 2  September 25, 1892
-## 3      August 4, 1893
-## 4      April 13, 1895
-## 5     August 28, 1895
-## 6      August 9, 1896
-## 7  September 11, 1898
-## 8  September 10, 1899
-## 9       July 14, 1900
-## 10      July 14, 1900
-## 11 September 23, 1900
-## 12    October 6, 1900
-## 13      June 14, 1903
-## 14      June 14, 1903
-## 15       July 5, 1903
-## 16     August 9, 1903
-## 17    August 26, 1906
-## 18       July 9, 1911
-## 19    August 13, 1911
-## 20       May 12, 1912
-## 21       May 26, 1912
-```
-
-Great, it worked! Let's assign it to an object that we'll call `pre_iaaf` and then check its class.
-
-
-```r
-pre_iaaf <-
+pre_iaaf = 
   m100 %>%
-  html_nodes("#mw-content-text > div > table:nth-child(8)") %>%
-  html_table(fill=TRUE) 
-class(pre_iaaf)
-```
+  html_element("div+ .wikitable :nth-child(1)") %>% ## select table element
+  html_table()                                      ## convert to data frame
 
-```
-## [1] "list"
-```
-
-Hmmm... It turns out this is actually a list, so let's *really* convert it to a data frame. You can do this in multiple ways. I'm going to use the `dplyr::bind_rows()` function, which is great for coercing (multiple) lists into a data frame.^[We'll see more examples of this once we get to the programming section of the course.]
-
-
-```r
-## Convert list to data_frame
-# pre_iaaf <- pre_iaaf[[1]] ## Would also work
-
-# library(tidyverse) ## Already loaded
-
-pre_iaaf <- 
-  pre_iaaf %>%
-  bind_rows() %>%
-  as_tibble()
 pre_iaaf
 ```
 
@@ -233,64 +140,26 @@ pre_iaaf
 ##  5  10.8 Harry Beaton       United Kingdom Rotterdam, Netherlan… August 28, 1895
 ##  6  10.8 Harald Anderson-A… Sweden         Helsingborg, Sweden   August 9, 1896 
 ##  7  10.8 Isaac Westergren   Sweden         Gävle, Sweden         September 11, …
-##  8  10.8 10.8               Sweden         Gävle, Sweden         September 10, …
+##  8  10.8 Isaac Westergren   Sweden         Gävle, Sweden         September 10, …
 ##  9  10.8 Frank Jarvis       United States  Paris, France         July 14, 1900  
 ## 10  10.8 Walter Tewksbury   United States  Paris, France         July 14, 1900  
 ## # … with 11 more rows
 ```
 
-Let's fix the column names to get rid of spaces, etc. I'm going to use the `janitor::clean_names()` function, which is expressly built for the purpose of cleaning object names. (Q: How else could we have done this?)
+Great, it worked! 
+
+I'll tidy things up a bit so that the data frame is easier to work with in R. First, I'll use the `janitor::clean_names()` convenience function to remove spaces and capital letters from the column names. (Q: How else could we have done this?) Second, I'll use the `lubridate::mdy()` function to convert the date string to a format that R actually understands.  
 
 
 ```r
-# library(janitor) ## ALready loaded
-
-pre_iaaf <-
-  pre_iaaf %>%
-  clean_names()
-pre_iaaf
-```
-
-```
-## # A tibble: 21 x 5
-##     time athlete            nationality    location_of_races     date           
-##    <dbl> <chr>              <chr>          <chr>                 <chr>          
-##  1  10.8 Luther Cary        United States  Paris, France         July 4, 1891   
-##  2  10.8 Cecil Lee          United Kingdom Brussels, Belgium     September 25, …
-##  3  10.8 Étienne De Ré      Belgium        Brussels, Belgium     August 4, 1893 
-##  4  10.8 L. Atcherley       United Kingdom Frankfurt/Main, Germ… April 13, 1895 
-##  5  10.8 Harry Beaton       United Kingdom Rotterdam, Netherlan… August 28, 1895
-##  6  10.8 Harald Anderson-A… Sweden         Helsingborg, Sweden   August 9, 1896 
-##  7  10.8 Isaac Westergren   Sweden         Gävle, Sweden         September 11, …
-##  8  10.8 10.8               Sweden         Gävle, Sweden         September 10, …
-##  9  10.8 Frank Jarvis       United States  Paris, France         July 14, 1900  
-## 10  10.8 Walter Tewksbury   United States  Paris, France         July 14, 1900  
-## # … with 11 more rows
-```
-
-Hmmm. There are is a slight misread due to a rowspan associated with the back-to-back records of Isaac Westergren in Gävle, Sweden. We could ID and fix cases like this in several ways. The approach that I'm going to use here is to see if we can convert the "athlete" column into a numeric and, if so, replace these cells with the preceding value.
-
-
-```r
-pre_iaaf <-
-  pre_iaaf %>%
-  mutate(athlete = ifelse(is.na(as.numeric(athlete)), athlete, lag(athlete)))
-```
-
-```
-## Warning in ifelse(is.na(as.numeric(athlete)), athlete, lag(athlete)): NAs
-## introduced by coercion
-```
-
-Lastly, let's fix the date column so that R recognises that the character string for what it actually is.
-
-
-```r
+# library(janitor) ## Already loaded
 # library(lubridate) ## Already loaded
-
-pre_iaaf <-
+ 
+pre_iaaf =
   pre_iaaf %>%
-  mutate(date = mdy(date))
+  clean_names() %>%         ## fix the column names
+  mutate(date = mdy(date))  ## convert string to date format
+
 pre_iaaf
 ```
 
@@ -311,11 +180,21 @@ pre_iaaf
 ## # … with 11 more rows
 ```
 
-Finally, we have our cleaned data frame. We could easily plot the pre-IAAF data if we so wished. However, I'm going to hold off doing that until we've scraped the rest of the WR data. Speaking of which...
+Now that we have our cleaned pre-IAAF data frame, we could easily plot it. I'm going to hold off doing that until we've scraped the rest of the WR data. But first, an aside on browser inspection tools.
+
+#### Aside: Get CSS selectors via browser inspection tools
+
+SelectorGadget is a great tool. But it isn't available on all browsers and can involve more work than I'd like sometimes with all of the additional clicking.^[Historically, at least, it also had a tendency to provide CSS selectors that weren't exactly what we were looking for. To be fair, this may have reflected some issues coming from the R + **rvest** as much as anything else. These minor incompatibilities have been largely eliminated with **rvest** 1.0.0... [prompting](https://twitter.com/grant_mcdermott/status/1354518507208105984) a re-write of these notes!] I therefore wanted to mention an alternative (and very precise) approach to obtaining CSS selectors: Use the "[inspect web element](https://www.lifewire.com/get-inspect-element-tool-for-browser-756549)" feature of your browser.
+
+Here's a quick example using Google Chrome. First, I open up the inspect console (**Ctrl+Shift+I**, or right-click and choose "Inspect"). I then proceed to scroll over the source elements, until Chrome highlights the table of interest on the actual page. Once the table (or other element of interest) is highlighted, I can grab its CSS by right-clicking and selecting **Copy -> Copy selector**.
+
+![](pics/inspect100m.gif)
+
+In general, I prefer to obtain CSS selectors using this "inspect" method with my browser. But each to their own.
 
 ### Challenge
 
-Your turn: Download the next two tables from the same WR100m page. Combine these two new tables with the one above into a single data frame and then plot the record progression. Answer below. (No peeking until you have tried yourself first.)
+Your turn: Download the next two tables from the same WR100m page. Combine these two new tables with the one above into a single data frame and then plot the record progression. Answer below. (No peeking until you have tried first.)
 
 .
 
@@ -347,183 +226,79 @@ Your turn: Download the next two tables from the same WR100m page. Combine these
 
 .
 
-### Table 2: Pre-automatic timing (1912--1976)
+#### Table 2: Pre-automatic timing (1912--1976)
 
 Let's start with the second table.
 
 ```r
-iaaf_76 <-
+iaaf_76 =
   m100 %>%
-  html_nodes("#mw-content-text > div > table:nth-child(14)") %>%
-  html_table(fill=TRUE) 
-
-## Convert list to data_frame and clean the column names
-iaaf_76 <- 
-  iaaf_76 %>%
-  bind_rows() %>%
-  as_tibble() %>%
-  clean_names()
+  html_element("#mw-content-text > div > table:nth-child(14)") %>%
+  html_table()
 ```
 
-Fill in any missing athlete data (note that we need slightly different procedure than last time --- Why?) and correct the date. 
+As we did with the previous table, let's fix the column names and coerce the date string to a format that R understands.
 
 
 ```r
-iaaf_76 <-
+iaaf_76 =
   iaaf_76 %>%
-  mutate(athlete = ifelse(athlete=="", lag(athlete), athlete)) %>%
+  clean_names() %>%
   mutate(date = mdy(date)) 
-```
 
-```
-## Warning: 3 failed to parse.
-```
-
-It looks like some dates failed to parse because a record was broken (equaled) on the same day. E.g.
-
-
-```r
-iaaf_76 %>% tail(20)
-```
-
-```
-## # A tibble: 20 x 8
-##     time wind    auto athlete   nationality  location_of_race   date       ref  
-##    <dbl> <chr>  <dbl> <chr>     <chr>        <chr>              <date>     <chr>
-##  1  10   "2.0"  10.2  Jim Hines "United Sta… Modesto, USA       1967-05-27 "[2]"
-##  2  10   "1.8"  NA    Enrique … "Cuba"       Budapest, Hungary  1967-06-17 "[2]"
-##  3  10   "0.0"  NA    Paul Nash "South Afri… Krugersdorp, Sout… 1968-04-02 "[2]"
-##  4  10   "1.1"  NA    Oliver F… "United Sta… Albuquerque, USA   1968-05-31 "[2]"
-##  5  10   "2.0"  10.2  Oliver F… "Charles Gr… Sacramento, USA    1968-06-20 "[2]"
-##  6  10   "2.0"  10.3  Oliver F… "Charles Gr… Roger Bambuck      NA         ""   
-##  7   9.9 "0.8"  10.0  Jim Hines "United Sta… Sacramento, USA    1968-06-20 "[2]"
-##  8   9.9 "0.9"  10.1  Ronnie R… "United Sta… Sacramento, USA    1968-06-20 ""   
-##  9   9.9 "0.9"  10.1  Charles … "United Sta… Sacramento, USA    1968-06-20 ""   
-## 10   9.9 "0.3"   9.95 Jim Hines "United Sta… Mexico City, Mexi… 1968-10-14 "[2]"
-## 11   9.9 "0.0"  NA    Eddie Ha… "United Sta… Eugene, USA        1972-07-01 "[2]"
-## 12   9.9 "0.0"  NA    Eddie Ha… "United Sta… United States      NA         ""   
-## 13   9.9 "1.3"  NA    Steve Wi… "United Sta… Los Angeles, USA   1974-06-21 "[2]"
-## 14   9.9 "1.7"  NA    Silvio L… "Cuba"       Ostrava, Czechosl… 1975-06-05 "[2]"
-## 15   9.9 "0.0"  NA    Steve Wi… "United Sta… Siena, Italy       1975-07-16 "[2]"
-## 16   9.9 "−0.2" NA    Steve Wi… ""           Berlin, Germany    1975-08-22 "[2]"
-## 17   9.9 "0.7"  NA    Steve Wi… ""           Gainesville, USA   1976-03-27 "[2]"
-## 18   9.9 "0.7"  NA    Steve Wi… "Harvey Gla… Columbia, USA      1976-04-03 "[2]"
-## 19   9.9 ""     NA    Steve Wi… ""           Baton Rouge, USA   1976-05-01 "[2]"
-## 20   9.9 "1.7"  NA    Don Quar… "Jamaica"    Modesto, USA       1976-05-22 "[2]"
-```
-
-We can try to fix these cases by using the previous value. Let's test it first:
-
-
-```r
-iaaf_76 %>%
-  mutate(date = ifelse(is.na(date), lag(date), date))
-```
-
-```
-## # A tibble: 54 x 8
-##     time wind   auto athlete      nationality   location_of_race      date ref  
-##    <dbl> <chr> <dbl> <chr>        <chr>         <chr>                <dbl> <chr>
-##  1  10.6 ""     NA   Donald Lipp… United States Stockholm, Sweden   -20998 [2]  
-##  2  10.6 ""     NA   Jackson Sch… United States Stockholm, Sweden   -18004 [2]  
-##  3  10.4 ""     NA   Charley Pad… United States Redlands, USA       -17785 [2]  
-##  4  10.4 "0.0"  NA   Eddie Tolan  United States Stockholm, Sweden   -14756 [2]  
-##  5  10.4 ""     NA   Eddie Tolan  United States Copenhagen, Denmark -14739 [2]  
-##  6  10.3 ""     NA   Percy Willi… Canada        Toronto, Ontario, … -14390 [2]  
-##  7  10.3 "0.4"  10.4 Eddie Tolan  United States Los Angeles, USA    -13667 [2]  
-##  8  10.3 ""     NA   Eddie Tolan  Ralph Metcal… Budapest, Hungary   -13291 [2]  
-##  9  10.3 ""     NA   Eddie Tolan  Eulace Peaco… Oslo, Norway        -12932 [2]  
-## 10  10.3 ""     NA   Chris Berger Netherlands   Amsterdam, Netherl… -12912 [2]  
-## # … with 44 more rows
-```
-
-Whoops! Looks like all of our dates are getting converted to numbers. The reason (if you did a bit of Googling) actually has to do with the base `ifelse()` function. In this case, it's better to use the tidyverse equivalent, i.e. `if_else()`.
-
-
-```r
-iaaf_76 <-
-  iaaf_76 %>%
-  mutate(date = if_else(is.na(date), lag(date), date))
 iaaf_76
 ```
 
 ```
 ## # A tibble: 54 x 8
-##     time wind   auto athlete    nationality  location_of_race   date       ref  
-##    <dbl> <chr> <dbl> <chr>      <chr>        <chr>              <date>     <chr>
-##  1  10.6 ""     NA   Donald Li… United Stat… Stockholm, Sweden  1912-07-06 [2]  
-##  2  10.6 ""     NA   Jackson S… United Stat… Stockholm, Sweden  1920-09-16 [2]  
-##  3  10.4 ""     NA   Charley P… United Stat… Redlands, USA      1921-04-23 [2]  
-##  4  10.4 "0.0"  NA   Eddie Tol… United Stat… Stockholm, Sweden  1929-08-08 [2]  
-##  5  10.4 ""     NA   Eddie Tol… United Stat… Copenhagen, Denma… 1929-08-25 [2]  
-##  6  10.3 ""     NA   Percy Wil… Canada       Toronto, Ontario,… 1930-08-09 [2]  
-##  7  10.3 "0.4"  10.4 Eddie Tol… United Stat… Los Angeles, USA   1932-08-01 [2]  
-##  8  10.3 ""     NA   Eddie Tol… Ralph Metca… Budapest, Hungary  1933-08-12 [2]  
-##  9  10.3 ""     NA   Eddie Tol… Eulace Peac… Oslo, Norway       1934-08-06 [2]  
-## 10  10.3 ""     NA   Chris Ber… Netherlands  Amsterdam, Nether… 1934-08-26 [2]  
+##     time wind   auto athlete     nationality location_of_race   date       ref  
+##    <dbl> <chr> <dbl> <chr>       <chr>       <chr>              <date>     <chr>
+##  1  10.6 ""     NA   Donald Lip… United Sta… Stockholm, Sweden  1912-07-06 [2]  
+##  2  10.6 ""     NA   Jackson Sc… United Sta… Stockholm, Sweden  1920-09-16 [2]  
+##  3  10.4 ""     NA   Charley Pa… United Sta… Redlands, USA      1921-04-23 [2]  
+##  4  10.4 "0.0"  NA   Eddie Tolan United Sta… Stockholm, Sweden  1929-08-08 [2]  
+##  5  10.4 ""     NA   Eddie Tolan United Sta… Copenhagen, Denma… 1929-08-25 [2]  
+##  6  10.3 ""     NA   Percy Will… Canada      Toronto, Canada    1930-08-09 [2]  
+##  7  10.3 "0.4"  10.4 Eddie Tolan United Sta… Los Angeles, USA   1932-08-01 [2]  
+##  8  10.3 ""     NA   Ralph Metc… United Sta… Budapest, Hungary  1933-08-12 [2]  
+##  9  10.3 ""     NA   Eulace Pea… United Sta… Oslo, Norway       1934-08-06 [2]  
+## 10  10.3 ""     NA   Chris Berg… Netherlands Amsterdam, Nether… 1934-08-26 [2]  
 ## # … with 44 more rows
 ```
 
 
-### Table 3: Modern Era (1977 onwards)
 
-The final table also has its share of unique complications due to row spans, etc. You can inspect the code to see what I'm doing, but I'm just going to run through it here in a single chunk.
+#### Table 3: Modern Era (1977 onwards)
+
+For the final table, I'll just run the code all at once. By now you should recognise all of the commands.
 
 
 ```r
-iaaf <-
+iaaf =
   m100 %>%
-  html_nodes("#mw-content-text > div > table:nth-child(19)") %>%
-  html_table(fill=TRUE) 
-
-## Convert list to data_frame and clean the column names
-iaaf <- 
-  iaaf %>%
-  bind_rows() %>%
-  as_tibble() %>%
-  clean_names()
-
-## Correct the date. 
-iaaf <-
-  iaaf %>%
+  html_element("#mw-content-text > div > table:nth-child(19)") %>%
+  html_table() %>%
+  clean_names() %>%
   mutate(date = mdy(date))
 
-## Usain Bolt's records basically all get attributed you to Asafa Powell because
-## of Wikipedia row spans (same country, etc.). E.g.
-iaaf %>% tail(8)
+iaaf
 ```
 
 ```
-## # A tibble: 8 x 8
-##    time wind   auto athlete nationality location_of_race date       notes_note_2
-##   <dbl> <chr> <dbl> <chr>   <chr>       <chr>            <date>     <chr>       
-## 1  9.77 1.6    9.77 Asafa … Jamaica     Athens, Greece   2005-06-14 [2]         
-## 2  9.77 1.7    9.77 Justin… United Sta… Doha, Qatar      2006-05-12 [5][9][note…
-## 3  9.77 1.5    9.76 Asafa … Jamaica     Gateshead, Engl… 2006-06-11 [2]         
-## 4  9.77 1.0    9.76 Asafa … 9.762       Zürich, Switzer… 2006-08-18 [2]         
-## 5  9.74 1.7    9.76 Asafa … 9.735       Rieti, Italy     2007-09-09 [1][10]     
-## 6  9.72 1.7   NA    Asafa … Usain Bolt  New York, USA    2008-05-31 [2]         
-## 7  9.69 0.0    9.68 Asafa … Asafa Powe… Beijing, China   2008-08-16 OR[2]       
-## 8  9.58 0.9    9.57 Asafa … Asafa Powe… Berlin, Germany  2009-08-16 CR[1][11][1…
-```
-
-```r
-## Let's fix this issue
-iaaf <-
-  iaaf %>%
-  mutate(
-    athlete = ifelse(athlete==nationality, NA, athlete),
-    athlete = ifelse(!is.na(as.numeric(nationality)), NA, athlete),
-    athlete = ifelse(nationality=="Usain Bolt", nationality, athlete),
-    nationality = ifelse(is.na(athlete), NA, nationality),
-    nationality = ifelse(athlete==nationality, NA, nationality)
-    ) %>%
-  fill(athlete, nationality)
-```
-
-```
-## Warning in ifelse(!is.na(as.numeric(nationality)), NA, athlete): NAs introduced
-## by coercion
+## # A tibble: 24 x 8
+##     time wind   auto athlete nationality location_of_race date      
+##    <dbl> <chr> <dbl> <chr>   <chr>       <chr>            <date>    
+##  1 10.1  1.3      NA Bob Ha… United Sta… Tokyo, Japan     1964-10-15
+##  2 10.0  0.8      NA Jim Hi… United Sta… Sacramento, USA  1968-06-20
+##  3 10.0  2.0      NA Charle… United Sta… Mexico City, Me… 1968-10-13
+##  4  9.95 0.3      NA Jim Hi… United Sta… Mexico City, Me… 1968-10-14
+##  5  9.93 1.4      NA Calvin… United Sta… Colorado Spring… 1983-07-03
+##  6  9.83 1.0      NA Ben Jo… Canada      Rome, Italy      1987-08-30
+##  7  9.93 1.0      NA Carl L… United Sta… Rome, Italy      1987-08-30
+##  8  9.93 1.1      NA Carl L… United Sta… Zürich, Switzer… 1988-08-17
+##  9  9.79 1.1      NA Ben Jo… Canada      Seoul, South Ko… 1988-09-24
+## 10  9.92 1.1      NA Carl L… United Sta… Seoul, South Ko… 1988-09-24
+## # … with 14 more rows, and 1 more variable: notes_note_2 <chr>
 ```
 
 ### Combined eras
@@ -532,29 +307,30 @@ Let's bind all these separate eras into a single data frame. I'll use `dplyr:: b
 
 
 ```r
-wr100 <- 
-  bind_rows(
-    pre_iaaf %>% select(time, athlete, nationality:date) %>% mutate(era = "Pre-IAAF"),
-    iaaf_76 %>% select(time, athlete, nationality:date) %>% mutate(era = "Pre-automatic"),
-    iaaf %>% select(time, athlete, nationality:date) %>% mutate(era = "Modern")
-  )
+wr100 = 
+  rbind(
+    pre_iaaf %>% select(time, athlete, nationality, date) %>% mutate(era = "Pre-IAAF"),
+    iaaf_76 %>% select(time, athlete, nationality, date) %>% mutate(era = "Pre-automatic"),
+    iaaf %>% select(time, athlete, nationality, date) %>% mutate(era = "Modern")
+    )
+
 wr100
 ```
 
 ```
-## # A tibble: 99 x 7
-##     time athlete  nationality location_of_rac… date       era   location_of_race
-##    <dbl> <chr>    <chr>       <chr>            <date>     <chr> <chr>           
-##  1  10.8 Luther … United Sta… Paris, France    1891-07-04 Pre-… <NA>            
-##  2  10.8 Cecil L… United Kin… Brussels, Belgi… 1892-09-25 Pre-… <NA>            
-##  3  10.8 Étienne… Belgium     Brussels, Belgi… 1893-08-04 Pre-… <NA>            
-##  4  10.8 L. Atch… United Kin… Frankfurt/Main,… 1895-04-13 Pre-… <NA>            
-##  5  10.8 Harry B… United Kin… Rotterdam, Neth… 1895-08-28 Pre-… <NA>            
-##  6  10.8 Harald … Sweden      Helsingborg, Sw… 1896-08-09 Pre-… <NA>            
-##  7  10.8 Isaac W… Sweden      Gävle, Sweden    1898-09-11 Pre-… <NA>            
-##  8  10.8 Isaac W… Sweden      Gävle, Sweden    1899-09-10 Pre-… <NA>            
-##  9  10.8 Frank J… United Sta… Paris, France    1900-07-14 Pre-… <NA>            
-## 10  10.8 Walter … United Sta… Paris, France    1900-07-14 Pre-… <NA>            
+## # A tibble: 99 x 5
+##     time athlete               nationality    date       era     
+##    <dbl> <chr>                 <chr>          <date>     <chr>   
+##  1  10.8 Luther Cary           United States  1891-07-04 Pre-IAAF
+##  2  10.8 Cecil Lee             United Kingdom 1892-09-25 Pre-IAAF
+##  3  10.8 Étienne De Ré         Belgium        1893-08-04 Pre-IAAF
+##  4  10.8 L. Atcherley          United Kingdom 1895-04-13 Pre-IAAF
+##  5  10.8 Harry Beaton          United Kingdom 1895-08-28 Pre-IAAF
+##  6  10.8 Harald Anderson-Arbin Sweden         1896-08-09 Pre-IAAF
+##  7  10.8 Isaac Westergren      Sweden         1898-09-11 Pre-IAAF
+##  8  10.8 Isaac Westergren      Sweden         1899-09-10 Pre-IAAF
+##  9  10.8 Frank Jarvis          United States  1900-07-14 Pre-IAAF
+## 10  10.8 Walter Tewksbury      United States  1900-07-14 Pre-IAAF
 ## # … with 89 more rows
 ```
 
@@ -582,11 +358,11 @@ wr100 %>%
 - To scrape web content that is rendered server-side, we need to know the relevant CSS selectors.
 - We can find these CSS selectors using SelectorGadget or, more precisely, by inspecting the element in our browser.
 - We use the `rvest` package to read into the HTML document into R and then parse the relevant nodes. 
-  - A typical workflow is: `read_html(URL) %>% html_nodes(CSS_SELECTORS) %>% html_table()`.
+  - A typical workflow is: `read_html(URL) %>% html_element(CSS_SELECTORS) %>% html_table()`.
   - You might need other functions depending on the content type (e.g. see `?html_text`).
 - Just because you *can* scrape something doesn't mean you *should* (i.e. ethical and legal restrictions).
 - Webscraping involves as much art as it does science. Be prepared to do a lot of experimenting and data cleaning.
-- Next lecture: Webscraping: (2) Client-side and APIs.
+- **Next lecture:** Webscraping: (2) Client-side and APIs.
 
 
 ## Further resources and exercises
