@@ -261,9 +261,9 @@ wr100 %>%
 
 ## Application 2: Craiglist
 
-There are several features of our previous example that make it a good starting point. Most notably, the HTML table format provides a regular structure that is easily coercible into a data frame (via `html_table()`). Oftentimes, however, the information that we want to scrape off of the web doesn't have this nice regular structure. For this next example, then, I'm going to walk you through a slightly more messy application: Scraping entries from [Craiglist](https://craigslist.org).
+There are several features of the previous Wikipedia example that make it a good introductory application. Most notably, the HTML table format provides a regular structure that is easily coercible into a data frame (via `html_table()`). Oftentimes, however, the information that we want to scrape off the web doesn't have this nice regular structure. For this next example, then, I'm going to walk you through a slightly more messy application: Scraping items from [Craiglist](https://craigslist.org).
 
-The specific entries that I'm going to scrape here are [audio speakers for sale in my local city of Eugene](https://eugene.craigslist.org/search/sss?query=speakers&sort=rel&srchType=T). But you can adjust the relevant URL search parameters to your own preferences --- cars in Chicago, concert tickets in Cleveland, etc. --- and the same principles should carry through.
+The specific items that I'm going to scrape here are [audio speakers for sale in my local city of Eugene](https://eugene.craigslist.org/search/sss?query=speakers&sort=rel&srchType=T). But you can adjust the relevant URL search parameters to your own preferences --- cars in Chicago, concert tickets in Cleveland, etc. --- and the same principles should carry through.
 
 ### Extract the text
 
@@ -275,12 +275,12 @@ base_url = "https://eugene.craigslist.org/search/sss?query=speakers&sort=rel&src
 craiglist = read_html(base_url)
 ```
 
-Next, we need identify the CSS selectors to extract the relevant information from this page. Once again, this involves quite a lot of iterative clicking with SelectorGadget. I'll spare you (and myself) another GIF, but here is a screenshot of the final result once I've isolated the elements of interest. As you can see, the relevant selector is *".result-hood , .result-date , .result-price , .hdrlnk"*.
+Next, we need to identify the CSS selectors in order to extract the relevant information from this page. Once again, this involves quite a lot of iterative clicking with SelectorGadget. I'll spare you (and myself) another GIF. But here is a screenshot of the final result once I've isolated the elements of interest. As you can see, the relevant selector is *".result-hood , .result-date , .result-price , .hdrlnk"*.
 
 ![](pics/craigslist.png)
 
 </br>
-Now comes the first tweak relative to our previous example. Instead of using `html_element()`, we'll use `html_element**s**()` (i.e. plural) to extract all of the matching elements.^[Using the singular version would simply return the very first element, which isn't very useful. Truth be told, the plural version `html_elements()` is probably a good default since it will still work with singular objects. So now you know.] I'll assign the resulting object as `speakers`, although I won't try to coerce yet since that requires another variation over our previous Wikipedia example.
+Now comes the first tweak relative to our previous example. Instead of using `html_element()`, we'll use `html_elements()` (i.e. plural) to extract *all* of the matching elements.^[Using the singular version would simply return the very first element, which isn't very useful. Truth be told, the plural version `html_elements()` is probably a good default since it will still work with singular objects. So now you know.] I'll assign the resulting object as `speakers`, although I won't try to coerce it to an R array just yet.
 
 ```{r speakers_html, dependson=craiglist}
 speakers = 
@@ -288,7 +288,7 @@ speakers =
   html_elements(".result-hood , .result-date , .result-price , .hdrlnk")
 ```
 
-At this point, you may be tempted to pipe the `speakers` object to `html_table()` like we did last time to create a data frame. Unfortunately, this won't work because we are dealing with free-form text rather than regular table structure.
+At this point, you may be tempted to pipe the `speakers` object to `html_table()` to create a data frame like we did with our Wikipedia example. Unfortunately, that won't work here because we are dealing with free-form text rather than regular table structure.
 
 ```{r speakers_table, dependson=speakers, error=TRUE}
 html_table(speakers)
@@ -305,7 +305,7 @@ head(speakers, 20)              ## show the first 20 entries
 
 We now have a bit of work on our hands to convert this vector of strings into a usable data frame. (Remember: Webscraping is as much art as it is science.) The general approach that we want to adopt is to look for some kind of "quasi-regular" structure that we can exploit. 
 
-For example, we can see from my screenshot above that each sale item tends to have five separate text fields. (Counter-clockwise from the top: price, listing date, description, price again, and location). Based on this, we might try to transform the vector into a (transposed) matrix with five columns and from there into a data frame.
+For example, we can see from my screenshot above that each sale item tends to have five separate text fields. (Counter-clockwise from the top: *price*, *listing date*, *description*, *price* (again), and *location*.) Based on this, we might try to transform the vector into a (transposed) matrix with five columns and from there into a data frame.
 
 ```{r speakers_mat, dependson=speakers, error=TRUE}
 head(as.data.frame(t(matrix(speakers, nrow=5))))
@@ -345,7 +345,7 @@ Let's try a different tack. The key point about the "quasi-regular" structure th
 
 .
 
-How about the listing date text field? This is automatically populated by Craiglist and doesn't rely on the vagaries of individual seller text. In the code chunk that follows, I'm going to exploit the fact that each item includes a listing date and use that as an anchor for creating individual row entries. Now, I have to admit that I'm going to use some tools that we haven't covered yet --- iteration and functions. We'll get to these important topics later on in the course, so I don't want you to stress about understanding the details of my code. The more important thing is the intuition, where I'm (a) identifying the listing date entries in the `speakers` vector, and (b) using these date entries as anchors to indicate breaks points between separate sale items. For good measure, I'm going to do this with **data.table** rather than the **tidyverse**. But that's mostly a matter of personal taste; it would be easy to translate my code to the latter if that's what you'd prefer.
+How about the *listing date* text field? This is automatically populated by Craiglist and doesn't rely on the vagaries of individual seller text. In the code chunk that follows, I'm going to exploit the fact that each item includes a listing date and use that as an anchor for creating individual row entries. Now, I have to admit that I'm going to use some tools that we haven't covered yet --- iteration and functions. We'll get to these important topics later on in the course, so I don't want you to stress about understanding the details of my code. The more important thing is the intuition, where I'm (a) identifying the listing date entries in the `speakers` vector, and (b) using these date entries as anchors to indicate breaks points between separate sale items. For good measure, I'm going to do this with **data.table** rather than the **tidyverse**. But that's mostly a matter of personal taste; it would be easy to translate my code to the latter if that's what you'd prefer.
 
 ```{r speakers_dt, dependson=speakers}
 # library(data.table) ## Already loaded
@@ -372,9 +372,9 @@ speakers_dt =
 speakers_dt
 ```
 
-It worked!
+Looks like it worked. Sweet.
 
-This last bit of code is optional --- and, again, I'm not going to explain myself much --- but I'm going tidy the data table up a bit. 
+This last bit of code is optional --- and, again, I'm not going to explain myself much --- but is just to tidy up the data table somewhat.
 
 ```{r speakers_dt_clean, dependson=speakers_dt}
 names(speakers_dt) = c('date', 'description', 'price', 'location')
