@@ -27,7 +27,7 @@ Today we'll be using [SelectorGadget](https://selectorgadget.com/), which is a C
 ### R packages 
 
 - New: **rvest**, **janitor**
-- Already used: **tidyverse**, **lubridate**, **hrbrthemes**
+- Already used: **tidyverse**, **lubridate**, **data.table**, **hrbrthemes**
 
 Recall that **rvest** was automatically installed with the rest of the tidyverse. However, these lecture notes assume that you have **rvest** 1.0.0, which --- at the time of writing --- has to installed as the development version from GitHub. The code chunk below should take care of installing (if necessary) and loading the packages that you need for today's lecture.
 
@@ -39,7 +39,7 @@ if (numeric_version(packageVersion("rvest")) < numeric_version('0.99.0')) {
 }
 ## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(tidyverse, rvest, lubridate, janitor, hrbrthemes)
+pacman::p_load(tidyverse, rvest, lubridate, janitor, data.table, hrbrthemes)
 ## My preferred ggplot2 plotting theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
@@ -92,7 +92,7 @@ Time for a student presentation on [CSS](https://developer.mozilla.org/en-US/doc
 
 The key point is that if you can identify the CSS selector(s) of the content you want, then you can isolate it from the rest of the webpage content that you don't want. This where SelectorGadget comes in. We'll work through an extended example (with a twist!) below, but I highly recommend looking over this [quick vignette](https://cran.r-project.org/web/packages/rvest/vignettes/selectorgadget.html) before proceding.
 
-## Application: Mens 100 meters (Wikipedia)
+## Application 1: Wikipedia
 
 Okay, let's get to an application. Say that we want to scrape the Wikipedia page on the [**Men's 100 metres world record progression**](http://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression). 
 
@@ -123,6 +123,7 @@ Let's start by scraping the first table on the page, which documents the [unoffi
 
 ![](pics/sg100m.gif)
 
+</br>
 As you can see, working through this iterative process yields *"div+ .wikitable :nth-child(1)"*. We can now use this unique CSS selector to isolate the pre-IAAF table content from the rest of the HTML document. The core **rvest** function that we'll use to extract the table content is `html_element()`, before piping it on to `html_table()` to parse the HTML table into an R data frame.
 
 
@@ -196,6 +197,7 @@ Here's a quick example using Google Chrome. First, I open up the inspect console
 
 ![](pics/inspect100m.gif)
 
+</br>
 In general, I prefer to obtain CSS selectors using this "inspect" method with my browser. But each to their own.
 
 ### Challenge
@@ -307,7 +309,7 @@ iaaf
 ## # … with 14 more rows, and 1 more variable: notes_note_2 <chr>
 ```
 
-### Combined eras
+### Combined eras plot
 
 Let's combine our three separate tables into a single data frame. I'll use base R's `rbind()` to bind by row and include only the variables that are common to all of the three data frames. For good measure, I'll also add an extra column describing which era each record was recorded under.
 
@@ -358,15 +360,278 @@ wr100 %>%
 ![](06-web-css_files/figure-html/wr100_plot-1.png)<!-- -->
 
 
+## Application 2: Craiglist
+
+There are several features of our previous example that make it a good starting point. Most notably, the HTML table format provides a regular structure that is easily coercible into a data frame (via `html_table()`). Oftentimes, however, the information that we want to scrape off of the web doesn't have this nice regular structure. For this next example, then, I'm going to walk you through a slightly more messy application: Scraping entries from [Craiglist](https://craigslist.org).
+
+The specific entries that I'm going to scrape here are [audio speakers for sale in my local city of Eugene](https://eugene.craigslist.org/search/sss?query=speakers&sort=rel&srchType=T). But you can adjust the relevant URL search parameters to your own preferences --- cars in Chicago, concert tickets in Cleveland, etc. --- and the same principles should carry through.
+
+### Extract the text
+
+We start as we always do by reading in the HTML.
+
+
+```r
+base_url = "https://eugene.craigslist.org/search/sss?query=speakers&sort=rel&srchType=T"
+
+craiglist = read_html(base_url)
+```
+
+Next, we need identify the CSS selectors to extract the relevant information from this page. Once again, this involves quite a lot of iterative clicking with SelectorGadget. I'll spare you (and myself) another GIF, but here is a screenshot of the final result once I've isolated the elements of interest. As you can see, the relevant selector is *".result-hood , .result-date , .result-price , .hdrlnk"*.
+
+![](pics/craigslist.png)
+
+</br>
+Now comes the first tweak relative to our previous example. Instead of using `html_element()`, we'll use `html_element**s**()` (i.e. plural) to extract all of the matching elements.^[Using the singular version would simply return the very first element, which isn't very useful. Truth be told, the plural version `html_elements()` is probably a good default since it will still work with singular objects. So now you know.] I'll assign the resulting object as `speakers`, although I won't try to coerce yet since that requires another variation over our previous Wikipedia example.
+
+
+```r
+speakers = 
+  craiglist %>% 
+  html_elements(".result-hood , .result-date , .result-price , .hdrlnk")
+```
+
+At this point, you may be tempted to pipe the `speakers` object to `html_table()` like we did last time to create a data frame. Unfortunately, this won't work because we are dealing with free-form text rather than regular table structure.
+
+
+```r
+html_table(speakers)
+```
+
+```
+## Error in matrix(unlist(values), ncol = width, byrow = TRUE): 'data' must be of a vector type, was 'NULL'
+```
+
+Instead, we'll parse it as simple text via `html_text()`. This will yield a vector of strings, which I'll re-assign the same `speakers` object.
+
+
+```r
+speakers = html_text(speakers)  ## parse as text
+head(speakers, 20)              ## show the first 20 entries
+```
+
+```
+##  [1] "$150"                                                      
+##  [2] "Jan 27"                                                    
+##  [3] "Sony DAV-HDX279W Home Theater system, DVD player, speakers"
+##  [4] "$150"                                                      
+##  [5] " (Eugene)"                                                 
+##  [6] "$75"                                                       
+##  [7] "Jan 27"                                                    
+##  [8] "Phoenix Gold 6.5 \" speakers"                              
+##  [9] "$75"                                                       
+## [10] " (EUGENE)"                                                 
+## [11] "Jan 26"                                                    
+## [12] "12inch  carpeted Sub box for 2 speakers"                   
+## [13] "$100"                                                      
+## [14] "$10"                                                       
+## [15] "Jan 26"                                                    
+## [16] "set of 2 computer speakers"                                
+## [17] "$10"                                                       
+## [18] " (Springfield)"                                            
+## [19] "$200"                                                      
+## [20] "Jan 26"
+```
+
+### Coercing to a data frame
+
+We now have a bit of work on our hands to convert this vector of strings into a usable data frame. (Remember: Webscraping is as much art as it is science.) The general approach that we want to adopt is to look for some kind of "quasi-regular" structure that we can exploit. 
+
+For example, we can see from my screenshot above that each sale item tends to have five separate text fields. (Counter-clockwise from the top: price, listing date, description, price again, and location). Based on this, we might try to transform the vector into a (transposed) matrix with five columns and from there into a data frame.
+
+
+```r
+head(as.data.frame(t(matrix(speakers, nrow=5))))
+```
+
+```
+## Warning in matrix(speakers, nrow = 5): data length [513] is not a sub-multiple
+## or multiple of the number of rows [5]
+```
+
+```
+##                                      V1                                      V2
+## 1                                  $150                                  Jan 27
+## 2                                   $75                                  Jan 27
+## 3                                Jan 26 12inch  carpeted Sub box for 2 speakers
+## 4            set of 2 computer speakers                                     $10
+## 5              MARANTZ 6 MK II SPEAKERS                                    $200
+## 6 Sony SS-U460 3-Way Speakers For Sale.                                     $70
+##                                                           V3   V4        V5
+## 1 Sony DAV-HDX279W Home Theater system, DVD player, speakers $150  (Eugene)
+## 2                                Phoenix Gold 6.5 " speakers  $75  (EUGENE)
+## 3                                                       $100  $10    Jan 26
+## 4                                              (Springfield) $200    Jan 26
+## 5                                                   (EUGENE)  $70    Jan 26
+## 6                                              (Springfield)  $20    Jan 26
+```
+
+Uh-oh. This approach isn't going to work because not every sale item lists all five text fields. Quite a few are missing the location field, for instance.
+
+Let's try a different tack. The key point about the "quasi-regular" structure that we're trying to exploit is that it needs to be present for *every* sale item. Looking again at the webpage/screenshot, can you think of something that meets that criteria?
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+How about the listing date text field? This is automatically populated by Craiglist and doesn't rely on the vagaries of individual seller text. In the code chunk that follows, I'm going to exploit the fact that each item includes a listing date and use that as an anchor for creating individual row entries. Now, I have to admit that I'm going to use some tools that we haven't covered yet --- iteration and functions. We'll get to these important topics later on in the course, so I don't want you to stress about understanding the details of my code. The more important thing is the intuition, where I'm (a) identifying the listing date entries in the `speakers` vector, and (b) using these date entries as anchors to indicate breaks points between separate sale items. For good measure, I'm going to do this with **data.table** rather than the **tidyverse**. But that's mostly a matter of personal taste; it would be easy to translate my code to the latter if that's what you'd prefer.
+
+
+```r
+# library(data.table) ## Already loaded
+
+dates = as.Date(speakers, format = '%b %d')  ## Try to coerce to date of form "Jan 01"
+idates = which(!is.na(dates))                ## Get index of all the valid dates (i.e. non-NA)
+
+## Iterate over our date index vector and then combine into a data.table. We'll 
+## use the listing date to define the start of each new entry. Note, however, 
+## that it usually comes second among the five possible text fields. (There is 
+## normally a duplicate price field first.) So we have to adjust the way we 
+## define the end of that entry; basically it's the next index position in the 
+## sequence minus two.
+speakers_dt =
+  rbindlist(lapply(
+    seq_along(idates),
+    function(i) {
+      start = idates[i]
+      end = ifelse(i!=length(idates), idates[i+1]-2, tail(idates, 1))
+      data.table(t(speakers[start:end]))
+    }
+    ), fill = TRUE) ## Use fill=TRUE arg so that rbindlist allocates 5 cols to each row
+
+speakers_dt
+```
+
+```
+##          V1                                                         V2     V3
+##   1: Jan 27 Sony DAV-HDX279W Home Theater system, DVD player, speakers   $150
+##   2: Jan 27                                Phoenix Gold 6.5 " speakers    $75
+##   3: Jan 26                    12inch  carpeted Sub box for 2 speakers   $100
+##   4: Jan 26                                 set of 2 computer speakers    $10
+##   5: Jan 26                                   MARANTZ 6 MK II SPEAKERS   $200
+##  ---                                                                         
+## 116: Jan 27                                Studio Lab Series  speakers    $95
+## 117: Jan 27                                              Bose Speakers    $85
+## 118: Jan 27                         Koss CM 1030 Series Floor Speakers $1,100
+## 119: Jan 27  Yamaha Receiver & JBL Surrounded  Speakers(Subwoofer 10")   $300
+## 120: Jan 27                                                       <NA>   <NA>
+##                  V4
+##   1:       (Eugene)
+##   2:           <NA>
+##   3:           <NA>
+##   4:  (Springfield)
+##   5:       (EUGENE)
+##  ---               
+## 116:           <NA>
+## 117:           <NA>
+## 118:           <NA>
+## 119:           <NA>
+## 120:           <NA>
+```
+
+It worked!
+
+This last bit of code is optional --- and, again, I'm not going to explain myself much --- but I'm going tidy the data table up a bit. 
+
+
+```r
+names(speakers_dt) = c('date', 'description', 'price', 'location')
+
+speakers_dt[, ':=' (date = as.Date(date, format = '%b %d'),
+                    price = as.numeric(gsub('\\$|\\,', '', price)))]
+
+## Because we only get the month and day, some entries from late last year may
+## have inadvertently been coerced to a future date. Fix those cases.
+speakers_dt[date>Sys.Date(), date := date - years(1)]
+
+## Drop missing entries
+speakers_dt = speakers_dt[!is.na(price)]
+
+speakers_dt
+```
+
+```
+##            date                                                description
+##   1: 2021-01-27 Sony DAV-HDX279W Home Theater system, DVD player, speakers
+##   2: 2021-01-27                                Phoenix Gold 6.5 " speakers
+##   3: 2021-01-26                    12inch  carpeted Sub box for 2 speakers
+##   4: 2021-01-26                                 set of 2 computer speakers
+##   5: 2021-01-26                                   MARANTZ 6 MK II SPEAKERS
+##  ---                                                                      
+## 114: 2021-01-27                                       Bose stands speakers
+## 115: 2021-01-27                                Studio Lab Series  speakers
+## 116: 2021-01-27                                              Bose Speakers
+## 117: 2021-01-27                         Koss CM 1030 Series Floor Speakers
+## 118: 2021-01-27  Yamaha Receiver & JBL Surrounded  Speakers(Subwoofer 10")
+##      price       location
+##   1:   150       (Eugene)
+##   2:    75           <NA>
+##   3:   100           <NA>
+##   4:    10  (Springfield)
+##   5:   200       (EUGENE)
+##  ---                     
+## 114:    15           <NA>
+## 115:    95           <NA>
+## 116:    85           <NA>
+## 117:  1100           <NA>
+## 118:   300           <NA>
+```
+
+### Plot
+
+As ever, let's reward our efforts with a nice plot. I'll add a few bells and whistles to this one, but this is most certainly optional.
+
+
+```r
+ggplot(speakers_dt, aes(date, price)) + 
+  geom_point(aes(fill = price), show.legend = FALSE,
+             shape = 21, colour = 'black', size = 2, stroke = 0.1) +
+  scale_y_comma() + 
+  scale_fill_viridis_c(option = 'magma', begin = 0.3, end = 0.9) +
+  labs(title = 'Speakers for sale near Eugene, OR',
+       caption = 'Source: Craigslist',
+       x = 'Listing date', y = 'Price (USD)') +
+  theme_modern_rc()
+```
+
+![](06-web-css_files/figure-html/speakers_plot-1.png)<!-- -->
+
+
 ## Summary
 
 - Web content can be rendered either 1) server-side or 2) client-side.
 - To scrape web content that is rendered server-side, we need to know the relevant CSS selectors.
 - We can find these CSS selectors using SelectorGadget or, more precisely, by inspecting the element in our browser.
 - We use the `rvest` package to read into the HTML document into R and then parse the relevant nodes. 
-  - A typical workflow is: `read_html(URL) %>% html_element(CSS_SELECTORS) %>% html_table()`.
-  - You might need other functions depending on the content type (e.g. see `?html_text`).
-- Just because you *can* scrape something doesn't mean you *should* (i.e. ethical and legal restrictions).
+  - A typical workflow is: `read_html(URL) %>% html_elements(CSS_SELECTORS) %>% html_table()`.
+  - You might need other functions depending on the content type (e.g. `html_text`).
+- Just because you *can* scrape something doesn't mean you *should* (i.e. ethical and possibly legal considerations).
 - Webscraping involves as much art as it does science. Be prepared to do a lot of experimenting and data cleaning.
 - **Next lecture:** Webscraping: (2) Client-side and APIs.
 
