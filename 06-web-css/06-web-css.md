@@ -44,6 +44,8 @@ pacman::p_load(tidyverse, rvest, lubridate, janitor, hrbrthemes)
 theme_set(hrbrthemes::theme_ipsum())
 ```
 
+> **Tip:** If you can get an error about missing fonts whilst following along with this lecture, that's probably because you don't have [Arial Narrow](https://freefontsdownload.net/free-arial-narrow-font-30388.htm) --- required by the `hrbrthemes::theme_ipsum()` **ggplot2** theme that I'm using here --- installed on your system. You can resolve this by downloading the font and adding it to your font book (Google it), or by switching to a different theme (e.g. `theme_set(theme_minimal())`). 
+
 ## Webscraping basics
 
 The next two lectures are about getting data, or "content", off the web and onto our computers. We're all used to seeing this content in our browers (Chrome, Firefox, etc.). So we know that it must exist somewhere. However, it's important to realise that there are actually two ways that web content gets rendered in a browser: 
@@ -69,13 +71,13 @@ You can read [here](https://www.codeconquest.com/website/client-side-vs-server-s
 - **Webscraping challenges:** Finding the "API endpoints" can be tricky, since these are sometimes hidden from view.
 - **Key concepts:** APIs, API endpoints
 
-Over the next week, we'll use these lecture notes --- plus some student presentations --- to go over the main differences between the two approaches and cover the implications for any webscraping activity. I want to forewarn you that webscraping typically involves a fair bit of detective work. You will often have to adjust your steps according to the type of data you want, and the steps that worked on one website may not work on another. (Or even work on the same website a few months later). All this is to say that *webscraping involves as much art as it does science*.
+Over the next two lectures, we'll go over the main differences between the two approaches and cover the implications for any webscraping activity. I want to forewarn you that webscraping typically involves a fair bit of detective work. You will often have to adjust your steps according to the type of data you want, and the steps that worked on one website may not work on another. (Or even work on the same website a few months later). All this is to say that *webscraping involves as much art as it does science*.
 
 The good news is that both server-side and client-side websites allow for webscraping.^[As we'll see during the next lecture, scraping a website or application that is built on a client-side (i.e. API) framework is often easier; particularly when it comes to downloading information *en masse*.] If you can see it in your browser, you can scrape it. 
 
-### Caveat: Ethical and legal limitations
+### Caveat: Ethical ~~and legal~~ considerations
 
-The previous sentence elides some important ethical and legal considerations. Just because you *can* scrape it, doesn't mean you *should*. It is ultimately your responsibility to determine whether a website maintains legal restrictions on the content that it provides. Similarly, the tools that we'll be using are very powerful. It's fairly easy to write up a function or program that can overwhelm a host server or application through the sheer weight of requests. A computer can process commands much, much faster than we can ever type them up manually. We'll return to the "be nice" mantra at the end of this lecture, as well as in the next lecture. 
+The previous sentence elides some important ethical considerations. Just because you *can* scrape it, doesn't mean you *should*. Now, I first have to tell you that this paragraph used to contain a warning about the legal restrictions pertaining to webscraping activity. I've decided to drop those in the wake of the landmark [*hiQ Labs vs LinkedIn*](https://twitter.com/kjhealy/status/1255636154453549057) court ruling. (Short version: It is currently legal to scrape data from the web using automated tools, as long as the data are publicly available.) However, it's still important to realise that the tools we'll be using over these next two lectures are very powerful. A computer can process commands much, much faster than we can ever type them up manually. It's pretty easy to write up a function or program that can overwhelm a host server or application through the sheer weight of requests.Or, just as likely, the host server has built-in safeguards that will block you in case of a suspected malicious [attack](https://en.wikipedia.org/wiki/Denial-of-service_attack). We'll return to the "be nice" mantra at the end of this lecture, as well as in the next lecture. 
 
 ## Webscraping with **rvest** (server-side)
 
@@ -184,7 +186,7 @@ Now that we have our cleaned pre-IAAF data frame, we could easily plot it. I'm g
 
 #### Aside: Get CSS selectors via browser inspection tools
 
-SelectorGadget is a great tool. But it isn't available on all browsers and can involve more work than I'd like sometimes with all of the additional clicking.^[Historically, at least, it also had a tendency to provide CSS selectors that weren't exactly what we were looking for. To be fair, this may have reflected some issues coming from the R + **rvest** as much as anything else. These minor incompatibilities have been largely eliminated with **rvest** 1.0.0... [prompting](https://twitter.com/grant_mcdermott/status/1354518507208105984) a re-write of these notes!] I therefore wanted to mention an alternative (and very precise) approach to obtaining CSS selectors: Use the "[inspect web element](https://www.lifewire.com/get-inspect-element-tool-for-browser-756549)" feature of your browser.
+SelectorGadget is a great tool. But it isn't available on all browsers and can involve more work than I'd like sometimes with all of the additional clicking.^[Historically, at least, it also had a tendency to provide CSS selectors that weren't exactly what we were looking for. To be fair, this may have reflected some issues coming from the R + **rvest** as much as anything else. These minor incompatibilities have been largely eliminated with **rvest** 1.0.0... [prompting a re-write](https://twitter.com/grant_mcdermott/status/1354518507208105984) of these notes!] I therefore wanted to mention an alternative (and very precise) approach to obtaining CSS selectors: Use the "[inspect web element](https://www.lifewire.com/get-inspect-element-tool-for-browser-756549)" feature of your browser.
 
 Here's a quick example using Google Chrome. First, I open up the inspect console (**Ctrl+Shift+I**, or right-click and choose "Inspect"). I then proceed to scroll over the source elements, until Chrome highlights the table of interest on the actual page. Once the table (or other element of interest) is highlighted, I can grab its CSS by right-clicking and selecting **Copy -> Copy selector**.
 
@@ -364,17 +366,6 @@ wr100 %>%
 - Webscraping involves as much art as it does science. Be prepared to do a lot of experimenting and data cleaning.
 - **Next lecture:** Webscraping: (2) Client-side and APIs.
 
-
 ## Further resources and exercises
 
-In the next lecture, we're going to focus on client-side web content and interacting with APIs. For the moment, you can practice your `rvest`-based scraping skills by following along with any of the many (many) tutorials available online. I want to make two particular suggestions, though:
-
-### More on web ettiquette
-
-We spoke a bit about the "be nice" scraping motto at the beginning of the lecture. I also wanted to point you to the **polite** package ([link](https://github.com/dmi3kno/polite)). It provides some helpful tools to maintain web etiquette, such as checking for permission and not hammering the host website with requests. It also plays very nicely with the **rvest** workflow that we covered today, so please take a look.
-
-### Modeling and prediction
-
-We'll get to analysis section of the course (regression, etc.) next week. However, today's dataset provides a good platform to start thinking about these issues. How would you model the progression of the Men's 100 meter record over time? For example, imagine that you had to predict today's WR in 2005. How do your predictions stack up against the actual record (i.e. Usain Bolt's 9.58 time set in 2009)? How do you handle rescinded times? How do you intepret all of this?
-
-*Hint: See the `?broom::tidy()` help function for extracting regression coefients in a convenient data frame. We've already seen the `geom_smooth()` function, but for some nice tips on (visualizing) model predictions, see [Chap. 23](http://r4ds.had.co.nz/model-basics.html#visualising-models) of the R4DS book, or [Chap. 6.4](http://socviz.co/modeling.html#generate-predictions-to-graph) of the SocViz book. The generic `base::predict()` function has you covered, although the tidyverse's `modelr` package has some nice wrapper functions that you will probably find useful for this suggested exercise.*
+In the next lecture, we're going to focus on client-side web content and interacting with APIs. For the moment, you can practice your `rvest`-based scraping skills by following along with any of the many (many) tutorials available online. Lastly, we spoke a bit about the "be nice" scraping motto at the beginning of the lecture. I also wanted to point you to the **polite** package ([link](https://github.com/dmi3kno/polite)). It provides some helpful tools to maintain web etiquette, such as checking for permission and not hammering the host website with requests. As a bonus, it plays very nicely with the **rvest** workflow that we covered today, so please take a look.
