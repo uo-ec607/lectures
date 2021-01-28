@@ -112,7 +112,11 @@ As you can see, this is an [XML](https://en.wikipedia.org/wiki/XML) document^[XM
 
 ### Table 1: Pre-IAAF (1881--1912)
 
-Let's try to isolate the first table on the page, which documents the [unofficial progression before the IAAF](https://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression#Unofficial_progression_before_the_IAAF). The core function that we'll use to isolate and extract this table from the rest of the HTML document is `rvest::html_element()`. I'll use [SelectorGadget](http://selectorgadget.com/) to identify the table's CSS selector (in this case I get "div+ .wikitable :nth-child(1)"). Finally, we should then be able to convert the scraped table into a data frame using `rvest::html_table()`. I'll assign this object as `pre_iaaf`.
+Let's start by scraping the first table on the page, which documents the [unofficial progression before the IAAF](https://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression#Unofficial_progression_before_the_IAAF). The first thing we need to do is identify the table's unique CSS selector. Here's a GIF of me using [SelectorGadget](http://selectorgadget.com/) to do that.
+
+![](pics/sg100m.gif)
+
+As you can see, working through this iterative process yields *"div+ .wikitable :nth-child(1)"*. We can now use this unique CSS selector to isolate the pre-IAAF table content from the rest of the HTML document. The core **rvest** function that we'll use to extract the table content is `html_element()`, before piping it on to `html_table()` to parse the HTML table into an R data frame.
 
 ```{r pre_iaaf_1, dependson=m100}
 pre_iaaf = 
@@ -143,7 +147,7 @@ Now that we have our cleaned pre-IAAF data frame, we could easily plot it. I'm g
 
 #### Aside: Get CSS selectors via browser inspection tools
 
-SelectorGadget is a great tool. But it isn't available on all browsers and can involve more work than I'd like sometimes with all of the additional clicking.^[Historically, at least, it also had a tendency to provide CSS selectors that weren't exactly what we were looking for. To be fair, this may have reflected some issues coming from the R + **rvest** as much as anything else. These minor incompatibilities have been largely eliminated with **rvest** 1.0.0... [prompting a re-write](https://twitter.com/grant_mcdermott/status/1354518507208105984) of these notes!] I therefore wanted to mention an alternative (and very precise) approach to obtaining CSS selectors: Use the "[inspect web element](https://www.lifewire.com/get-inspect-element-tool-for-browser-756549)" feature of your browser.
+SelectorGadget is a great tool. But it isn't available on all browsers and can involve more work than I'd like sometimes, with all that iterative clicking.^[Historically, at least, it also had a tendency to provide CSS selectors that weren't exactly what we were looking for. To be fair, this may have reflected some issues coming from the R + **rvest** as much as anything else. These minor incompatibilities have been largely eliminated with **rvest** 1.0.0... [prompting a re-write](https://twitter.com/grant_mcdermott/status/1354518507208105984) of these notes!] I therefore wanted to mention an alternative (and very precise) approach to obtaining CSS selectors: Use the "[inspect web element](https://www.lifewire.com/get-inspect-element-tool-for-browser-756549)" feature of your browser.
 
 Here's a quick example using Google Chrome. First, I open up the inspect console (**Ctrl+Shift+I**, or right-click and choose "Inspect"). I then proceed to scroll over the source elements, until Chrome highlights the table of interest on the actual page. Once the table (or other element of interest) is highlighted, I can grab its CSS by right-clicking and selecting **Copy -> Copy selector**.
 
@@ -225,7 +229,7 @@ iaaf
 
 ### Combined eras
 
-Let's bind all these separate eras into a single data frame. I'll use `dplyr:: bind_rows()` again and select in the common variables only. I'll also add a new column describing which era an observation falls under.
+Let's combine our three separate tables into a single data frame. I'll use base R's `rbind()` to bind by row and include only the variables that are common to all of the three data frames. For good measure, I'll also add an extra column describing which era each record was recorded under.
 
 ```{r wr100, dependson=pre_iaaf, dependson=iaaf_76, dependson=iaaf}
 wr100 = 
