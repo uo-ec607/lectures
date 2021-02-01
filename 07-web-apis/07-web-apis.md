@@ -217,8 +217,8 @@ Next, we'll use the `httr::GET()` function to request (i.e. download) the data. 
 fred = 
   httr::GET(
     url = "https://api.stlouisfed.org/", ## Base URL
-    path = paste0("fred/", endpoint), ## The API endpoint
-    query = params ## Our parameter list
+    path = paste0("fred/", endpoint),    ## The API endpoint
+    query = params                       ## Our parameter list
     )
 ```
 
@@ -238,9 +238,10 @@ To actually extract the content (i.e. data) from of this response, I'll use the 
 ```r
 fred = 
   fred %>% 
-  httr::content("text") %>%
-  jsonlite::fromJSON()
+  httr::content("text") %>% ## Extract the reponse content (i.e. text)
+  jsonlite::fromJSON()      ## Convert from JSON to R object
 
+## What type of object did we get?
 typeof(fred)
 ```
 
@@ -248,13 +249,13 @@ typeof(fred)
 ## [1] "list"
 ```
 
-It turns that the previous step has yielded a list object in r.^[complex nested lists are the law of the land when it comes to json information. don't worry too much about this now; just rest assured that r is well suited to handling these kinds of objects. it's one reason why r and json play so well together. we'll see more examples later in the course when we start working with programming and spatial data.] so now we need to inspect this list to better understand its structure before  extracting the information that we care about (and coerce it to a data frame.) I'd use the base `view()` function to do this in an interactive r session. but that won't work as well for these lecture notes. Instead, I'll use the `listviewer::jsonedit()` function to create an interactive widget that renders nicely in knitted r markdown documents.
+It turns that the previous step has yielded a list object in R.^[complex nested lists are the law of the land when it comes to json information. don't worry too much about this now; just rest assured that r is well suited to handling these kinds of objects. it's one reason why r and json play so well together. we'll see more examples later in the course when we start working with programming and spatial data.] so now we need to inspect this list to better understand its structure before  extracting the information that we care about (and coerce it to a data frame.) I'd use the base `view()` function to do this in an interactive r session. but that won't work as well for these lecture notes. Instead, I'll use the `listviewer::jsonedit()` function to create an interactive widget that renders nicely in knitted r markdown documents.
 
 
 ```r
 # View(fred) ## What I'd use in an interactive R session
 
-## library(listviewer) ## Already loaded
+## library(listviewer)        ## Already loaded
 jsonedit(fred, mode = "view") ## Better for RMarkdown documents
 ```
 
