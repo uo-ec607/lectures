@@ -376,7 +376,15 @@ Fortunately, there's a better way: Access the full database of rankings through 
 
 Sweet. Looks like we've located our API endpoint. As promised, here's GIF of me walking through these steps in my browser:
 
-![](pics/inspect-rugby.gif)
+```{r inspect_rugby_gif, echo=FALSE, out.width='100%'}
+fmt = rmarkdown::default_output_format(knitr::current_input())$name
+if (fmt == "html_document"){
+  knitr::include_graphics('pics/inspect-rugby.gif')
+}
+if (fmt == "pdf_document"){
+  message("Sorry, this GIF only available in the the HTML version of the notes.")
+}
+```
 
 ### Pulling the data into R
 

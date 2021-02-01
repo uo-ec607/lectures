@@ -435,7 +435,7 @@ Fortunately, there's a better way: Access the full database of rankings through 
 
 Sweet. Looks like we've located our API endpoint. As promised, here's GIF of me walking through these steps in my browser:
 
-![](pics/inspect-rugby.gif)
+<img src="pics/inspect-rugby.gif" width="100%" />
 
 ### Pulling the data into R
 
