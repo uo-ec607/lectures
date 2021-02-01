@@ -4,7 +4,7 @@ subtitle: "Lecture 7: Webscraping: (2) Client-side and APIs"
 author:
   name: Grant R. McDermott
   affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
-# date: Lecture 7  #"21 July 2020"
+# date: Lecture 7  #"01 February 2021"
 output: 
   html_document:
     theme: flatly
@@ -39,8 +39,8 @@ Here's a convenient way to install (if necessary) and load all of the above pack
 ```r
 ## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(tidyverse, httr, lubridate, hrbrthemes, janitor, jsonlite, listviewer, usethis)
-pacman::p_install_gh("sboysel/fredr") ## https://github.com/sboysel/fredr/issues/75
+pacman::p_load(tidyverse, httr, lubridate, hrbrthemes, janitor, jsonlite, fredr, 
+               listviewer, usethis)
 ## My preferred ggplot2 plotting theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
@@ -48,7 +48,7 @@ theme_set(hrbrthemes::theme_ipsum())
 
 ## Recap from last time
 
-During the last lecture, we saw that websites and web applications fall into two categories: 1) Server-side and 2) Client-side. We then practised scraping data that falls into the first category --- i.e. rendered server-side --- using the **rvest** package. This technique focuses on CSS selectors (with help from [SelectorGadget](http://selectorgadget.com/)) and HTML tags. We also saw that webscraping often involves as much art as science. The plethora of CSS options and the flexibility of HTML itself means that steps which work perfectly well on one website can easily fail on another website.
+During the last lecture, we saw that websites and web applications fall into two categories: 1) Server-side and 2) Client-side. We then practiced scraping data that falls into the first category --- i.e. rendered server-side --- using the **rvest** package. This technique focuses on CSS selectors (with help from [SelectorGadget](http://selectorgadget.com/)) and HTML tags. We also saw that webscraping often involves as much art as science. The plethora of CSS options and the flexibility of HTML itself means that steps which work perfectly well on one website can easily fail on another website.
 
 Today we focus on the second category: Scraping web data that is rendered **client-side**. The good news is that, when available, this approach typically makes it much easier to scrape data from the web. The downside is that, again, it can involve as much art as it does science. Moreover, as I emphasised last time, just because because we *can* scrape data, doesn't mean that we *should* (i.e. ethical, legal and other considerations). These admonishments aside, let's proceed...
 
@@ -98,7 +98,7 @@ I wanted to begin with an example from NYC Open Data, because you don't need to 
 
 Here's a GIF of me completing these steps:
 
-![](pics/trees.gif)
+<img src="pics/trees.gif" width="100%" />
 
 Now that we've located the API endpoint, let's read the data into R. We'll do so using the `fromJSON()` function from the excellent **jsonlite** package ([link](https://cran.r-project.org/web/packages/jsonlite/index.html)). This will automatically coerce the JSON array into a regular R data frame. However, I'll go that little bit further and convert it into a tibble, since the output is nicer to work with.
 
@@ -106,7 +106,7 @@ Now that we've located the API endpoint, let's read the data into R. We'll do so
 ```r
 # library(jsonlite) ## Already loaded
 
-nyc_trees <- 
+nyc_trees = 
   fromJSON("https://data.cityofnewyork.us/resource/nwxe-4ae8.json") %>%
   as_tibble()
 nyc_trees
@@ -114,28 +114,28 @@ nyc_trees
 
 ```
 ## # A tibble: 1,000 x 45
-##    address bbl   bin   block_id boro_ct borocode boroname brch_light
-##    <chr>   <chr> <chr> <chr>    <chr>   <chr>    <chr>    <chr>     
-##  1 108-00… 4022… 4052… 348711   4073900 4        Queens   No        
-##  2 147-07… 4044… 4101… 315986   4097300 4        Queens   No        
-##  3 390 MO… 3028… 3338… 218365   3044900 3        Brooklyn No        
-##  4 1027 G… 3029… 3338… 217969   3044900 3        Brooklyn No        
-##  5 603 6 … 3010… 3025… 223043   3016500 3        Brooklyn No        
-##  6 8 COLU… 1011… 1076… 106099   1014500 1        Manhatt… No        
-##  7 120 WE… 1011… 1076… 106099   1014500 1        Manhatt… No        
-##  8 311 WE… 1010… 1086… 103940   1012700 1        Manhatt… No        
-##  9 65 JER… <NA>  <NA>  407443   5006400 5        Staten … No        
-## 10 638 AV… 3072… 3320… 207508   3037402 3        Brooklyn No        
-## # … with 990 more rows, and 37 more variables: brch_other <chr>,
-## #   brch_shoe <chr>, cb_num <chr>, census_tract <chr>, cncldist <chr>,
-## #   council_district <chr>, created_at <chr>, curb_loc <chr>,
-## #   guards <chr>, health <chr>, latitude <chr>, longitude <chr>,
-## #   nta <chr>, nta_name <chr>, problems <chr>, root_grate <chr>,
-## #   root_other <chr>, root_stone <chr>, sidewalk <chr>, spc_common <chr>,
-## #   spc_latin <chr>, st_assem <chr>, st_senate <chr>, state <chr>,
-## #   status <chr>, steward <chr>, stump_diam <chr>, tree_dbh <chr>,
-## #   tree_id <chr>, trnk_light <chr>, trnk_other <chr>, trunk_wire <chr>,
-## #   user_type <chr>, x_sp <chr>, y_sp <chr>, zip_city <chr>, zipcode <chr>
+##    tree_id block_id created_at tree_dbh stump_diam curb_loc status health
+##    <chr>   <chr>    <chr>      <chr>    <chr>      <chr>    <chr>  <chr> 
+##  1 180683  348711   2015-08-2… 3        0          OnCurb   Alive  Fair  
+##  2 200540  315986   2015-09-0… 21       0          OnCurb   Alive  Fair  
+##  3 204026  218365   2015-09-0… 3        0          OnCurb   Alive  Good  
+##  4 204337  217969   2015-09-0… 10       0          OnCurb   Alive  Good  
+##  5 189565  223043   2015-08-3… 21       0          OnCurb   Alive  Good  
+##  6 190422  106099   2015-08-3… 11       0          OnCurb   Alive  Good  
+##  7 190426  106099   2015-08-3… 11       0          OnCurb   Alive  Good  
+##  8 208649  103940   2015-09-0… 9        0          OnCurb   Alive  Good  
+##  9 209610  407443   2015-09-0… 6        0          OnCurb   Alive  Good  
+## 10 192755  207508   2015-08-3… 21       0          OffsetF… Alive  Fair  
+## # … with 990 more rows, and 37 more variables: spc_latin <chr>,
+## #   spc_common <chr>, steward <chr>, guards <chr>, sidewalk <chr>,
+## #   user_type <chr>, problems <chr>, root_stone <chr>, root_grate <chr>,
+## #   root_other <chr>, trunk_wire <chr>, trnk_light <chr>, trnk_other <chr>,
+## #   brch_light <chr>, brch_shoe <chr>, brch_other <chr>, address <chr>,
+## #   zipcode <chr>, zip_city <chr>, cb_num <chr>, borocode <chr>,
+## #   boroname <chr>, cncldist <chr>, st_assem <chr>, st_senate <chr>, nta <chr>,
+## #   nta_name <chr>, boro_ct <chr>, state <chr>, latitude <chr>,
+## #   longitude <chr>, x_sp <chr>, y_sp <chr>, council_district <chr>,
+## #   census_tract <chr>, bin <chr>, bbl <chr>
 ```
 
 **Aside on limits:** Note that the full census dataset contains nearly 700,000 individual trees. However, we only downloaded a tiny sample of that, since the API defaults to a limit of 1,000 rows. I don't care to access the full dataset here, since I just want to illustrate some basic concepts. Nonetheless, if you were so inclined and [read the docs](https://dev.socrata.com/docs/queries/limit.html), you'd see that you can override this default by adding `?$limit=LIMIT` to the API endpoint. For example, to read in only the first five rows, you could use:
@@ -179,7 +179,7 @@ As nearly every economist could tell you, [FRED](https://fred.stlouisfed.org/) i
 
 </br>
 
-For this second example application, I'm going to show you how to download the data underlying the above chart using the FRED API. In fact, I'll go one better. First I'll show you how to download it yourself, so that you get an understanding of what's happening underneath the hood. Then I'll direct you to a package that does all of the API work for you.
+For this second example application, I'm going to show you how to download the data underlying the above chart using the FRED API. In fact, I'll go one better. First, I'll show you how to download it yourself, so that you get an understanding of what's happening underneath the hood. Then, I'll direct you to a package that does all of the API work for you.
 
 ### Do it yourself
 
@@ -214,7 +214,7 @@ Next, we'll use the `httr::GET()` function to request (i.e. download) the data. 
 ```r
 # library(httr) ## Already loaded above
 
-fred <- 
+fred = 
   httr::GET(
     url = "https://api.stlouisfed.org/", ## Base URL
     path = paste0("fred/", endpoint), ## The API endpoint
@@ -232,27 +232,41 @@ Take a second to print the `fred` object in your console. What you'll see is pre
 ##   Size: 9.09 kB
 ```
 
-To extract the content (i.e. data) from of this response, I'll use the `httr::content()` function. Moreover, since we know that this content is a JSON array, we can convert it to an R object using `jsonlite::fromJSON()` as we did above. With that being said, we *don't* yet know what format the data will taken in R. (SPOILER: Okay, it will be a list.) I could use the base `str()` function to delve into the structure of the object. However, I want to take this opportunity to introduce you to the **listviewer** package ([link](https://github.com/timelyportfolio/listviewer)) ::jsonedit()`, which allows for interactive inspection of list objects.^[Complex nested lists are the law of the land when it comes to JSON data. Don't worry too much about this now, but the good news is that R ideally suited to parse and handle these nested lists. We'll see more examples later in the course when we start working with programming and spatial data.]
+To actually extract the content (i.e. data) from of this response, I'll use the `httr::content()` function. Moreover, since we know that this content is a JSON array, we can again convert it into an R object using `jsonlite::fromJSON()`.
 
 
 ```r
-fred %>% 
+fred = 
+  fred %>% 
   httr::content("text") %>%
-  jsonlite::fromJSON() %>%
-  listviewer::jsonedit(mode = "view")
+  jsonlite::fromJSON()
+
+typeof(fred)
+```
+
+```
+## [1] "list"
+```
+
+It turns that the previous step has yielded a list object in r.^[complex nested lists are the law of the land when it comes to json information. don't worry too much about this now; just rest assured that r is well suited to handling these kinds of objects. it's one reason why r and json play so well together. we'll see more examples later in the course when we start working with programming and spatial data.] so now we need to inspect this list to better understand its structure before  extracting the information that we care about (and coerce it to a data frame.) I'd use the base `view()` function to do this in an interactive r session. but that won't work as well for these lecture notes. Instead, I'll use the `listviewer::jsonedit()` function to create an interactive widget that renders nicely in knitted r markdown documents.
+
+
+```r
+# View(fred) ## What I'd use in an interactive R session
+
+## library(listviewer) ## Already loaded
+jsonedit(fred, mode = "view") ## Better for RMarkdown documents
 ```
 
 <!--html_preserve--><div id="htmlwidget-1e64bec83b3e59ca9423" style="width:100%;height:10%;" class="jsonedit html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1e64bec83b3e59ca9423">{"x":{"data":{"realtime_start":"2020-07-21","realtime_end":"2020-07-21","observation_start":"1600-01-01","observation_end":"9999-12-31","units":"lin","output_type":1,"file_type":"json","order_by":"observation_date","sort_order":"asc","count":91,"offset":0,"limit":100000,"observations":{"realtime_start":["2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21"],"realtime_end":["2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21","2020-07-21"],"date":["1929-01-01","1930-01-01","1931-01-01","1932-01-01","1933-01-01","1934-01-01","1935-01-01","1936-01-01","1937-01-01","1938-01-01","1939-01-01","1940-01-01","1941-01-01","1942-01-01","1943-01-01","1944-01-01","1945-01-01","1946-01-01","1947-01-01","1948-01-01","1949-01-01","1950-01-01","1951-01-01","1952-01-01","1953-01-01","1954-01-01","1955-01-01","1956-01-01","1957-01-01","1958-01-01","1959-01-01","1960-01-01","1961-01-01","1962-01-01","1963-01-01","1964-01-01","1965-01-01","1966-01-01","1967-01-01","1968-01-01","1969-01-01","1970-01-01","1971-01-01","1972-01-01","1973-01-01","1974-01-01","1975-01-01","1976-01-01","1977-01-01","1978-01-01","1979-01-01","1980-01-01","1981-01-01","1982-01-01","1983-01-01","1984-01-01","1985-01-01","1986-01-01","1987-01-01","1988-01-01","1989-01-01","1990-01-01","1991-01-01","1992-01-01","1993-01-01","1994-01-01","1995-01-01","1996-01-01","1997-01-01","1998-01-01","1999-01-01","2000-01-01","2001-01-01","2002-01-01","2003-01-01","2004-01-01","2005-01-01","2006-01-01","2007-01-01","2008-01-01","2009-01-01","2010-01-01","2011-01-01","2012-01-01","2013-01-01","2014-01-01","2015-01-01","2016-01-01","2017-01-01","2018-01-01","2019-01-01"],"value":["1120.076","1025.091","958.378","834.291","823.156","911.019","992.537","1118.944","1177.572","1138.989","1230.22","1337.075","1574.74","1870.911","2187.818","2361.622","2337.63","2068.966","2048.293","2134.291","2121.201","2305.668","2493.148","2594.934","2715.067","2700.542","2893.97","2957.097","3020.083","2994.683","3201.683","3285.454","3371.35","3579.446","3736.061","3951.902","4208.08","4481.593","4604.613","4831.761","4980.667","4989.534","5156.41","5428.368","5746.389","5723.068","5697.677","6011.215","6293.525","6637.838","6868.092","6849.819","7011.223","6889.371","7199.441","7711.063","8007.532","8266.358","8549.125","8912.281","9239.186","9425.052","9406.669","9734.705","10000.831","10389.663","10672.832","11076.879","11556.745","12064.59","12647.632","13179.965","13327.458","13553.208","13953.961","14503.006","15006.043","15398.622","15748.3","15771.553","15359.37","15803.886","16081.66","16429.308","16722.335","17146.51","17624.72","17902.231","18344.563","18897.8","19351.27"]}},"options":{"mode":"view","modes":["code","form","text","tree","view"]}},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
+<script type="application/json" data-for="htmlwidget-1e64bec83b3e59ca9423">{"x":{"data":{"realtime_start":"2021-02-01","realtime_end":"2021-02-01","observation_start":"1600-01-01","observation_end":"9999-12-31","units":"lin","output_type":1,"file_type":"json","order_by":"observation_date","sort_order":"asc","count":91,"offset":0,"limit":100000,"observations":{"realtime_start":["2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01"],"realtime_end":["2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01","2021-02-01"],"date":["1929-01-01","1930-01-01","1931-01-01","1932-01-01","1933-01-01","1934-01-01","1935-01-01","1936-01-01","1937-01-01","1938-01-01","1939-01-01","1940-01-01","1941-01-01","1942-01-01","1943-01-01","1944-01-01","1945-01-01","1946-01-01","1947-01-01","1948-01-01","1949-01-01","1950-01-01","1951-01-01","1952-01-01","1953-01-01","1954-01-01","1955-01-01","1956-01-01","1957-01-01","1958-01-01","1959-01-01","1960-01-01","1961-01-01","1962-01-01","1963-01-01","1964-01-01","1965-01-01","1966-01-01","1967-01-01","1968-01-01","1969-01-01","1970-01-01","1971-01-01","1972-01-01","1973-01-01","1974-01-01","1975-01-01","1976-01-01","1977-01-01","1978-01-01","1979-01-01","1980-01-01","1981-01-01","1982-01-01","1983-01-01","1984-01-01","1985-01-01","1986-01-01","1987-01-01","1988-01-01","1989-01-01","1990-01-01","1991-01-01","1992-01-01","1993-01-01","1994-01-01","1995-01-01","1996-01-01","1997-01-01","1998-01-01","1999-01-01","2000-01-01","2001-01-01","2002-01-01","2003-01-01","2004-01-01","2005-01-01","2006-01-01","2007-01-01","2008-01-01","2009-01-01","2010-01-01","2011-01-01","2012-01-01","2013-01-01","2014-01-01","2015-01-01","2016-01-01","2017-01-01","2018-01-01","2019-01-01"],"value":["1120.076","1025.091","958.378","834.291","823.156","911.019","992.537","1118.944","1177.572","1138.989","1230.22","1337.075","1574.74","1870.911","2187.818","2361.622","2337.63","2068.966","2048.293","2134.291","2121.201","2305.668","2493.148","2594.934","2715.067","2700.542","2893.97","2957.097","3020.083","2994.683","3201.683","3285.454","3371.35","3579.446","3736.061","3951.902","4208.08","4481.593","4604.613","4831.761","4980.667","4989.534","5156.41","5428.368","5746.389","5723.068","5697.677","6011.215","6293.525","6637.838","6868.092","6849.819","7011.223","6889.371","7199.441","7711.063","8007.532","8266.358","8549.125","8912.281","9239.186","9425.052","9406.669","9734.705","10000.831","10389.663","10672.832","11076.879","11556.745","12064.59","12647.632","13179.965","13327.458","13553.208","13953.961","14503.006","15006.043","15398.622","15748.3","15771.553","15359.37","15803.886","16081.66","16429.308","16722.335","17146.51","17647.607","17955.437","18421.034","18951.897","19338.371"]}},"options":{"mode":"view","modes":["code","form","text","tree","view"]}},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
 
-Luckily, this particular list object isn't too complicated. We can see that we're really interested in the `fred$observations` sub-element. I'll re-run most of the above code and then extract this element. I could do this in several ways, but will use the `purrr::pluck()` function here.
+Luckily, this particular list object isn't too complicated. We can see that what we're really interested in, is the `fred$observations` sub-element. I'll use `purrr::pluck()` to extract this element (there are various other ways to do this) and then coerce it to a tibble.
 
 
 ```r
-fred <-
+fred =
   fred %>% 
-  httr::content("text") %>%
-  jsonlite::fromJSON() %>%
   purrr::pluck("observations") %>% ## Extract the "$observations" list element
   # .$observations %>% ## I could also have used this
   # magrittr::extract("observations") %>% ## Or this
@@ -264,16 +278,16 @@ fred
 ## # A tibble: 91 x 4
 ##    realtime_start realtime_end date       value   
 ##    <chr>          <chr>        <chr>      <chr>   
-##  1 2020-07-21     2020-07-21   1929-01-01 1120.076
-##  2 2020-07-21     2020-07-21   1930-01-01 1025.091
-##  3 2020-07-21     2020-07-21   1931-01-01 958.378 
-##  4 2020-07-21     2020-07-21   1932-01-01 834.291 
-##  5 2020-07-21     2020-07-21   1933-01-01 823.156 
-##  6 2020-07-21     2020-07-21   1934-01-01 911.019 
-##  7 2020-07-21     2020-07-21   1935-01-01 992.537 
-##  8 2020-07-21     2020-07-21   1936-01-01 1118.944
-##  9 2020-07-21     2020-07-21   1937-01-01 1177.572
-## 10 2020-07-21     2020-07-21   1938-01-01 1138.989
+##  1 2021-02-01     2021-02-01   1929-01-01 1120.076
+##  2 2021-02-01     2021-02-01   1930-01-01 1025.091
+##  3 2021-02-01     2021-02-01   1931-01-01 958.378 
+##  4 2021-02-01     2021-02-01   1932-01-01 834.291 
+##  5 2021-02-01     2021-02-01   1933-01-01 823.156 
+##  6 2021-02-01     2021-02-01   1934-01-01 911.019 
+##  7 2021-02-01     2021-02-01   1935-01-01 992.537 
+##  8 2021-02-01     2021-02-01   1936-01-01 1118.944
+##  9 2021-02-01     2021-02-01   1937-01-01 1177.572
+## 10 2021-02-01     2021-02-01   1938-01-01 1138.989
 ## # … with 81 more rows
 ```
 
@@ -283,7 +297,7 @@ Okay! We've finally got our data and are nearly ready for some plotting. Recall 
 ```r
 # library(lubridate) ## Already loaded above
 
-fred <-
+fred =
   fred %>%
   mutate_at(vars(realtime_start:date), ymd) %>%
   mutate(value = as.numeric(value)) 
@@ -330,13 +344,13 @@ Once this is done, you can then safely assign your key to an object --- includin
 
 ```r
 ## Assign the environment variable to an R object
-my_api_key <- Sys.getenv("MY_API_KEY")
+my_api_key = Sys.getenv("MY_API_KEY")
 ## Print it out just to show that it worked
 my_api_key
 ```
 
 ```
-## [1] "abcdefghijklmnopqrstuvwxyz0123456789"
+## [1] ""
 ```
 
 **Important:** While this approach is very simple, note that in practice the `Sys.setenv()` part should only be run directly in your R console. *Never* include code chunks with sensitive `Sys.setenv()` calls in an R Markdown file or other shared documents.^[Since the new R environment variable is defined for the duration of the current session, R Markdown will have access to this variable irrespective of whether it was defined in the R Markdown script or not.] That would entirely defeat the purpose! Apart from the annoyance of having to manually set my API key each time I start a new R session, this is one reason that I prefer the next approach of persisting environment variables across sessions...
@@ -427,8 +441,8 @@ Let's pull the data from the API endpoint into R. Again, I'll be using `jsonlite
 
 
 ```r
-endpoint <- "https://cmsapi.pulselive.com/rugby/rankings/mru?language=en&client=pulse"
-rugby <- fromJSON(endpoint)
+endpoint = "https://cmsapi.pulselive.com/rugby/rankings/mru?language=en&client=pulse"
+rugby = fromJSON(endpoint)
 str(rugby)
 ```
 
@@ -437,20 +451,20 @@ str(rugby)
 ##  $ label    : chr "Mens Rugby Union"
 ##  $ entries  :'data.frame':	105 obs. of  6 variables:
 ##   ..$ team       :'data.frame':	105 obs. of  5 variables:
-##   .. ..$ id          : int [1:105] 39 37 34 33 36 38 42 49 35 40 ...
+##   .. ..$ id          : int [1:105] 39 34 37 42 36 38 35 40 33 49 ...
 ##   .. ..$ altId       : logi [1:105] NA NA NA NA NA NA ...
-##   .. ..$ name        : chr [1:105] "South Africa" "New Zealand" "England" "Wales" ...
-##   .. ..$ abbreviation: chr [1:105] "RSA" "NZL" "ENG" "WAL" ...
+##   .. ..$ name        : chr [1:105] "South Africa" "England" "New Zealand" "France" ...
+##   .. ..$ abbreviation: chr [1:105] "RSA" "ENG" "NZL" "FRA" ...
 ##   .. ..$ annotations : logi [1:105] NA NA NA NA NA NA ...
-##   ..$ matches    : int [1:105] 212 220 204 212 196 227 199 174 190 190 ...
-##   ..$ pts        : num [1:105] 94.2 92.1 88.8 85 84.4 ...
+##   ..$ matches    : int [1:105] 212 213 226 208 205 233 199 190 222 174 ...
+##   ..$ pts        : num [1:105] 94.2 89.5 89 85.3 84.7 ...
 ##   ..$ pos        : int [1:105] 1 2 3 4 5 6 7 8 9 10 ...
-##   ..$ previousPts: num [1:105] 94.2 92.1 88.8 85 84.4 ...
+##   ..$ previousPts: num [1:105] 94.2 89.1 89 85.7 84.3 ...
 ##   ..$ previousPos: int [1:105] 1 2 3 4 5 6 7 8 9 10 ...
 ##  $ effective:List of 3
-##   ..$ millis   : num 1.58e+12
+##   ..$ millis   : num 1.61e+12
 ##   ..$ gmtOffset: num 0
-##   ..$ label    : chr "2019-12-02"
+##   ..$ label    : chr "2020-12-07"
 ```
 
 We have a nested list, where what looks to be the main element of interest, `$entries`, is itself a list.^[I know that R says `rugby$entries` is a data.frame, but we can tell from the `str()` call that it follows a list structure. In particular, the `rugby$entries$team` sub-element is a itself data frame.] Let's extract the `$entries` element and have a look at its structure. We could use the `str()` base function, but again the interactivity of `listviewer::jsonedit()` is hard to beat for complicated list structures. 
@@ -487,7 +501,7 @@ Okay, a clearer picture is starting to emerge. It looks like we can just bind th
 ```r
 # library(janitor) ## Already loaded above
 
-rankings <-
+rankings =
   bind_cols(
     rugby$entries$team,
     rugby$entries %>% select(matches:previousPos)
@@ -504,15 +518,15 @@ rankings
 ##      pos   pts name         abbreviation matches previous_pts previous_pos
 ##    <int> <dbl> <chr>        <chr>          <int>        <dbl>        <int>
 ##  1     1  94.2 South Africa RSA              212         94.2            1
-##  2     2  92.1 New Zealand  NZL              220         92.1            2
-##  3     3  88.8 England      ENG              204         88.8            3
-##  4     4  85.0 Wales        WAL              212         85.0            4
-##  5     5  84.4 Ireland      IRE              196         84.4            5
-##  6     6  81.9 Australia    AUS              227         81.9            6
-##  7     7  80.9 France       FRA              199         80.9            7
-##  8     8  79.3 Japan        JPN              174         79.3            8
-##  9     9  79.2 Scotland     SCO              190         79.2            9
-## 10    10  78.3 Argentina    ARG              190         78.3           10
+##  2     2  89.5 England      ENG              213         89.1            2
+##  3     3  89.0 New Zealand  NZL              226         89.0            3
+##  4     4  85.3 France       FRA              208         85.7            4
+##  5     5  84.7 Ireland      IRE              205         84.3            5
+##  6     6  83.1 Australia    AUS              233         83.8            6
+##  7     7  80.8 Scotland     SCO              199         81.2            7
+##  8     8  80.3 Argentina    ARG              190         79.6            8
+##  9     9  79.4 Wales        WAL              222         79.4            9
+## 10    10  79.3 Japan        JPN              174         79.3           10
 ## # … with 95 more rows
 ```
 
@@ -532,11 +546,11 @@ We now have enough information to write a function that will loop over a set of 
 ```r
 ## We'll look at rankings around Jan 1st each year. I'll use 2004 as an
 ## arbitrary start year and then proceed until the present year.
-start_date <- ymd("2004-01-01")
-end_date <- floor_date(today(), unit="years")
-dates <- seq(start_date, end_date, by="years")
+start_date = ymd("2004-01-01")
+end_date = floor_date(today(), unit="years")
+dates = seq(start_date, end_date, by="years")
 ## Get the nearest Monday to Jan 1st to coincide with rankings release dates.
-dates <- floor_date(dates, "week", week_start = getOption("lubridate.week.start", 1))
+dates = floor_date(dates, "week", week_start = getOption("lubridate.week.start", 1))
 dates
 ```
 
@@ -544,7 +558,7 @@ dates
 ##  [1] "2003-12-29" "2004-12-27" "2005-12-26" "2007-01-01" "2007-12-31"
 ##  [6] "2008-12-29" "2009-12-28" "2010-12-27" "2011-12-26" "2012-12-31"
 ## [11] "2013-12-30" "2014-12-29" "2015-12-28" "2016-12-26" "2018-01-01"
-## [16] "2018-12-31" "2019-12-30"
+## [16] "2018-12-31" "2019-12-30" "2020-12-28"
 ```
 
 Next, I'll write out a function that I'll call `rugby_scrape`. This function will take a single argument: a date that it will use to construct a new API endpoint during each iteration. Beyond that, it will pretty do much exactly the same things that we did in our previous, manual data scrape. The only other difference is that it will wait three seconds after running (i.e. `Sys.sleep(3)`). I'm adding this final line to avoid hammering the server with instantaneous requests when we put everything into a loop.
@@ -557,11 +571,11 @@ Next, I'll write out a function that I'll call `rugby_scrape`. This function wil
 rm(rugby, rankings, endpoint)
 
 ## Now, create the function. I'll call it "rugby_scrape".
-rugby_scrape <- 
+rugby_scrape = 
   function(x) {
-    endpoint <- paste0("https://cmsapi.pulselive.com/rugby/rankings/mru?date=", x, "&client=pulse")
-    rugby <- fromJSON(endpoint)
-    rankings <-
+    endpoint = paste0("https://cmsapi.pulselive.com/rugby/rankings/mru?date=", x, "&client=pulse")
+    rugby = fromJSON(endpoint)
+    rankings =
       bind_cols(
         rugby$entries$team,
         rugby$entries %>% select(matches:previousPos)
@@ -580,14 +594,14 @@ Finally, we can now iterate (i.e. loop) over our `dates` vector, by plugging the
 
 
 ```r
-rankings_history <-
+rankings_history =
   lapply(dates, rugby_scrape) %>% ## Run the iteration
   bind_rows() ## Bind the resulting list of data frames into a single data frame
 rankings_history
 ```
 
 ```
-## # A tibble: 1,674 x 8
+## # A tibble: 1,779 x 8
 ##    date         pos   pts name    abbreviation matches previous_pts previous_pos
 ##    <date>     <int> <dbl> <chr>   <chr>          <int>        <dbl>        <int>
 ##  1 2003-12-29     1  94.0 England ENG               17         92.1            1
@@ -600,7 +614,7 @@ rankings_history
 ##  8 2003-12-29     8  76.9 Wales   WAL               15         76.9            8
 ##  9 2003-12-29     9  76.4 Scotla… SCO               15         76.4            9
 ## 10 2003-12-29    10  73.5 Samoa   SAM               14         73.5           10
-## # … with 1,664 more rows
+## # … with 1,769 more rows
 ```
 
 Let's review what we just did:
@@ -614,8 +628,8 @@ Okay! Let's plot the data and highlight a select few countries in the process.
 
 
 ```r
-teams <- c("NZL", "RSA", "ENG", "JPN")
-team_cols <- c("NZL"="black", "RSA"="#4DAF4A", "ENG"="#377EB8", "JPN" = "red")
+teams = c("NZL", "RSA", "ENG", "JPN")
+team_cols = c("NZL"="black", "RSA"="#4DAF4A", "ENG"="#377EB8", "JPN" = "red")
 
 rankings_history %>%
   ggplot(aes(x=date, y=pts, group=abbreviation)) +
@@ -635,9 +649,9 @@ rankings_history %>%
 
 ![](07-web-apis_files/figure-html/rugby7-1.png)<!-- -->
 
-New Zealand's extended dominance in the global game is extraordinary, especially given its tiny population size. They truly do have a legimate claim to being the [greatest international team](https://www.dailytelegraph.com.au/sport/rugby/are-the-all-blacks-the-greatest-international-team-in-the-history-of-sport/news-story/f61ad2d65623a9586929bbfba386b157) in the history of professional sport.^[Obligatory link to the [best ever haka](https://www.youtube.com/watch?v=BFNCpzGnTTs).] OTOH, South African rugby supporters can finally (finally!) rejoice after a long dry spell. Bring 'er, Siya!
+New Zealand's extended dominance in the global game is extraordinary, especially given its tiny population size. They truly do have a legitimate claim to being the [greatest international team](https://www.dailytelegraph.com.au/sport/rugby/are-the-all-blacks-the-greatest-international-team-in-the-history-of-sport/news-story/f61ad2d65623a9586929bbfba386b157) in the history of professional sport.^[Obligatory link to the [best ever haka](https://www.youtube.com/watch?v=BFNCpzGnTTs).] OTOH, South African rugby supporters can finally (finally) rejoice after a long dry spell. Bring 'er home, Siya. Bing 'er home.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/Forbz3lizUk" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/Forbz3lizUk" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ## Summary
 
