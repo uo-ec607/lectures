@@ -153,7 +153,7 @@ Our second application will involve downloading data from the [**FRED API**](htt
 
 As nearly every economist could tell you, [FRED](https://fred.stlouisfed.org/) is a database maintained by the Federal Reserve Bank of St Louis. You know, the one that let's you plot cool interactive charts [like this one](https://fred.stlouisfed.org/series/GNPCA#0) of US GNP since 1929.
 
-<iframe src="https://fred.stlouisfed.org/graph/graph-landing.php?g=mPCo&width=670&height=475" scrolling="no" frameborder="0"style="overflow:hidden; width:670px; height:525px;" allowTransparency="true"></iframe>
+<iframe src="https://fred.stlouisfed.org/graph/graph-landing.php?g=yo2J&width=670&height=475" scrolling="no" frameborder="0" style="overflow:hidden; width:670px; height:525px;" allowTransparency="true" loading="lazy"  data-external="1"></iframe>
 
 </br>
 
@@ -509,7 +509,7 @@ rankings_history %>%
 
 New Zealand's extended dominance in the global game is extraordinary, especially given its tiny population size. They truly do have a legitimate claim to being the [greatest international team](https://www.dailytelegraph.com.au/sport/rugby/are-the-all-blacks-the-greatest-international-team-in-the-history-of-sport/news-story/f61ad2d65623a9586929bbfba386b157) in the history of professional sport.^[Obligatory link to the [best ever haka](https://www.youtube.com/watch?v=BFNCpzGnTTs).] OTOH, South African rugby supporters can finally (finally) rejoice after a long dry spell. Bring 'er home, Siya. Bing 'er home.
 
-<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/Forbz3lizUk" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/Forbz3lizUk" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen data-external="1"></iframe>
 
 ## Summary
 
