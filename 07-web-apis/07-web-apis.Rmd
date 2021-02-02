@@ -533,6 +533,8 @@ New Zealand's extended dominance in the global game is extraordinary, especially
 
 ## Further resources and exercises
 
+- [Here](https://www.pscp.tv/w/1ynKOpVnERrGR) is a short, live video stream that I did for scraping traffic fatality data from [LA's Open Data portal](https://data.lacity.org/). As I mention in the video, this covers very similar ground to today's lecture. But I do expand a bit on using API parameters to query (i.e. wrangle and summarise) data directly up on the host server before scraping it.
+
 - [Tyler Clavelle](https://twitter.com/tclavl) has written several cool [blog posts](https://tclavelle.github.io/blog/) on interacting with APIs through R. I especially recommend going over --- and replicating --- his excellent [tutorial on the GitHub API](https://tclavelle.github.io/blog/r_and_apis/). 
 
 - Jonathan Regenstein has a nice post on RStudio's *R Views* blog, "[GDP Data via API](https://rviews.rstudio.com/2018/09/12/gdp-via-api/)", which treads a similar path to my FRED example. Except he uses the Bureau of Economic Analysis (BEA) API.
@@ -540,3 +542,5 @@ New Zealand's extended dominance in the global game is extraordinary, especially
 - Greg Reda's "[Web Scraping 201: finding the API](http://www.gregreda.com/2015/02/15/web-scraping-finding-the-api/)" covers much of the same ground as we have here. While he focuses on Python tools, I've found it to be a handy reference over the years. (You can also take a look at the earlier posts in Greg's webscraping series --- [Part 1](http://www.gregreda.com/2013/03/03/web-scraping-101-with-python/) and [Part 2](http://www.gregreda.com/2013/04/29/more-web-scraping-with-python/) --- to see some Python equivalents of the `rvest` tools that we've been using.) 
 
 - Ian London (another Python user) has a nice blog post on "[Discovering hidden APIs](https://ianlondon.github.io/blog/web-scraping-discovering-hidden-apis/)" from Airbnb.
+
+- Finally, while the methods covered in the last two lectures should have you covered for 95% (99%?) of your webscraping needs, there are some corner cases where they won't work. In particular, you may run into cases where website content is rendered dynamically with JavaScript. In times like these, you'll need to spin up a so-called "headless" browser to extract the content. More [here](https://rud.is/b/2017/02/09/diving-into-dynamic-website-content-with-splashr/) and [here](https://twitter.com/grant_mcdermott/status/1192889722672041984).
