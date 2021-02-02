@@ -249,7 +249,7 @@ typeof(fred)
 ## [1] "list"
 ```
 
-It turns that the previous step has yielded a list object in R.^[complex nested lists are the law of the land when it comes to json information. don't worry too much about this now; just rest assured that r is well suited to handling these kinds of objects. it's one reason why r and json play so well together. we'll see more examples later in the course when we start working with programming and spatial data.] so now we need to inspect this list to better understand its structure before  extracting the information that we care about (and coerce it to a data frame.) I'd use the base `view()` function to do this in an interactive r session. but that won't work as well for these lecture notes. Instead, I'll use the `listviewer::jsonedit()` function to create an interactive widget that renders nicely in knitted r markdown documents.
+It turns that the previous step has yielded a list object in R.^[complex nested lists are the law of the land when it comes to json information. don't worry too much about this now; just rest assured that r is well suited to handling these kinds of objects. it's one reason why r and json play so well together. we'll see more examples later in the course when we start working with programming and spatial data.] so now we need to inspect this list to better understand its structure before  extracting the information that we care about (and coerce it to a data frame.) I'd use the base `View()` function to do this in an interactive r session. but that won't work as well for these lecture notes. Instead, I'll use the `listviewer::jsonedit()` function to create an interactive widget that renders nicely in knitted r markdown documents.
 
 
 ```r
@@ -302,7 +302,7 @@ Okay! We've finally got our data and are nearly ready for some plotting. Recall 
 
 fred =
   fred %>%
-  mutate_at(vars(realtime_start:date), ymd) %>%
+  mutate(across(realtime_start:date, ymd)) %>%
   mutate(value = as.numeric(value)) 
 ```
 
@@ -470,7 +470,7 @@ str(rugby)
 ##   ..$ label    : chr "2020-12-07"
 ```
 
-We have a nested list, where what looks to be the main element of interest, `$entries`, is itself a list.^[I know that R says `rugby$entries` is a data.frame, but we can tell from the `str()` call that it follows a list structure. In particular, the `rugby$entries$team` sub-element is a itself data frame.] Let's extract the `$entries` element and have a look at its structure. We could use the `str()` base function, but again the interactivity of `listviewer::jsonedit()` is hard to beat for complicated list structures. 
+We have a nested list, where what looks to be the main element of interest, `$entries`, is itself a list.^[I know that R says `rugby$entries` is a data.frame, but we can tell from the `str()` call that it follows a list structure. In particular, the `rugby$entries$team` sub-element is a itself data frame.] Let's extract the `$entries` element and have a look at its structure. Again, I'd just use the base `View()` base in an interactive R session. Here I'm using `listviewer::jsonedit()` because it plays nicely with R Markdown documents. 
 
 
 ```r
