@@ -528,7 +528,7 @@ New Zealand's extended dominance in the global game is extraordinary, especially
 - Some APIs don't require an access key or token, but most do. You can add this key as a parameter to the API endpoint.
 - Downloading content from an API endpoint to our local computer (i.e. R environment) can be done in a variety of ways.
    - E.g. `jsonlite::readJSON()` to read the the JSON array directly, or `httr::GET()` to download the entire response, or installing a package that does the job for us.
-- Next lecture: Regression analysis in R. (The start of the analysis and programming section of the course.)
+- **Next lecture:** Regression analysis in R. (The start of the analysis and programming section of the course.)
 
 
 ## Further resources and exercises
