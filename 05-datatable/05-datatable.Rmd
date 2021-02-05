@@ -149,7 +149,7 @@ name:fast
 
 .small90[
 
-```{r collapse_comp}
+```{r collapse_comp_neval, eval = FALSE}
 collapse_dplyr = function() {
   storms %>%
     group_by(name, year, month, day) %>% 
@@ -162,14 +162,35 @@ collapse_dt = function() {
             by = .(name, year, month, day)]
   }
 
-microbenchmark(collapse_dplyr(), collapse_dt(), times = 10)
+microbenchmark(collapse_dplyr(), collapse_dt(), times = 1)
+```
+
+```{r collapse_comp, echo=FALSE, message=FALSE}
+collapse_dplyr = function() {
+  storms %>%
+    group_by(name, year, month, day) %>% 
+    summarize(wind = mean(wind), pressure = mean(pressure), category = dplyr::first(category))
+  }
+
+storms_dt = as.data.table(storms)
+collapse_dt = function() {
+  storms_dt[, .(wind = mean(wind), pressure = mean(pressure), category = first(category)),
+            by = .(name, year, month, day)]
+  }
+
+mb = microbenchmark(collapse_dplyr(), collapse_dt(), times = 1)
+mb_dt = as.data.table(mb) ## For easy calculation in text
+## Round to nearest multiple of 10
+mbx = round((mb_dt[expr=="collapse_dplyr()", median(time)] /
+               mb_dt[expr=="collapse_dt()", median(time)]) / 10) * 10
+mb ## print result
 ```
 ]
 
 --
 
 .small90[
-**Result:** data.table is 75x faster! (Thanks to [Keith Head](https://twitter.com/ckhead) for this example.)
+**Result:** data.table is `r mbx`x faster! (Thanks to [Keith Head](https://twitter.com/ckhead) for this example.)
 ]
 
 ---
@@ -214,8 +235,8 @@ My goal is simply to show you another powerful tool that you can use to tackle b
 
 --
 
-FWIW, I'm a huge fan of both the tidyverse and data.table, and use them about equally in my own work.
-- Knowing how to use both of them and how they complement each other has, I believe, made me a much more effective R user/empirical economist/data scientist/etc.
+FWIW, I'm a big fan of both the tidyverse and data.table, and use them both in my own work.
+- Knowing how to use each of them and how they complement each other has, I believe, made me a much more effective R user/empirical economist/data scientist/etc.
 
 --
 
@@ -242,13 +263,11 @@ The same is true for data.table. In fact, data.table functions only work on obje
 --
 
 To create a data.table, we have a couple of options:
-- `fread('mydata.csv')` reads a CSV into R as a data.table (and is very fast).<sup>1</sup>
+- `fread('mydata.csv')` reads a CSV into R as a data.table (and is very fast).
 - `data.table(x = 1:10)` creates a new data.table from scratch
 - `as.data.table(d)` coerces an existing data frame (`d`) to a data.table.
 - `setDT(d)` coerces an existing data frame to a data.table *by reference*; i.e. we don't have to (re)assign it.
 
-
-.footnote[<sup>1</sup> We'll cover `fread()` in more depth in the next lecture on data I/O.]
 
 ---
 
@@ -1063,7 +1082,7 @@ P.S. Use the `key()` function to see what keys are currently set for your data.t
 
 # Example
 
-Recall the [speed benchmark](#fast) that we saw at the very beginning of the lecture: data.table ended up being 75x faster than dplyr for a fairly standard summarising task.
+Recall the [speed benchmark](#fast) that we saw at the very beginning of the lecture: data.table ended up being `r mbx`x faster than dplyr for a fairly standard summarising task.
 
 --
 
@@ -1083,7 +1102,7 @@ collapse_dt_key = function() {
                 by = .(name, year, month, day)]
 }
 ## Run the benchmark on all three functions.
-microbenchmark(collapse_dplyr(), collapse_dt(), collapse_dt_key(), times = 10)
+microbenchmark(collapse_dplyr(), collapse_dt(), collapse_dt_key(), times = 1)
 ```
 ]
 
@@ -1099,21 +1118,24 @@ collapse_dt_key = function() {
             by = .(name, year, month, day)]
 }
 
-mb_key = microbenchmark::microbenchmark(collapse_dplyr(), collapse_dt(), collapse_dt_key(), times = 10)
+mb_key = microbenchmark::microbenchmark(collapse_dplyr(), collapse_dt_key(), times = 1)
 mb_key_dt = as.data.table(mb_key) ## For easy calculation in text
+## Round to nearest multiple of 10
+mbx_key = round((mb_key_dt[expr=="collapse_dplyr()", median(time)] /
+                   mb_key_dt[expr=="collapse_dt_key()", median(time)]) / 10) * 10
 mb_key ## print result
 ```
 
 --
 
-The keyed data.table version is now **`r round(mb_key_dt[expr=="collapse_dplyr()", median(time)]/mb_key_dt[expr=="collapse_dt_key()", median(time)])`** times(!!!) faster than dplyr.
+The keyed data.table version is now **`r mbx_key`x** (!!!) faster than dplyr.
 --
 
 - That thing you feel... is your face melting.
 
 --
 
-It's not just this toy example. In working with real-life data, my experience is that setting keys almost always leads to huge speed-ups... and those gains tend to scale as the datasets increase in size.
+It's not just this toy example. In my experience working with real-life data, setting keys almost always leads to huge speed-ups... and those gains tend to scale as the datasets increase in size.
 
 --
 
@@ -1187,8 +1209,8 @@ If you run these, you'll see that both methods handle the ambiguous "year" colum
 
 ```{r, eval = FALSE}
 merge(
-  setnames(flights_dt, old = "year", new = "year_built"), #<<
-  planes_dt, 
+  flights_dt,
+  setnames(planes_dt, old = "year", new = "year_built"), #<< 
   all.x = TRUE, 
   by = "tailnum")
 ```
@@ -1199,19 +1221,34 @@ merge(
 
 The only other thing I'll point out is that setting [keys](#keys) can lead to dramatic speed-ups for merging data.tables. I'll demonstrate using an inner join this time.
 
-```{r merge_key}
+```{r merge_key_print, eval=FALSE}
 merge_dt = function() merge(flights_dt, planes_dt, by = "tailnum")
 
 flights_dt_key = as.data.table(flights, key = "tailnum")
 planes_dt_key = as.data.table(planes, key = "tailnum")
 merge_dt_key = function() merge(flights_dt_key, planes_dt_key, by = "tailnum")
 
-microbenchmark(merge_dt(), merge_dt_key(), times = 10)
+microbenchmark(merge_dt(), merge_dt_key(), times = 1)
+```
+
+```{r merge_key, echo=FALSE, message=FALSE}
+merge_dt = function() merge(flights_dt, planes_dt, by = "tailnum")
+
+flights_dt_key = as.data.table(flights, key = "tailnum")
+planes_dt_key = as.data.table(planes, key = "tailnum")
+merge_dt_key = function() merge(flights_dt_key, planes_dt_key, by = "tailnum")
+
+mb_join = microbenchmark(merge_dt(), merge_dt_key(), times = 1)
+mb_join_dt = as.data.table(mb_join) ## For easy calculation in text
+## Round to nearest multiple of 10
+mbx_join = round((mb_join_dt[expr=="merge_dt()", median(time)] /
+                    mb_join_dt[expr=="merge_dt_key()", median(time)]) / 10) * 10
+mb_join ## print result
 ```
 
 --
 
-So, we get about a 2x speed-up for this simple case. Trust me, though: For really big datasets with complicated joins, ordering your data by setting keys will make a huge difference. (FWIW, the same is true for dplyr. See [here](https://tysonbarrett.com//jekyll/update/2019/10/11/speed_of_joins/).) 
+So, we get about a **`r mbx_join`x** speed-up for this simple case just by setting keys. More importantly, ordering your data by setting keys will make a huge difference once you start working with big datasets and making complicated joins. Trust me. (FWIW, the [same is true](https://tysonbarrett.com//jekyll/update/2019/10/11/speed_of_joins/) for dplyr.) 
 
 ---
 name: reshape
@@ -1325,7 +1362,7 @@ Over the last two lectures, we've explored some of the key features of each. It'
 
 --
 
-And that's cool. But I'll repeat a point I made earlier: I use both ecosystems about equally in my own work and honestly believe that this has been to my great benefit.
+And that's cool. But I'll repeat a point I made earlier: I use both ecosystems in my own work and honestly believe that this has been to my benefit.
 
 These next few slides offer a few additional thoughts on how data.table and the tidyverse can be combined profitably in your own workflow.
 
@@ -1414,7 +1451,7 @@ collapse_dtplyr = function() {
     as_tibble()
 }
 ## Just compare dtplyr with normal dplyr and data.table versions (i.e. no keys)
-microbenchmark::microbenchmark(collapse_dplyr(), collapse_dt(), collapse_dtplyr(), times = 10)
+microbenchmark::microbenchmark(collapse_dplyr(), collapse_dtplyr(), times = 1)
 ```
 ]
 
@@ -1434,12 +1471,17 @@ collapse_dtplyr = function() {
     as_tibble()
 }
 ## Just compare dtplyr with normal dplyr and data.table versions (i.e. no keys)
-microbenchmark::microbenchmark(collapse_dplyr(), collapse_dt(), collapse_dtplyr(), times = 10)
+mb_dtplyr = microbenchmark::microbenchmark(collapse_dplyr(), collapse_dtplyr(), times = 1)
+mb_dtplyr_dt = as.data.table(mb_dtplyr) ## For easy calculation in text
+## Round to nearest multiple of 5 
+mbx_dtplyr = round((mb_dtplyr_dt[expr=="collapse_dplyr()", median(time)] /
+                      mb_dtplyr_dt[expr=="collapse_dtplyr()", median(time)]) / 5) * 5
+mb_dtplyr ## print result
 ```
 
 --
 
-Not quite a fast as the native data.table method, but a >30x speed-up for free? I'd take it!
+A **`r mbx_dtplyr`x** speed-up for free? I'd take it!
 
 --
 
@@ -1501,5 +1543,5 @@ Impress me with your data wrangling skills using either the tidyverse or data.ta
 ---
 class: inverse, center, middle
 
-# Next lecture: Websrcaping (1)
+# Next lecture: Webscraping (1)
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>

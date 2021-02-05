@@ -161,24 +161,25 @@ collapse_dt = function() {
             by = .(name, year, month, day)]
   }
 
-microbenchmark(collapse_dplyr(), collapse_dt(), times = 10)
+microbenchmark(collapse_dplyr(), collapse_dt(), times = 1)
 ```
+
 
 ```
 ## Unit: milliseconds
-##              expr        min         lq      mean     median         uq
-##  collapse_dplyr() 140.181460 142.787776 150.78830 150.755265 156.050819
-##     collapse_dt()   1.720564   2.000747   2.88159   2.221572   2.533579
-##         max neval cld
-##  164.193097    10   b
-##    6.324305    10  a
+##              expr        min         lq       mean     median         uq
+##  collapse_dplyr() 112.396376 112.396376 112.396376 112.396376 112.396376
+##     collapse_dt()   5.982716   5.982716   5.982716   5.982716   5.982716
+##         max neval
+##  112.396376     1
+##    5.982716     1
 ```
 ]
 
 --
 
 .small90[
-**Result:** data.table is 75x faster! (Thanks to [Keith Head](https://twitter.com/ckhead) for this example.)
+**Result:** data.table is 20x faster! (Thanks to [Keith Head](https://twitter.com/ckhead) for this example.)
 ]
 
 ---
@@ -225,8 +226,8 @@ My goal is simply to show you another powerful tool that you can use to tackle b
 
 --
 
-FWIW, I'm a huge fan of both the tidyverse and data.table, and use them about equally in my own work.
-- Knowing how to use both of them and how they complement each other has, I believe, made me a much more effective R user/empirical economist/data scientist/etc.
+FWIW, I'm a big fan of both the tidyverse and data.table, and use them both in my own work.
+- Knowing how to use each of them and how they complement each other has, I believe, made me a much more effective R user/empirical economist/data scientist/etc.
 
 --
 
@@ -253,13 +254,11 @@ The same is true for data.table. In fact, data.table functions only work on obje
 --
 
 To create a data.table, we have a couple of options:
-- `fread('mydata.csv')` reads a CSV into R as a data.table (and is very fast).&lt;sup&gt;1&lt;/sup&gt;
+- `fread('mydata.csv')` reads a CSV into R as a data.table (and is very fast).
 - `data.table(x = 1:10)` creates a new data.table from scratch
 - `as.data.table(d)` coerces an existing data frame (`d`) to a data.table.
 - `setDT(d)` coerces an existing data frame to a data.table *by reference*; i.e. we don't have to (re)assign it.
 
-
-.footnote[&lt;sup&gt;1&lt;/sup&gt; We'll cover `fread()` in more depth in the next lecture on data I/O.]
 
 ---
 
@@ -1282,7 +1281,7 @@ P.S. Use the `key()` function to see what keys are currently set for your data.t
 
 # Example
 
-Recall the [speed benchmark](#fast) that we saw at the very beginning of the lecture: data.table ended up being 75x faster than dplyr for a fairly standard summarising task.
+Recall the [speed benchmark](#fast) that we saw at the very beginning of the lecture: data.table ended up being 20x faster than dplyr for a fairly standard summarising task.
 
 --
 
@@ -1303,7 +1302,7 @@ collapse_dt_key = function() {
                 by = .(name, year, month, day)]
 }
 ## Run the benchmark on all three functions.
-microbenchmark(collapse_dplyr(), collapse_dt(), collapse_dt_key(), times = 10)
+microbenchmark(collapse_dplyr(), collapse_dt(), collapse_dt_key(), times = 1)
 ```
 ]
 
@@ -1314,27 +1313,25 @@ microbenchmark(collapse_dplyr(), collapse_dt(), collapse_dt_key(), times = 10)
 
 
 ```
-## Unit: microseconds
+## Unit: milliseconds
 ##               expr        min         lq       mean     median         uq
-##   collapse_dplyr() 129404.940 137071.132 148097.833 144425.856 152524.524
-##      collapse_dt()   1520.959   1576.205   2122.899   1746.844   1796.816
-##  collapse_dt_key()    976.502    996.313   2457.842   1026.590   1081.641
-##         max neval cld
-##  195411.502    10   b
-##    5774.651    10  a 
-##   14925.692    10  a
+##   collapse_dplyr() 112.849845 112.849845 112.849845 112.849845 112.849845
+##  collapse_dt_key()   1.107796   1.107796   1.107796   1.107796   1.107796
+##         max neval
+##  112.849845     1
+##    1.107796     1
 ```
 
 --
 
-The keyed data.table version is now **141** times(!!!) faster than dplyr.
+The keyed data.table version is now **100x** (!!!) faster than dplyr.
 --
 
 - That thing you feel... is your face melting.
 
 --
 
-It's not just this toy example. In working with real-life data, my experience is that setting keys almost always leads to huge speed-ups... and those gains tend to scale as the datasets increase in size.
+It's not just this toy example. In my experience working with real-life data, setting keys almost always leads to huge speed-ups... and those gains tend to scale as the datasets increase in size.
 
 --
 
@@ -1412,8 +1409,8 @@ If you run these, you'll see that both methods handle the ambiguous "year" colum
 
 ```r
 merge(
-* setnames(flights_dt, old = "year", new = "year_built"),
-  planes_dt, 
+  flights_dt,
+* setnames(planes_dt, old = "year", new = "year_built"),
   all.x = TRUE, 
   by = "tailnum")
 ```
@@ -1432,22 +1429,23 @@ flights_dt_key = as.data.table(flights, key = "tailnum")
 planes_dt_key = as.data.table(planes, key = "tailnum")
 merge_dt_key = function() merge(flights_dt_key, planes_dt_key, by = "tailnum")
 
-microbenchmark(merge_dt(), merge_dt_key(), times = 10)
+microbenchmark(merge_dt(), merge_dt_key(), times = 1)
 ```
+
 
 ```
 ## Unit: milliseconds
-##            expr      min       lq     mean   median       uq       max neval
-##      merge_dt() 52.13972 56.19201 66.19852 58.82896 61.71827 142.84994    10
-##  merge_dt_key() 28.09798 33.95716 36.59836 34.73080 41.03766  43.11121    10
-##  cld
-##    b
-##   a
+##            expr       min        lq      mean    median        uq       max
+##      merge_dt() 301.44576 301.44576 301.44576 301.44576 301.44576 301.44576
+##  merge_dt_key()  36.09671  36.09671  36.09671  36.09671  36.09671  36.09671
+##  neval
+##      1
+##      1
 ```
 
 --
 
-So, we get about a 2x speed-up for this simple case. Trust me, though: For really big datasets with complicated joins, ordering your data by setting keys will make a huge difference. (FWIW, the same is true for dplyr. See [here](https://tysonbarrett.com//jekyll/update/2019/10/11/speed_of_joins/).) 
+So, we get about a **10x** speed-up for this simple case just by setting keys. More importantly, ordering your data by setting keys will make a huge difference once you start working with big datasets and making complicated joins. Trust me. (FWIW, the [same is true](https://tysonbarrett.com//jekyll/update/2019/10/11/speed_of_joins/) for dplyr.) 
 
 ---
 name: reshape
@@ -1616,7 +1614,7 @@ Over the last two lectures, we've explored some of the key features of each. It'
 
 --
 
-And that's cool. But I'll repeat a point I made earlier: I use both ecosystems about equally in my own work and honestly believe that this has been to my great benefit.
+And that's cool. But I'll repeat a point I made earlier: I use both ecosystems in my own work and honestly believe that this has been to my benefit.
 
 These next few slides offer a few additional thoughts on how data.table and the tidyverse can be combined profitably in your own workflow.
 
@@ -1702,7 +1700,7 @@ collapse_dtplyr = function() {
     as_tibble()
 }
 ## Just compare dtplyr with normal dplyr and data.table versions (i.e. no keys)
-microbenchmark::microbenchmark(collapse_dplyr(), collapse_dt(), collapse_dtplyr(), times = 10)
+microbenchmark::microbenchmark(collapse_dplyr(), collapse_dtplyr(), times = 1)
 ```
 ]
 
@@ -1716,18 +1714,16 @@ microbenchmark::microbenchmark(collapse_dplyr(), collapse_dt(), collapse_dtplyr(
 ```
 ## Unit: milliseconds
 ##               expr        min         lq       mean     median         uq
-##   collapse_dplyr() 128.168670 132.242519 144.873369 134.277006 136.059531
-##      collapse_dt()   1.697320   1.736246   1.864282   1.802721   1.883381
-##  collapse_dtplyr()   2.941845   3.026561   3.895421   3.556846   3.830063
-##         max neval cld
-##  244.397906    10   b
-##    2.221476    10  a 
-##    7.288890    10  a
+##   collapse_dplyr() 117.106259 117.106259 117.106259 117.106259 117.106259
+##  collapse_dtplyr()   5.416915   5.416915   5.416915   5.416915   5.416915
+##         max neval
+##  117.106259     1
+##    5.416915     1
 ```
 
 --
 
-Not quite a fast as the native data.table method, but a &gt;30x speed-up for free? I'd take it!
+A **20x** speed-up for free? I'd take it!
 
 --
 
@@ -1803,7 +1799,7 @@ Impress me with your data wrangling skills using either the tidyverse or data.ta
 ---
 class: inverse, center, middle
 
-# Next lecture: Websrcaping (1)
+# Next lecture: Webscraping (1)
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
