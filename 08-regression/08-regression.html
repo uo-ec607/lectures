@@ -888,7 +888,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 </div>
 <div id="option-2-estimatriv_robust" class="section level3">
 <h3>Option 2: <code>estimatr::iv_robust()</code></h3>
-<p>Our second IV option comes from the <strong>estimatr</strong> package that we saw earlier. This will default to using HC2 robust standard errors although, as before, we could specify other options if we so wished (including clustering).Currently, the function doesn’t accept the three-part RHS formula. But the two-part version works exactly the same as it did for <code>ivreg()</code>. All we need to do is change the function call to <code>estimatr::iv_robust()</code>.</p>
+<p>Our second IV option comes from the <strong>estimatr</strong> package that we saw earlier. This will default to using HC2 robust standard errors although, as before, we could specify other options if we so wished (including clustering). Currently, the function doesn’t accept the three-part RHS formula. But the two-part version works exactly the same as it did for <code>ivreg()</code>. All we need to do is change the function call to <code>estimatr::iv_robust()</code>.</p>
 <div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="co"># library(estimatr) ## Already loaded</span></span>
 <span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Run the IV regression with robust SEs. Note the two-part formula RHS.</span></span>
@@ -1079,7 +1079,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <p>Of course, there are simply too many other models and other estimation procedures to cover in this lecture. A lot of these other models that you might be thinking of come bundled with the base R installation. But just to highlight a few, mostly new packages that I like a lot for specific estimation procedures:</p>
 <ul>
 <li>Difference-in-differences (with variable timing, etc.): <strong>did</strong> (<a href="https://github.com/bcallaway11/did">link</a>) and <strong>DRDID</strong> (<a href="https://pedrohcgs.github.io/DRDID/">link</a>)</li>
-<li>Synthetic control: <strong>gsynth</strong> (<a href="https://yiqingxu.org/software/gsynth/gsynth_examples.html">link</a>) and <strong>scul</strong> (<a href="https://hollina.github.io/scul/">link</a>)</li>
+<li>Synthetic control: <strong>tidysynth</strong> (<a href="https://github.com/edunford/tidysynth">link</a>), <strong>gsynth</strong> (<a href="https://yiqingxu.org/software/gsynth/gsynth_examples.html">link</a>) and <strong>scul</strong> (<a href="https://hollina.github.io/scul/">link</a>)</li>
 <li>Count data (hurdle models, etc.): <strong>pscl</strong> (<a href="https://cran.r-project.org/web/packages/pscl/vignettes/countreg.pdf">link</a>)</li>
 <li>Lasso: <strong>biglasso</strong> (<a href="https://github.com/YaohuiZeng/biglasso">link</a>)</li>
 <li>Causal forests: <strong>grf</strong> (<a href="https://grf-labs.github.io/grf/">link</a>)</li>
@@ -1090,7 +1090,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 </div>
 <div id="marginal-effects" class="section level2">
 <h2>Marginal effects</h2>
-<p>Calculating marginal effects in a regression is utterly straightforward in cases where there are no non-linearities… just look at the coefficient values. However, that quickly goes out the window when you have interaction effects or non-linear models like probit, logit, etc. Luckily, there are various ways to obtain these from R models. For example, we already saw the <strong>mfx</strong> package above for obtaining marginal effects from GLM models. I want to briefly focus on two of my favourite methods for obtaining marginal effects across different model classes: 1) The <strong>margins</strong> package and 2) a shortcut that works particularly well for models with interaction terms.</p>
+<p>Calculating marginal effects in a linear regression model like OLS is perfectly straightforward… just look at the coefficient values. But that quickly goes out the window when you have interaction terms or non-linear models like probit, logit, etc. Luckily, there are various ways to obtain these from R models. For example, we already saw the <strong>mfx</strong> package above for obtaining marginal effects from GLM models. I want to briefly focus on two of my favourite methods for obtaining marginal effects across different model classes: 1) The <strong>margins</strong> package and 2) a shortcut that works particularly well for models with interaction terms.</p>
 <div id="the-margins-package" class="section level3">
 <h3>The <strong>margins</strong> package</h3>
 <p>The <strong>margins</strong> package (<a href="https://cran.r-project.org/web/packages/margins">link</a>), which is modeled on its namesake in Stata, is great for obtaining marginal effects across an entire range of models.<a href="#fn13" class="footnote-ref" id="fnref13"><sup>13</sup></a> You can read more in the package <a href="https://cran.r-project.org/web/packages/margins/vignettes/Introduction.html">vignette</a>, but here’s a very simple example to illustrate.</p>
