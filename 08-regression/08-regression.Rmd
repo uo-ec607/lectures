@@ -28,22 +28,26 @@ Today's lecture is about the bread-and-butter tool of applied econometrics and d
 
 It's important to note that "base" R already provides all of the tools we need for basic regression analysis. However, we'll be using several additional packages today, because they will make our lives easier and offer increased power for some more sophisticated analyses.
 
-- New: **broom**, **estimatr**, **fixest**, **sandwich**, **lmtest**, **AER**, **mfx**, **margins**, **modelsummary**, **vtable**
+- New: **fixest**, **estimatr**, **ivreg**, **sandwich**, **lmtest**,  **mfx**, **margins**, **broom**, **modelsummary**, **vtable**
 - Already used: **tidyverse**, **hrbrthemes**, **listviewer**
 
-A convenient way to install (if necessary) and load everything is by running the below code chunk.
+Note that I'm using **ivreg** 0.6.0, which must be installed as the [development version](https://john-d-fox.github.io/ivreg/news/index.html) as of the time of writing. A convenient way to install (if necessary) and load everything is by running the below code chunk.
 
 ```{r libs_print, cache=FALSE, eval=FALSE}
+## Install development version of ivreg if necessary
+if (numeric_version(packageVersion("ivreg")) < numeric_version("0.6.0")) {
+  remotes::install_github("john-d-fox/ivreg")
+}
 ## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(mfx, tidyverse, hrbrthemes, estimatr, fixest, sandwich, lmtest, AER, margins, vtable, broom, modelsummary)
+pacman::p_load(mfx, tidyverse, hrbrthemes, estimatr, ivreg, fixest, sandwich, lmtest, margins, vtable, broom, modelsummary)
 ## My preferred ggplot2 plotting theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
 ```{r libs, cache=FALSE, message=FALSE, echo=FALSE}
 ## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(mfx, tidyverse, hrbrthemes, estimatr, fixest, sandwich, lmtest, AER, margins, vtable, broom, modelsummary)
+pacman::p_load(mfx, tidyverse, hrbrthemes, estimatr, ivreg, fixest, sandwich, lmtest, margins, vtable, broom, modelsummary)
 ## My preferred ggplot2 plotting theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
@@ -378,109 +382,123 @@ Fixed effects models are more common than random or mixed effects models in econ
 
 ## Instrumental variables
 
-As you would have guessed by now, there are a number of ways to run instrumental variable (IV) regressions in R. I'll walk through three different options using the `AER::ivreg()`, `estimatr::iv_robust()`, and `fixest::feols()` functions, respectively. These are all going to follow a similar syntax, where the IV first-stage regression is specified after a **`|`** following the main regression. However, there are also some subtle and important differences, which is why I want to go through each of them. After that, I'll let you decide which of the three options is your favourite.
+As you would have guessed by now, there are a number of ways to run instrumental variable (IV) regressions in R. I'll walk through three different options using the `ivreg::ivreg()`, `estimatr::iv_robust()`, and `fixest::feols()` functions, respectively. These are all going to follow a similar syntax, where the IV first-stage regression is specified in a multi-part formula (i.e. where formula parts are separated by one or more pipes, **`|`**). However, there are also some subtle and important differences, which is why I want to go through each of them. After that, I'll let you decide which of the three options is your favourite.
 
-The dataset that we'll be using here is a panel of US cigarette consumption by state, which is taken from the **AER** package ([link](https://cran.r-project.org/web/packages/AER/vignettes/AER.pdf)). Let's load the data, add some modified variables, and then take a quick look at it. Note that I'm going to limit the dataset to 1995 only, given that I want to focus the IV syntax and don't want to deal with the panel structure of the data. (Though that's very easily done, as we've already seen.)
+The dataset that we'll be using for this section describes cigarette demand for the 48 continental US states in 1995, and is taken from the **ivreg** package. Here's a quick a peek:
 
-```{r, cigs}
-## Get the data
-data("CigarettesSW", package = "AER")
-## Create a new data frame with some modified variables
-cigs =
-  CigarettesSW %>%
-  mutate(
-    rprice = price/cpi,
-    rincome = income/population/cpi,
-    rtax = tax/cpi,
-    tdiff = (taxs - tax)/cpi
-    ) %>%
-  as_tibble()
-## Create a subset of the data limited to 1995
-cigs95 = cigs %>% filter(year==1995)
-cigs95
+```{r cigaretteDemand}
+data("CigaretteDemand", package = "ivreg")
+head(CigaretteDemand)
 ```
 
-Now, assume that we are interested in regressing the number of cigarettes packs consumed per capita on their average price and people's real incomes. The problem is that the price is endogenous, because it is simultaneously determined by demand and supply. So we need to instrument for it using different tax variables. That is, we want to run the following two-stage IV regression.
+Now, assume that we are interested in regressing the number of cigarettes packs consumed per capita on their average price and people's real incomes. The problem is that the price is endogenous, because it is simultaneously determined by demand and supply. So we need to instrument for it using cigarette sales tax. That is, we want to run the following two-stage IV regression. 
 
-$$price_i = \pi_0 + \pi_1 tdiff_i + \pi_2 rtax_i + v_i  \hspace{1cm} \text{(First stage)}$$
-$$packs_i = \beta_0 + \beta_2\widehat{price_i} + \beta_1 rincome_i + u_i \hspace{1cm} \text{(Second stage)}$$
+$$Price_i = \pi_0 + \pi_1 SalesTax_i + v_i  \hspace{1cm} \text{(First stage)}$$
+$$Packs_i = \beta_0 + \beta_2\widehat{Price_i} + \beta_1 RealIncome_i + u_i \hspace{1cm} \text{(Second stage)}$$
 
-### Option 1: `AER::ivreg()`
+### Option 1: `ivreg::ivreg()`
 
-Let's start with `AER::ivreg()` as our first IV regression option; if for no other reason than that's where our data are coming from. The key point from the below code chunk is that the first-stage regression is going to be specified after the **`|`** and will include *all* exogenous variables.
+I'll start with `ivreg()` from the **ivreg** package ([link](https://john-d-fox.github.io/ivreg/index.html)).^[Some of you may wondering, but **ivreg** is a dedicated IV-focused package that splits off (and updates) functionality that used to be bundled with the **AER** package.] The `ivreg()` function supports several syntax options for specifying the IV component. I'm going to use the syntax that I find most natural, namely a formula with a three-part RHS: `y ~ ex | en | in`. Implementing our two-stage regression from above may help to illustrate.
 
-```{r, iv_reg}
-# library(AER) ## Already loaded
+```{r iv}
+# library(ivreg) ## Already loaded
 
-## Run the IV regression 
-iv_reg = 
+## Run the IV regression. Note the three-part formula RHS.
+iv =
   ivreg(
-    log(packs) ~ log(rprice) + log(rincome) | ## The main regression. "rprice" is endogenous
-      log(rincome) + tdiff + rtax, ## List all *exogenous* variables, including "rincome"
-    data = cigs95
+    log(packs) ~            ## LHS: Dependent variable
+      log(rincome) |        ## 1st part RHS: Exogenous variable(s)
+      log(rprice) |         ## 2nd part RHS: Endogenous variable(s)
+      salestax,             ## 3rd part RHS: Instruments
+    data = CigaretteDemand
     )
-summary(iv_reg, diagnostics = TRUE)
+summary(iv)
 ```
 
-I want to emphasise that you might find the above syntax a little counterintuitive --- or, at least, unusual --- if you're coming from a language like Stata.^[Assuming that you have already created the logged variables and subsetted the data, the Stata equivalent would be something like `ivreg log_packs = log_rincome (log_rprice = tdiff rtax)`.] Note that we didn't specify the endogenous variable (i.e. "rprice") directly. Rather, we told R which are the *exogenous* variables. It then figured out which were the endogenous variables that needed to be instrumented and ran the necessary first-stage regression(s) in the background. This approach actually makes quite a lot of sense if you think about the underlying theory of IV. But different strokes for different folks. 
+**ivreg** has lot of functionality bundled into it, including cool diagnostic tools and full integration with **sandwich** and co. for swapping in different standard errors on the fly. See the [introductory vignette](https://john-d-fox.github.io/ivreg/articles/ivreg.html) for more. 
 
-The good news for those who prefer the Stata-style syntax is that `AER::ivreg()` also accepts an alternate way of specifying the first-stage. This time, we'll denote our endogenous "rprice" variable with `. -price` and include only the instrumental variables after the `|` break. Feel free to check yourself, but the outcome will be exactly the same.
+The only other thing I want to mention briefly is that you may see a number `ivreg()` tutorials using an alternative formula representation. (Remember me saying that the package allows different formula syntax, right?) Specifically, you'll probably see examples that use an older two-part RHS formula like: `y ~ ex + en | ex + in`. Note that here we are writing the `ex` variables on both sides of the `|` separator. The equivalent for our cigarette example would be as follows. Run this yourself to confirm the same output as above.
 
-```{r iv_reg2, eval = FALSE}
-## For those of you that prefer Stata-esque ivreg syntax, where we we specify
-## the instruments explicitly
-ivreg(
-  log(packs) ~ log(rprice) + log(rincome) | 
-    . -log(rprice) + tdiff + rtax, ## Alternative way of specifying the first-stage.
-  data = cigs95
-  )
+```{r iv2, eval=FALSE}
+## Alternative two-part formula RHS (which I like less but YMMV)
+iv2 =
+  ivreg(
+    log(packs) ~                   ## LHS: Dependent var
+      log(rincome) + log(rprice) | ## 1st part RHS: Exogenous vars + endogenous vars
+      log(rincome) + salestax,     ## 2nd part RHS: Exogenous vars (again) + Instruments
+    data = CigaretteDemand
+    )
+summary(iv2)
 ```
+
+This two-part syntax is closely linked to the manual implementation of IV, since it requires explicitly stating *all* of your exogenous variables (including instruments) in one slot. However, it requires duplicate typing of the exogenous variables and I personally find it less intuitive to write.^[Note that we didn't specify the endogenous variable (i.e. `log(rprice)`) directly. Rather, we told R what the *exogenous* variables were. It then figured out which variables were endogenous and needed to be instrumented in the first-stage.] But different strokes for different folks. 
 
 
 ### Option 2: `estimatr::iv_robust()`
 
-Our second IV option comes from the **estimatr** package that we saw earlier. This will default to using HC2 robust standard errors although, as before, we could specify other options if we so wished (including clustering). More importantly, note that the syntax is effectively identical to the previous example. All we need to do is change the function call from `AER::ivreg()` to `estimatr::iv_robust()`.
+Our second IV option comes from the **estimatr** package that we saw earlier. This will default to using HC2 robust standard errors although, as before, we could specify other options if we so wished (including clustering).Currently, the function doesn't accept the three-part RHS formula. But the two-part version works exactly the same as it did for `ivreg()`. All we need to do is change the function call to `estimatr::iv_robust()`.
 
 ```{r, iv_robust}
 # library(estimatr) ## Already loaded
 
-## Run the IV regression with robust SEs
+## Run the IV regression with robust SEs. Note the two-part formula RHS.
 iv_reg_robust = 
-  iv_robust( ## We only need to change the function call. Everything else stays the same.
-    log(packs) ~ log(rprice) + log(rincome) | 
-      log(rincome) + tdiff + rtax,
-    data = cigs95
+  iv_robust( ## Only need to change the function call. Everything else stays the same.
+    log(packs) ~  
+      log(rincome) + log(rprice) |
+      log(rincome) + salestax,
+    data = CigaretteDemand
     )
 summary(iv_reg_robust, diagnostics = TRUE)
 ```
 
 ### Option 3: `fixest::feols()`
 
-Finally, we get to the `feols()` function from the aforementioned **fixest** package. This is actually my favourite option; not only because I work mostly with panel data, but also because I find it has the most natural syntax. In fact, it very closely resembles Stata's approach to writing out the first-stage, where you specify the endogenous variable(s) and the instruments only.
+Finally, we get back to the `fixest::feols()` function that we've already seen above. Truth be told, this is the IV option that I use most often in my own work. In part, this statement reflects the fact that I work mostly with panel data and will invariably be using **fixest** anyway. But I also happen to like its IV syntax a lot. The key thing is to specify the IV first-stage as a separate formula in the _final_ slot of the model call.^[This closely resembles [Stata's approach](https://www.stata.com/manuals13/rivregress.pdf) to writing out the IV first-stage, where you specify the endogenous variable(s) and the instruments together in a slot.] For example, if we had `fe` fixed effects, then the model call would be `y ~ ex | fe | en ~ in`. Since we don't have any fixed effects in our current cigarette demand example, the first-stage will come directly after the exogenous variables:
 
 ```{r iv_feols}
 # library(fixest) ## Already loaded
+
 iv_feols = 
   feols(
-    log(packs) ~ log(rincome) |
-      log(rprice) ~ tdiff + rtax, ## First-stage (must be in the final slot, although here we don't have FEs) 
-    data = cigs95
-  )
-# summary(iv_feols_all, stage = 1) ## Show the 1st stage in detail
+    log(packs) ~ log(rincome) | ## y ~ ex
+      log(rprice) ~ salestax,   ## en ~ in (IV first-stage; must be the final slot)
+    data = CigaretteDemand
+    )
+# summary(iv_feols, stage = 1) ## Show the 1st stage in detail
 iv_feols
 ```
-Note that in the above example, we don't any fixed effects. However, `feols()` automatically recognizes the IV first-stage, which *must* come last in the formula. Just to emphasise --- and to demonstrate how easy it is to extend **fixest**'s performance to panel IV cases --- here's a final `feols()` example. This time, I'll use the whole `cigs` data frame (i.e. not subsetting to 1995), and use both year and state fixed effects to control for the panel structure.
 
-```{r iv_feols_all}
-iv_feols_all = 
-  feols(
-    log(packs) ~ log(rincome) |
-      year + state |               ## Now include FEs
-      log(rprice) ~ tdiff + rtax,  ## 
-    data = cigs                    ## Use whole panel data set
-  )
-iv_feols_all
+Again, I emphasise that the IV first-stage must always come last in the `feols()` model call. Just to be pedantic --- but also to demonstrate how easy **fixest**'s IV functionality extends to panel settings --- here's a final `feols()` example. This time, I'll use a panel version of the same US cigarette demand data that includes entries from both 1985 and 1995. The dataset originally comes from the **AER** package, but we can download it from the web as follows. Note that I'm going to modify some variables to make it better comparable to our previous examples.
+
+```{r cigs_panel}
+## Get the data
+url = 'https://vincentarelbundock.github.io/Rdatasets/csv/AER/CigarettesSW.csv' 
+cigs_panel =
+  read.csv(url, row.names = 1) %>%
+  mutate(
+    rprice = price/cpi,
+    rincome = income/population/cpi
+    )
+head(cigs_panel)
 ```
+
+Let's run a panel IV now, where we'll explicitly account for year and state fixed effects.
+
+```{r iv_feols_panel}
+iv_feols_panel = 
+  feols(
+    log(packs) ~ log(rincome) | 
+      year + state |            ## Now include FEs slot
+      log(rprice) ~ taxs,       ## IV first-stage still comes last
+    data = cigs_panel
+  )
+# summary(iv_feols_panel, stage = 1) ## Show the 1st stage in detail
+iv_feols_panel
+```
+
+Good news, our coefficients are around the same magnitude. But the increased precision of the panel model has yielded gains in statistical significance.
+
 
 ## Other models
 

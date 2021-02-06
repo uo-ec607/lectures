@@ -4,7 +4,7 @@ subtitle: "Lecture 8: Regression analysis in R"
 author:
   name: Grant R. McDermott
   affiliation: University of Oregon | [EC 607](https://github.com/uo-ec607/lectures)
-# date: Lecture 6  #"06 January 2021"
+# date: Lecture 6  #"05 February 2021"
 output: 
   html_document:
     theme: flatly
@@ -26,16 +26,20 @@ Today's lecture is about the bread-and-butter tool of applied econometrics and d
 
 It's important to note that "base" R already provides all of the tools we need for basic regression analysis. However, we'll be using several additional packages today, because they will make our lives easier and offer increased power for some more sophisticated analyses.
 
-- New: **broom**, **estimatr**, **fixest**, **sandwich**, **lmtest**, **AER**, **mfx**, **margins**, **modelsummary**, **vtable**
+- New: **fixest**, **estimatr**, **ivreg**, **sandwich**, **lmtest**,  **mfx**, **margins**, **broom**, **modelsummary**, **vtable**
 - Already used: **tidyverse**, **hrbrthemes**, **listviewer**
 
-A convenient way to install (if necessary) and load everything is by running the below code chunk.
+Note that I'm using **ivreg** 0.6.0, which must be installed as the [development version](https://john-d-fox.github.io/ivreg/news/index.html) as of the time of writing. A convenient way to install (if necessary) and load everything is by running the below code chunk.
 
 
 ```r
+## Install development version of ivreg if necessary
+if (numeric_version(packageVersion("ivreg")) < numeric_version("0.6.0")) {
+  remotes::install_github("john-d-fox/ivreg")
+}
 ## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(mfx, tidyverse, hrbrthemes, estimatr, fixest, sandwich, lmtest, AER, margins, vtable, broom, modelsummary)
+pacman::p_load(mfx, tidyverse, hrbrthemes, estimatr, ivreg, fixest, sandwich, lmtest, margins, vtable, broom, modelsummary)
 ## My preferred ggplot2 plotting theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
@@ -112,8 +116,10 @@ The resulting object is pretty terse, but that's only because it buries most of 
 listviewer::jsonedit(ols1, mode="view") ## Better for R Markdown
 ```
 
-<!--html_preserve--><div id="htmlwidget-a43abc11068780b418bf" style="width:100%;height:10%;" class="jsonedit html-widget"></div>
-<script type="application/json" data-for="htmlwidget-a43abc11068780b418bf">{"x":{"data":{"coefficients":{"(Intercept)":-13.8103136287302,"height":0.638571004587035},"residuals":{"1":-19.0238991602397,"2":-17.8310441373045,"3":-15.4925028116251,"4":20.8189707021492,"5":-32.9753370593249,"6":20.1446748122381,"7":-16.5539021281305,"8":-16.1310738162121,"9":-19.0481802106971,"10":-25.4096092061101,"11":-22.2410352336323,"13":-19.7838754171137,"14":-21.132467196936,"15":-22.6624701648267,"16":1260.060387826,"17":-17.7467571510656,"18":8.86753280306401,"19":-11.335372674014,"20":-19.7467571510656,"21":-24.8481802106971,"22":26.0961127113233,"23":5.48182275719367,"24":-20.2167541831749,"25":-18.9396121740008,"26":-18.132467196936,"29":-22.3839347749288,"30":-20.3610471051953,"31":-20.4338902565674,"32":-18.1567482473934,"34":-45.3496032703285,"35":-47.2295913987655,"39":-17.7096388850176,"42":-17.9396121740008,"44":-44.8553251877619,"45":-1.21536080245099,"47":-25.2767601189564,"48":-22.2410352336323,"49":-30.6267452795026,"50":-24.3496032703285,"52":-53.6867512152841,"55":-26.2410352336323,"57":-19.3253222198712,"60":-23.0481802106971,"61":-38.5467571510656,"62":-42.1924731327175,"64":-29.4338902565674,"66":-24.0481802106971,"67":-38.4696151418916,"68":-10.6267452795026,"69":-44.4224464217007,"72":-21.6367957336455,"74":-61.4338902565674,"76":-42.8553251877619,"77":34.8789766379308,"78":0.384698555364137,"79":-27.2410352336323,"80":-51.8553251877619,"81":-37.7353133161989,"87":-46.5539021281305},"effects":{"(Intercept)":-747.466613505302,"height":172.783889465672,"3":-8.91507473191358,"4":21.4194000157428,"5":-29.4427951434848,"6":22.0983868653301,"7":-13.8671619244768,"8":-9.61003251731305,"9":-17.3764020616673,"10":-23.6814442762678,"11":-20.8511909886646,"12":-20.6495024046433,"13":-19.2915287054689,"14":-20.4268242076726,"15":1262.18326022153,"16":-15.3419508514742,"17":10.7084712945311,"18":-3.06634116992954,"19":-17.3419508514742,"20":-23.1764020616673,"21":26.8093155865418,"22":6.75889344053646,"23":-18.2066553492705,"24":-16.8167397784715,"25":-16.2915287054689,"26":-15.3554124487178,"27":-17.3923729974795,"28":-19.3259799156619,"29":-16.936064344863,"30":-44.4108532718603,"31":-47.8696712630454,"32":-12.0343992983051,"33":-15.8167397784715,"34":-42.9016131346699,"35":5.47484083888535,"36":-22.4772463536779,"37":-20.8511909886646,"38":-29.8007688426593,"39":-23.4108532718603,"40":-52.0713598470667,"41":-24.8511909886646,"42":-17.7663176324662,"43":-21.3764020616673,"44":-36.1419508514742,"45":-39.5621197098763,"46":-28.3259799156619,"47":-22.3764020616673,"48":-35.9520352806753,"49":-9.80076884265928,"50":-45.3444601900428,"51":-14.1007923801226,"52":-60.3259799156619,"53":-40.9016131346699,"54":34.6899910201503,"55":-0.819249117040115,"56":-25.8511909886646,"57":-49.9016131346699,"58":-37.360431125855,"59":-43.8671619244768},"rank":2,"fitted.values":{"1":96.0238991602397,"2":92.8310441373045,"3":47.4925028116251,"4":115.181029297851,"5":81.9753370593249,"6":99.8553251877619,"7":91.5539021281305,"8":48.1310738162121,"9":103.048180210697,"10":102.40960920611,"11":106.241035233632,"13":131.783875417114,"14":101.132467196936,"15":96.6624701648267,"16":97.939612174001,"17":94.7467571510656,"18":101.132467196936,"19":28.335372674014,"20":94.7467571510656,"21":103.048180210697,"22":113.903887288677,"23":107.518177242806,"24":99.2167541831749,"25":97.9396121740008,"26":101.132467196936,"29":42.3839347749288,"30":88.3610471051953,"31":109.433890256567,"32":108.156748247393,"34":111.349603270329,"35":129.229591398766,"39":57.7096388850176,"42":97.9396121740008,"44":99.8553251877619,"45":46.215360802451,"47":90.2767601189564,"48":106.241035233632,"49":112.626745279503,"50":111.349603270329,"52":103.686751215284,"55":106.241035233632,"57":104.325322219871,"60":103.048180210697,"61":94.7467571510656,"62":92.1924731327175,"64":109.433890256567,"66":103.048180210697,"67":93.4696151418916,"68":112.626745279503,"69":132.422446421701,"72":36.6367957336455,"74":109.433890256567,"76":99.8553251877619,"77":124.121023362069,"78":135.615301444636,"79":106.241035233632,"80":99.8553251877619,"81":117.735313316199,"87":91.5539021281305},"assign":[0,1],"qr":{"qr":[[-7.68114574786861,-1336.64954904012],[0.130188910980824,270.578977473948],[0.130188910980824,0.287474707506683],[0.130188910980824,-0.104277826225195],[0.130188910980824,0.0879026620206323],[0.130188910980824,-0.0155791393425052],[0.130188910980824,0.0324659827189515],[0.130188910980824,0.283778928886571],[0.130188910980824,-0.0340580324430655],[0.130188910980824,-0.0303622538229534],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.200368070348108],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.00289975375805507],[0.130188910980824,-0.00449180348216904],[0.130188910980824,0.0139870896183912],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.398348066110045],[0.130188910980824,0.0139870896183912],[0.130188910980824,-0.0340580324430655],[0.130188910980824,-0.0968862689849704],[0.130188910980824,-0.0599284827838499],[0.130188910980824,-0.0118833607223932],[0.130188910980824,-0.00449180348216904],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.31704093646758],[0.130188910980824,0.0509448758195118],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0636242614039619],[0.130188910980824,-0.0821031545045222],[0.130188910980824,-0.18558495586766],[0.130188910980824,0.22834224958489],[0.130188910980824,-0.00449180348216904],[0.130188910980824,-0.0155791393425052],[0.130188910980824,0.294866264746907],[0.130188910980824,0.0398575399591756],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0894947117447463],[0.130188910980824,-0.0821031545045222],[0.130188910980824,-0.0377538110631775],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0414495896832896],[0.130188910980824,-0.0340580324430655],[0.130188910980824,0.0139870896183912],[0.130188910980824,0.0287702040988395],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0340580324430655],[0.130188910980824,0.0213786468586153],[0.130188910980824,-0.0894947117447463],[0.130188910980824,-0.20406384896822],[0.130188910980824,0.350302944048588],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0155791393425052],[0.130188910980824,-0.156018726906763],[0.130188910980824,-0.22254274206878],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0155791393425052],[0.130188910980824,-0.119060940705643],[0.130188910980824,0.0324659827189515]],"qraux":[1.13018891098082,1.02507442547873],"pivot":[1,2],"tol":1e-07,"rank":2},"df.residual":57,"na.action":{},"xlevels":{},"call":{},"terms":{},"model":{"mass":[77,75,32,136,49,120,75,32,84,77,84,112,80,74,1358,77,110,17,75,78.2,140,113,79,79,83,20,68,89,90,66,82,40,80,55,45,65,84,82,87,50,80,85,80,56.2,50,80,79,55,102,88,15,48,57,159,136,79,48,80,45],"height":[172,167,96,202,150,178,165,97,183,182,188,228,180,173,175,170,180,66,170,183,200,190,177,175,180,88,160,193,191,196,224,112,175,178,94,163,188,198,196,184,188,185,183,170,166,193,183,168,198,229,79,193,178,216,234,188,178,206,165]}},"options":{"mode":"view","modes":["code","form","text","tree","view"]}},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
+```{=html}
+<div id="htmlwidget-b2f243c2990344799e8f" style="width:100%;height:10%;" class="jsonedit html-widget"></div>
+<script type="application/json" data-for="htmlwidget-b2f243c2990344799e8f">{"x":{"data":{"coefficients":{"(Intercept)":-13.8103136287302,"height":0.638571004587035},"residuals":{"1":-19.0238991602397,"2":-17.8310441373045,"3":-15.4925028116251,"4":20.8189707021492,"5":-32.9753370593249,"6":20.1446748122381,"7":-16.5539021281305,"8":-16.1310738162121,"9":-19.0481802106971,"10":-25.4096092061101,"11":-22.2410352336323,"13":-19.7838754171137,"14":-21.132467196936,"15":-22.6624701648267,"16":1260.060387826,"17":-17.7467571510656,"18":8.86753280306401,"19":-11.335372674014,"20":-19.7467571510656,"21":-24.8481802106971,"22":26.0961127113233,"23":5.48182275719367,"24":-20.2167541831749,"25":-18.9396121740008,"26":-18.132467196936,"29":-22.3839347749288,"30":-20.3610471051953,"31":-20.4338902565674,"32":-18.1567482473934,"34":-45.3496032703285,"35":-47.2295913987655,"39":-17.7096388850176,"42":-17.9396121740008,"44":-44.8553251877619,"45":-1.215360802451,"47":-25.2767601189564,"48":-22.2410352336323,"49":-30.6267452795026,"50":-24.3496032703285,"52":-53.6867512152841,"55":-26.2410352336323,"57":-19.3253222198712,"60":-23.0481802106971,"61":-38.5467571510656,"62":-42.1924731327175,"64":-29.4338902565674,"66":-24.0481802106971,"67":-38.4696151418916,"68":-10.6267452795026,"69":-44.4224464217007,"72":-21.6367957336455,"74":-61.4338902565674,"76":-42.8553251877619,"77":34.8789766379308,"78":0.384698555364132,"79":-27.2410352336323,"80":-51.8553251877619,"81":-37.7353133161989,"87":-46.5539021281305},"effects":{"(Intercept)":-747.466613505302,"height":172.783889465672,"3":-8.91507473191358,"4":21.4194000157428,"5":-29.4427951434848,"6":22.0983868653301,"7":-13.8671619244768,"8":-9.61003251731305,"9":-17.3764020616673,"10":-23.6814442762678,"11":-20.8511909886646,"12":-20.6495024046433,"13":-19.2915287054689,"14":-20.4268242076726,"15":1262.18326022153,"16":-15.3419508514742,"17":10.7084712945311,"18":-3.06634116992954,"19":-17.3419508514742,"20":-23.1764020616673,"21":26.8093155865418,"22":6.75889344053646,"23":-18.2066553492705,"24":-16.8167397784715,"25":-16.2915287054689,"26":-15.3554124487178,"27":-17.3923729974795,"28":-19.3259799156619,"29":-16.936064344863,"30":-44.4108532718603,"31":-47.8696712630454,"32":-12.0343992983051,"33":-15.8167397784715,"34":-42.9016131346699,"35":5.47484083888535,"36":-22.4772463536779,"37":-20.8511909886646,"38":-29.8007688426593,"39":-23.4108532718603,"40":-52.0713598470667,"41":-24.8511909886646,"42":-17.7663176324662,"43":-21.3764020616673,"44":-36.1419508514742,"45":-39.5621197098763,"46":-28.3259799156619,"47":-22.3764020616673,"48":-35.9520352806753,"49":-9.80076884265928,"50":-45.3444601900428,"51":-14.1007923801226,"52":-60.3259799156619,"53":-40.9016131346699,"54":34.6899910201503,"55":-0.819249117040122,"56":-25.8511909886646,"57":-49.9016131346699,"58":-37.360431125855,"59":-43.8671619244769},"rank":2,"fitted.values":{"1":96.0238991602397,"2":92.8310441373045,"3":47.4925028116251,"4":115.181029297851,"5":81.9753370593249,"6":99.8553251877619,"7":91.5539021281305,"8":48.1310738162121,"9":103.048180210697,"10":102.40960920611,"11":106.241035233632,"13":131.783875417114,"14":101.132467196936,"15":96.6624701648267,"16":97.939612174001,"17":94.7467571510656,"18":101.132467196936,"19":28.335372674014,"20":94.7467571510656,"21":103.048180210697,"22":113.903887288677,"23":107.518177242806,"24":99.2167541831749,"25":97.9396121740008,"26":101.132467196936,"29":42.3839347749288,"30":88.3610471051953,"31":109.433890256567,"32":108.156748247393,"34":111.349603270329,"35":129.229591398766,"39":57.7096388850176,"42":97.9396121740008,"44":99.8553251877619,"45":46.215360802451,"47":90.2767601189564,"48":106.241035233632,"49":112.626745279503,"50":111.349603270329,"52":103.686751215284,"55":106.241035233632,"57":104.325322219871,"60":103.048180210697,"61":94.7467571510656,"62":92.1924731327175,"64":109.433890256567,"66":103.048180210697,"67":93.4696151418916,"68":112.626745279503,"69":132.422446421701,"72":36.6367957336455,"74":109.433890256567,"76":99.8553251877619,"77":124.121023362069,"78":135.615301444636,"79":106.241035233632,"80":99.8553251877619,"81":117.735313316199,"87":91.5539021281305},"assign":[0,1],"qr":{"qr":[[-7.68114574786861,-1336.64954904012],[0.130188910980824,270.578977473948],[0.130188910980824,0.287474707506683],[0.130188910980824,-0.104277826225195],[0.130188910980824,0.0879026620206323],[0.130188910980824,-0.0155791393425052],[0.130188910980824,0.0324659827189515],[0.130188910980824,0.283778928886571],[0.130188910980824,-0.0340580324430655],[0.130188910980824,-0.0303622538229534],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.200368070348108],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.00289975375805507],[0.130188910980824,-0.00449180348216904],[0.130188910980824,0.0139870896183912],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.398348066110045],[0.130188910980824,0.0139870896183912],[0.130188910980824,-0.0340580324430655],[0.130188910980824,-0.0968862689849704],[0.130188910980824,-0.0599284827838499],[0.130188910980824,-0.0118833607223932],[0.130188910980824,-0.00449180348216904],[0.130188910980824,-0.0229706965827293],[0.130188910980824,0.31704093646758],[0.130188910980824,0.0509448758195118],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0636242614039619],[0.130188910980824,-0.0821031545045222],[0.130188910980824,-0.18558495586766],[0.130188910980824,0.22834224958489],[0.130188910980824,-0.00449180348216904],[0.130188910980824,-0.0155791393425052],[0.130188910980824,0.294866264746907],[0.130188910980824,0.0398575399591756],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0894947117447463],[0.130188910980824,-0.0821031545045222],[0.130188910980824,-0.0377538110631775],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0414495896832896],[0.130188910980824,-0.0340580324430655],[0.130188910980824,0.0139870896183912],[0.130188910980824,0.0287702040988395],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0340580324430655],[0.130188910980824,0.0213786468586153],[0.130188910980824,-0.0894947117447463],[0.130188910980824,-0.20406384896822],[0.130188910980824,0.350302944048588],[0.130188910980824,-0.071015818644186],[0.130188910980824,-0.0155791393425052],[0.130188910980824,-0.156018726906763],[0.130188910980824,-0.22254274206878],[0.130188910980824,-0.0525369255436258],[0.130188910980824,-0.0155791393425052],[0.130188910980824,-0.119060940705643],[0.130188910980824,0.0324659827189515]],"qraux":[1.13018891098082,1.02507442547873],"pivot":[1,2],"tol":1e-07,"rank":2},"df.residual":57,"na.action":{},"xlevels":{},"call":{},"terms":{},"model":{"mass":[77,75,32,136,49,120,75,32,84,77,84,112,80,74,1358,77,110,17,75,78.2,140,113,79,79,83,20,68,89,90,66,82,40,80,55,45,65,84,82,87,50,80,85,80,56.2,50,80,79,55,102,88,15,48,57,159,136,79,48,80,45],"height":[172,167,96,202,150,178,165,97,183,182,188,228,180,173,175,170,180,66,170,183,200,190,177,175,180,88,160,193,191,196,224,112,175,178,94,163,188,198,196,184,188,185,183,170,166,193,183,168,198,229,79,193,178,216,234,188,178,206,165]}},"options":{"mode":"view","modes":["code","form","text","tree","view"]}},"evals":[],"jsHooks":[]}</script>
+```
 
 As we can see, this `ols1` object has a bunch of important slots... containing everything from the regression coefficients, to vectors of the residuals and fitted (i.e. predicted) values, to the rank of the design matrix, to the input data, etc. etc. To summarise the key pieces of information, we can use the --- *wait for it* --- generic `summary()` function. This will look pretty similar to the default regression output from Stata that many of you will be used to.
 
@@ -688,128 +694,122 @@ Fixed effects models are more common than random or mixed effects models in econ
 
 ## Instrumental variables
 
-As you would have guessed by now, there are a number of ways to run instrumental variable (IV) regressions in R. I'll walk through three different options using the `AER::ivreg()`, `estimatr::iv_robust()`, and `fixest::feols()` functions, respectively. These are all going to follow a similar syntax, where the IV first-stage regression is specified after a **`|`** following the main regression. However, there are also some subtle and important differences, which is why I want to go through each of them. After that, I'll let you decide which of the three options is your favourite.
+As you would have guessed by now, there are a number of ways to run instrumental variable (IV) regressions in R. I'll walk through three different options using the `ivreg::ivreg()`, `estimatr::iv_robust()`, and `fixest::feols()` functions, respectively. These are all going to follow a similar syntax, where the IV first-stage regression is specified in a multi-part formula (i.e. where formula parts are separated by one or more pipes, **`|`**). However, there are also some subtle and important differences, which is why I want to go through each of them. After that, I'll let you decide which of the three options is your favourite.
 
-The dataset that we'll be using here is a panel of US cigarette consumption by state, which is taken from the **AER** package ([link](https://cran.r-project.org/web/packages/AER/vignettes/AER.pdf)). Let's load the data, add some modified variables, and then take a quick look at it. Note that I'm going to limit the dataset to 1995 only, given that I want to focus the IV syntax and don't want to deal with the panel structure of the data. (Though that's very easily done, as we've already seen.)
-
-
-```r
-## Get the data
-data("CigarettesSW", package = "AER")
-## Create a new data frame with some modified variables
-cigs =
-  CigarettesSW %>%
-  mutate(
-    rprice = price/cpi,
-    rincome = income/population/cpi,
-    rtax = tax/cpi,
-    tdiff = (taxs - tax)/cpi
-    ) %>%
-  as_tibble()
-## Create a subset of the data limited to 1995
-cigs95 = cigs %>% filter(year==1995)
-cigs95
-```
-
-```
-## # A tibble: 48 x 13
-##    state year    cpi population packs income   tax price  taxs rprice rincome
-##    <fct> <fct> <dbl>      <dbl> <dbl>  <dbl> <dbl> <dbl> <dbl>  <dbl>   <dbl>
-##  1 AL    1995   1.52    4262731 101.  8.39e7  40.5  158.  41.9   104.    12.9
-##  2 AR    1995   1.52    2480121 111.  4.60e7  55.5  176.  63.9   115.    12.2
-##  3 AZ    1995   1.52    4306908  72.0 8.89e7  65.3  199.  74.8   130.    13.5
-##  4 CA    1995   1.52   31493524  56.9 7.71e8  61    211.  74.8   138.    16.1
-##  5 CO    1995   1.52    3738061  82.6 9.29e7  44    167.  44     110.    16.3
-##  6 CT    1995   1.52    3265293  79.5 1.04e8  74    218.  86.4   143.    21.0
-##  7 DE    1995   1.52     718265 124.  1.82e7  48    166.  48     109.    16.7
-##  8 FL    1995   1.52   14185403  93.1 3.34e8  57.9  188.  68.5   123.    15.4
-##  9 GA    1995   1.52    7188538  97.5 1.60e8  36    157.  37.4   103.    14.6
-## 10 IA    1995   1.52    2840860  92.4 6.02e7  60    191.  69.1   125.    13.9
-## # … with 38 more rows, and 2 more variables: rtax <dbl>, tdiff <dbl>
-```
-
-Now, assume that we are interested in regressing the number of cigarettes packs consumed per capita on their average price and people's real incomes. The problem is that the price is endogenous, because it is simultaneously determined by demand and supply. So we need to instrument for it using different tax variables. That is, we want to run the following two-stage IV regression.
-
-$$price_i = \pi_0 + \pi_1 tdiff_i + \pi_2 rtax_i + v_i  \hspace{1cm} \text{(First stage)}$$
-$$packs_i = \beta_0 + \beta_2\widehat{price_i} + \beta_1 rincome_i + u_i \hspace{1cm} \text{(Second stage)}$$
-
-### Option 1: `AER::ivreg()`
-
-Let's start with `AER::ivreg()` as our first IV regression option; if for no other reason than that's where our data are coming from. The key point from the below code chunk is that the first-stage regression is going to be specified after the **`|`** and will include *all* exogenous variables.
+The dataset that we'll be using for this section describes cigarette demand for the 48 continental US states in 1995, and is taken from the **ivreg** package. Here's a quick a peek:
 
 
 ```r
-# library(AER) ## Already loaded
+data("CigaretteDemand", package = "ivreg")
+head(CigaretteDemand)
+```
 
-## Run the IV regression 
-iv_reg = 
+```
+##        packs   rprice  rincome  salestax   cigtax  packsdiff  pricediff
+## AL 101.08543 103.9182 12.91535 0.9216975 26.57481 -0.1418075 0.09010222
+## AR 111.04297 115.1854 12.16907 5.4850193 36.41732 -0.1462808 0.19998082
+## AZ  71.95417 130.3199 13.53964 6.2057067 42.86964 -0.3733741 0.25576681
+## CA  56.85931 138.1264 16.07359 9.0363074 40.02625 -0.5682141 0.32079587
+## CO  82.58292 109.8097 16.31556 0.0000000 28.87139 -0.3132622 0.22587189
+## CT  79.47219 143.2287 20.96236 8.1072834 48.55643 -0.3184911 0.18546746
+##    incomediff salestaxdiff  cigtaxdiff
+## AL 0.18222144    0.1332853 -3.62965832
+## AR 0.15055894    5.4850193  2.03070663
+## AZ 0.05379983    1.4004856 14.05923036
+## CA 0.02266877    3.3634447 15.86267924
+## CO 0.13002974    0.0000000  0.06098283
+## CT 0.18404197   -0.7062239  9.52297455
+```
+
+Now, assume that we are interested in regressing the number of cigarettes packs consumed per capita on their average price and people's real incomes. The problem is that the price is endogenous, because it is simultaneously determined by demand and supply. So we need to instrument for it using cigarette sales tax. That is, we want to run the following two-stage IV regression. 
+
+$$Price_i = \pi_0 + \pi_1 SalesTax_i + v_i  \hspace{1cm} \text{(First stage)}$$
+$$Packs_i = \beta_0 + \beta_2\widehat{Price_i} + \beta_1 RealIncome_i + u_i \hspace{1cm} \text{(Second stage)}$$
+
+### Option 1: `ivreg::ivreg()`
+
+I'll start with `ivreg()` from the **ivreg** package ([link](https://john-d-fox.github.io/ivreg/index.html)).^[Some of you may wondering, but **ivreg** is a dedicated IV-focused package that splits off (and updates) functionality that used to be bundled with the **AER** package.] The `ivreg()` function supports several syntax options for specifying the IV component. I'm going to use the syntax that I find most natural, namely a formula with a three-part RHS: `y ~ ex | en | in`. Implementing our two-stage regression from above may help to illustrate.
+
+
+```r
+# library(ivreg) ## Already loaded
+
+## Run the IV regression. Note the three-part formula RHS.
+iv =
   ivreg(
-    log(packs) ~ log(rprice) + log(rincome) | ## The main regression. "rprice" is endogenous
-      log(rincome) + tdiff + rtax, ## List all *exogenous* variables, including "rincome"
-    data = cigs95
+    log(packs) ~            ## LHS: Dependent variable
+      log(rincome) |        ## 1st part RHS: Exogenous variable(s)
+      log(rprice) |         ## 2nd part RHS: Endogenous variable(s)
+      salestax,             ## 3rd part RHS: Instruments
+    data = CigaretteDemand
     )
-summary(iv_reg, diagnostics = TRUE)
+summary(iv)
 ```
 
 ```
 ## 
 ## Call:
-## ivreg(formula = log(packs) ~ log(rprice) + log(rincome) | log(rincome) + 
-##     tdiff + rtax, data = cigs95)
+## ivreg(formula = log(packs) ~ log(rincome) | log(rprice) | salestax, 
+##     data = CigaretteDemand)
 ## 
 ## Residuals:
-##        Min         1Q     Median         3Q        Max 
-## -0.6006931 -0.0862222 -0.0009999  0.1164699  0.3734227 
+##       Min        1Q    Median        3Q       Max 
+## -0.611000 -0.086072  0.009423  0.106912  0.393159 
 ## 
 ## Coefficients:
 ##              Estimate Std. Error t value Pr(>|t|)    
-## (Intercept)    9.8950     1.0586   9.348 4.12e-12 ***
-## log(rprice)   -1.2774     0.2632  -4.853 1.50e-05 ***
-## log(rincome)   0.2804     0.2386   1.175    0.246    
+## (Intercept)    9.4307     1.3584   6.943 1.24e-08 ***
+## log(rprice)   -1.1434     0.3595  -3.181  0.00266 ** 
+## log(rincome)   0.2145     0.2686   0.799  0.42867    
 ## 
 ## Diagnostic tests:
-##                  df1 df2 statistic p-value    
-## Weak instruments   2  44   244.734  <2e-16 ***
-## Wu-Hausman         1  44     3.068  0.0868 .  
-## Sargan             1  NA     0.333  0.5641    
+##                  df1 df2 statistic  p-value    
+## Weak instruments   1  45    45.158 2.65e-08 ***
+## Wu-Hausman         1  44     1.102      0.3    
+## Sargan             0  NA        NA       NA    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error: 0.1879 on 45 degrees of freedom
-## Multiple R-Squared: 0.4294,	Adjusted R-squared: 0.4041 
-## Wald test: 13.28 on 2 and 45 DF,  p-value: 2.931e-05
+## Residual standard error: 0.1896 on 45 degrees of freedom
+## Multiple R-Squared: 0.4189,	Adjusted R-squared: 0.3931 
+## Wald test: 6.534 on 2 and 45 DF,  p-value: 0.003227
 ```
 
-I want to emphasise that you might find the above syntax a little counterintuitive --- or, at least, unusual --- if you're coming from a language like Stata.^[Assuming that you have already created the logged variables and subsetted the data, the Stata equivalent would be something like `ivreg log_packs = log_rincome (log_rprice = tdiff rtax)`.] Note that we didn't specify the endogenous variable (i.e. "rprice") directly. Rather, we told R which are the *exogenous* variables. It then figured out which were the endogenous variables that needed to be instrumented and ran the necessary first-stage regression(s) in the background. This approach actually makes quite a lot of sense if you think about the underlying theory of IV. But different strokes for different folks. 
+**ivreg** has lot of functionality bundled into it, including cool diagnostic tools and full integration with **sandwich** and co. for swapping in different standard errors on the fly. See the [introductory vignette](https://john-d-fox.github.io/ivreg/articles/ivreg.html) for more. 
 
-The good news for those who prefer the Stata-style syntax is that `AER::ivreg()` also accepts an alternate way of specifying the first-stage. This time, we'll denote our endogenous "rprice" variable with `. -price` and include only the instrumental variables after the `|` break. Feel free to check yourself, but the outcome will be exactly the same.
+The only other thing I want to mention briefly is that you may see a number `ivreg()` tutorials using an alternative formula representation. (Remember me saying that the package allows different formula syntax, right?) Specifically, you'll probably see examples that use an older two-part RHS formula like: `y ~ ex + en | ex + in`. Note that here we are writing the `ex` variables on both sides of the `|` separator. The equivalent for our cigarette example would be as follows. Run this yourself to confirm the same output as above.
 
 
 ```r
-## For those of you that prefer Stata-esque ivreg syntax, where we we specify
-## the instruments explicitly
-ivreg(
-  log(packs) ~ log(rprice) + log(rincome) | 
-    . -log(rprice) + tdiff + rtax, ## Alternative way of specifying the first-stage.
-  data = cigs95
-  )
+## Alternative two-part formula RHS (which I like less but YMMV)
+iv2 =
+  ivreg(
+    log(packs) ~                   ## LHS: Dependent var
+      log(rincome) + log(rprice) | ## 1st part RHS: Exogenous vars + endogenous vars
+      log(rincome) + salestax,     ## 2nd part RHS: Exogenous vars (again) + Instruments
+    data = CigaretteDemand
+    )
+summary(iv2)
 ```
+
+This two-part syntax is closely linked to the manual implementation of IV, since it requires explicitly stating *all* of your exogenous variables (including instruments) in one slot. However, it requires duplicate typing of the exogenous variables and I personally find it less intuitive to write.^[Note that we didn't specify the endogenous variable (i.e. `log(rprice)`) directly. Rather, we told R what the *exogenous* variables were. It then figured out which variables were endogenous and needed to be instrumented in the first-stage.] But different strokes for different folks. 
 
 
 ### Option 2: `estimatr::iv_robust()`
 
-Our second IV option comes from the **estimatr** package that we saw earlier. This will default to using HC2 robust standard errors although, as before, we could specify other options if we so wished (including clustering). More importantly, note that the syntax is effectively identical to the previous example. All we need to do is change the function call from `AER::ivreg()` to `estimatr::iv_robust()`.
+Our second IV option comes from the **estimatr** package that we saw earlier. This will default to using HC2 robust standard errors although, as before, we could specify other options if we so wished (including clustering).Currently, the function doesn't accept the three-part RHS formula. But the two-part version works exactly the same as it did for `ivreg()`. All we need to do is change the function call to `estimatr::iv_robust()`.
 
 
 ```r
 # library(estimatr) ## Already loaded
 
-## Run the IV regression with robust SEs
+## Run the IV regression with robust SEs. Note the two-part formula RHS.
 iv_reg_robust = 
-  iv_robust( ## We only need to change the function call. Everything else stays the same.
-    log(packs) ~ log(rprice) + log(rincome) | 
-      log(rincome) + tdiff + rtax,
-    data = cigs95
+  iv_robust( ## Only need to change the function call. Everything else stays the same.
+    log(packs) ~  
+      log(rincome) + log(rprice) |
+      log(rincome) + salestax,
+    data = CigaretteDemand
     )
 summary(iv_reg_robust, diagnostics = TRUE)
 ```
@@ -817,85 +817,121 @@ summary(iv_reg_robust, diagnostics = TRUE)
 ```
 ## 
 ## Call:
-## iv_robust(formula = log(packs) ~ log(rprice) + log(rincome) | 
-##     log(rincome) + tdiff + rtax, data = cigs95)
+## iv_robust(formula = log(packs) ~ log(rincome) + log(rprice) | 
+##     log(rincome) + salestax, data = CigaretteDemand)
 ## 
 ## Standard error type:  HC2 
 ## 
 ## Coefficients:
 ##              Estimate Std. Error t value  Pr(>|t|) CI Lower CI Upper DF
-## (Intercept)    9.8950     0.9777  10.120 3.569e-13   7.9257  11.8642 45
-## log(rprice)   -1.2774     0.2547  -5.015 8.739e-06  -1.7904  -0.7644 45
-## log(rincome)   0.2804     0.2547   1.101 2.768e-01  -0.2326   0.7934 45
+## (Intercept)    9.4307     1.2845   7.342 3.179e-09   6.8436  12.0177 45
+## log(rincome)   0.2145     0.3164   0.678 5.012e-01  -0.4227   0.8518 45
+## log(rprice)   -1.1434     0.3811  -3.000 4.389e-03  -1.9110  -0.3758 45
 ## 
-## Multiple R-squared:  0.4294 ,	Adjusted R-squared:  0.4041 
-## F-statistic:  15.5 on 2 and 45 DF,  p-value: 7.55e-06
+## Multiple R-squared:  0.4189 ,	Adjusted R-squared:  0.3931 
+## F-statistic: 7.966 on 2 and 45 DF,  p-value: 0.001092
 ```
 
 ### Option 3: `fixest::feols()`
 
-Finally, we get to the `feols()` function from the aforementioned **fixest** package. This is actually my favourite option; not only because I work mostly with panel data, but also because I find it has the most natural syntax. In fact, it very closely resembles Stata's approach to writing out the first-stage, where you specify the endogenous variable(s) and the instruments only.
+Finally, we get back to the `fixest::feols()` function that we've already seen above. Truth be told, this is the IV option that I use most often in my own work. In part, this statement reflects the fact that I work mostly with panel data and will invariably be using **fixest** anyway. But I also happen to like its IV syntax a lot. The key thing is to specify the IV first-stage as a separate formula in the _final_ slot of the model call.^[This closely resembles [Stata's approach](https://www.stata.com/manuals13/rivregress.pdf) to writing out the IV first-stage, where you specify the endogenous variable(s) and the instruments together in a slot.] For example, if we had `fe` fixed effects, then the model call would be `y ~ ex | fe | en ~ in`. Since we don't have any fixed effects in our current cigarette demand example, the first-stage will come directly after the exogenous variables:
 
 
 ```r
 # library(fixest) ## Already loaded
+
 iv_feols = 
   feols(
-    log(packs) ~ log(rincome) |
-      log(rprice) ~ tdiff + rtax, ## First-stage (must be in the final slot, although here we don't have FEs) 
-    data = cigs95
-  )
-# summary(iv_feols_all, stage = 1) ## Show the 1st stage in detail
+    log(packs) ~ log(rincome) | ## y ~ ex
+      log(rprice) ~ salestax,   ## en ~ in (IV first-stage; must be the final slot)
+    data = CigaretteDemand
+    )
+# summary(iv_feols, stage = 1) ## Show the 1st stage in detail
 iv_feols
 ```
 
 ```
-## TSLS estimation, Dep. Var.: log(packs), Endo.: log(rprice), Instr.: tdiff, rtax
+## TSLS estimation, Dep. Var.: log(packs), Endo.: log(rprice), Instr.: salestax
 ## Second stage: Dep. Var.: log(packs)
 ## Observations: 48 
 ## Standard-errors: Standard 
-##                  Estimate Std. Error t value    Pr(>|t|)    
-## (Intercept)      9.895000   1.058600  9.3476 4.12000e-12 ***
-## fit_log(rprice) -1.277400   0.263199 -4.8535 1.50000e-05 ***
-## log(rincome)     0.280405   0.238565  1.1754 2.46025e-01    
+##                  Estimate Std. Error   t value    Pr(>|t|)    
+## (Intercept)      9.430700   1.358400  6.942600 1.24000e-08 ***
+## fit_log(rprice) -1.143400   0.359486 -3.180600 2.66200e-03 ** 
+## log(rincome)     0.214515   0.268585  0.798687 4.28667e-01    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## RMSE: 0.181891   Adj. R2: 0.404063
-## F-test (1st stage): stat = 244.73    , p < 2.2e-16 , on 2 and 44 DoF.
-##         Wu-Hausman: stat =   3.0678  , p = 0.086825, on 1 and 44 DoF.
-##             Sargan: stat =   0.332622, p = 0.564119, on 1 DoF.
+## RMSE: 0.183555   Adj. R2: 0.393109
+## F-test (1st stage): stat = 45.2  , p = 2.655e-8, on 1 and 45 DoF.
+##         Wu-Hausman: stat =  1.102, p = 0.299559, on 1 and 44 DoF.
 ```
-Note that in the above example, we don't any fixed effects. However, `feols()` automatically recognizes the IV first-stage, which *must* come last in the formula. Just to emphasise --- and to demonstrate how easy it is to extend **fixest**'s performance to panel IV cases --- here's a final `feols()` example. This time, I'll use the whole `cigs` data frame (i.e. not subsetting to 1995), and use both year and state fixed effects to control for the panel structure.
+
+Again, I emphasise that the IV first-stage must always come last in the `feols()` model call. Just to be pedantic --- but also to demonstrate how easy **fixest**'s IV functionality extends to panel settings --- here's a final `feols()` example. This time, I'll use a panel version of the same US cigarette demand data that includes entries from both 1985 and 1995. The dataset originally comes from the **AER** package, but we can download it from the web as follows. Note that I'm going to modify some variables to make it better comparable to our previous examples.
 
 
 ```r
-iv_feols_all = 
-  feols(
-    log(packs) ~ log(rincome) |
-      year + state |               ## Now include FEs
-      log(rprice) ~ tdiff + rtax,  ## 
-    data = cigs                    ## Use whole panel data set
-  )
-iv_feols_all
+## Get the data
+url = 'https://vincentarelbundock.github.io/Rdatasets/csv/AER/CigarettesSW.csv' 
+cigs_panel =
+  read.csv(url, row.names = 1) %>%
+  mutate(
+    rprice = price/cpi,
+    rincome = income/population/cpi
+    )
+head(cigs_panel)
 ```
 
 ```
-## TSLS estimation, Dep. Var.: log(packs), Endo.: log(rprice), Instr.: tdiff, rtax
+##   state year   cpi population    packs    income  tax     price     taxs
+## 1    AL 1985 1.076    3973000 116.4863  46014968 32.5 102.18167 33.34834
+## 2    AR 1985 1.076    2327000 128.5346  26210736 37.0 101.47500 37.00000
+## 3    AZ 1985 1.076    3184000 104.5226  43956936 31.0 108.57875 36.17042
+## 4    CA 1985 1.076   26444000 100.3630 447102816 26.0 107.83734 32.10400
+## 5    CO 1985 1.076    3209000 112.9635  49466672 31.0  94.26666 31.00000
+## 6    CT 1985 1.076    3201000 109.2784  60063368 42.0 128.02499 51.48333
+##      rprice  rincome
+## 1  94.96438 10.76387
+## 2  94.30762 10.46817
+## 3 100.90962 12.83046
+## 4 100.22058 15.71332
+## 5  87.60842 14.32619
+## 6 118.98234 17.43861
+```
+
+Let's run a panel IV now, where we'll explicitly account for year and state fixed effects.
+
+
+```r
+iv_feols_panel = 
+  feols(
+    log(packs) ~ log(rincome) | 
+      year + state |            ## Now include FEs slot
+      log(rprice) ~ taxs,       ## IV first-stage still comes last
+    data = cigs_panel
+  )
+# summary(iv_feols_panel, stage = 1) ## Show the 1st stage in detail
+iv_feols_panel
+```
+
+```
+## TSLS estimation, Dep. Var.: log(packs), Endo.: log(rprice), Instr.: taxs
 ## Second stage: Dep. Var.: log(packs)
 ## Observations: 96 
 ## Fixed-effects: year: 2,  state: 48
 ## Standard-errors: Clustered (year) 
-##                 Estimate Std. Error       t value Pr(>|t|)    
-## fit_log(rprice) -1.20240   1.01e-15 -1.189742e+15 5.35e-16 ***
-## log(rincome)     0.46203   5.83e-16  7.920824e+14 8.04e-16 ***
+##                  Estimate Std. Error       t value Pr(>|t|)    
+## fit_log(rprice) -1.279300   2.29e-15 -5.578376e+14 1.14e-15 ***
+## log(rincome)     0.443422   1.45e-14  3.056237e+13 2.08e-14 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## RMSE: 0.044178     Adj. R2: 0.929864
-##                  Within R2: 0.546593
-## F-test (1st stage): stat = 75.65  , p = 5.758e-15, on 2 and 44 DoF.
-##         Wu-Hausman: stat =  3.5015, p = 0.067972 , on 1 and 44 DoF.
-##             Sargan: stat =  9.6761, p = 0.001867 , on 1 DoF.
+## RMSE: 0.044789     Adj. R2: 0.92791 
+##                  Within R2: 0.533965
+## F-test (1st stage): stat = 108.6   , p = 1.407e-13, on 1 and 45 DoF.
+##         Wu-Hausman: stat =   6.0215, p = 0.018161 , on 1 and 44 DoF.
 ```
+
+Good news, our coefficients are around the same magnitude. But the increased precision of the panel model has yielded gains in statistical significance.
+
 
 ## Other models
 
@@ -1066,7 +1102,7 @@ ols_ie %>%
 ## # A tibble: 2 x 9
 ##   term  at.variable at.value estimate std.error statistic p.value conf.low
 ##   <chr> <chr>       <fct>       <dbl>     <dbl>     <dbl>   <dbl>    <dbl>
-## 1 heig… gender      masculi…    0.896     0.443     2.02   0.0431   0.0278
+## 1 heig… gender      masculi…    0.896     0.443     2.02   0.0431   0.0279
 ## 2 heig… gender      feminine    0.733     1.27      0.576  0.565   -1.76  
 ## # … with 1 more variable: conf.high <dbl>
 ```
@@ -1088,40 +1124,7 @@ Finally, you can also use `cplot()` to plot the predicted values of your outcome
 ```r
 par(mfrow=c(1, 2)) ## Just to plot these next two (base) figures side-by-side
 cplot(ols_ie, x = "gender", what = "prediction")
-```
-
-```
-##       xvals    yvals     upper    lower
-## 1 masculine 84.19201  91.70295 76.68107
-## 2  feminine 70.66667 122.57168 18.76166
-```
-
-```r
 cplot(ols_ie, x = "height", what = "prediction")
-```
-
-```
-##       xvals    yvals     upper    lower
-## 1  150.0000 57.71242  86.90520 28.51964
-## 2  152.1667 59.65426  87.02441 32.28411
-## 3  154.3333 61.59610  87.15216 36.04003
-## 4  156.5000 63.53793  87.29040 39.78546
-## 5  158.6667 65.47977  87.44173 43.51781
-## 6  160.8333 67.42161  87.60961 47.23361
-## 7  163.0000 69.36344  87.79883 50.92806
-## 8  165.1667 71.30528  88.01610 54.59446
-## 9  167.3333 73.24711  88.27110 58.22313
-## 10 169.5000 75.18895  88.57808 61.79983
-## 11 171.6667 77.13079  88.95862 65.30296
-## 12 173.8333 79.07262  89.44599 68.69926
-## 13 176.0000 81.01446  90.09168 71.93724
-## 14 178.1667 82.95630  90.97287 74.93972
-## 15 180.3333 84.89813  92.19300 77.60326
-## 16 182.5000 86.83997  93.85745 79.82249
-## 17 184.6667 88.78181  96.01749 81.54612
-## 18 186.8333 90.72364  98.63222 82.81507
-## 19 189.0000 92.66548 101.59946 83.73149
-## 20 191.1667 94.60732 104.81353 84.40110
 ```
 
 ![](08-regression_files/figure-html/margins4-1.png)<!-- -->
@@ -1238,11 +1241,11 @@ msummary(list(ols1, ols_ie, ols_fe, ols_hdfe))
    <td style="text-align:center;">  </td>
   </tr>
   <tr>
-   <td style="text-align:left;">  </td>
-   <td style="text-align:center;">  </td>
-   <td style="text-align:center;"> (1.349) </td>
-   <td style="text-align:center;">  </td>
-   <td style="text-align:center;">  </td>
+   <td style="text-align:left;box-shadow: 0px 1px">  </td>
+   <td style="text-align:center;box-shadow: 0px 1px">  </td>
+   <td style="text-align:center;box-shadow: 0px 1px"> (1.349) </td>
+   <td style="text-align:center;box-shadow: 0px 1px">  </td>
+   <td style="text-align:center;box-shadow: 0px 1px">  </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Num.Obs. </td>
@@ -1385,14 +1388,14 @@ datasummary_balance(~ gender,
    <td style="text-align:left;"> 10.1 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> birth_year </td>
-   <td style="text-align:left;">  </td>
-   <td style="text-align:left;"> 46.4 </td>
-   <td style="text-align:left;"> 18.8 </td>
-   <td style="text-align:left;"> 55.2 </td>
-   <td style="text-align:left;"> 26.0 </td>
-   <td style="text-align:left;"> 8.8 </td>
-   <td style="text-align:left;"> 10.2 </td>
+   <td style="text-align:left;box-shadow: 0px 1px"> birth_year </td>
+   <td style="text-align:left;box-shadow: 0px 1px">  </td>
+   <td style="text-align:left;box-shadow: 0px 1px"> 46.4 </td>
+   <td style="text-align:left;box-shadow: 0px 1px"> 18.8 </td>
+   <td style="text-align:left;box-shadow: 0px 1px"> 55.2 </td>
+   <td style="text-align:left;box-shadow: 0px 1px"> 26.0 </td>
+   <td style="text-align:left;box-shadow: 0px 1px"> 8.8 </td>
+   <td style="text-align:left;box-shadow: 0px 1px"> 10.2 </td>
   </tr>
   <tr>
    <td style="text-align:left;">  </td>
