@@ -260,9 +260,11 @@ nc %>%
 ![](09-spatial_files/figure-html/nc_tidyr-1.png)<!-- -->
 
 
-### Specialized geometric operations {#geomtric}
+### Specialized geometric operations {#geometric}
 
 Alongside all the tidyverse functionality, the **sf** package comes with a full suite of geometrical operations. You should take a look at at the [third **sf** vignette](https://r-spatial.github.io/sf/articles/sf3.html#geometrical-operations) or the [*Geocomputation with R*](https://geocompr.robinlovelace.net/geometric-operations.html#geo-vec) book to get a complete overview. However, here are a few examples to get you started:
+
+#### Unary operations
 
 So-called *unary* operations are applied to a single object. For instance, you can "melt" sub-elements of an **sf** object (e.g. counties) into larger elements (e.g. states) using `sf::st_union()`:
 
@@ -305,6 +307,8 @@ ggplot(nc) +
 ```
 
 ![](09-spatial_files/figure-html/nc_centroid-1.png)<!-- -->
+
+#### Binary operations
 
 Another set of so-called *binary* operations can be applied to multiple objects. So, we can get things like the distance between two spatial objects using `sf::st_distance()`. In the below example, I'm going to get the distance from Ashe county to Brunswich county, as well as itself. The latter is just a silly addition to show that we can easily make multiple pairwise comparisons, even when the distance from one element to another is zero.
 
