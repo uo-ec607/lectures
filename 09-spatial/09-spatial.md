@@ -339,7 +339,12 @@ ggplot(nc) +
 
 ![](09-spatial_files/figure-html/nc_distance-1.png)<!-- -->
 
-Or, we can calculate the intersection of different spatial objects using `sf::st_intersection()`. For this next example, I'm going to use two new spatial objects: 1) A regional map of France from the **maps** package and 2) part of the Seine river network (including its Marne and Yonne tributaries) from the **spData** package. Don't worry too much about the process used for loading these datasets; I'll cover that in more depth shortly. For the moment, just focus on the idea that we want to see which adminstrative regions are intersected by the river network. Start by plotting all of the data to get a visual sense of the overlap:
+
+#### Binary logical operations
+
+A sub-genre of binary geometric operations falls into the category of logic rules --- typically characterising the way that geometries relate in space. (Do they overlap, etc.) 
+
+For example, we can calculate the intersection of different spatial objects using `sf::st_intersection()`. For this next example, I'm going to use two new spatial objects: 1) A regional map of France from the **maps** package and 2) part of the Seine river network (including its Marne and Yonne tributaries) from the **spData** package. Don't worry too much about the process used for loading these datasets; I'll cover that in more depth shortly. For the moment, just focus on the idea that we want to see which adminstrative regions are intersected by the river network. Start by plotting all of the data to get a visual sense of the overlap:
 
 
 ```r
