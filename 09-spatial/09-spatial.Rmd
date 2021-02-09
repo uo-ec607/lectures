@@ -436,17 +436,19 @@ norway %>%
   geom_sf(fill="black", col=NA)
 ```
 
-Hmmm. Looks okay, but we^[The royal "we". [The Dude abides](https://youtu.be/VLR_TDO0FTg?t=39s).] don't really want to include Svalbaard (to the north) and some of the other smaller islands like the Faroes. We can use the `sf::st_crop()` function to take care of that. We could also improve the projection. The Norewgian Mapping Authority recommends the ETRS89 / UTM projection, for which we can easily obtain the PROJ.4 string using [this website](http://spatialreference.org/ref/epsg/etrs89-utm-zone-30n/).
+Hmmm. Looks okay, but I don't really want to include non-mainland territories like Svalbaard (to the north) and the Faroe Islands (to the east). This gives me the chance to show off another handy function, `sf::st_crop()`, which I'll use to crop our *sf* object to a specific extent (i.e. rectangle). While I am at, we could also improve the projection. The Norwegian Mapping Authority recommends the ETRS89 / UTM projection, for which we can easily obtain the equivalent EPSG code (i.e. 25832) from [this website](https://epsg.io/25832).
 
 ```{r norway_fixed, message=F, warning=F}
 norway %>%
   st_crop(c(xmin=0, xmax=35, ymin=0, ymax=72)) %>%
-  st_transform(crs = "+proj=utm +zone=30 +ellps=GRS80 +units=m +no_defs") %>%
+  st_transform(crs = 25832) %>%
   ggplot() + 
   geom_sf(fill="black", col=NA)
 ```
 
-**Aside:** I always like to detach the **maps** package once I'm finished using it, since it avoids potential namespace conflicts with `purrr::map`.
+There you go. A nice-looking map of Norway. Fairly appropriate that it resembles a gnarly black metal guitar.
+
+> **Aside:** I recommend detaching the **maps** package once you're finished using it, since it avoids potential namespace conflicts with `purrr::map`.
 
 ```{r eval=F}
 detach(package:maps) ## To avoid potential purrr::map() conflicts
