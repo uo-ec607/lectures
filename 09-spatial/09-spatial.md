@@ -33,7 +33,7 @@ We're going to be doing all our spatial analysis and plotting today in R. Behind
 ### R packages 
 
 - New: **sf**, **lwgeom**, **maps**, **mapdata**, **spData**, **tigris**, **tidycensus**, **leaflet**, **tmap**, **tmaptools**
-- Already used: **tidyverse**, **hrbrthemes**
+- Already used: **tidyverse**, **data.table**, **hrbrthemes**
 
 Truth be told, you only need a handful of the above libraries to do 95% of the spatial work that you're likely to encounter. But R's spatial ecosystem and support is extremely rich, so I'll try to walk through a number of specific use-cases in this lecture. Run the following code chunk to install (if necessary) and load everything.
 
@@ -41,7 +41,7 @@ Truth be told, you only need a handful of the above libraries to do 95% of the s
 ```r
 ## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(sf, tidyverse, hrbrthemes, lwgeom, rnaturalearth, maps, mapdata, spData, tigris, tidycensus, leaflet, tmap, tmaptools)
+pacman::p_load(sf, tidyverse, data.table, hrbrthemes, lwgeom, rnaturalearth, maps, mapdata, spData, tigris, tidycensus, leaflet, tmap, tmaptools)
 ## My preferred ggplot2 plotting theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
@@ -417,6 +417,95 @@ st_join(france, seine) %>%
 ![](09-spatial_files/figure-html/france_join-1.png)<!-- -->
 
 That's about as much **sf** functionality as I can show you for today. The remaining part of this lecture will cover some additional mapping considerations and some bonus spatial R "swag". However, I'll try to slip in a few more **sf**-specific operations along the way.
+
+
+### Aside: **sf** and **data.table**
+
+**sf** objects are designed to integrate with a **tidyverse** workflow. They can also be made to work a **data.table** workflow too, but the integration is not as slick. This is a [known issue](https://github.com/Rdatatable/data.table/issues/2273) and I'll only just highlight a few very brief considerations.
+
+You can convert an **sf** object into a data.table. But note that the key geometry column appears to lose its attributes.
+
+
+```r
+# library(data.table) ## Already loaded
+
+nc_dt = as.data.table(nc)
+head(nc_dt)
+```
+
+```
+##     AREA PERIMETER CNTY_ CNTY_ID        NAME  FIPS FIPSNO CRESS_ID BIR74 SID74
+## 1: 0.114     1.442  1825    1825        Ashe 37009  37009        5  1091     1
+## 2: 0.061     1.231  1827    1827   Alleghany 37005  37005        3   487     0
+## 3: 0.143     1.630  1828    1828       Surry 37171  37171       86  3188     5
+## 4: 0.070     2.968  1831    1831   Currituck 37053  37053       27   508     1
+## 5: 0.153     2.206  1832    1832 Northampton 37131  37131       66  1421     9
+## 6: 0.097     1.670  1833    1833    Hertford 37091  37091       46  1452     7
+##    NWBIR74 BIR79 SID79 NWBIR79 geometry
+## 1:      10  1364     0      19  <XY[1]>
+## 2:      10   542     3      12  <XY[1]>
+## 3:     208  3616     6     260  <XY[1]>
+## 4:     123   830     2     145  <XY[3]>
+## 5:    1066  1606     3    1197  <XY[1]>
+## 6:     954  1838     5    1237  <XY[1]>
+```
+
+The good news is that all of this information is still there. It's just hidden from display.
+
+
+```r
+nc_dt$geometry
+```
+
+```
+## Geometry set for 100 features 
+## geometry type:  MULTIPOLYGON
+## dimension:      XY
+## bbox:           xmin: -84.32385 ymin: 33.88199 xmax: -75.45698 ymax: 36.58965
+## geographic CRS: NAD27
+## First 5 geometries:
+```
+
+```
+## MULTIPOLYGON (((-81.47276 36.23436, -81.54084 3...
+```
+
+```
+## MULTIPOLYGON (((-81.23989 36.36536, -81.24069 3...
+```
+
+```
+## MULTIPOLYGON (((-80.45634 36.24256, -80.47639 3...
+```
+
+```
+## MULTIPOLYGON (((-76.00897 36.3196, -76.01735 36...
+```
+
+```
+## MULTIPOLYGON (((-77.21767 36.24098, -77.23461 3...
+```
+
+What's the upshot? Well, basically it means that you have to refer to this "geometry" column explicitly whenever you implement a spatial operation. For example, here's a repeat of the `st_union()` operation that we saw earlier. Note that I explicitly refer to the "geometry" column both for the `st_union()` operation (which, moreover, takes place in the
+"j" data.table slot) and when assigning the aesthetics for the `ggplot()` call.
+
+
+```r
+nc_dt[, .(geometry = st_union(geometry))] %>% ## Explicitly refer to 'geometry' col
+    ggplot(aes(geometry = geometry)) +        ## And here again for the aes()
+    geom_sf(fill=NA, col="black") +
+    labs(title = "Outline of North Carolina", 
+         subtitle = "This time brought to by data.table") 
+```
+
+```
+## although coordinates are longitude/latitude, st_union assumes that they are planar
+```
+
+![](09-spatial_files/figure-html/ncd_dt3-1.png)<!-- -->
+
+Of course, it's also possible to efficiently convert between the two classes --- e.g. with `as.data.table()` and `st_as_sf()` --- depending on what a particular section of code does (data wrangling or spatial operation). I find that often use this approach in my own work.
+
 
 ## Where to get map data
 
