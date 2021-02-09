@@ -26,7 +26,7 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
 
 ### External libraries (requirements vary by OS)
 
-We're going to be doing all our spatial analysis and plotting today in R. Behind the scenes, R provides bindings to powerful open-source GIS libraries. These include the [Geospatial Data Abstraction Library (GDAL)](http://www.gdal.org/) and [Interface to Geometry Engine Open Source (GEOS)](https://trac.osgeo.org/geos/) API suite, as well as access to projection and transformation operations from the [PROJ.4 library](https://proj4.org/about.html). You needn't worry about all this, but for the fact that you *may* need to install some of these external libraries first. The requirements vary by OS:
+We're going to be doing all our spatial analysis and plotting today in R. Behind the scenes, R provides bindings to powerful open-source GIS libraries. These include the [Geospatial Data Abstraction Library (GDAL)](http://www.gdal.org/) and [Interface to Geometry Engine Open Source (GEOS)](https://trac.osgeo.org/geos/) API suite, as well as access to projection and transformation operations from the [PROJ library](https://proj.org). You needn't worry about all this, but for the fact that you *may* need to install some of these external libraries first. The requirements vary by OS:
 
 - **Linux:** Requirements vary by distribution. See [here](https://github.com/r-spatial/sf#linux).
 - **Mac:** You should be fine to proceed directly to the R packages installation below. An unlikely exception is if you've configured R to install packages from source; in which case see [here](https://github.com/r-spatial/sf#macos).
@@ -37,11 +37,9 @@ We're going to be doing all our spatial analysis and plotting today in R. Behind
 - New: **sf**, **lwgeom**, **maps**, **mapdata**, **spData**, **tigris**, **tidycensus**, **leaflet**, **tmap**, **tmaptools**
 - Already used: **tidyverse**, **hrbrthemes**
 
-Note that you'll need **ggplot2** version 3.0.0 or above for the required [plotting support](https://www.tidyverse.org/articles/2018/07/ggplot2-3-0-0/) of **sf** objects. That's almost certainly the case, but now is a good time to upgrade you existing packages if you haven't done that for a while.
+Truth be told, you only need a handful of the above libraries to do 95% of the spatial work that you're likely to encounter. But R's spatial ecosystem and support is extremely rich, so I'll try to walk through a number of specific use-cases in this lecture. Run the following code chunk to install (if necessary) and load everything.
 
-Okay, let's install (if necessary) and load everything.
-
-```{r, cache=F, message=F}
+```{r, cache=F, message=FALSE}
 ## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(sf, tidyverse, hrbrthemes, lwgeom, rnaturalearth, maps, mapdata, spData, tigris, tidycensus, leaflet, tmap, tmaptools)
@@ -52,31 +50,38 @@ theme_set(hrbrthemes::theme_ipsum())
 
 ### Census API key
 
-Finally, we'll be accessing some data from the US Census Bureau through the [tidycensus package](https://walkerke.github.io/tidycensus/). This will require a Census API key, which you can request [here](https://api.census.gov/data/key_signup.html). Once that's done, you can set it using the `tidycensus::census_api_key()` function. I recommend using the "install = T" option to save your key for future useage. See the function's help file for more information.
+Finally, we'll be accessing some data from the US Census Bureau through the [tidycensus package](https://walkerke.github.io/tidycensus/). This will require a Census API key, which you can request [here](https://api.census.gov/data/key_signup.html). Once that's done, you can set it using the `tidycensus::census_api_key()` function. I recommend using the "install = TRUE" option to save your key for future usage. See the function's help file for more information.
 
-```{r eval=F}
-tidycensus::census_api_key("PLACE_YOUR_API_KEY_HERE", install = T)
+```{r, eval=FALSE}
+tidycensus::census_api_key("PLACE_YOUR_API_KEY_HERE", install = TRUE)
 ```
-
 
 
 ## Introduction: CRS and map projections
 
 Student presentation time. 
 
-If you're reading this after the fact, I recommend [these](https://www.nceas.ucsb.edu/~frazier/RSpatialGuides/OverviewCoordinateReferenceSystems.pdf) [two](http://rspatial.org/spatial/rst/6-crs.html) helpful resources. The very short version is that spatial data (like all coordinate-based systems) only make sense relative to some fixed point. That fixed point is what the Coordinate Reference Systems, or **CRS**, is trying to set. In R, we define the CRS with a "proj4string", which is based on the syntax of the [PROJ.4 geospatial library](https://proj4.org/projections/index.html).
+If you're reading this after the fact, I recommend [these](https://geocompr.robinlovelace.net/spatial-class.html#crs-intro) [two](https://proj.org/usage/quickstart.html) helpful resources. The very short version is that spatial data, like all coordinate-based systems, only make sense relative to some fixed point. That fixed point is what the Coordinate Reference Systems, or **CRS**, is trying to set. In R, we can define the CRS in one of two ways:
 
-Similarly, whenever we try to plot (some part of) the earth on a map, we're effectively trying to **project** a 3-D object onto a 2-D surface. This will necessarily create some kind of distortion. Different types of map projections limit distortions for some parts of the world at the expense of others. Distortions are particularly acute in the extreme latitudes for some projections, so try to choose according to the specific needs of your research question. For example, take a look at how badly the (in)famous Mercator projection distorts parts of the global map ([source](https://twitter.com/neilrkaye/status/1050740679008296967)):
+1. an [EPSG code](https://epsg.org/home.html) (e.g. `3857`), or 
+
+2. a [PROJ string](https://proj.org/operations/index.html) (e.g. `+proj=merc`). 
+
+We'll see examples of both implementations in in this lecture. For the moment, however, just know that they are equally valid ways of specifying CRS in R (albeit with with different strengths and weaknesses). You can search for many different CRS definitions [here](https://epsg.io/).
+
+> **Aside:** There are some important updates happening in the world of CRS and geospatial software, which will percolate through to the R spatial ecosystem. Thanks to the hard work of various R package developers, these behind-the-scenes changes are unlikely to affect the way that you interact with spatial data in R. But they are worth understanding if you plan to make geospatial work a core component of your research. More [here](https://www.r-spatial.org/r/2020/03/17/wkt.html).
+
+Similarly, whenever we try to plot (some part of) the earth on a map, we're effectively trying to **project** a 3-D object onto a 2-D surface. This will necessarily create some kind of distortion. Different types of map projections limit distortions for some parts of the world at the expense of others. For example, consider how badly the standard (but infamous) Mercator projection distorts the high latitudes in a global map ([source](https://twitter.com/neilrkaye/status/1050740679008296967)): 
 
 ![](pics/mercator-distortion.gif)
 
-You can also "orient" your projection to a specific latitude and longitude using the PROJ.4 syntax. We'll see some examples below, but first I'm obliged to share this [XKCD summary](https://xkcd.com/977/). (Do yourself a favour and click on the link.)
+**Bottom line:** You should always aim to choose a projection that best represents your specific area of study. I'll also show you how you can "re-orient" your projection to a specific latitude and longitude using the PROJ syntax. But first I'm obliged to share this [XKCD summary](https://xkcd.com/977/). (Do yourself a favour and click on the link.)
 
 ## Simple Features and the **sf** package
 
-R has long provided excellent support for spatial analysis and plotting (primarily through the **sp**, **rgdal**, **rgeos**, and **raster** packages). However, until recently, the complex structure of spatial data necessitated a set of equally complex spatial objects in R. I won't go into details, but a spatial object (say, a [SpatialPolygonsDataFrame](https://www.rdocumentation.org/packages/sp/versions/1.2-7/topics/SpatialPolygonsDataFrame-class)) was typically comprised of several "layers" --- much like a list --- with each layer containing a variety of "slots". While this approach did (and still does) work perfectly well, the convoluted structure provided some barriers to entry for newcomers. It also made it very difficult to incorporate spatial data into the tidyverse ecosystem that we're familiar with. Luckily, all this has changed thanks to the advent of the [**sf** package](https://r-spatial.github.io/sf/).
+R has long provided excellent support for spatial analysis and plotting (primarily through the **sp**, **rgdal**, **rgeos**, and **raster** packages). However, until recently, the complex structure of spatial data necessitated a set of equally complex spatial objects in R. I won't go into details, but a spatial object (say, a [SpatialPolygonsDataFrame](https://cran.r-project.org/web/packages/sp/vignettes/intro_sp.pdf)) was typically comprised of several "layers" --- much like a list --- with each layer containing a variety of "slots". While this approach did (and still does) work perfectly well, the convoluted structure provided some barriers to entry for newcomers. It also made it very difficult to incorporate spatial data into the tidyverse ecosystem that we're familiar with. Luckily, all this has changed thanks to the advent of the **sf** package ([link](https://r-spatial.github.io/sf/)).
 
-The "sf" stands for [**s**imple **f**eatures](https://en.wikipedia.org/wiki/Simple_Features), which is a simple (ahem) standard for representing the spatial geometries of real-world objects on a computer.^[See the [first](https://r-spatial.github.io/sf/articles/sf1.html) of the excellent **sf** vignettes for more details.] These objects --- i.e. "features" --- could include a tree, a building, a country's border, or the entire globe. The point is that they are characterised by a common set of rules, defining everything from how they are stored on our computer to which geometrical operations can be applied them. Of greater importance to us here, however, is the fact that **sf** represents these features in R as *data frames*. This means that all of our favourite tidyverse operations can be applied to spatial data, in addition to some specialized functions that we'll cover next.
+The "sf" stands for [**s**imple **f**eatures](https://en.wikipedia.org/wiki/Simple_Features), which is a simple (ahem) standard for representing the spatial geometries of real-world objects on a computer.^[See the [first](https://r-spatial.github.io/sf/articles/sf1.html) of the excellent **sf** vignettes for more details.] These objects --- i.e. "features" --- could include a tree, a building, a country's border, or the entire globe. The point is that they are characterised by a common set of rules, defining everything from how they are stored on our computer to which geometrical operations can be applied them. Of greater importance for our purposes, however, is the fact that **sf** represents these features in R as *data frames*. This means that all of our data wrangling skills from previous lectures can be applied to spatial data; say nothing of the specialized spatial functions that we'll cover next.
 
 ### Reading in spatial data
 
@@ -86,10 +91,12 @@ Let's demonstrate by reading in the North Carolina counties shapefile that comes
 
 ```{r nc, message=FALSE}
 # library(sf) ## Already loaded
+
 ## Location of our shapefile (here: bundled together with the sf package)
-loc <- system.file("shape/nc.shp", package="sf")
+file_loc = system.file("shape/nc.shp", package="sf")
+
 ## Read the shapefile into R
-nc <- st_read(loc, quiet = TRUE)
+nc = st_read(file_loc, quiet = TRUE)
 ```
 
 ### Simple Features as data frames
@@ -100,39 +107,46 @@ Let's print out the `nc` object that we just created and take a look at its stru
 nc
 ```
 
-Now we can see the explicit data frame structure that was I talking about earlier. The object has the familar tibble-style output that we're used to (e.g. it only prints the first 10 rows of the data). However, it also has some additional information in the header, like a description of the geometry type ("MULTIPOLYGON") and the proj4string CRS ("+proj=longlat +datum=NAD27 +no_defs"). One thing I want to note in particular is the "geometry" column right at the end of the data frame. This geometry column is how **sf** package achieves much of its magic: It stores the geometries of each row element in its own list column.^[For example, we could print out the coordinates needed to plot the first element in our data frame, Ashe county, by typing `nc$geometry[[1]]`. In contrast, I invite you to see how complicated the structure of a traditional spatial object is by running, say, `str(as(nc, "Spatial"))`.] Since all we really care about are the key feature attributes --- county name, FIPS code, population size, etc. --- we can focus on those instead of getting bogged down by hundreds (or thousands or even millions) of coordinate points. In turn, this all means that our favourite **tidyverse** operations and syntax (including the pipe operator `%>%`) can be applied to spatial data. Let's review some examples, starting with plotting.
+Now we can see the explicit data frame structure that was I talking about earlier. The object has the familiar tibble-style output that we're used to (e.g. it only prints the first 10 rows of the data). However, it also has some additional information in the header, like a description of the geometry type ("MULTIPOLYGON") and CRS (e.g. EPSG ID 4267). One thing I want to note in particular is the `geometry` column right at the end of the data frame. This geometry column is how **sf** package achieves much of its magic: It stores the geometries of each row element in its own list column.^[For example, we could print out the coordinates needed to plot the first element in our data frame, Ashe county, by typing `nc$geometry[[1]]`. In contrast, I invite you to see how complicated the structure of a traditional spatial object is by running, say, `str(as(nc, "Spatial"))`.] Since all we really care about are the key feature attributes --- county name, FIPS code, population size, etc. --- we can focus on those instead of getting bogged down by hundreds (or thousands or even millions) of coordinate points. In turn, this all means that our favourite **tidyverse** operations and syntax (including the pipe operator `%>%`) can be applied to spatial data. Let's review some examples, starting with plotting.
 
 ### Plotting and projection with **ggplot2**
 
-Plotting **sf** objects is incredibly easy thanks to the package's integration with **ggplot2**.^[Plotting **sf** maps using the base R `plot` function is also easy (and often faster). However, I feel that you give up a lot of control and intuition by moving away from the layered, "graphics of grammar" approach of **ggplot2**.] The key geom to remember is `geom_sf()`. For example:
+Plotting **sf** objects is incredibly easy thanks to the package's integration with both base R `plot()` and **ggplot2**. I'm going to focus on the latter here, but feel free to experiment.^[Plotting **sf** objects with the base `plot` function is generally faster. However, I feel that you give up a lot of control and intuition by moving away from the layered, "graphics of grammar" approach of **ggplot2**.] The key geom to remember is `geom_sf()`. For example:
 
 ```{r nc_plot}
 # library(tidyverse) ## Already loaded
-ggplot(nc) +
+
+nc_plot = 
+  ggplot(nc) +
   geom_sf(aes(fill = AREA), alpha=0.8, col="white") +
   scale_fill_viridis_c(name = "Area") +
   ggtitle("Counties of North Carolina")
+
+nc_plot
 ```
 
 To reproject an **sf** object to a different CRS, we can use `sf::st_transform()`. 
 
 ```{r nc_mollweide}
 nc %>%
-  st_transform(crs = "+proj=moll +ellps=WGS84") %>% ## Reprojecting to a Mollweide CRS
+  st_transform(crs = "+proj=moll") %>% ## Reprojecting to a Mollweide CRS
   head(2) ## Saving vertical space
 ```
 
 Or, we can specify a common projection directly in the ggplot call using `coord_sf()`. This is often the most convenient approach when you are combining multiple **sf** data frames in the same plot.
 
 ```{r nc_mollweide_plot}
-ggplot(nc) +
-  geom_sf(aes(fill = AREA), alpha=0.8, col="white") +
-  scale_fill_viridis_c(name = "Area") +
-  coord_sf(crs = "+proj=moll +ellps=WGS84") +
-  labs(
-    title = "Counties of North Carolina",
-    subtitle = "Mollweide projection"
-    ) 
+nc_plot +
+  coord_sf(crs = "+proj=moll") +
+  labs(subtitle = "Mollweide projection") 
+```
+
+Note that we used a PROJ string to define the CRS reprojection above. But we could easily use an EPSG code instead. For example, here's the [NC state plane](https://epsg.io/32119) projection.
+
+```{r nc_stateline_plot}
+nc_plot +
+  coord_sf(crs = 32119) +
+  labs(subtitle = "NC state plane") 
 ```
 
 ### Data wrangling with **dplyr** and **tidyr**
@@ -161,7 +175,6 @@ nc %>%
   facet_wrap(~year, ncol = 1) +
   labs(title = "Births by North Carolina county") 
 ```
-
 
 
 ### Specialized geometric operations {#geomtric}
@@ -201,16 +214,16 @@ ggplot(nc) +
 Another set of so-called *binary* operations can be applied to multiple objects. So, we can get things like the distance between two spatial objects using `sf::st_distance()`. In the below example, I'm going to get the distance from Ashe county to Brunswich county, as well as itself. The latter is just a silly addition to show that we can easily make multiple pairwise comparisons, even when the distance from one element to another is zero.
 
 ```{r nc_distance}
-ashe_brunswick <- nc %>% filter(NAME %in% c("Ashe", "Brunswick"))
-brunswick <- nc %>% filter(NAME %in% c("Brunswick"))
+ashe_brunswick = nc %>% filter(NAME %in% c("Ashe", "Brunswick"))
+brunswick = nc %>% filter(NAME %in% c("Brunswick"))
 
-## Use "by_element = T" to give a vector instead of the default pairwise matrix
-ab_dist <- st_distance(ashe_brunswick, brunswick, by_element = T)
+## Use "by_element = TRUE" to give a vector instead of the default pairwise matrix
+ab_dist = st_distance(ashe_brunswick, brunswick, by_element = TRUE)
 # Units: [m]
 # [1] 347930.7      0.0
 
 ## We can use the `units` package (already installed as sf dependency) to convert to kilometres 
-ab_dist <- ab_dist %>% units::set_units(km) %>% round()
+ab_dist = ab_dist %>% units::set_units(km) %>% round()
 # Units: [km]
 # [1] 348   0
 
@@ -228,11 +241,11 @@ Or, we can calculate the intersection of different spatial objects using `sf::st
 
 ```{r france}
 ## Get the data
-france <- st_as_sf(map('france', plot = FALSE, fill = TRUE))
+france = st_as_sf(map('france', plot = FALSE, fill = TRUE))
 data("seine", package = "spData")
 
 ## Make sure they have the same projection
-seine <- st_transform(seine, crs = st_crs(france))
+seine = st_transform(seine, crs = st_crs(france))
 
 ggplot() + 
   geom_sf(data = france, alpha = 0.8, fill = "black", col = "gray50") + 
@@ -246,7 +259,7 @@ ggplot() +
 Now let's limit it to the intersected regions:
 
 ```{r france_intersected, warning=F, message=F}
-france_intersected <- st_intersection(france, seine)
+france_intersected = st_intersection(france, seine)
 france_intersected
 ```
 
@@ -285,43 +298,46 @@ As our first North Carolina examples demonstrate, you can easily import external
 
 ```{r world1}
 # library(maps) ## Already loaded
-world1 <- st_as_sf(map("world", plot = FALSE, fill = TRUE))
-world1 %>%
-  ggplot() + 
+
+world = st_as_sf(map("world", plot = FALSE, fill = TRUE))
+
+world_map = 
+  ggplot(world) + 
   geom_sf(fill = "grey80", col = "grey40", lwd = 0.3) +
-  labs(title = "The world", subtitle = "Mercator projection")
+  labs(
+    title = "The world", 
+    subtitle = paste("EPSG:", st_crs(world)$epsg)
+    )
+world_map
 ```
 
-All of the usual **sf** functions and transformations can then be applied. For example, we can reproject the above world map onto the [Lambert Azimuthal Equal Area](https://proj4.org/projections/laea.html) projection (and further orientate it at the South Pole) as follows.
+All of the usual **sf** functions and transformations can then be applied. For example, we can reproject the above world map onto the [Lambert Azimuthal Equal Area](https://proj.org/operations/projections/laea.html) projection (and further orientate it at the South Pole) as follows.
 
 ```{r world2}
-world2 <- 
-  st_transform(
-  world1,
-  "+proj=laea +y_0=0 +lon_0=155 +lat_0=-90 +ellps=WGS84 +no_defs"
-  )
-
-world2 %>%
-  ggplot() + 
-  geom_sf(fill = "grey80", col = "grey40", lwd = 0.3) +
-  labs(title = "The world", subtitle = "Lambert Azimuthal Equal Area projection")
+world_map +
+  coord_sf(crs = "+proj=laea +y_0=0 +lon_0=155 +lat_0=-90") +
+  labs(subtitle = "Lambert Azimuthal Equal Area projection")
 ```
 
-### A digression on the Winkel tripel projection
+### Several digressions on projection considerations
+
+#### Winkel tripel projection
 
 As we've already seen, most map projections work great "out of the box" with **sf**. One niggling and notable exception is the [Winkel tripel projection](https://en.wikipedia.org/wiki/Winkel_tripel_projection). This is the preferred global map projection of *National Geographic* and requires a bit more work to get it to play nicely with **sf** and **ggplot2** (as detailed in [this thread](https://github.com/r-spatial/sf/issues/509)). Here's a quick example of how to do it:
 
 ```{r wintri}
 # library(lwgeom) ## Already loaded
 
-world3 <- lwgeom::st_transform_proj(world1, crs = "+proj=wintri +datum=WGS84 +no_defs +over")
-## Don't necessarily need a graticule, but if you do then define it manually:
-gr <- 
-  st_graticule(lat = c(-89.9,seq(-80,80,20),89.9)) %>%
-  lwgeom::st_transform_proj(crs = "+proj=wintri +datum=WGS84 +no_defs +over")
+wintr_proj = "+proj=wintri +datum=WGS84 +no_defs +over"
 
-world3 %>%
-  ggplot() + 
+world_wintri = lwgeom::st_transform_proj(world, crs = wintr_proj)
+
+## Don't necessarily need a graticule, but if you do then define it manually:
+gr = 
+  st_graticule(lat = c(-89.9,seq(-80,80,20),89.9)) %>%
+  lwgeom::st_transform_proj(crs = wintr_proj)
+
+ggplot(world_wintri) + 
   geom_sf(data = gr, color = "#cccccc", size = 0.15) + ## Manual graticule
   geom_sf(fill = "grey80", col = "grey40", lwd = 0.3) +
   coord_sf(datum = NA) +
@@ -330,32 +346,36 @@ world3 %>%
 ```
 
 
-### And another digression on the Equal Earth projection
+#### Equal Earth projection
 
-The latest and greatest projection, however, is the "Equal Earth" projection. Matt Strimas-McKay has a nice [blog post](http://strimas.com/gis/equal-earth/) on it, which you should read. In the interest of brevity, though here's a bare-bones example. (**NB:** Note that you will need to [upgrade your PROJ.4](https://proj4.org/install.html#install) library to version 5.2.0 before trying the below code chunk.)
+The latest and greatest projection, however, is the "[Equal Earth](http://equal-earth.com)" projection. This _does_ work well out of the box, in part due to the `ne_countries` dataset that comes bundled with the **rnaturalearth** package ([link](https://github.com/ropensci/rnaturalearth)). I'll explain that second part of the previous sentence in moment. But first let's see the Equal Earth projection in action.
 
-```{r equal_earth, error=T}
+```{r equal_earth} 
 # library(rnaturalearth) ## Already loaded
-countries <- 
+
+countries = 
   ne_countries(returnclass = "sf") %>%
-  st_transform("+proj=eqearth +wktext")
+  st_transform(8857) ## Transform to equal earth projection
+  # st_transform("+proj=eqearth +wktext") ## PROJ string alternative
 
-gr <- 
-  st_graticule(lat = c(-89.9,seq(-80,80,20),89.9)) %>%
-  st_transform(crs = "+proj=eqearth +wktext")
-
-## NB: You will need to upgrade to PROJ4 version 5.2.0 for this plot to work
-## See: https://proj4.org/install.html#install
-countries %>% 
-  ggplot() +
-  geom_sf(data = gr, color = "#cccccc", size = 0.15) + ## Manual graticule
+ggplot(countries) +
   geom_sf(fill = "grey80", col = "grey40", lwd = 0.3) +
-  coord_sf(datum = NA) +
-  theme_ipsum(grid = F) +
   labs(title = "The world", subtitle = "Equal Earth projection")
 ```
 
-Looks great. Note that we used the [rnaturalearth package](https://github.com/ropensci/rnaturalearth) to extract the `countries` spatial data frame. This looks very similar to our `world1` data frame, but avoids some of the weird polygon mappings that can happen under certain projections; particularly when polygons extend over the Greenwich prime meridian.^[To see for yourself, try running the above chunk with the `world1` object that we created earlier iinstead of `countries`. Remember to transform its CRS to the Equal Earth projection first.]
+#### Pacfic-centered maps and other polygon mishaps
+
+As noted, the `rnaturalearth::ne_countries` spatial data frame is important for correctly displaying the Equal Earth projection. On the face of it, this looks pretty similar to our `maps::world` spatial data frame from earlier. They both contain polygons of all the countries in the world and appear to have similar default projections. However, some underlying nuances in how those polygons are constructed allows us avoid some undesirable visual artefacts that arise when reprojecting to the Equal Earth projection. Consider: 
+
+```{r equal_earth_bad}
+world %>%
+  st_transform(8857) %>% ## Transform to equal earth projection
+  ggplot() +
+  geom_sf(fill = "grey80", col = "grey40", lwd = 0.3) +
+  labs(title = "The... uh, world", subtitle = "Projection fail")
+```
+
+These types of visual artefacts are particularly common for Pacific-centered maps and, in that case, arise from polygons extending over the Greenwich prime meridian. It's a suprisingly finicky problem to solve. Even the **rnaturalearth** doesn't do a good job. Luckily, Nate Miller has you covered with an [excellent guide](https://github.com/natemiller/mapping) to set you on the right track. 
 
 
 ### Example 2: A single country (i.e. Norway)
@@ -363,10 +383,10 @@ Looks great. Note that we used the [rnaturalearth package](https://github.com/ro
 The **maps** and **mapdata** packages have detailed county- and province-level data for several individual nations. We've already seen this with France, but it includes the USA, New Zealand and several other nations. However, we can still use it to extract a specific country's border using some intuitive syntax. For example, we could plot a base map of Norway as follows.
 
 ```{r norway}
-norway <- st_as_sf(map("world", "norway", plot = FALSE, fill = TRUE))
+norway = st_as_sf(map("world", "norway", plot = FALSE, fill = TRUE))
 
 ## For a hi-resolution map (if you *really* want to see all the fjords):
-# norway <- st_as_sf(map("worldHires", "norway", plot = FALSE, fill = TRUE))
+# norway = st_as_sf(map("worldHires", "norway", plot = FALSE, fill = TRUE))
 
 norway %>%
   ggplot() + 
@@ -390,11 +410,11 @@ detach(package:maps) ## To avoid potential purrr::map() conflicts
 ```
 
 
-## BONUS 1: US Census data with **tigris** and **tidycensus** {#census}
+## BONUS 1: US Census data with **tidycensus** and **tigris** {#census}
 
 Working with Census data has traditionally quite a pain. You need to register on the website, then download data from various years or geographies separately, merge these individual files, etc. Thankfully, this too has recently become much easier thanks to the Census API and --- for R at least --- the **tigris** and **tidycensus** packages from [Kyle Walker](http://walkerke.github.io/) (a UO grad). This next section will closely follow a [tutorial](http://walkerke.github.io/2017/06/comparing-metros/) on his website.
 
-> NOTE: Before continuing with this section, you will first need to [request an API key](https://api.census.gov/data/key_signup.html) from the Census. Once that's done, you can set it using the `tidycensus::census_api_key()` function. I recommend using the "install = T" option to save your key for future useage. 
+> NOTE: Before continuing with this section, you will first need to [request an API key](https://api.census.gov/data/key_signup.html) from the Census. Once that's done, you can set it using the `tidycensus::census_api_key()` function. I recommend using the "install = TRUE" option to save your key for future useage. 
 
 We start by loading the packages and setting some options for optimized use with the **sf** package.
 
@@ -403,13 +423,13 @@ We start by loading the packages and setting some options for optimized use with
 # library(tigris) ## Already loaded
 options(tigris_class = "sf")
 options(tigris_use_cache = TRUE)
-# census_api_key("YOUR KEY HERE", install = T)
+# census_api_key("YOUR KEY HERE", install = TRUE)
 ```
 
 Let's say that our goal is to provide a snapshot of Census rental estimates across different cities in the Pacific Northwest. We start by downloading tract-level rental data for Oregon and Washington using the `tidycensus::get_acs()` function. Note that you'll need to look up the correct ID variable (in this case: "DP04_0134").
 
 ```{r rent1, include=F}
-rent <- 
+rent = 
   get_acs(
     geography = "tract", variables = "DP04_0134",
     state = c("WA", "OR"), geometry = TRUE
@@ -417,7 +437,7 @@ rent <-
 ```
 
 ```{r rent1a, eval=F}
-rent <- 
+rent = 
   tidycensus::get_acs(
     geography = "tract", variables = "DP04_0134",
     state = c("WA", "OR"), geometry = TRUE
@@ -447,8 +467,8 @@ Hmmm, looks like you want to avoid renting in Seattle if possible...
 
 The above map is very detailed. Perhaps we're not interested in the entire set of tract level data, but would rather get a sense of rents within some well-defined metropolitan areas? The **tigris** package has you covered here. For example, let's say we want to compare average rents across three Oregon/Washington metros: Portland (and surrounds), Corvallis and Eugene.
 
-```{r or_metros, message=F}
-or_metros <- 
+```{r or_metros, message=F, results = FALSE}
+or_metros = 
   tigris::core_based_statistical_areas(cb = TRUE) %>%
   # filter(GEOID %in% c("21660", "18700", "38900")) %>% ## Could use GEOIDs directly if you know them 
   filter(grepl("Portland|Corvallis|Eugene", NAME)) %>%
@@ -459,7 +479,7 @@ or_metros <-
 Now we do a spatial join on our two data sets using the `sf::st_join()` function.
 
 ```{r or_rent, warning=F, message=F}
-or_rent <- 
+or_rent = 
   st_join(
     rent, 
     or_metros, 
@@ -486,7 +506,8 @@ The **leaflet** syntax is a little different to what you've seen thus far and I 
 
 ```{r oregon, include = F}
 # library(tidycensus) ## Already loaded
-oregon <- 
+
+oregon = 
   get_acs(
     geography = "county", variables = "B01003_001",
     state = "OR", geometry = TRUE
@@ -496,7 +517,8 @@ oregon
 
 ```{r oregon1a, eval = F}
 # library(tidycensus) ## Already loaded
-oregon <- 
+
+oregon = 
   get_acs(
     geography = "county", variables = "B01003_001",
     state = "OR", geometry = TRUE
@@ -512,11 +534,11 @@ So, the popup text of interest is held within the "NAME" and "estimate" columns.
 ```{r oregon_leaflet, cache = FALSE}
 # library(leaflet) ## Already loaded
 
-col_pal <- colorQuantile(palette = "viridis", domain = oregon$estimate, n = 10)
+col_pal = colorQuantile(palette = "viridis", domain = oregon$estimate, n = 10)
 
 oregon %>%
   mutate(county = gsub(",.*", "", NAME)) %>% ## Get rid of everything after the first comma
-  st_transform(crs = "+init=epsg:4326") %>%
+  st_transform(crs = 4326) %>%
   leaflet(width = "100%") %>%
   addProviderTiles(provider = "CartoDB.Positron") %>%
   addPolygons(
@@ -540,25 +562,25 @@ No suprises here. The bulk of Oregon's population is situated just west of the C
 A particularly useful feature of interactive maps is not being limited by scale or granularity, so you can really dig in to specific areas and neighbourhoods. Here's an example using home values from Lane County.
 
 ```{r lane, include=F, message=F}
-lane <- 
+lane = 
   get_acs(
     geography = "tract", variables = "B25077_001", 
     state = "OR", county = "Lane County", geometry = TRUE
     )
 ```
 ```{r lane1a, evaluate=F}
-lane <- 
+lane = 
   get_acs(
     geography = "tract", variables = "B25077_001", 
     state = "OR", county = "Lane County", geometry = TRUE
     )
 ```
 ```{r lane_leaflet, cache=FALSE}
-lane_pal <- colorNumeric(palette = "plasma", domain = lane$estimate)
+lane_pal = colorNumeric(palette = "plasma", domain = lane$estimate)
 
 lane %>%
   mutate(tract = gsub(",.*", "", NAME)) %>% ## Get rid of everything after the first comma
-  st_transform(crs = "+init=epsg:4326") %>%
+  st_transform(crs = 4326) %>%
   leaflet(width = "100%") %>%
   addProviderTiles(provider = "CartoDB.Positron") %>%
   addPolygons(
@@ -582,7 +604,7 @@ lane %>%
 
 ## BONUS 3: Other map plotting options (**plot**, **tmap**, etc.)
 
-While I think that **ggplot2** (together with **sf**) and **leaflet** are the best value bet for map plotting in R --- especially for relative newcomers that have been inculcated into the tidyverse ecosystem --- it should be said that there are many other options available to you. The base R `plot()` function is *very* powerful and handles all manner of spatial objects. (It is also very fast.) The package that I'll highlight briefly in closing, however, is **tmap**. The focus of **tmap** is *thematic maps* that are "production ready". The package is extremely flexible and can accept various spatial objects and output various map types (including interactive). Moreover, the syntax should look very familar to us, since it is inspired by `ggplot2`'s layered graphics of grammar approach. Here's an example of a great looking map taken from the `tmap` [homepage](https://github.com/mtennekes/tmap).
+While I think that **ggplot2** (together with **sf**) and **leaflet** are the best value bet for map plotting in R --- especially for relative newcomers that have been inculcated into the tidyverse ecosystem --- it should be said that there are many other options available to you. The base R `plot()` function is *very* powerful and handles all manner of spatial objects. (It is also very fast.) The package that I'll highlight briefly in closing, however, is **tmap**. The focus of **tmap** is *thematic maps* that are "production ready". The package is extremely flexible and can accept various spatial objects and output various map types (including interactive). Moreover, the syntax should look very familar to us, since it is inspired by `ggplot2`'s layered graphics of grammar approach. Here's an example of a great looking map taken from the `tmap` [homepage](https://mtennekes.github.io/tmap/index.html).
 
 ```{r tmap, warning=F}
 # library(tmap) ## Already loaded
@@ -592,7 +614,7 @@ While I think that **ggplot2** (together with **sf**) and **leaflet** are the be
 data(land, World)
 
 ## Convert to Eckert IV projection
-land_eck4 <- set_projection(land, "eck4")
+land_eck4 = st_transform(land, "+proj=eck4")
 
 ## Plot
 tm_shape(land_eck4) +
@@ -604,7 +626,7 @@ tm_shape(land_eck4) +
     ) +
   tm_shape(World) +
   tm_borders("grey20") +
-  tm_grid(projection="longlat", labels.size = .5) +
+  tm_graticules(labels.size = .5) +
   tm_text("name", size="AREA") +
   tm_compass(position = c(.65, .15), color.light = "grey90") +
   tm_credits("Eckert IV projection", position = c("RIGHT", "BOTTOM")) +
