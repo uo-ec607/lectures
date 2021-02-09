@@ -63,9 +63,9 @@ Student presentation time.
 
 If you're reading this after the fact, I recommend [these](https://geocompr.robinlovelace.net/spatial-class.html#crs-intro) [two](https://proj.org/usage/quickstart.html) helpful resources. The very short version is that spatial data, like all coordinate-based systems, only make sense relative to some fixed point. That fixed point is what the Coordinate Reference Systems, or **CRS**, is trying to set. In R, we can define the CRS in one of two ways:
 
-1. an [EPSG code](https://epsg.org/home.html) (e.g. `3857`), or 
+1. [EPSG code](https://epsg.org/home.html) (e.g. `3857`), or 
 
-2. a [PROJ string](https://proj.org/operations/index.html) (e.g. `+proj=merc`). 
+2. [PROJ string](https://proj.org/operations/index.html) (e.g. `"+proj=merc"`). 
 
 We'll see examples of both implementations in in this lecture. For the moment, however, just know that they are equally valid ways of specifying CRS in R (albeit with with different strengths and weaknesses). You can search for many different CRS definitions [here](https://epsg.io/).
 
