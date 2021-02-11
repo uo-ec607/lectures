@@ -18,6 +18,12 @@ output:
 name: toc
 
 ```{css, echo=FALSE}
+@media print {
+  .has-continuation {
+    display: block !important;
+  }
+}
+
 .large4 { font-size: 400% }
 .large2 { font-size: 200% }
 .small90 { font-size: 90% }
@@ -1545,3 +1551,8 @@ class: inverse, center, middle
 
 # Next lecture: Webscraping (1)
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+```{r gen_pdf, include = FALSE, cache = FALSE, eval = TRUE}
+infile = list.files(pattern = '.html')
+pagedown::chrome_print(input = infile, timeout = 100)
+```

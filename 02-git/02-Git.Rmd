@@ -13,6 +13,14 @@ output:
       countIncrementalSlides: false
 ---
 
+```{css, echo=FALSE}
+@media print {
+  .has-continuation {
+    display: block !important;
+  }
+}
+```
+
 ```{r setup, include=FALSE}
 options(htmltools.dir.version = FALSE)
 library(knitr)
@@ -866,3 +874,8 @@ name: faq
 <img src="https://imgs.xkcd.com/comics/git_2x.png" height=500>
 </div>
 
+
+```{r gen_pdf, include = FALSE, cache = FALSE, eval = TRUE}
+infile = list.files(pattern = '.html')
+pagedown::chrome_print(input = infile, timeout = 100)
+```

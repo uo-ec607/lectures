@@ -15,6 +15,14 @@ output:
 ---
 name: toc
 
+```{css, echo=FALSE}
+@media print {
+  .has-continuation {
+    display: block !important;
+  }
+}
+```
+
 ```{r setup, include=FALSE}
 options(htmltools.dir.version = FALSE)
 library(knitr)
@@ -955,3 +963,8 @@ class: inverse, center, middle
 
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
 
+
+```{r gen_pdf, include = FALSE, cache = FALSE, eval = TRUE}
+infile = list.files(pattern = '.html')
+pagedown::chrome_print(input = infile, timeout = 100)
+```
