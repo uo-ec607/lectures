@@ -8,12 +8,34 @@ author:
 output: 
   html_document:
     theme: flatly
-    highlight: haddock 
+    highlight: haddock
     # code_folding: show
     toc: yes
     toc_depth: 4
     toc_float: yes
-    keep_md: true
+    keep_md: false
+    keep_tex: false ## Change to true if want keep intermediate .tex file
+    css: css/preamble.css ## For multi-col environments
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    dev: cairo_pdf
+    # fig_width: 7 ## Optional: Set default PDF figure width
+    # fig_height: 6 ## Optional: Set default PDF figure height
+    includes:
+      in_header: tex/preamble.tex ## For multi-col environments
+    pandoc_args:
+        --template=tex/mytemplate.tex ## For affiliation field. See: https://bit.ly/2T191uZ
+always_allow_html: true
+urlcolor: blue
+mainfont: cochineal
+sansfont: Fira Sans
+monofont: Fira Code ## Although, see: https://tex.stackexchange.com/q/294362
+## Automatically knit to both formats:
+knit: (function(inputFile, encoding) {
+ rmarkdown::render(inputFile, encoding = encoding, 
+ output_format = 'all') 
+ })
 ---
 
 ```{r setup, include=FALSE}
@@ -73,7 +95,13 @@ We'll see examples of both implementations in in this lecture. For the moment, h
 
 Similarly, whenever we try to plot (some part of) the earth on a map, we're effectively trying to **project** a 3-D object onto a 2-D surface. This will necessarily create some kind of distortion. Different types of map projections limit distortions for some parts of the world at the expense of others. For example, consider how badly the standard (but infamous) Mercator projection distorts the high latitudes in a global map ([source](https://twitter.com/neilrkaye/status/1050740679008296967)): 
 
-![](pics/mercator-distortion.gif)
+```{r mercator_distortion, echo = FALSE, out.width='100%'}
+if (knitr::is_html_output()){
+  knitr::include_graphics('pics/mercator-distortion.gif')
+} else {
+  message("Sorry, this GIF is only available in the the HTML version of the notes.")
+}
+```
 
 **Bottom line:** You should always aim to choose a projection that best represents your specific area of study. I'll also show you how you can "re-orient" your projection to a specific latitude and longitude using the PROJ syntax. But first I'm obliged to share this [XKCD summary](https://xkcd.com/977/). (Do yourself a favour and click on the link.)
 
@@ -267,7 +295,8 @@ ggplot() +
 
 Now let's limit it to the intersected regions:
 
-```{r france_intersected, warning=F, message=F}
+```{r france_intersected, warning=F, message=F, dependson=seine}
+seine = st_transform(seine, crs = st_crs(france))
 france_intersected = st_intersection(france, seine)
 france_intersected
 ```

@@ -13,7 +13,29 @@ output:
     toc: yes
     toc_depth: 4
     toc_float: yes
-    keep_md: true
+    keep_md: false
+    keep_tex: false ## Change to true if want keep intermediate .tex file
+    css: css/preamble.css ## For multi-col environments
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    dev: cairo_pdf
+    # fig_width: 7 ## Optional: Set default PDF figure width
+    # fig_height: 6 ## Optional: Set default PDF figure height
+    includes:
+      in_header: tex/preamble.tex ## For multi-col environments
+    pandoc_args:
+        --template=tex/mytemplate.tex ## For affiliation field. See: https://bit.ly/2T191uZ
+always_allow_html: true
+urlcolor: blue
+mainfont: cochineal
+sansfont: Fira Sans
+monofont: Fira Code ## Although, see: https://tex.stackexchange.com/q/294362
+## Automatically knit to both formats:
+knit: (function(inputFile, encoding) {
+ rmarkdown::render(inputFile, encoding = encoding, 
+ output_format = 'all') 
+ })
 ---
 
 ```{r setup, include=FALSE}
@@ -114,7 +136,13 @@ As you can see, this is an [XML](https://en.wikipedia.org/wiki/XML) document^[XM
 
 Let's start by scraping the first table on the page, which documents the [unofficial progression before the IAAF](https://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression#Unofficial_progression_before_the_IAAF). The first thing we need to do is identify the table's unique CSS selector. Here's a GIF of me using [SelectorGadget](http://selectorgadget.com/) to do that.
 
-![](pics/sg100m.gif)
+```{r sg100m_gif, echo = FALSE, out.width='100%'}
+if (knitr::is_html_output()){
+  knitr::include_graphics('pics/sg100m.gif')
+} else {
+  message("Sorry, this GIF is only available in the the HTML version of the notes.")
+}
+```
 
 </br>
 As you can see, working through this iterative process yields *"div+ .wikitable :nth-child(1)"*. We can now use this unique CSS selector to isolate the pre-IAAF table content from the rest of the HTML document. The core **rvest** function that we'll use to extract the table content is `html_element()`, before piping it on to `html_table()` to parse the HTML table into an R data frame.
@@ -152,7 +180,13 @@ SelectorGadget is a great tool. But it isn't available on all browsers and can i
 
 Here's a quick example using Google Chrome. First, I open up the inspect console (**Ctrl+Shift+I**, or right-click and choose "Inspect"). I then proceed to scroll over the source elements, until Chrome highlights the table of interest on the actual page. Once the table (or other element of interest) is highlighted, I can grab its CSS by right-clicking and selecting **Copy -> Copy selector**.
 
-![](pics/inspect100m.gif)
+```{r inspect100m_gif, echo = FALSE, out.width='100%'}
+if (knitr::is_html_output()){
+  knitr::include_graphics('pics/inspect100m.gif')
+} else {
+  message("Sorry, this GIF is only available in the the HTML version of the notes.")
+}
+```
 
 </br>
 In general, I prefer to obtain CSS selectors using this "inspect" method with my browser. But each to their own.

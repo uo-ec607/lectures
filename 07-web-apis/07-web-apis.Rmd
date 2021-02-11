@@ -8,12 +8,34 @@ author:
 output: 
   html_document:
     theme: flatly
-    highlight: haddock 
+    highlight: haddock
     # code_folding: show
     toc: yes
     toc_depth: 4
     toc_float: yes
-    keep_md: true
+    keep_md: false
+    keep_tex: false ## Change to true if want keep intermediate .tex file
+    css: css/preamble.css ## For multi-col environments
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    dev: cairo_pdf
+    # fig_width: 7 ## Optional: Set default PDF figure width
+    # fig_height: 6 ## Optional: Set default PDF figure height
+    includes:
+      in_header: tex/preamble.tex ## For multi-col environments
+    pandoc_args:
+        --template=tex/mytemplate.tex ## For affiliation field. See: https://bit.ly/2T191uZ
+always_allow_html: true
+urlcolor: blue
+mainfont: cochineal
+sansfont: Fira Sans
+monofont: Fira Code ## Although, see: https://tex.stackexchange.com/q/294362
+## Automatically knit to both formats:
+knit: (function(inputFile, encoding) {
+ rmarkdown::render(inputFile, encoding = encoding, 
+ output_format = 'all') 
+ })
 ---
 
 ```{r setup, include=FALSE}
@@ -99,13 +121,11 @@ I wanted to begin with an example from NYC Open Data, because you don't need to 
 
 Here's a GIF of me completing these steps:
 
-```{r trees_gif, echo=FALSE, out.width='100%'}
-fmt <- rmarkdown::default_output_format(knitr::current_input())$name
-if (fmt == "html_document"){
+```{r trees_gif, echo = FALSE, out.width='100%'}
+if (knitr::is_html_output()){
   knitr::include_graphics('pics/trees.gif')
-}
-if (fmt == "pdf_document"){
-  message("Sorry, this GIF only available in the the HTML version of the notes.")
+} else {
+  message("Sorry, this GIF is only available in the the HTML version of the notes.")
 }
 ```
 
@@ -156,6 +176,12 @@ As nearly every economist could tell you, [FRED](https://fred.stlouisfed.org/) i
 <iframe src="https://fred.stlouisfed.org/graph/graph-landing.php?g=yo2J&width=670&height=475" scrolling="no" frameborder="0" style="overflow:hidden; width:670px; height:525px;" allowTransparency="true" loading="lazy"  data-external="1"></iframe>
 
 </br>
+
+```{r fred_iframe, echo = FALSE, out.width='100%'}
+if (!knitr::is_html_output()){
+  message("Sorry, this interactive chart is only available in the the HTML version of the notes.")
+}
+```
 
 For this second example application, I'm going to show you how to download the data underlying the above chart using the FRED API. In fact, I'll go one better. First, I'll show you how to download it yourself, so that you get an understanding of what's happening underneath the hood. Then, I'll direct you to a package that does all of the API work for you.
 
@@ -377,13 +403,11 @@ Fortunately, there's a better way: Access the full database of rankings through 
 
 Sweet. Looks like we've located our API endpoint. As promised, here's GIF of me walking through these steps in my browser:
 
-```{r inspect_rugby_gif, echo=FALSE, out.width='100%'}
-fmt = rmarkdown::default_output_format(knitr::current_input())$name
-if (fmt == "html_document"){
+```{r inspect_rugby_gif, echo = FALSE, out.width='100%'}
+if (knitr::is_html_output()){
   knitr::include_graphics('pics/inspect-rugby.gif')
-}
-if (fmt == "pdf_document"){
-  message("Sorry, this GIF only available in the the HTML version of the notes.")
+} else {
+  message("Sorry, this GIF is only available in the the HTML version of the notes.")
 }
 ```
 
@@ -519,6 +543,12 @@ rankings_history %>%
 New Zealand's extended dominance in the global game is extraordinary, especially given its tiny population size. They truly do have a legitimate claim to being the [greatest international team](https://www.dailytelegraph.com.au/sport/rugby/are-the-all-blacks-the-greatest-international-team-in-the-history-of-sport/news-story/f61ad2d65623a9586929bbfba386b157) in the history of professional sport.^[Obligatory link to the [best ever haka](https://www.youtube.com/watch?v=BFNCpzGnTTs).] OTOH, South African rugby supporters can finally (finally) rejoice after a long dry spell. Bring 'er home, Siya. Bing 'er home.
 
 <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/Forbz3lizUk" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen data-external="1"></iframe>
+
+```{r siya_youtube, echo = FALSE, out.width='100%'}
+if (!knitr::is_html_output()){
+  message("Sorry, this video is only available in the the HTML version of the notes.")
+}
+```
 
 ## Summary
 

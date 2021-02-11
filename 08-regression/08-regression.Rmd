@@ -8,12 +8,35 @@ author:
 output: 
   html_document:
     theme: flatly
-    highlight: haddock 
+    highlight: haddock
     # code_folding: show
     toc: yes
     toc_depth: 4
     toc_float: yes
-    keep_md: true
+    keep_md: false
+    keep_tex: false ## Change to true if want keep intermediate .tex file
+    css: css/preamble.css ## For multi-col environments
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    dev: cairo_pdf
+    # fig_width: 7 ## Optional: Set default PDF figure width
+    # fig_height: 6 ## Optional: Set default PDF figure height
+    includes:
+      in_header: tex/preamble.tex ## For multi-col environments
+    extra_dependencies: ["float", "booktabs", "longtable"]
+    pandoc_args:
+        --template=tex/mytemplate.tex ## For affiliation field. See: https://bit.ly/2T191uZ
+always_allow_html: true
+urlcolor: blue
+mainfont: cochineal
+sansfont: Fira Sans
+monofont: Fira Code ## Although, see: https://tex.stackexchange.com/q/294362
+## Automatically knit to both formats:
+knit: (function(inputFile, encoding) {
+ rmarkdown::render(inputFile, encoding = encoding, 
+ output_format = 'all') 
+ })
 ---
 
 ```{r setup, include=FALSE}
@@ -47,7 +70,7 @@ theme_set(hrbrthemes::theme_ipsum())
 ```{r libs, cache=FALSE, message=FALSE, echo=FALSE}
 ## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(mfx, tidyverse, hrbrthemes, estimatr, ivreg, fixest, sandwich, lmtest, margins, vtable, broom, modelsummary)
+pacman::p_load(mfx, tidyverse, hrbrthemes, estimatr, ivreg, fixest, sandwich, lmtest, margins, vtable, broom, modelsummary, kableExtra)
 ## My preferred ggplot2 plotting theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
@@ -531,9 +554,10 @@ tidy(glm_logitmfx, conf.int = TRUE)
 
 We could spend a whole course on Bayesian models. The very, very short version is that R offers outstanding support for Bayesian models and data analysis. You will find convenient interfaces to all of the major MCMC and Bayesian software engines: [Stan](https://mc-stan.org/users/interfaces/rstan), [JAGS](http://mcmc-jags.sourceforge.net/), TensorFlow (via [Greta](https://greta-stats.org/)), etc. Here follows a *super* simple example using the **rstanarm** package ([link](http://mc-stan.org/rstanarm/)). Note that we did not install this package with the others above, as it can take fairly long and involve some minor troubleshooting.^[FWIW, on my machine (running Arch Linux) I had to install `stan` (and thus `rstanarm`) by running R through the shell. For some reason, RStudio kept closing midway through the installation process.]
 
-```{r bayes_reg, error=T, message=F, warning=F, results="hide", eval=FALSE}
+```{r bayes_reg, message=F, warning=F, results="hide"}
 # install.packages("rstanarm") ## Run this first if you want to try yourself
 library(rstanarm)
+
 bayes_reg = 
   stan_glm(
     mass ~ gender * height,
@@ -541,7 +565,7 @@ bayes_reg =
     family = gaussian(), prior = cauchy(), prior_intercept = cauchy()
     )
 ```
-```{r bayes_reg_summ, error=T}
+```{r bayes_reg_summ, dependson=bayes_reg}
 summary(bayes_reg)
 ```
 
@@ -594,18 +618,19 @@ ols_ie %>%
 
 If you're the type of person who prefers visualizations (like me), then you should consider `margins::cplot()`, which is the package's in-built method for constructing *conditional* effect plots.
 
-```{r margins3, dependson=ols_ie}
-cplot(ols_ie, x = "gender", dx = "height", what = "effect")
+```{r margins3, dependson=ols_ie, dependson=humans}
+cplot(ols_ie, x = "gender", dx = "height", what = "effect", 
+      data = humans)
 ```
 
 In this case,it doesn't make much sense to read a lot into the larger standard errors on the female group; that's being driven by a very small sub-sample size.
 
 Finally, you can also use `cplot()` to plot the predicted values of your outcome variable (here: "mass"), conditional on one of your dependent variables. For example:
 
-```{r margins4, dependson=ols_ie}
+```{r margins4, dependson=ols_ie, dependson=humans}
 par(mfrow=c(1, 2)) ## Just to plot these next two (base) figures side-by-side
-cplot(ols_ie, x = "gender", what = "prediction")
-cplot(ols_ie, x = "height", what = "prediction")
+cplot(ols_ie, x = "gender", what = "prediction", data = humans)
+cplot(ols_ie, x = "height", what = "prediction", data = humans)
 par(mfrow=c(1, 1)) ## Reset plot defaults
 ```
 
@@ -619,7 +644,7 @@ I'll keep this one brief, but I wanted to mention one of my favourite R shortcut
 
 Here's a super simple example, using the same interaction effects model from before.
 
-```{r nested}
+```{r nested, dependson=humans}
 # ols_ie = lm(mass ~ gender * height, data = humans) ## Original model
 ols_ie_marg2 = lm(mass ~ gender / height, data = humans)
 tidy(ols_ie_marg2, conf.int = TRUE)
@@ -662,16 +687,21 @@ Another package that I like a lot in this regard is **vtable** ([link](https://n
 ```{r st1}
 # library(vtable) ## Already loaded
 
+## An additional argument just for formatting across different output types of
+## this .Rmd document
+otype = ifelse(knitr::is_latex_output(), 'return', 'kable')
+
 ## st() is an alias for sumtable()
-st(select(humans, gender, height, mass, birth_year, eye_color), 
-   group = 'gender')
+st(select(humans, gender, height, mass, birth_year, eye_color),
+   group = 'gender', 
+   out = otype)
 ```
 
 </br>
 In case you were wondering, `vtable::st()` does a clever job of automatically picking defaults and dropping "unreasonable" variables (e.g. list variables or factors with too many levels). Here's what we get if we just ask it to produce a summary table of the main "starwars" data frame.
 
-```{r st2}
-st(starwars)
+```{r st2, results='asis'}
+st(starwars, out = otype)
 ```
 
 

@@ -1,0 +1,41 @@
+\contentsline {subsection}{Software requirements}{1}{section*.2}%
+\contentsline {subsubsection}{R packages}{1}{section*.3}%
+\contentsline {subsection}{Regression basics}{2}{section*.4}%
+\contentsline {subsubsection}{The \texttt {lm()} function}{2}{section*.5}%
+\contentsline {subsubsection}{Get ``tidy'' regression coefficients with the \texttt {broom} package}{3}{section*.6}%
+\contentsline {subsubsection}{Regressing on subsetted data}{4}{section*.7}%
+\contentsline {paragraph}{1) Create a new data frame}{5}{section*.8}%
+\contentsline {paragraph}{2) Subset directly in the \texttt {lm()} call}{5}{section*.9}%
+\contentsline {subsection}{Nonstandard errors}{6}{section*.10}%
+\contentsline {subsubsection}{Robust standard errors}{6}{section*.11}%
+\contentsline {paragraph}{Aside on HAC (Newey-West) standard errors}{6}{section*.12}%
+\contentsline {subsubsection}{Clustered standard errors}{7}{section*.13}%
+\contentsline {subsection}{Dummy variables and interaction terms}{8}{section*.14}%
+\contentsline {subsubsection}{Dummy variables as \emph {factors}}{8}{section*.15}%
+\contentsline {subsubsection}{Interaction effects}{9}{section*.16}%
+\contentsline {subsection}{Panel models}{10}{section*.17}%
+\contentsline {subsubsection}{Fixed effects with the \textbf {fixest} package}{10}{section*.18}%
+\contentsline {paragraph}{Simple FE model}{10}{section*.19}%
+\contentsline {paragraph}{High dimensional FEs and multiway clustering}{11}{section*.20}%
+\contentsline {paragraph}{Comparing our model coefficients}{12}{section*.21}%
+\contentsline {paragraph}{Aside on standard errors}{13}{section*.22}%
+\contentsline {subsubsection}{Random and mixed effects}{13}{section*.23}%
+\contentsline {subsection}{Instrumental variables}{14}{section*.24}%
+\contentsline {subsubsection}{Option 1: \texttt {ivreg::ivreg()}}{14}{section*.25}%
+\contentsline {subsubsection}{Option 2: \texttt {estimatr::iv\_robust()}}{16}{section*.26}%
+\contentsline {subsubsection}{Option 3: \texttt {fixest::feols()}}{16}{section*.27}%
+\contentsline {subsection}{Other models}{18}{section*.28}%
+\contentsline {subsubsection}{Generalised linear models (logit, etc.)}{18}{section*.29}%
+\contentsline {subsubsection}{Bayesian regression}{19}{section*.30}%
+\contentsline {subsubsection}{Even more models}{20}{section*.31}%
+\contentsline {subsection}{Marginal effects}{20}{section*.32}%
+\contentsline {subsubsection}{The \textbf {margins} package}{20}{section*.33}%
+\contentsline {subsubsection}{Special case: \texttt {/} shortcut for interaction terms}{22}{section*.34}%
+\contentsline {subsection}{Presentation}{23}{section*.35}%
+\contentsline {subsubsection}{Tables}{23}{section*.36}%
+\contentsline {paragraph}{Regression tables}{23}{section*.37}%
+\contentsline {paragraph}{Summary tables}{23}{section*.38}%
+\contentsline {subsubsection}{Figures}{25}{section*.39}%
+\contentsline {paragraph}{Coefficient plots}{25}{section*.40}%
+\contentsline {paragraph}{Prediction and model validation}{26}{section*.41}%
+\contentsline {subsection}{Further resources}{29}{section*.42}%
