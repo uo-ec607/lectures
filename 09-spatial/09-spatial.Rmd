@@ -56,7 +56,7 @@ We're going to be doing all our spatial analysis and plotting today in R. Behind
 
 ### R packages 
 
-- New: **sf**, **lwgeom**, **maps**, **mapdata**, **spData**, **tigris**, **tidycensus**, **leaflet**, **tmap**, **tmaptools**
+- New: **sf**, **lwgeom**, **maps**, **mapdata**, **spData**, **tigris**, **tidycensus**, **leaflet**, **mapview**, **tmap**, **tmaptools**
 - Already used: **tidyverse**, **data.table**, **hrbrthemes**
 
 Truth be told, you only need a handful of the above libraries to do 95% of the spatial work that you're likely to encounter. But R's spatial ecosystem and support is extremely rich, so I'll try to walk through a number of specific use-cases in this lecture. Run the following code chunk to install (if necessary) and load everything.
@@ -64,7 +64,7 @@ Truth be told, you only need a handful of the above libraries to do 95% of the s
 ```{r, cache=F, message=FALSE}
 ## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(sf, tidyverse, data.table, hrbrthemes, lwgeom, rnaturalearth, maps, mapdata, spData, tigris, tidycensus, leaflet, tmap, tmaptools)
+pacman::p_load(sf, tidyverse, data.table, hrbrthemes, lwgeom, rnaturalearth, maps, mapdata, spData, tigris, tidycensus, leaflet, mapview, tmap, tmaptools)
 ## My preferred ggplot2 plotting theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
@@ -488,7 +488,7 @@ detach(package:maps) ## To avoid potential purrr::map() conflicts
 
 > **Note:** Before continuing with this section, you will first need to [request an API key](https://api.census.gov/data/key_signup.html) from the Census. 
 
-Working with Census data has traditionally quite a pain. You need to register on the website, then download data from various years or geographies separately, merge these individual files, etc. Thankfully, this too has recently become much easier thanks to the Census API and --- for R at least --- the **tidycensus** ([link](https://walker-data.com/tidycensus/)) and **tigris** ([link](https://github.com/walkerke/tigris)) packages from [Kyle Walker](http://walkerke.github.io/) (a UO grad). This next section will closely follow a [tutorial](http://walkerke.github.io/2017/06/comparing-metros/) on his website.
+Working with Census data has traditionally quite a pain. You need to register on the website, then download data from various years or geographies separately, merge these individual files, etc. Thankfully, this too has recently become much easier thanks to the Census API and --- for R at least --- the **tidycensus** ([link](https://walker-data.com/tidycensus/)) and **tigris** ([link](https://github.com/walkerke/tigris)) packages from [Kyle Walker](http://walkerke.github.io/) (a UO alum). This next section will closely follow a [tutorial](http://walkerke.github.io/2017/06/comparing-metros/) on his website.
 
 We start by loading the packages and setting our Census API key. Note that I'm not actually running the below chunk, since I expect you to fill in your own Census key. You only have to run this function once. 
 
@@ -575,9 +575,9 @@ or_rent %>%
 That's a quick taste of working with **tidycensus** (and **tigris**). In truth, the package can do a lot more than I've shown you here. For example, you can also use it to download a variety of other Census microdata such as PUMS, which is much more detailed. See the **tidycensus** [website](https://walker-data.com/tidycensus/) for more information. 
 
 
-## BONUS 2: Interactive maps with **leaflet**
+## BONUS 2: Interactive maps
 
-Now that you've grasped the basic properties of **sf** objects and how to plot them using **ggplot2**, its time to scale up with interactive maps.^[The ability to easily plot interactive maps from R is one of the main reasons that I switched all of my public presentations from PDFs to RMarkdown-driven HMTL.] You have several package options here, but I think the best are **leaflet** (and derivatives) and **plotly**. We've already covered the latter in a previous lecture, so I'll simply redirect interested parties to [this link](https://plot.ly/r/maps-sf/) for some **sf**-specific examples. To expand on the former in more depth, [leaflet](https://leafletjs.com/) is a lightweight JavaScript library for interactive mapping that has become extremely popular in recent years... and with good reason. The good people at RStudio have kindly [packaged a version](https://rstudio.github.io/leaflet/) of **leaflet** for R, which basically acts as a wrapper to the underlying JavaScript library. 
+Now that you've grasped the basic properties of **sf** objects and how to plot them using **ggplot2**, its time to scale up with interactive maps.^[The ability to easily plot interactive maps from R is one of the main reasons that I switched all of my public presentations from PDFs to R Markdown-driven HMTL.] You have several package options here. But I think the best are **leaflet** ([link](https://rstudio.github.io/leaflet/)) and friends, or **plotly** ([link](https://github.com/ropensci/plotly)). We've already covered the latter in a previous lecture, so I'll simply redirect interested parties to [this link](https://plotly-r.com/maps.html) for some map-related examples examples. To expand on the former in more depth, [leaflet.js](https://leafletjs.com/) is a lightweight JavaScript library for interactive mapping that has become extremely popular in recent years. You would have seen it being used across all the major news media publications (*New York Times*, *Washington Post*, *The Economist*, etc.). The good people at RStudio have kindly packaged a version of **leaflet** for R, which basically acts as a wrapper to the underlying JavaScript library. 
 
 The **leaflet** syntax is a little different to what you've seen thus far and I strongly encourage you to visit the package's [excellent website](https://rstudio.github.io/leaflet/) for the full set of options. However, a key basic principle that it shares with **ggplot2** is that you *build your plot in layers*. Here's an example adapted from [Julia Silge](https://juliasilge.com/blog/using-tidycensus/), which builds on the **tidycensus** package that we saw above. This time, our goal is to plot county-level population densities for Oregon as a whole and produce some helpful popup text if a user clicks on a particular county. First, we download the data using **tidycensus** and inspect the resulting data frame.
 
@@ -608,7 +608,7 @@ oregon
 
 So, the popup text of interest is held within the "NAME" and "estimate" columns. I'll use a bit of regular expression work to extract the county name from the "NAME" column (i.e. without the state) and then build up the map layer by layer. Note that the **leaflet** syntax requires that I prepend variables names with a tilde (`~`) when I refer to them in the plot building process. This tilde operates in much the same way as the asthetics (`aes()`) function does in **ggplot2**. One other thing to note is that I need to define a colour palette --- which I'll call `col_pal` here --- separately from the main plot. This is a bit of an inconvenience if you're used to the fully-integrated **ggplot2** API, but only a small one. 
 
-```{r oregon_leaflet, cache = FALSE}
+```{r oregon_leaflet, dependson=oregon, cache = FALSE}
 # library(leaflet) ## Already loaded
 
 col_pal = colorQuantile(palette = "viridis", domain = oregon$estimate, n = 10)
@@ -652,7 +652,7 @@ lane =
     state = "OR", county = "Lane County", geometry = TRUE
     )
 ```
-```{r lane_leaflet, cache=FALSE}
+```{r lane_leaflet, dependson=lane, cache = FALSE}
 lane_pal = colorNumeric(palette = "plasma", domain = lane$estimate)
 
 lane %>%
@@ -677,6 +677,17 @@ lane %>%
     opacity = 1
     )
 ```
+
+Having tried to convince you of the conceptual similarities between building maps with either **leaflet** or **ggplot2** --- layering etc. --- there's no denying that the syntax does take some getting used to. If you only plan to spin up the occasional interactive map, that cognitive overhead might be more effort than it's worth. The good news is that R spatial community has created the **mapview** package ([link](https://r-spatial.github.io/mapview/)) for very quickly generating interactive maps. Behind the scenes, it uses **leaflet** to power everything, alongside some sensible defaults. Here's a quick example that recreates our Lane county home value map from above.
+
+```{r mapview, dependson=lane, cache = FALSE, out.width='100%'}
+# library(mapview) ## Already loaded
+
+mapview::mapview(lane, zcol = "estimate", 
+                 layer.name = 'Median home values<br>Lane County, OR')
+```
+
+Super easy, no? While it doesn't offer quite the same flexibility as the native **leaflet** syntax, **mapview** is a great way to get decent interactive maps up and running with minimal effort.^[I also want to flag the companion **mapedit** package ([link](https://github.com/r-spatial/mapedit)), which lets you _edit_ maps interactively by hand (e.g. redrawing polygons). I've used it for some of my projects and it works very well.]
 
 
 ## BONUS 3: Other map plotting options (**plot**, **tmap**, etc.)
