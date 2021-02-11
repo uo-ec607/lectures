@@ -486,18 +486,19 @@ detach(package:maps) ## To avoid potential purrr::map() conflicts
 
 ## BONUS 1: US Census data with **tidycensus** and **tigris** {#census}
 
-Working with Census data has traditionally quite a pain. You need to register on the website, then download data from various years or geographies separately, merge these individual files, etc. Thankfully, this too has recently become much easier thanks to the Census API and --- for R at least --- the **tigris** and **tidycensus** packages from [Kyle Walker](http://walkerke.github.io/) (a UO grad). This next section will closely follow a [tutorial](http://walkerke.github.io/2017/06/comparing-metros/) on his website.
+> **Note:** Before continuing with this section, you will first need to [request an API key](https://api.census.gov/data/key_signup.html) from the Census. 
 
-> NOTE: Before continuing with this section, you will first need to [request an API key](https://api.census.gov/data/key_signup.html) from the Census. Once that's done, you can set it using the `tidycensus::census_api_key()` function. I recommend using the "install = TRUE" option to save your key for future useage. 
+Working with Census data has traditionally quite a pain. You need to register on the website, then download data from various years or geographies separately, merge these individual files, etc. Thankfully, this too has recently become much easier thanks to the Census API and --- for R at least --- the **tidycensus** ([link](https://walker-data.com/tidycensus/)) and **tigris** ([link](https://github.com/walkerke/tigris)) packages from [Kyle Walker](http://walkerke.github.io/) (a UO grad). This next section will closely follow a [tutorial](http://walkerke.github.io/2017/06/comparing-metros/) on his website.
 
-We start by loading the packages and setting some options for optimized use with the **sf** package.
+We start by loading the packages and setting our Census API key. Note that I'm not actually running the below chunk, since I expect you to fill in your own Census key. You only have to run this function once. 
 
-```{r, message=F}
+```{r set_census_api_key, eval=FALSE}
 # library(tidycensus) ## Already loaded
 # library(tigris) ## Already loaded
-options(tigris_class = "sf")
-options(tigris_use_cache = TRUE)
-# census_api_key("YOUR KEY HERE", install = TRUE)
+
+## Replace the below with your own census API key. We'll use the "install = TRUE"
+## option to save the key for future use, so we only ever have to run this once.
+census_api_key("YOUR_CENSUS_API_KEY_HERE", install = TRUE)
 ```
 
 Let's say that our goal is to provide a snapshot of Census rental estimates across different cities in the Pacific Northwest. We start by downloading tract-level rental data for Oregon and Washington using the `tidycensus::get_acs()` function. Note that you'll need to look up the correct ID variable (in this case: "DP04_0134").
@@ -539,7 +540,7 @@ rent %>%
 
 Hmmm, looks like you want to avoid renting in Seattle if possible... 
 
-The above map is very detailed. Perhaps we're not interested in the entire set of tract level data, but would rather get a sense of rents within some well-defined metropolitan areas? The **tigris** package has you covered here. For example, let's say we want to compare average rents across three Oregon/Washington metros: Portland (and surrounds), Corvallis and Eugene.
+The above map provides rental information for pretty much all of the Pacific Northwest. Perhaps we're not interested in such a broad swatch of geography. What if we'd rather get a sense of rents within some smaller and well-defined metropolitan areas? Well, we'd need some detailed geographic data for starters, say from the [TIGER/Line shapefiles](https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.html) collection. The good news is that the **tigris** package has you covered here. For example, let's say we want to narrow down our focus and compare rents across three Oregon metros: Portland (and surrounds), Corvallis, and Eugene.
 
 ```{r or_metros, message=F, results = FALSE}
 or_metros = 
@@ -570,6 +571,8 @@ or_rent %>%
   geom_histogram() + 
   facet_wrap(~metro_name) 
 ```
+
+That's a quick taste of working with **tidycensus** (and **tigris**). In truth, the package can do a lot more than I've shown you here. For example, you can also use it to download a variety of other Census microdata such as PUMS, which is much more detailed. See the **tidycensus** [website](https://walker-data.com/tidycensus/) for more information. 
 
 
 ## BONUS 2: Interactive maps with **leaflet**
