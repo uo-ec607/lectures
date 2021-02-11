@@ -8,28 +8,28 @@
 *Note: While I have provided PDF versions of the lectures, they are best viewed 
 in the original HTML format.*
 
-1. **Introduction** \[[.html](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.html) | [.pdf](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.pdf) | [.Rmd](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.Rmd)\]
-2. **Version control with Git(Hub)** \[[.html](https://raw.githack.com/uo-ec607/lectures/master/02-git/02-Git.html) | [.pdf](https://raw.githack.com/uo-ec607/lectures/master/02-git/02-Git.pdf) | [.Rmd](https://raw.githack.com/uo-ec607/lectures/master/02-git/02-Git.Rmd)\]
-3. **Learning to love the shell** \[[.html](https://raw.githack.com/uo-ec607/lectures/master/03-shell/03-shell.html) | [.pdf](https://raw.githack.com/uo-ec607/lectures/master/03-shell/03-shell.pdf) | [.Rmd](https://raw.githack.com/uo-ec607/lectures/master/03-shell/03-shell.Rmd)\]
-4. **R language basics** \[[.html](https://raw.githack.com/uo-ec607/lectures/master/04-rlang/04-rlang.html) | [.pdf](https://raw.githack.com/uo-ec607/lectures/master/04-rlang/04-rlang.pdf) | [.Rmd](https://raw.githack.com/uo-ec607/lectures/master/04-rlang/04-rlang.Rmd)\]
-5. **Data wrangling & tidying**
-    - **Tidyverse** \[[.html](https://raw.githack.com/uo-ec607/lectures/master/05-tidyverse/05-tidyverse.html) | [.pdf](https://raw.githack.com/uo-ec607/lectures/master/05-tidyverse/05-tidyverse.pdf) | [.Rmd](https://raw.githack.com/uo-ec607/lectures/master/05-tidyverse/05-tidyverse.Rmd)\]
-    - **data.table** \[[.html](https://raw.githack.com/uo-ec607/lectures/master/05-datatable/05-datatable.html) | [.pdf](https://raw.githack.com/uo-ec607/lectures/master/05-datatable/05-datatable.pdf) | [.Rmd](https://raw.githack.com/uo-ec607/lectures/master/05-datatable/05-datatable.Rmd)\]
-6. **Webscraping: (1) Server-side & CSS** \[[.html](https://raw.githack.com/uo-ec607/lectures/master/06-web-css/06-web-css.html) | [.pdf](https://raw.githack.com/uo-ec607/lectures/master/06-web-css/06-web-css.pdf) | [.Rmd](https://raw.githack.com/uo-ec607/lectures/master/06-web-css/06-web-css.Rmd)\]
-7. **Webscraping: (2) Client-side & APIs** \[[.html](https://raw.githack.com/uo-ec607/lectures/master/07-web-apis/07-web-apis.html)\]
-8. **Regression analysis in R** \[[.html](https://raw.githack.com/uo-ec607/lectures/master/08-regression/08-regression.html) | [.pdf](https://raw.githack.com/uo-ec607/lectures/master/08-regression/08-regression.pdf) | [.Rmd](https://raw.githack.com/uo-ec607/lectures/master/08-regression/08-regression.Rmd)\]
-9. **Spatial analysis in R** \[[.html](https://raw.githack.com/uo-ec607/lectures/master/09-spatial/09-spatial.html) | [.pdf](https://raw.githack.com/uo-ec607/lectures/master/09-spatial/09-spatial.pdf) | [.Rmd](https://raw.githack.com/uo-ec607/lectures/master/09-spatial/09-spatial.Rmd)\] 
-    - **Rasters (bonus)** \[[.html](https://raw.githack.com/uo-ec607/lectures/master/09a-spatial-rasters/09a-spatial-rasters.html)\]
-10. **Functions in R: (1) Introductory concepts** \[[.html](https://raw.githack.com/uo-ec607/lectures/master/10-funcs-intro/10-funcs-intro.html)\]
-11. **Functions in R: (2) Advanced concepts**8 \[[.html](https://raw.githack.com/uo-ec607/lectures/master/11-funcs-adv/11-funcs-adv.html)\]
-12. **Parallel programming** \[[.html](https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html)\]
-13. **Docker** \[[rOpenSci tutorial](http://ropenscilabs.github.io/r-docker-tutorial/)\]
-14. **Google Compute Engine** \[[.html](https://raw.githack.com/uo-ec607/lectures/master/14-gce/14-gce.html)\]
-15. **HPC (UO Talapas cluster)** \[[Guest lecture](https://docs.google.com/presentation/d/146u3W0J0ytGYBq7MZBOoE6wdbkEUrMIV-Fg5N3Cnsls/edit?usp=sharing)\]
-16. **Databases** \[[.html](https://raw.githack.com/uo-ec607/lectures/master/16-databases/16-databases.html)\]
-17. **Spark** \[[.html](https://raw.githack.com/uo-ec607/lectures/master/17-spark/17-spark.html)\]
-18. **Machine learning**
-19. **Workflow & project management**
+1. Introduction \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.html) | [**.pdf**](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.pdf) | [**.Rmd**](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.Rmd)\]
+2. Version control with Git(Hub) \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/02-git/02-Git.html) | [**.pdf**](https://raw.githack.com/uo-ec607/lectures/master/02-git/02-Git.pdf) | [**.Rmd**](https://raw.githack.com/uo-ec607/lectures/master/02-git/02-Git.Rmd)\]
+3. Learning to love the shell \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/03-shell/03-shell.html) | [**.pdf**](https://raw.githack.com/uo-ec607/lectures/master/03-shell/03-shell.pdf) | [**.Rmd**](https://raw.githack.com/uo-ec607/lectures/master/03-shell/03-shell.Rmd)\]
+4. R language basics \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/04-rlang/04-rlang.html) | [**.pdf**](https://raw.githack.com/uo-ec607/lectures/master/04-rlang/04-rlang.pdf) | [**.Rmd**](https://raw.githack.com/uo-ec607/lectures/master/04-rlang/04-rlang.Rmd)\]
+5. Data wrangling & tidying
+    - Tidyverse \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/05-tidyverse/05-tidyverse.html) | [**.pdf**](https://raw.githack.com/uo-ec607/lectures/master/05-tidyverse/05-tidyverse.pdf) | [**.Rmd**](https://raw.githack.com/uo-ec607/lectures/master/05-tidyverse/05-tidyverse.Rmd)\]
+    - data.table \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/05-datatable/05-datatable.html) | [**.pdf**](https://raw.githack.com/uo-ec607/lectures/master/05-datatable/05-datatable.pdf) | [**.Rmd**](https://raw.githack.com/uo-ec607/lectures/master/05-datatable/05-datatable.Rmd)\]
+6. Webscraping: (1) Server-side & CSS \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/06-web-css/06-web-css.html) | [**.pdf**](https://raw.githack.com/uo-ec607/lectures/master/06-web-css/06-web-css.pdf) | [**.Rmd**](https://raw.githack.com/uo-ec607/lectures/master/06-web-css/06-web-css.Rmd)\]
+7. Webscraping: (2) Client-side & APIs \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/07-web-apis/07-web-apis.html)\]
+8. Regression analysis in R \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/08-regression/08-regression.html) | [**.pdf**](https://raw.githack.com/uo-ec607/lectures/master/08-regression/08-regression.pdf) | [**.Rmd**](https://raw.githack.com/uo-ec607/lectures/master/08-regression/08-regression.Rmd)\]
+9. Spatial analysis in R \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/09-spatial/09-spatial.html) | [**.pdf**](https://raw.githack.com/uo-ec607/lectures/master/09-spatial/09-spatial.pdf) | [**.Rmd**](https://raw.githack.com/uo-ec607/lectures/master/09-spatial/09-spatial.Rmd)\] 
+    - Rasters (bonus) \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/09a-spatial-rasters/09a-spatial-rasters.html)\]
+10. Functions in R: (1) Introductory concepts \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/10-funcs-intro/10-funcs-intro.html)\]
+11. Functions in R: (2) Advanced concepts8 \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/11-funcs-adv/11-funcs-adv.html)\]
+12. Parallel programming \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html)\]
+13. Docker \[[rOpenSci tutorial**](http://ropenscilabs.github.io/r-docker-tutorial/)\]
+14. Google Compute Engine \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/14-gce/14-gce.html)\]
+15. HPC (UO Talapas cluster) \[[Guest lecture**](https://docs.google.com/presentation/d/146u3W0J0ytGYBq7MZBOoE6wdbkEUrMIV-Fg5N3Cnsls/edit?usp=sharing)\]
+16. Databases \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/16-databases/16-databases.html)\]
+17. Spark \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/17-spark/17-spark.html)\]
+18. Machine learning
+19. Workflow & project management
 
 ## Details
 
