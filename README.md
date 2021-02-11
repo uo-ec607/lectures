@@ -1,9 +1,9 @@
 # Data science for economists
 
-[`Lectures`](#lecture-outline-and-quicklinks) | [`Details`](#details) |
+[`Lectures`](#lectures) | [`Details`](#details) |
 [`FAQ`](#faq) | [`License`](#license)
 
-## Lecture outline and quicklinks
+## Lectures
 
 *Note: While I have provided PDF versions of the lectures, they are best viewed 
 in the original HTML format.*
@@ -21,11 +21,11 @@ in the original HTML format.*
 9. Spatial analysis in R \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/09-spatial/09-spatial.html) | [**.pdf**](https://raw.githack.com/uo-ec607/lectures/master/09-spatial/09-spatial.pdf) | [**.Rmd**](https://raw.githack.com/uo-ec607/lectures/master/09-spatial/09-spatial.Rmd)\] 
     - Rasters (bonus) \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/09a-spatial-rasters/09a-spatial-rasters.html)\]
 10. Functions in R: (1) Introductory concepts \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/10-funcs-intro/10-funcs-intro.html)\]
-11. Functions in R: (2) Advanced concepts8 \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/11-funcs-adv/11-funcs-adv.html)\]
+11. Functions in R: (2) Advanced concepts \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/11-funcs-adv/11-funcs-adv.html)\]
 12. Parallel programming \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html)\]
-13. Docker \[[rOpenSci tutorial**](http://ropenscilabs.github.io/r-docker-tutorial/)\]
+13. Docker \[[**rOpenSci tutorial**](http://ropenscilabs.github.io/r-docker-tutorial/)\]
 14. Google Compute Engine \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/14-gce/14-gce.html)\]
-15. HPC (UO Talapas cluster) \[[Guest lecture**](https://docs.google.com/presentation/d/146u3W0J0ytGYBq7MZBOoE6wdbkEUrMIV-Fg5N3Cnsls/edit?usp=sharing)\]
+15. HPC (UO Talapas cluster) \[[**Guest lecture**](https://docs.google.com/presentation/d/146u3W0J0ytGYBq7MZBOoE6wdbkEUrMIV-Fg5N3Cnsls/edit?usp=sharing)\]
 16. Databases \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/16-databases/16-databases.html)\]
 17. Spark \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/17-spark/17-spark.html)\]
 18. Machine learning
@@ -45,7 +45,7 @@ Please do read the rest of the [**syllabus**](http://raw.githack.com/uo-ec607/sy
 
 Please note that this is a work in progress, with new material being added every week. 
 
-If you just want to read the lecture slides or HTML notebooks in your browser, then you should simply scroll up to the [Lecture outline and quicklinks](#lecture-outline-and-quicklinks) section at the top of this page. Completed lectures will be hyperlinked as soon as they have been added. Remember to check back in regularly to get any updates. Or, you can watch or star the repo to get notified automatically.
+If you just want to read the lecture slides or HTML notebooks in your browser, then you should simply scroll up to the [Lectures](#lectures) quicklinks section at the top of this page. Completed lectures will be hyperlinked as soon as they have been added. Remember to check back in regularly to get any updates. Or, you can watch or star the repo to get notified automatically.
 
 If you actually want to run the analysis and code on your own system (highly recommended), then you will need to download the material to your local machine. The best way to do this is to clone the repo via Git and then pull regularly to get updates. Please take a look at [these slides](https://raw.githack.com/uo-ec607/lectures/master/02-git/02-Git.html) if you are unfamiliar with Git or are unsure how to do any of that. Once that's done, you will find each lecture contained in a numbered folder (e.g. `01-intro`). The lectures themselves are written in R Markdown and then exported to HMTL format. Click on the HTML files if you just want to view the slides or notebooks.
 
