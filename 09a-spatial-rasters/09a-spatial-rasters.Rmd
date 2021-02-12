@@ -8,12 +8,34 @@ author:
 output: 
   html_document:
     theme: flatly
-    highlight: haddock 
+    highlight: haddock
     # code_folding: show
     toc: yes
     toc_depth: 4
     toc_float: yes
-    keep_md: true
+    keep_md: false
+    keep_tex: false ## Change to true if want keep intermediate .tex file
+    css: css/preamble.css ## For multi-col environments
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    dev: cairo_pdf
+    # fig_width: 7 ## Optional: Set default PDF figure width
+    # fig_height: 6 ## Optional: Set default PDF figure height
+    includes:
+      in_header: tex/preamble.tex ## For multi-col environments
+    pandoc_args:
+        --template=tex/mytemplate.tex ## For affiliation field. See: https://bit.ly/2T191uZ
+always_allow_html: true
+urlcolor: blue
+mainfont: cochineal
+sansfont: Fira Sans
+monofont: Fira Code ## Although, see: https://tex.stackexchange.com/q/294362
+## Automatically knit to both formats:
+knit: (function(inputFile, encoding) {
+ rmarkdown::render(inputFile, encoding = encoding, 
+ output_format = 'all') 
+ })
 ---
 
 ```{r setup, include=FALSE}
@@ -186,7 +208,6 @@ cpt_cb = st_crop(cpt, bb)
 plot(cpt_cb, col = viridis::magma(18))
 ```
 
-
 Let's rayshade this bad boy.
 
 ```{r cpt_cb_rayshader, dependson=cpt_cb}
@@ -197,8 +218,8 @@ cpt_cb %>%
   add_water(detect_water(cpt_cb), color = "desert") %>%
   plot_map()
 ```
-[
-For the iconic image --- i.e. looking out to the flat table top of the mountain from the harbour --- we just need to just our camera angle a little bit.
+
+For the iconic image, looking out across the harbour to the flat table top of the mountain, we just need to just our camera angle a little bit. This will simulate looking southwest from the top right-hand corner of the previous plot.
 
 ```{r cpt_cb_rayshader_3d, dependson=cpt_cb}
 cpt_cb %>%
@@ -213,22 +234,10 @@ render_snapshot(clear=TRUE)
 
 FWIW, here's the real thing, courtesy of [Wikipedia](https://en.wikipedia.org/wiki/Table_Mountain). Ain't she a beauty?
 
-![](https://upload.wikimedia.org/wikipedia/commons/d/dc/Table_Mountain_DanieVDM.jpg)
-
-```{r cpt_cont, include=FALSE, eval=FALSE}
-cpt_cont = 
-  jsonlite::fromJSON("https://citymaps.capetown.gov.za/agsext1/rest/services/Theme_Based/Open_Data_Service/MapServer/15/query?where=1%3D1&outFields=*&outSR=4326&f=json") 
-
-```
-
-```{r cpt_cont_sf, include=FALSE, eval=FALSE}
-library(geojsonio)
-cpt_cont = geojson_read("https://opendata.arcgis.com/datasets/d179f9e0faf145a2957617da1b231892_15.geojson")
-
-url <- "https://opendata.arcgis.com/datasets/d179f9e0faf145a2957617da1b231892_15.geojson"
-geojson_read(url)
-geojson_read(url, parse = TRUE)
-
-cpt_cont_sf = st_as_sf(cpt_cont)
-cpt_cont_sf
+```{r tm_wiki, echo = FALSE, out.width='100%'}
+if (knitr::is_html_output()){
+  knitr::include_graphics('https://upload.wikimedia.org/wikipedia/commons/d/dc/Table_Mountain_DanieVDM.jpg')
+} else {
+  message("Sorry, this image is only available in the the HTML version of the notes.")
+}
 ```
