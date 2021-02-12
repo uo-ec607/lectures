@@ -19,7 +19,7 @@ in the original HTML format.*
 7. Webscraping: (2) Client-side & APIs \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/07-web-apis/07-web-apis.html)\]
 8. Regression analysis in R \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/08-regression/08-regression.html) | [**.pdf**](https://raw.githack.com/uo-ec607/lectures/master/08-regression/08-regression.pdf) | [**.Rmd**](https://raw.githack.com/uo-ec607/lectures/master/08-regression/08-regression.Rmd)\]
 9. Spatial analysis in R \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/09-spatial/09-spatial.html) | [**.pdf**](https://raw.githack.com/uo-ec607/lectures/master/09-spatial/09-spatial.pdf) | [**.Rmd**](https://raw.githack.com/uo-ec607/lectures/master/09-spatial/09-spatial.Rmd)\] 
-    - Rasters (bonus) \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/09a-spatial-rasters/09a-spatial-rasters.html)\]
+    - Rasters (bonus) \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/09a-spatial-rasters/09a-spatial-rasters.html) | [**.pdf**](https://raw.githack.com/uo-ec607/lectures/master/09a-spatial-rasters/09a-spatial-rasters.pdf) | [**.Rmd**](https://raw.githack.com/uo-ec607/lectures/master/09a-spatial-rasters/09a-spatial-rasters.Rmd)\]
 10. Functions in R: (1) Introductory concepts \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/10-funcs-intro/10-funcs-intro.html)\]
 11. Functions in R: (2) Advanced concepts \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/11-funcs-adv/11-funcs-adv.html)\]
 12. Parallel programming \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html)\]
