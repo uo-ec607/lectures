@@ -276,6 +276,46 @@ today3 = function(...) data.table::fifelse(..., Sys.Date(), Sys.Date()-1)
 today3(TRUE)
 ```
 
+### *case when* (nested ifelse)
+
+As you may have guessed, it's certainly possible to write nested `ifelse()` statements. For example,
+
+```{r case_when1, eval=FALSE}
+ifelse(CONDITION1, DO IF TRUE, ifelse(CONDITION2, DO IF TRUE, ifelse(...)))
+```
+
+However, these nested statements quickly become difficult to read and troubleshoot. A better solution was originally developed in SQL with the `CASE WHEN` statement. Both **dplyr** with `case_when()` and **data.table** with `fcase()` provide implementations R.^[Note that `data.table::fcase()` is only available in the latest development version at present.] Here is a simple illustration of both implementations.
+
+```{r case_when2}
+x = 1:10
+## dplyr::case_when()
+case_when(
+  x <= 3 ~ "small",
+  x <= 7 ~ "medium",
+  TRUE ~ "big" ## Default value. Could also write `x > 7 ~ "big"` here.
+  )
+## data.table::fcase()
+fcase(
+    x <= 3, "small",
+    x <= 7, "medium",
+    default = "big" ## Default value. Could also write `x > 7, "big"` here.
+    )
+```
+
+Not to belabour the point, but you can easily use these *case when* implementations inside of data frames/tables too.
+
+```{r case_when3}
+## dplyr::case_when()
+tibble(x = 1:10) %>%
+    mutate(grp = case_when(x <= 3 ~ "small",
+                           x <= 7 ~ "medium",
+                           TRUE ~ "big"))
+## data.table::fcase()
+data.table(x = 1:10)[, grp := fcase(x <= 3, "small",
+                                    x <= 7, "medium",
+                                    default = "big")][]
+```
+
 
 ## Iteration
 
