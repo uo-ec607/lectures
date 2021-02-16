@@ -51,7 +51,7 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
 - New: **pbapply**
 - Already used: **tidyverse**, **data.table** 
 
-We'll mostly be using the tidyverse to access the [**purrr**](https://purrr.tidyverse.org/) package. Let's install (if necessary) and load everything:
+We'll be sticking mostly with base R functions today, but I also want to show you a few extra features and considerations for our main data wrangling packages. As per usual, run the following code chunk to install (if necessary) and load everything.
 
 ```{r, cache=F, message=F}
 if (!require("pacman")) install.packages("pacman")
@@ -284,7 +284,7 @@ As you may have guessed, it's certainly possible to write nested `ifelse()` stat
 ifelse(CONDITION1, DO IF TRUE, ifelse(CONDITION2, DO IF TRUE, ifelse(...)))
 ```
 
-However, these nested statements quickly become difficult to read and troubleshoot. A better solution was originally developed in SQL with the `CASE WHEN` statement. Both **dplyr** with `case_when()` and **data.table** with `fcase()` provide implementations R.^[Note that `data.table::fcase()` is only available in the latest development version at present.] Here is a simple illustration of both implementations.
+However, these nested statements quickly become difficult to read and troubleshoot. A better solution was originally developed in SQL with the `CASE WHEN` statement. Both **dplyr** with `case_when()` and **data.table** with `fcase()` provide implementations R. Here is a simple illustration of both implementations.
 
 ```{r case_when2}
 x = 1:10
@@ -402,8 +402,6 @@ Third, notice that the returned object is a *list*. The `lapply()` function can 
 Okay, but what if you don't want the output in list form? There several options here.^[For example, we could pipe the output to `unlist()` if you wanted a vector. Or you could use use `sapply()` instead, which I'll cover shortly.] However, the method that I use most commonly is to bind the different list elements into a single data frame with either `dplyr::bind_rows()` or `data.table::rbindlist()`. For example, here's a a slightly modified version of our function that now yields a data frame:
 
 ```{r bind_rows_ex}
-# library(tidyverse) ## Already loaded
-
 lapply(1:10, function(i) {
   df = tibble(num = i, let = LETTERS[i])
   return(df)
@@ -493,7 +491,7 @@ map_df(c(1, 5, 26, 3), num_to_alpha)
 
 Thus far, we have only been working with functions that take a single input when iterating. For example, we feed them a single vector (even though that vector contains many elements that drive the iteration process). But what if we want to iterate over multiple inputs? Consider the following function, which takes two separate variables `x` and `y` as inputs, combines them in a data frame, and then uses them to create a third variable `z`. 
 
-> **Aside:** Again, this is a rather silly function that we could easily improve upon using standard (vectorised) tools. But my goal here is to demonstrate programming principles with simple examples that carry over to more complicated cases where vectorisation is not possible.
+> **Note:** Again, this is a rather silly function that we could easily improve upon using standard (vectorised) tools. But my goal here is to demonstrate programming principles with simple examples that carry over to more complicated cases where vectorisation is not possible.
 
 ```{r multi_func}
 ## Create a named function
@@ -526,12 +524,13 @@ Both base R --- through `mapply()` --- and purrr --- through `pmap` --- can hand
 First, `base::mapply()`:
 ```{r mapply, dependson=multi_func}
 ## Note that the inputs are now moved to the *end* of the call. 
-## mapply is based on sapply, so we also have to tell it not to simplify if we want to keep the list structure.
+## Also, mapply() is based on sapply(), so we also have to tell it not to 
+## simplify if we want to keep the list structure.
 mapply(
   multi_func,
-  x=1:5, ## Our "x" vector input
-  y=6:10, ## Our "y" vector input
-  SIMPLIFY = F ## Tell it not to simplify to keep the list structure
+  x = 1:5,         ## Our "x" vector input
+  y = 6:10,        ## Our "y" vector input
+  SIMPLIFY = FALSE ## Tell it not to simplify to keep the list structure
   ) %>%
   bind_rows()
 ```
@@ -550,8 +549,8 @@ While the above approaches work perfectly well, I find that I don't actually use
 It basically boils down to the fact that I feel this gives me more control over my functions and inputs. 
 
 - I don't have to worry about accidentally feeding separate inputs of different lengths. Try running the above functions with an `x` vector input of `1:10`, for example. (Leave everything else unchanged.) `pmap()` will at least fail to iterate and give you a helpful message, but `mapply` will actually complete with totally misaligned columns. Putting everything in a (rectangular) data frame forces you to ensure the equal length of inputs *a priori*.
-- Similarly, I often need to run a function over all possible combinations of different inputs. A really convenient way to do this is with the `base::expand.grid()` function, which automatically generates a data frame of all combinations.^[We encountered some related tidyverse functions (`tidyr::expand()` and `tidyr::complete()`) in an earlier lecture, as well as your second assignment. Of course, you could could also extract the columns of the data frame as separate vectors and then feed these into `pmap()`/`mapply()` if you prefer.] So it's convenient for me to use this data frame as an input directly in my function.
-- In my view, it's just simpler and cleaner to keep things down to a single input. This will be harder to see in the simple example that I'm going to present next, but I've found that it can make a big difference with complicated functions that have a lot of nesting (i.e. functions of functions) and/or parallelization.
+- Similarly, I often need to run a function over all possible combinations of different inputs.^[A convenient way to do this is with `base::expand.grid()` --- or the equivalent `tidyr::expand_grid()` and `data.table:CJ()` functions --- which automatically generate a data frame of all combinations.] So it's convenient for me to use this data frame as an input directly in my function.
+- In my view, it's just simpler and cleaner to keep things down to a single input. This will be harder to see in the simple example that I'm going to present next. But I've found that it can make a big difference with complicated functions that have a lot of nesting (i.e. functions of functions) and/or parallelization.
 
 Those justifications aside, let's see how this might work with an example. Consider the following function:
 
