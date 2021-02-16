@@ -98,7 +98,7 @@ Try to give your functions short, pithy names that are informative to both you a
 Let's write out a simple example function, which gives the square of an input number.
 
 ```{r square1}
-square =       ## Our function name
+square =        ## Our function name
   function(x) { ## The argument(s) that our function takes as an input
     x^2         ## The operation(s) that our function performs
   }
@@ -120,7 +120,7 @@ Notice that we didn't specify a return value for our function. This will work in
 ```{r square2}
 square = 
   function(x) { 
-    x_sq = x^2   ## Create an intermediary object (that will be returned)
+    x_sq = x^2    ## Create an intermediary object (that will be returned)
     return(x_sq)  ## The value(s) or object(s) that we want returned.
   }
 ```
@@ -135,7 +135,7 @@ Specifying an explicit return value is also helpful when we want to return more 
 ```{r square3}
 square = 
   function(x) { ## The argument(s) that our function takes as an input
-    x_sq = x^2 ## The operation(s) that our function performs
+    x_sq = x^2  ## The operation(s) that our function performs
     return(list(value=x, value_squared=x_sq)) ## The list of object(s) that we want returned.
   }
 ```
@@ -174,7 +174,7 @@ square =
 ```
 
 ```{r square5a}
-square() ## Will take the default value of 1 since we didn't provide an alternative.
+square()  ## Will take the default value of 1 since we didn't provide an alternative.
 square(2) ## Now takes the explicit value that we give it.
 ```
 
@@ -199,7 +199,7 @@ We've already encountered conditional statements like `if()` and `ifelse()` nume
 
 ```{r cf1}
 square = 
-  function(x = NULL) { ## Default value of NULL
+  function(x = NULL) {  ## Default value of NULL
     if (is.null(x)) x=1 ## Re-assign default to 1
     x_sq = x^2 
     df = tibble(value=x, value_squared=x_sq)
