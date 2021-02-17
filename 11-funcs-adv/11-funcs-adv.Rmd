@@ -258,7 +258,7 @@ map_df(list(1,2,"three"), square_trycatch2)
 
 ### Option 3: Use `purrr::safely()` and family
 
-Finally, for those of you who prefer a tidyverse equivalent of `tryCatch()`, you can use `purrr::safely()` and its related functions (including `purrr::possibly()` and other variants). I won't go through the entire rigmarole again, so here's a simple flavour of how they work:
+Finally, for those of you who prefer a **tidyverse** equivalent of `tryCatch()`, you can use `purrr::safely()` and its related functions (including `purrr::possibly()` and other variants). I won't go through the entire rigmarole again, so here's a simple flavour of how they work:
 
 ```{r square_safely1}
 square_simple =
@@ -283,7 +283,7 @@ We've already experienced the benefits (and occasional frustrations) of caching 
 
 We'll get to parallel computation in the next lecture, but the problem is *even worse* there. What typically happens with a parallelized program is that the entire run will complete (potentially taking many hours or days) and only reveal an error right at the end... with no saved output! 
 
-Fortunately, R has our back with several caching tools. Here I'm going to focus on the [**memoise**](https://github.com/r-lib/memoise) package. Note that [memoisation/memoization](https://en.wikipedia.org/wiki/Memoization) refers to a particular form of caching where we save (i.e. "remember") the results of expensive functions calls, so that we don't have to repeat them in the future.
+Fortunately, R has our back with several caching tools. Here I'm going to focus on the **memoise** package ([**link**](https://github.com/r-lib/memoise)). Note that [memoisation/memoization](https://en.wikipedia.org/wiki/Memoization) refers to a particular form of caching where we save (i.e. "remember") the results of expensive functions calls, so that we don't have to repeat them in the future.
 
 Let's start by creating a "slow" version of our simple square function --- that waits for two seconds before doing anything --- which I'll creatively call `slow_square()`. Of course, this is just meant to emulate a computationally-expensive operation, but the basic principles will carry through intact.
 
@@ -311,17 +311,17 @@ The first time we execute our memoised `slow_square_mem()` function, it won't be
 Let's run some examples and compare actual timings. For the first run, I'll iterate over our function using the numbers 1 through 10 and save the resulting data frame to an object called `m1`.
 
 ```{r m1, dependson=mem_square}
-system.time(
+system.time({
   m1 = map_df(1:10, mem_square)
-)
+})
 ```
 
 As expected this took 20 seconds because of the enforced two second wait during each iteration. Now, we try calling the function a second time --- iterating over the exact same inputs and saving to a new `m2` object --- to see if caching makes a difference...
 
 ```{r m2, dependson=mem_square, dependson=m1}
-system.time(
+system.time({
   m2 = map_df(1:10, mem_square)
-)
+})
 ```
 
 And does it ever! We're down to a fraction of a second, since we didn't need to run at all again. Rather, we simply recalled the previously saved (i.e. memoised) results. And just to prove that we're really saving meaningful output, here is a comparison of the two data frames, as well as the printed output of `m2`.
@@ -334,9 +334,9 @@ m2
 Finally, note that our caching function is smart enough to distinguish between previously cached and non-cached results. For example, consider what happens if I include five more numbers in the `x` input vector.
 
 ```{r m3, dependson=mem_square, dependson=m1}
-system.time(
+system.time({
   m3 = map_df(1:15, mem_square)
-)
+})
 ```
 
 As expected, this only took (5 $\times$ 2 = ) 10 seconds to generate the new results from scratch, with the previous results being called up from the cache. You can think of preceding example as approximating a real-life scenario, where your program crashes or halts midway through its run, yet you don't need to restart all the way at the beginning. These kinds of interruptions happen more frequently than you might expect, especially if you're working with complex analyses and high-performance computing tools (e.g. preemptible nodes or VM instances). Being smart about caching has saved me *many* lost hours and it could do the same for you.
@@ -350,7 +350,7 @@ For example, we can specify a new, persistent memoise cache location for our `sl
 
 ```{r cache_dir, dependson=slow_square}
 ## Cache directory path (which I've already created)
-cache_dir = here("10-funcs-adv/.rcache")
+cache_dir = here("11-funcs-adv/.rcache")
 
 ## (Re-)memoise our function with the persistent cache location
 mem_square_persistent = memoise(slow_square, cache = cache_filesystem(cache_dir))
@@ -394,9 +394,9 @@ mem_square_verbose =
 And here's an example of the verbose function in action. The output is probably less impressive in a knitted R Markdown document, but I find the real-time feedback to be very informative in a live session. (Try it yourself.)
 
 ```{r m5, dependson=mem_square_verbose, dependson=m4}
-system.time(
+system.time({
   m5 = map_df(1:10, mem_square_verbose)
-)
+})
 ```
 
 
