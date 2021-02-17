@@ -331,7 +331,7 @@ all.equal(m1, m2)
 m2
 ```
 
-Finally, note that our caching function is smart enough to disguish between previously cached and non-cached results. For example, consider what happens if I include five more numbers in the `x` input vector.
+Finally, note that our caching function is smart enough to distinguish between previously cached and non-cached results. For example, consider what happens if I include five more numbers in the `x` input vector.
 
 ```{r m3, dependson=mem_square, dependson=m1}
 system.time(
@@ -339,7 +339,7 @@ system.time(
 )
 ```
 
-As expected, this only took (5 $\times$ 2 = ) 10 seconds to generate the new results from scratch, with the previous results being called up from the cache. You can think of preceding example as approximating a real-life scenario, where your program crashes or halts midway through its run, yet you don't need to restart all the way at the beginning. These kinds of interuptions happen more frequently than you might expect, especially if you're working with complex analyses and high-performance computing tools (e.g. preemptible nodes or VM instances). Being smart about caching has saved me *many* lost hours and it could do the same for you.
+As expected, this only took (5 $\times$ 2 = ) 10 seconds to generate the new results from scratch, with the previous results being called up from the cache. You can think of preceding example as approximating a real-life scenario, where your program crashes or halts midway through its run, yet you don't need to restart all the way at the beginning. These kinds of interruptions happen more frequently than you might expect, especially if you're working with complex analyses and high-performance computing tools (e.g. preemptible nodes or VM instances). Being smart about caching has saved me *many* lost hours and it could do the same for you.
 
 
 ### Aside 1: Caching across R sessions
@@ -391,7 +391,7 @@ mem_square_verbose <-
   }
 ```
 
-And here's an example of the vebose function in action. The output is probably less impressive in a knitted R Markdown document, but I find the real-time feedback to be very informative in a live session. (Try it yourself.)
+And here's an example of the verbose function in action. The output is probably less impressive in a knitted R Markdown document, but I find the real-time feedback to be very informative in a live session. (Try it yourself.)
 
 ```{r m5, dependson=mem_square_verbose, dependson=m4}
 system.time(
