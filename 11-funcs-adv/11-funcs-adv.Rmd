@@ -344,6 +344,16 @@ As expected, this only took (5 $\times$ 2 = ) 10 seconds to generate the new res
 
 ### Aside 1: Caching across R sessions
 
+```{r pdf_cache1, echo = FALSE}
+if (knitr::is_latex_output()){
+   message(
+    "Note: The benchmarked timing in this section might not line up with the text if you are viewing
+    the PDF version of the lecture notes."
+    )
+} 
+```
+
+
 The previous paragraph elides an important caveat: The default `memoise()` cache is only valid for the current R session. You can see this more clearly by exploring the help documentation of the function, where you will note the internal `cache = cache_memory()` argument. To enable caching that persists across sessions --- including when your computer crashes --- you need to specify a dedicated cache directory with `cache = cache_filesystem(PATH)`. This directory can be located anywhere on your system (or, indeed, on a linked cloud storage service) and you can even have multiple cache directories for different projects. My only modest recommendation is that you use a `.rcache/` naming pattern to keep things orderly. 
 
 For example, we can specify a new, persistent memoise cache location for our `slow_square()` function within this lecture sub-directory as follows.
@@ -360,12 +370,23 @@ Run our new memoised function and check that it saved the cached output to the s
 
 ```{r m4}
 m4 = map_df(1:7, mem_square_persistent)
-list.files(cache_dir)
+
+cached_files = list.files(cache_dir)
+cached_files
 ```
 
 **Bottom line:** Specify a dedicated cache directory for complex or time-consuming analyses that you want to be able to access across R sessions.
 
 ### Aside 2: Verbose output
+
+```{r pdf_cache2, echo = FALSE}
+if (knitr::is_latex_output()){
+  message(
+    "Note: The benchmarked timing in this section might not line up with the text if you are viewing
+    the PDF version of the lecture notes."
+    )
+} 
+```
 
 It's possible (and often very helpful) to add verbose prompts to our memoised functions. Consider the code below, which which folds our `mem_square_persistent()` function into two sections:
 
@@ -397,6 +418,12 @@ And here's an example of the verbose function in action. The output is probably 
 system.time({
   m5 = map_df(1:10, mem_square_verbose)
 })
+```
+
+Finally, albeit probably unnecessary, we can also prove to ourselves that we've added the three new cases (i.e. for `8:10`) to our cache directory by comparing to what we had previously.
+
+```{r cache_comp}
+setdiff(list.files(cache_dir), cached_files)
 ```
 
 
