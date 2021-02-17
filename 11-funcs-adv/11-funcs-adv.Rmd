@@ -8,12 +8,34 @@ author:
 output: 
   html_document:
     theme: flatly
-    highlight: haddock 
+    highlight: haddock
     # code_folding: show
     toc: yes
     toc_depth: 4
     toc_float: yes
-    keep_md: true
+    keep_md: false
+    keep_tex: false ## Change to true if want keep intermediate .tex file
+    css: css/preamble.css ## For multi-col environments
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    dev: cairo_pdf
+    # fig_width: 7 ## Optional: Set default PDF figure width
+    # fig_height: 6 ## Optional: Set default PDF figure height
+    includes:
+      in_header: tex/preamble.tex ## For multi-col environments
+    pandoc_args:
+        --template=tex/mytemplate.tex ## For affiliation field. See: https://bit.ly/2T191uZ
+always_allow_html: true
+urlcolor: blue
+mainfont: cochineal
+sansfont: Fira Sans
+monofont: Fira Code ## Although, see: https://tex.stackexchange.com/q/294362
+## Automatically knit to both formats:
+knit: (function(inputFile, encoding) {
+ rmarkdown::render(inputFile, encoding = encoding, 
+ output_format = 'all') 
+ })
 ---
 
 ```{r setup, include=FALSE}
@@ -31,7 +53,7 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
 
 Install (if necessary) and load these packages now:
 
-```{r, cache=F, message=F}
+```{r, cache=F, message=FALSE}
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(memoise, tidyverse, here)
 ```
@@ -59,13 +81,13 @@ R and the RStudio IDE provide a number of excellent tools for debugging. We'll w
 
 ### Debug mode
 
-*<b>Note:</b> This section should be run interactively and I've set most of the below code chunks to `eval=F` in the R Markdown document. So don't be suprised if the knitted HTML document doesn't contain output correspoding to what I'm talking about in the text. My advice is to run the code chunks yourself and then follow along with the text.*
+*<b>Note:</b> This section should be run interactively and I've set most of the below code chunks to `eval=FALSE` in the R Markdown document. So don't be surprised if the knitted HTML document doesn't contain output corresponding to what I'm talking about in the text. My advice is to run the code chunks yourself and then follow along with the text.*
 
 As the figure above suggests, there are various ways to enter so-called **debug mode**. This is where you "step inside" a function and evaluate objects *within that function environment*. In other words, it allows you to pause time and interact with internal function objects that are normally hidden from your global environment.^[Remember from our last lecture: Functions operate in semi-sandboxed [environments](http://adv-r.had.co.nz/Environments.html) determined by R's [lexical scoping](http://adv-r.had.co.nz/Functions.html#lexical-scoping) rules.] Let's practice with an example.
 
-Suppose we feed some deliberately invalid input --- a character string --- to our `square()` function:
+Suppose we feed some deliberately invalid input --- i.e. a character string --- to our `square()` function:
 
-```{r square_one, error=T}
+```{r square_one, error=TRUE}
 square("one")
 ```
 
@@ -73,7 +95,7 @@ Now, of course, we already knew that this function call would fail. (D'uh, you c
 
 While there are several ways to do trigger the debugger, I recommend the **`debugonce()`** function. As the name suggests, running `debugonce(square)` will cause us to enter debug mode the next time we call `square()`, but only that one time.^[The generic `debug()` function works well too. However, there are some edge cases where running it inside the RStudio IDE can result in a recursive debugging loop (i.e. hell). So I advise avoiding `debug()` in favour of `debugonce()` unless you are running R (or calling R scripts) directly from the terminal.] Let's try it in a live session:
 
-```{r debugonce, eval=F}
+```{r debugonce, eval=FALSE}
 ## Run this next chunk yourself in a live session
 debugonce(square)
 square("one")
@@ -217,7 +239,7 @@ map(list(1,2,"three"),  square_trycatch)
 
 As we practiced last lecture, we may wish to bind the resulting list of data frames into a single data frame using `dplyr::bind_rows()` or, more simply, `purrr::map_df()`. However, that actually produces errors of its own because all of the columns need to be the same. 
 
-```{r square_trycatch_test4, error=T}
+```{r square_trycatch_test4, error=TRUE}
 map_df(list(1,2,"three"),  square_trycatch)
 ```
 
@@ -257,7 +279,9 @@ square_safely("three")
 
 ## Caching (memoisation)
 
-We've already experienced the benefits (and occasional frustrations) of caching with R Markdown documents.^[Like all of my notes for the course, this lecture is written in R Markdown and then "knitted" to HTML. If you look at the .Rmd source file, you'll see a code chunk with `knitr::opts_chunk$set(echo=TRUE, cache=TRUE, dpi=300)` right at the top. The `cache=TRUE` bit causes each subsequent code chunk to be cached, so that they don't have to be re-run every time I recompile the document (unless something changes).] Caching can also be extremely useful for regular R scripts and analyses. For example, we may wish to save some computationally-expensive output so that we don't have to run it again. On a related but more sinister note, programs and functions can crash midway through completion. This can happen for a variety of reasons: invalid function arguments buried in iterated input, computer malfunction, memory limits, power outtages, timeouts, etc. Regardless, it can be a fairly soul-splintering experience to lose all of your work if you're working on a particularly lengthy simulation or computation problem. Lastly, we'll get to parallel computation in the next lecture, but the problem is *even worse* there. What typically happens with a parallelized program is that the entire run will complete (potentially taking many hours or days) and only reveal an error right at the end... with no saved output! 
+We've already experienced the benefits (and occasional frustrations) of caching with R Markdown documents.^[Like all of my notes for the course, this lecture is written in R Markdown and then "knitted" to HTML. If you look at the .Rmd source file, you'll see a code chunk with `knitr::opts_chunk$set(echo=TRUE, cache=TRUE, dpi=300)` right at the top. The `cache=TRUE` bit causes each subsequent code chunk to be cached, so that they don't have to be re-run every time I recompile the document (unless something changes).] Caching can also be extremely useful for regular R scripts and analyses. For example, we may wish to save some computationally-expensive output so that we don't have to run it again. On a related but more sinister note, programs and functions can crash midway through completion. This can happen for a variety of reasons: invalid function arguments buried in iterated input, computer malfunction, memory limits, power outages, timeouts, etc. Regardless, it can be a fairly soul-splintering experience to lose all of your work if you're working on a particularly lengthy simulation or computation problem. 
+
+We'll get to parallel computation in the next lecture, but the problem is *even worse* there. What typically happens with a parallelized program is that the entire run will complete (potentially taking many hours or days) and only reveal an error right at the end... with no saved output! 
 
 Fortunately, R has our back with several caching tools. Here I'm going to focus on the [**memoise**](https://github.com/r-lib/memoise) package. Note that [memoisation/memoization](https://en.wikipedia.org/wiki/Memoization) refers to a particular form of caching where we save (i.e. "remember") the results of expensive functions calls, so that we don't have to repeat them in the future.
 
@@ -300,7 +324,7 @@ system.time(
 )
 ```
 
-And does it ever! We're down to a fraction of a second, since we didn't need to run at all again. Rather, we simply recalled the previously saved (i.e. memoised) results. And just to prove that we're really saving meaningful output, here is a comparison of the two data frames, as well as the printed output of `df2`.
+And does it ever! We're down to a fraction of a second, since we didn't need to run at all again. Rather, we simply recalled the previously saved (i.e. memoised) results. And just to prove that we're really saving meaningful output, here is a comparison of the two data frames, as well as the printed output of `m2`.
 
 ```{r m1_v_m2, dependson=m1, dependson=m2}
 all.equal(m1, m2)
@@ -326,7 +350,7 @@ For example, we can specify a new, persistent memoise cache location for our `sl
 
 ```{r cache_dir, dependson=slow_square}
 ## Cache directory path (which I've already created)
-cache_dir <- here("11-funcs-adv/.rcache")
+cache_dir <- here("10-funcs-adv/.rcache")
 
 ## (Re-)memoise our function with the persistent cache location
 mem_square_persistent <- memoise(slow_square, cache = cache_filesystem(cache_dir))
@@ -378,5 +402,6 @@ system.time(
 
 ## Further resources
 
-- RStudio have a number of great debugging resources. I recommend [*Debugging techniques in RStudio*](https://www.rstudio.com/resources/videos/debugging-techniques-in-rstudio/) (a recorded talk by Amanda Gadrow) and [Debugging with RStudio](https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-RStudio) (Jonathan McPherson).
+- RStudio have a number of great debugging resources. I recommend [*Debugging techniques in RStudio*](https://rstudio.com/resources/rstudioconf-2018/debugging-techniques-in-rstudio/) (a recorded talk by Amanda Gadrow) and [Debugging with RStudio](https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-RStudio) (Jonathan McPherson). 
+- While it's less about the technical specifics, my favourite debugging talk is Jenny Bryan's [*Object of type ‘closure’ is not subsettable*](https://rstudio.com/resources/rstudioconf-2020/object-of-type-closure-is-not-subsettable). She covers (and sympathizes with) common debugging frustrations, as well as general approaches to getting help or solving the problem yourself. In typical Jenny fashion, the talk is both funny and wise. Watch it.
 - The [Debugging](https://adv-r.hadley.nz/debugging.html) chapter of Hadley Wickham's [*Advanced R*](https://adv-r.hadley.nz) provides a very thorough treatment. In fact, the whole book is fantastic. If you're looking to scale up your understanding of how R works underneath the hood and implement some truly high-performance code, then I can think of no better reference.
