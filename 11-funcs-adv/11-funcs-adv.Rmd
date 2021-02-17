@@ -61,11 +61,11 @@ pacman::p_load(memoise, tidyverse, here)
 We will also be working with our simple `square()` function from the previous lecture. Let's create it again quickly.
 
 ```{r square}
-square <- 
+square = 
   function(x = 1) {
-    x_sq <- x^2 
-    df <- tibble(value=x, value_squared=x_sq)
-    return(df)
+    x_sq = x^2 
+    d = tibble(value=x, value_squared=x_sq)
+    return(d)
   }
 ```
 
@@ -114,7 +114,7 @@ Note the following changes to my RStudio IDE while I'm in debug mode:
 - *Console (bottom-right).* The prompt has changed from `>` to `Browse[2]>`, indicating that I am now in the R environment browser. The debugger console is fully functional and I have started exploring. 
   - There are several control buttons across the top ("Next", "Continue", "Stop", etc.), which allow me to walk through the code in different ways.
   - I've manually entered `x` into the console prompt and confirmed that R returns a value of "one". 
-  - **Most importantly:** I then tried running the first line of the function (`x_sq <- x^2`) and was been met with an error message ("non-numeric argument to binary operator"). This is the exact point where the function actually fails.
+  - **Most importantly:** I then tried running the first line of the function (`x_sq = x^2`) and was been met with an error message ("non-numeric argument to binary operator"). This is the exact point where the function actually fails.
 
 Now, again, in this case particular case the problem was obvious and known ahead of time. But I think this simple example is useful for illustrating some general debugging principles and the power of being able to step inside functions via debugger mode. It gives you a chance to see what the functions "sees" and then work through to the root cause of the problem in a systematic way. Once you have identified the problem, then you can set about correcting your function (or inputs). Ultimately, you want to write robust functions that recognise errors early, fail with some acceptable level of tolerance, and provide helpful feedback to users. This will be the subject of the next section.
 
@@ -147,12 +147,12 @@ Luckily, there are several approaches to guarding against these kind of mistakes
 
 We covered the basics of control flow in the previous lecture ([here](https://raw.githack.com/uo-ec607/lectures/master/10-funcs-intro/10-funcs-intro.html#control_flow)). Let's put the same concepts to use for debugging. In this particular function, for example, we know that our function requires a numeric input. So we can check whether the input argument is a numeric and use an `ifelse` statement to produce a warning/error message if it fails this test. Consider, then, a slightly modified version of our function, which I'll call `square_ifelse`.
 ```{r square_ifelse}
-square_ifelse <- 
+square_ifelse = 
   function (x = 1) { 
     if (is.numeric(x)) { ## Check that this is a valid argument to our function.
-      x_sq <- x^2 
-      df <- tibble(value=x, value_squared=x_sq)
-      return(df) 
+      x_sq = x^2 
+      d = tibble(value=x, value_squared=x_sq)
+      return(d) 
     } else { ## Return a warning message if not.
       message("Sorry, you need to provide a numeric input variable.")
     }
@@ -168,12 +168,12 @@ square_ifelse(1) ## Works.
 We can achieve a very similar result, but with less code, using the generic `stop()` function. 
 
 ```{r square_stop, error=TRUE}
-square_stop <- 
+square_stop = 
   function (x = 1) { 
     if (!is.numeric(x)) stop("Sorry, you need to provide a numeric input variable.")
-    x_sq <- x^2 
-    df <- tibble(value=x, value_squared=x_sq)
-    return(df) 
+    x_sq = x^2 
+    d = tibble(value=x, value_squared=x_sq)
+    return(d) 
   }
 square_stop("one") ## Triggers a stop error and warning
 square_stop(1) ## Works
@@ -209,11 +209,11 @@ So we simply get an error message, even though some (most) of our inputs were va
 The second example avoids the above problem by invoking `tryCatch()` *inside* our user-defined function. The principle is very much the same as before: We're going to tell R what to give us whenever it encounters an error. However, we are going to be more explicit about where we expect that error to occur. Moreover, instead of simply producing an error message, this time we'll instruct R to return an explicit, alternative value (i.e. `NA`).
 
 ```{r square_trycatch}
-square_trycatch <-
+square_trycatch =
   function (x = 1) {
-    x_sq <- tryCatch(x^2, error = function(e) NA_real_) ## tryCatch goes here now. Produce an NA value if we can't square the input.
-    df <- tibble(value=x, value_squared=x_sq)
-    return(df)
+    x_sq = tryCatch(x^2, error = function(e) NA_real_) ## tryCatch goes here now. Produce an NA value if we can't square the input.
+    d = tibble(value=x, value_squared=x_sq)
+    return(d)
   }
 ```
 
@@ -246,11 +246,11 @@ map_df(list(1,2,"three"),  square_trycatch)
 The somewhat pedantic solution is to make sure that the offending input is coerced to a numeric within the function itself. Note that this will introduce coercion warnings of its own, but at least it won't fail. 
 
 ```{r square_trycatch2}
-square_trycatch2 <-
+square_trycatch2 =
   function (x = 1) {
-    x_sq <- tryCatch(x^2, error = function(e) NA_real_) 
-    df <- tibble(value=as.numeric(x), value_squared=x_sq) ## Convert input to numeric
-    return(df)
+    x_sq = tryCatch(x^2, error = function(e) NA_real_) 
+    d = tibble(value=as.numeric(x), value_squared=x_sq) ## Convert input to numeric
+    return(d)
   }
 
 map_df(list(1,2,"three"), square_trycatch2)
@@ -261,18 +261,18 @@ map_df(list(1,2,"three"), square_trycatch2)
 Finally, for those of you who prefer a tidyverse equivalent of `tryCatch()`, you can use `purrr::safely()` and its related functions (including `purrr::possibly()` and other variants). I won't go through the entire rigmarole again, so here's a simple flavour of how they work:
 
 ```{r square_safely1}
-square_simple <-
+square_simple =
   function (x = 1) {
-    x_sq <- x^2
+    x_sq = x^2
   }
-square_safely <- safely(square_simple)
+square_safely = safely(square_simple)
 square_safely("three")
 ```
 
 You can also specify default behaviour in case of an error:
 
 ```{r square_safely2}
-square_safely <- safely(square_simple, otherwise = NA_real_)
+square_safely = safely(square_simple, otherwise = NA_real_)
 square_safely("three")
 ```
 
@@ -289,7 +289,7 @@ Let's start by creating a "slow" version of our simple square function --- that 
 
 ```{r slow_square}
 ## Emulate slow function
-slow_square <- 
+slow_square = 
   function(x) {
     Sys.sleep(2)
     square(x)
@@ -301,7 +301,7 @@ Enabling caching (i.e. memoisation) of our slow function is a simple matter of f
 ```{r mem_square, dependson=slow_square}
 # library(memoise) ## Already loaded
 
-mem_square <- memoise(slow_square)
+mem_square = memoise(slow_square)
 ```
 
 *Note: I've assigned the memoised version as its own function here (i.e. `mem_square()`). However, it's no problem to recycle the original function name if you prefer (i.e. `slow_square < - memoise(slow_square)`).*
@@ -312,7 +312,7 @@ Let's run some examples and compare actual timings. For the first run, I'll iter
 
 ```{r m1, dependson=mem_square}
 system.time(
-  m1 <- map_df(1:10, mem_square)
+  m1 = map_df(1:10, mem_square)
 )
 ```
 
@@ -320,7 +320,7 @@ As expected this took 20 seconds because of the enforced two second wait during 
 
 ```{r m2, dependson=mem_square, dependson=m1}
 system.time(
-  m2 <- map_df(1:10, mem_square)
+  m2 = map_df(1:10, mem_square)
 )
 ```
 
@@ -335,7 +335,7 @@ Finally, note that our caching function is smart enough to distinguish between p
 
 ```{r m3, dependson=mem_square, dependson=m1}
 system.time(
-  m3 <- map_df(1:15, mem_square)
+  m3 = map_df(1:15, mem_square)
 )
 ```
 
@@ -350,16 +350,16 @@ For example, we can specify a new, persistent memoise cache location for our `sl
 
 ```{r cache_dir, dependson=slow_square}
 ## Cache directory path (which I've already created)
-cache_dir <- here("10-funcs-adv/.rcache")
+cache_dir = here("10-funcs-adv/.rcache")
 
 ## (Re-)memoise our function with the persistent cache location
-mem_square_persistent <- memoise(slow_square, cache = cache_filesystem(cache_dir))
+mem_square_persistent = memoise(slow_square, cache = cache_filesystem(cache_dir))
 ```
 
 Run our new memoised function and check that it saved the cached output to the specified directory.
 
 ```{r m4}
-m4 <- map_df(1:7, mem_square_persistent)
+m4 = map_df(1:7, mem_square_persistent)
 list.files(cache_dir)
 ```
 
@@ -373,18 +373,18 @@ It's possible (and often very helpful) to add verbose prompts to our memoised fu
 2. Run our memoised function on any inputs that have not already been evaluated.( These results will be cached in turn for future use.) Again, print the results to screen.
 
 ```{r mem_square_verbose,  dependson=mem_square_persistent}
-mem_square_verbose <- 
+mem_square_verbose = 
   function(x) {
     ## 1. Load cached data if already generated
     if (has_cache(mem_square_persistent)(x)) {
       cat("Loading cached data for x =", x, "\n")
-      my_data <- mem_square_persistent(x)
+      my_data = mem_square_persistent(x)
       return(my_data)
     }
     
     ## 2. Generate new data if cache not available
     cat("Generating data from scratch for x =", x, "...")
-    my_data <- mem_square_persistent(x)
+    my_data = mem_square_persistent(x)
     cat("ok\n")
     
     return(my_data)
@@ -395,7 +395,7 @@ And here's an example of the verbose function in action. The output is probably 
 
 ```{r m5, dependson=mem_square_verbose, dependson=m4}
 system.time(
-  m5 <- map_df(1:10, mem_square_verbose)
+  m5 = map_df(1:10, mem_square_verbose)
 )
 ```
 
