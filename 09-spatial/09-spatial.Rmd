@@ -356,7 +356,7 @@ nc_dt[, .(geometry = st_union(geometry))] %>% ## Explicitly refer to 'geometry' 
     ggplot(aes(geometry = geometry)) +        ## And here again for the aes()
     geom_sf(fill=NA, col="black") +
     labs(title = "Outline of North Carolina", 
-         subtitle = "This time brought to by data.table") 
+         subtitle = "This time brought to you by data.table") 
 ```
 
 Of course, it's also possible to efficiently convert between the two classes --- e.g. with `as.data.table()` and `st_as_sf()` --- depending on what a particular section of code does (data wrangling or spatial operation). I find that often use this approach in my own work.
