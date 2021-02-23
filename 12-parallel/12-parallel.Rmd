@@ -366,7 +366,7 @@ For more on forks vs PSOCKS, take a look at the [relevant section](https://githu
 
 ## Explicit vs implicit parallelization
 
-Thus far we have only been concerned with *explicit* parallelization. As in, we explicitly told R to run a particular set of commands in parallel. But there is another form of *implicit* parallelization that is equally important to be aware of. In this case, certain low-level functions and operations are automatically run in parallel regardless of whether we told R to do so or not. Implicit parallelization can make a big difference to performance, but is not the default behaviour in R. So you have to enable it first. Moreover, combining explicit and implicit parallelization can cause problems if you don't take certain precautions. Let's take a look at where implicit parallelization enters the fray.
+Thus far we have only been concerned with *explicit* parallelization. As in, we explicitly told R to run a particular set of commands in parallel. But there is another form of *implicit* parallelization that is equally important to be aware of. In this case, certain low-level functions and operations are automatically run in parallel regardless of whether we "told" R to do so or not. Implicit parallelization can make a big difference to performance, but is not the default behaviour in R. So it has to enabled first (for example, by the package that you're using). Moreover, combining explicit and implicit parallelization can cause problems if you don't take certain precautions. Let's take a look at where implicit parallelization enters the fray.
 
 ### BLAS/LAPACK
 
@@ -395,6 +395,25 @@ RhpcBLASctl::blas_set_num_threads(1) ## Set BLAS threads to 1 (i.e. turn off mul
 ```
 
 Since this is only in effect for the current R session, BLAS multithreading will be restored when I restart R.^[I could also reinstate the original behaviour in the same session by running `blas_set_num_threads(parallel::detectCores())`. You can turn off multithreading as the default mode by altering the configuration file when you first build/install your preferred BLAS library. However, that's both complicated and unnecessarily restrictive in my view.] 
+
+### Library source code
+
+Very briefly, I want to point out the implicit parallelization is automatically invoked by many of the external libraries that we use in R. The good news is that package developers normally take pains to avoid potential resource competition. For instance, consider the message that **data.table** greets us with at load time.
+
+```{r dt}
+library(data.table, warn.conflicts = FALSE)
+```
+
+```
+## data.table 1.13.6 using 6 threads (see ?getDTthreads).  Latest news: r-datatable.com
+```
+
+If you follow the suggestion and look at the `?getDTthreads` help documentation, you'll find an informative (and reassuring) discussion of its approach here:
+
+> `data.table` automatically switches to single threaded mode upon fork (the mechanism used by `parallel::mclapply` and the `foreach` package). Otherwise, nested parallelism would very likely overload your CPUs and result in much slower execution. As data.table becomes more parallel internally, we expect explicit user parallelism to be needed less often...
+
+A final point on this topic, riffing of the quoted text, is that packages like **data.table** implement their parallel operations at the source-code level (i.e. C and co.) So they are likely to be more efficient than the equivalent explicit parallel calls that you might make. It's not that you can combine, say, **future** and **data.table**. (Far from it.) But you should know that trying to do better than the latter's default operations may be a fool's errand.
+
 
 ## Miscellaneous
 
