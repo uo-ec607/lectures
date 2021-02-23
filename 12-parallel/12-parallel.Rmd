@@ -24,6 +24,7 @@ output:
     # fig_height: 6 ## Optional: Set default PDF figure height
     includes:
       in_header: tex/preamble.tex ## For multi-col environments
+      extra_dependencies: ["float", "booktabs", "longtable"]
     pandoc_args:
         --template=tex/mytemplate.tex ## For affiliation field. See: https://bit.ly/2T191uZ
 always_allow_html: true
@@ -194,7 +195,7 @@ bootstrp =
 
 Let's implement the function in serial first to get a benchmark for comparison.
 
-```{r sim_serial, dependson=bootstrp}
+```{r sim_serial}
 set.seed(123L) ## Optional to ensure that the results are the same
 
 ## 10,000-iteration simulation
@@ -203,7 +204,11 @@ sim_serial = lapply(1:1e4, bootstrp) %>% bind_rows()
 toc(log = TRUE)
 ```
 
-So that took about `r round(as.numeric(gsub(" sec elapsed", "", (tic.log()[[1]]))), 0)` seconds on my system. Not a huge pain, but let's see if we can do better by switching to a parallel (multicore) implementation. For the record, though here is a screenshot of my system monitor, showing that only one core was being used during this serial version.
+```{r sim_serial_timing}
+t_s = round(as.numeric(gsub(" sec elapsed", "", (tic.log()[[1]]))), 0)
+```
+
+So that took about `r t_s` seconds on my system. Not a huge pain, but let's see if we can do better by switching to a parallel (multicore) implementation. For the record, though here is a screenshot of my system monitor, showing that only one core was being used during this serial version.
 
 ![](pics/serial.png)
 
@@ -228,7 +233,7 @@ In both cases, we start by setting the plan for resolving the future evaluation 
 
 Here's the `future.apply::future_lapply()` parallel implementation. Note that I'm adding the `future.seed=123L` option to ensure that the results are the same. While not strictly necessary, it's always a good idea to set a random seed with simulations for the sake of reproducibility.
 
-```{r sim_future, dependson=bootstrp}
+```{r sim_future}
 # library(future.apply)  ## Already loaded
 # plan(multisession) ## Already set above
 
@@ -242,7 +247,7 @@ toc()
 
 And here's the `furrr::future_map_dfr()` implementation. Similar to the above, note that I'm only adding the `.options=future_options(seed=123L)` option to ensure that the output is exactly the same.
 
-```{r sim_furrr, dependson=bootstrp}
+```{r sim_furrr}
 # library(furrr)  ## Already loaded
 # plan(multisession) ## Already set above
 
@@ -342,20 +347,22 @@ Now, we clearly didn't encounter any OS-specific problems when we ran the parall
 
 But what is "forking" and why does it matter what OS I am using anyway? Those are good questions that relate to the method of parallelization (i.e. type of cluster) that your system supports. The short version is that there are basically two ways that code can be parallelized:
 
-- **Forking** works by cloning your entire R environment to each separate core. This includes your data, loaded packages, functions, and any other objects in your current session. This is very efficient because you don't have to worry about reproducing your "master" environment in each "worker" node. Everything is already linked, which means that you aren't duplicating objects in memory. However, forking is not supported on Windows and can also cause problems in a GUI or IDE like RStudio.^[The reason is that shared GUI elements are being shared across child processes. (See the "GUI/embedded environments" section [here](https://stat.ethz.ch/R-manual/R-devel/library/parallel/html/mcfork.html).) To be fair, I've only ever run into a problem once or twice while running a forking process through RStudio. These have invariably involved very time-consuming functions that contain a bunch of nested while-loops. (I suspect the different worker processes began to move out of sync with one another.) However, I want you to be aware of it, so that you aren't caught by surprise if it ever happens to you.]
+- **Forking** works by cloning your entire R environment to each separate core. This includes your data, loaded packages, functions, and any other objects in your current session. This is very efficient because you don't have to worry about reproducing your "master" environment in each "worker" node. Everything is already linked, which means that you aren't duplicating objects in memory. However, forking is not supported on Windows and can also cause problems in an IDE or GUI like RStudio.^[The reason is that shared GUI elements are being shared across child processes. (See the "GUI/embedded environments" section [here](https://stat.ethz.ch/R-manual/R-devel/library/parallel/html/mcfork.html).) Combined with the fact that the shared memory is *read only*, there is a risk of "cross-contamination" where any modification made to a shared object by one of the worker nodes can propagates to the system.]
 - **Parallel sockets** (aka "PSOCKs") work by launching a new R session in each core. This means that your master environment has to be copied over and instantiated separately in each parallel node. This requires greater overhead and causes everything to run slower, since objects will be duplicated across each core. Technically, a PSOCK works by establishing a network (e.g. as if you were connected to a remote cluster), but everything is self-contained on your computer. This approach can be implemented on every system, including Windows, and doesn't create problems for IDEs like RStudio. 
 
 I've summarised the differences between the two approaches in the table below. 
 
-| Forking        | PSOCKs         |
-| ------------- |-------------|
-| ✓ Faster and more memory efficient than sockets. |  ×	Slower and more memory-intensive than forking. |
-| ×	Only available for Unix-based systems (not Windows). | ✓ Works on every operating system (including Windows). |
-| ×	Can cause problems when running through a GUI or IDE like RStudio. | ✓ ️No risk of cross-contamination, since each process is run as a unique node. |
+Forking                                           PSOCKs
+---------                                         --------
+✓ Fast and memory efficient.                      × Slower and more memory-intensive (than forking).
+× Only available for Unix-based systems.          ✓ Works on every operating system, incl. Windows.
+× Potentially unstable in an IDE like RStudio.    ✓ Fine to use in an IDE like RStudio.
 
 The general rule of thumb is PSOCKs are safer and more universal than forking. This makes them a good default, even if they do come with a potential performance/memory penalty. And, indeed, this is exactly what we did by selecting the **`plan(multisession)`** resolution strategy. So, no you know where that comes from.
 
 At the same time, I recommend that you consider forking if it is available to you (i.e. you're on Linux or Mac) and your parallel script has to do a lot of heavy lifting (i.e. performance is critical). In these cases, the solution requires two simple tweaks: 1) Change your resolution plan to **`plan(multicore)`** and then 2) run your R script from the terminal using, say, `$ Rscript myscript.R`.
+
+For more on forks vs PSOCKS, take a look at the [relevant section](https://github.com/HenrikBengtsson/future#asynchronous-futures) of the **future** introduction.
 
 ## Explicit vs implicit parallelization
 
@@ -428,7 +435,7 @@ In my experience, the worst thing about parallel computation is that it is very 
 
 ### Random number generation
 
-Random number generation (RNG) can become problematic in parallel computations (whether trying to ensure the same of different RNG across processes). R has various safeguards against this and future [automatically handles](https://www.jottr.org/2017/02/19/future-rng/) RNG via the `future.seed` argument. We saw an explicit example of this in example 2 [above](#1)_futureapply).
+Random number generation (RNG) can become problematic in parallel computations (whether trying to ensure the same of different RNG across processes). R has various safeguards against this and future [automatically handles](https://www.jottr.org/2017/02/19/future-rng/) RNG via the `future.seed` argument. We saw an explicit example of this in Example 2 above.
 
 ### Parallel regression
 
