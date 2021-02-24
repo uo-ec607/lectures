@@ -136,7 +136,7 @@ toc(log = TRUE)
 t_f_ex = as.numeric(gsub(" sec elapsed", "", (tic.log()[[1]])))
 ```
 
-Whoa, the execution time was `r round(parallel::detectCores()*2/t_f_ex, 0)` times faster! Even more impressively, consider how little the syntax changed. I basically just had to tell R that I wanted to implement the iteration in parallel (i.e. <code>**plan(multisession)**</code>) and slightly amend my `lapply()` call (i.e. <code>**future_**lapply()</code>). 
+Look at at that: A `r round(parallel::detectCores()*2/t_f_ex, 0)`× speedup! Even more impressively, consider how little the syntax changed. I basically just had to tell R that I wanted to implement the iteration in parallel (i.e. <code>**plan(multisession)**</code>) and slightly amend my `lapply()` call (i.e. <code>**future_**lapply()</code>). 
 
 Let's confirm that the output is the same.
 
@@ -239,7 +239,7 @@ Here's the `future.apply::future_lapply()` parallel implementation. Note that I'
 
 ```{r sim_future}
 # library(future.apply)  ## Already loaded
-# plan(multisession) ## Already set above
+# plan(multisession)     ## Already set above
 
 ## 10,000-iteration simulation
 tic()
@@ -252,8 +252,8 @@ toc()
 And here's the `furrr::future_map_dfr()` implementation. Similar to the above, note that I'm only adding the `.options=future_options(seed=123L)` option to ensure that the output is exactly the same.
 
 ```{r sim_furrr}
-# library(furrr)     ## Already loaded
-# plan(multisession) ## Already set above
+# library(furrr)      ## Already loaded
+# plan(multisession)  ## Already set above
 
 ## 10,000-iteration simulation
 tic()
@@ -362,11 +362,30 @@ Forking                                           PSOCKs
 × Only available for Unix-based systems.          ✓ Works on every operating system, incl. Windows.
 × Potentially unstable in an IDE like RStudio.    ✓ Fine to use in an IDE like RStudio.
 
-The general rule of thumb is PSOCKs are safer and more universal than forking. This makes them a good default, even if they do come with a potential performance/memory penalty. And, indeed, this is exactly what we did by selecting the **`plan(multisession)`** resolution strategy. So, no you know where that comes from.
+The general rule of thumb is PSOCKs are safer and more universal than forking. This makes them a good default, even if they do come with a potential performance/memory penalty. And, indeed, this is exactly what we did by selecting the **`plan(multisession)`** resolution strategy. So, now you know where that choice came from.
 
-At the same time, I recommend that you consider forking if it is available to you (i.e. you're on Linux or Mac) and your parallel script has to do a lot of heavy lifting (i.e. performance is critical). In these cases, the solution requires two simple tweaks: 1) Change your resolution plan to **`plan(multicore)`** and then 2) run your R script from the terminal using, say, `$ Rscript myscript.R`.
+At the same time, however, I recommend that you consider forking if it is available to you (i.e. you're on Linux or Mac) and you want to maximise performance. In these cases, the solution requires two simple tweaks: 
 
-For more on forks vs PSOCKS, take a look at the [relevant section](https://github.com/HenrikBengtsson/future#asynchronous-futures) of the **future** introduction.
+1. Change your resolution plan to **`plan(multicore)`**, and
+2. Run your R script from the terminal using, say, `$ Rscript -e 'rmarkdown::render("mydoc.Rmd", "all")'` or `$ Rscript myfile.R`.
+
+Here's a very simple illustration, using the same setup as Example 1 from earlier.
+
+```{r future_ex_multiprocess}
+plan(multicore) ## NB: Only works on Unix!
+
+tic()
+future_ex_mc = future_lapply(1:12, slow_square) %>% bind_rows()
+toc(log = TRUE)
+```
+
+```{r future_ex_mc_timing, echo = FALSE}
+t_f_ex_mc = as.numeric(gsub(" sec elapsed", "", (tic.log()[[1]])))
+```
+
+The upshot is that the forking version (i.e. `plan(multicore)`) is about `r round(t_f_ex/t_f_ex_mc, 1)`× faster than the PSOCK equivalent (i.e. `plan(multisession)`). But remember: _Caveat emptor_.
+
+For more on forks vs PSOCKS, take a look at the [relevant section](https://github.com/HenrikBengtsson/future#asynchronous-futures) of the **future** README.
 
 ## Explicit vs implicit parallelization
 
