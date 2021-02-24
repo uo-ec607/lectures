@@ -125,14 +125,18 @@ Okay, back to our example. I'm going to implement the parallel iteration using t
 
 ```{r future_ex}
 # library(future.apply)  ## Already loaded
-# plan(multisession) ## Already set above
+# plan(multisession)     ## Already set above
 
 tic()
 future_ex = future_lapply(1:12, slow_square) %>% bind_rows()
-toc()
+toc(log = TRUE)
 ```
 
-Whoa, the execution time was `r parallel::detectCores()` times faster! Even more impressively, consider how little the syntax changed. I basically just had to tell R that I wanted to implement the iteration in parallel (i.e. <code>**plan(multisession)**</code>) and slightly amend my `lapply()` call (i.e. <code>**future_**lapply()</code>). 
+```{r future_ex_timing, echo = FALSE}
+t_f_ex = as.numeric(gsub(" sec elapsed", "", (tic.log()[[1]])))
+```
+
+Whoa, the execution time was `r round(parallel::detectCores()*2/t_f_ex, 0)` times faster! Even more impressively, consider how little the syntax changed. I basically just had to tell R that I wanted to implement the iteration in parallel (i.e. <code>**plan(multisession)**</code>) and slightly amend my `lapply()` call (i.e. <code>**future_**lapply()</code>). 
 
 Let's confirm that the output is the same.
 
@@ -143,8 +147,8 @@ all_equal(serial_ex, future_ex)
 For those of you who prefer the `purrr::map()` family of functions for iteration and are feeling left out; don't worry. The **furrr** package ([link](https://davisvaughan.github.io/furrr/index.html)) has you covered. Once again, the syntax for these parallel functions will be very little changed from their serial versions. We simply have to tell R that we want to run things in parallel with `plan(multisession)` and then slightly amend our map call to <code>**future_**map_df**r**()</code>.^[In this particular case, the extra "r" at the end tells future to concatenate the data frames from each iteration by *rows*.]
 
 ```{r furrr_ex}
-# library(furrr)  ## Already loaded
-# plan(multisession) ## Already set above
+# library(furrr)      ## Already loaded
+# plan(multisession)  ## Already set above
 
 tic()
 furrr_ex = future_map_dfr(1:12, slow_square)
@@ -153,7 +157,7 @@ toc()
 
 How easy was that? We hardly had to change our original code and didn't have to pay a cent for all that extra performance.^[Not to flog a dead horse, but as I pointed out in the very [first lecture](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.html#26) of this course: Have you seen the price of a [Stata/MP](https://www.stata.com/statamp/) license recently? Not to mention the fact that you effectively pay *per* core...] Congratulate yourself on already being such an expert at parallel programming.
 
-```{r liz_high_five, echo = FALSE, out.width='100%'}
+```{r liz_high_five, echo = FALSE}
 if (knitr::is_html_output()){
   knitr::include_graphics('pics/liz-high-five.gif')
 }
@@ -204,7 +208,7 @@ sim_serial = lapply(1:1e4, bootstrp) %>% bind_rows()
 toc(log = TRUE)
 ```
 
-```{r sim_serial_timing}
+```{r sim_serial_timing, echo = FALSE}
 t_s = round(as.numeric(gsub(" sec elapsed", "", (tic.log()[[1]]))), 0)
 ```
 
@@ -248,12 +252,12 @@ toc()
 And here's the `furrr::future_map_dfr()` implementation. Similar to the above, note that I'm only adding the `.options=future_options(seed=123L)` option to ensure that the output is exactly the same.
 
 ```{r sim_furrr}
-# library(furrr)  ## Already loaded
+# library(furrr)     ## Already loaded
 # plan(multisession) ## Already set above
 
 ## 10,000-iteration simulation
 tic()
-sim_furrr = future_map_dfr(1:1e4, bootstrp, .options=future_options(seed=123L))
+sim_furrr = future_map_dfr(1:1e4, bootstrp, .options = furrr_options(seed=123L))
 toc()
 ```
 
