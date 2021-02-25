@@ -107,7 +107,7 @@ Containers are way to solve these (and many other) problems.
 
 By far the most widely used and best supported container technology.
 - Certainly true for the types of problems that we are concerned with in this course.
-- So, while there are other container platforms around, when I talk about "containers" in this lecture, I'm really talking about [Docker](https://www.docker.com/). 
+- So, while there are other container platforms around, when I talk about "containers" in this lecture, I'm really talking about [**Docker**](https://www.docker.com/). 
 
 ---
 
@@ -121,7 +121,7 @@ If we can bundle our code and software in a Docker container, then we don't have
 
 ### 2. Deployment
 
-There are many deployment scenarios (packaging, testing, etc.). Of particular interest to this course are big data pipelines where you want to deploy software quickly and reliably. Need to run some time-consuming code up on the cloud? Save time and installation headaches by running it through a suitable container, which can easily be deployed to a cluster of machines too.
+There are many deployment scenarios (packaging, testing, etc.). Of particular interest to this course are data science pipelines where you want to deploy software quickly and reliably. Need to run some time-consuming code up on the cloud? Save time and installation headaches by running it through a suitable container, which can easily be deployed to a cluster of machines too.
 
 ---
 
@@ -130,11 +130,11 @@ There are many deployment scenarios (packaging, testing, etc.). Of particular in
 You know those big shipping containers used to transport physical goods?
 
 .pull-left[
-![](http://www.pangeacontainers.nl/wp-content/uploads/2015/08/containerschip2.jpg)
+![Source: https://www.pangeacontainers.nl/](pics/containerschip2.jpg)
 ]
 
 .pull-right[
-![](https://4.bp.blogspot.com/-nV4EifcZH5c/T6BuSJpke3I/AAAAAAAAQT8/IcqQ4rrrlBA/s1600/40Ft+Shipping+container+on+semi.jpg)
+![](pics/container-truck.jpg)
 ]
 
 They provide a standard format that can accommodate all manner of goods (TVs, fresh produce, whatever). Not only that, but they are stackable and can easily be switched between different modes of transport (ship, road, rail).
