@@ -1,0 +1,502 @@
+---
+title: "Data Science for Economists"
+# subtitle: "<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
+subtitle: "Lecture 13: Docker"
+author: "Grant McDermott"
+date: "University of Oregon | [EC 607](https://github.com/uo-ec607)" #"`r format(Sys.time(), '%d %B %Y')`"
+output:
+  xaringan::moon_reader:
+    css: [default, metropolis, metropolis-fonts] 
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+name: toc
+
+```{css, echo=FALSE}
+@media print {
+  .has-continuation {
+    display: block !important;
+  }
+}
+```
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+library(knitr)
+opts_chunk$set(
+  eval = FALSE, ## Turn off eval for this deck!
+  prompt = TRUE, ## See hook below. I basically want a "$" prompt for every bash command in this lecture.
+  fig.align="center", #fig.width=6, fig.height=4.5, 
+  # out.width="748px", #out.length="520.75px",
+  dpi=300, #fig.path='Figs/',
+  cache=F#, echo=F, warning=F, message=F
+  )
+## Next hook based on this SO answer: https://stackoverflow.com/a/39025054
+knit_hooks$set(
+  prompt = function(before, options, envir) {
+    options(
+      prompt = if (options$engine %in% c('sh','bash')) '$ ' else 'R> ',
+      continue = if (options$engine %in% c('sh','bash')) '$ ' else '+ '
+      )
+})
+```
+
+# Table of contents
+
+1. [Prologue](#prologue)
+
+2. [Docker 101](#intro)
+
+3. [Examples](#examples)
+  
+  - [Base R](#r-base)
+  - [RStudio+](#rstudio+)
+
+4. [Sharing files with a container](#share)
+
+5. [Next steps](#next)
+
+---
+class: inverse, center, middle
+name: prologue
+
+# Prologue
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+
+# Install Docker
+
+- [Linux](https://docs.docker.com/engine/install)
+
+- [Mac](https://docs.docker.com/docker-for-mac/install/)
+
+- Windows (install varies by version)
+  - [Windows 10 Pro / Education / Enterprise](https://docs.docker.com/docker-for-windows/install/)
+  - [Windows 10 Home](https://docs.docker.com/docker-for-windows/install-windows-home/)
+  - [Windows 7 / 8](https://docs.docker.com/toolbox/toolbox_install_windows/)
+
+---
+class: inverse, center, middle
+name: intro
+
+# Docker 101
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+
+# What is a container?
+
+Have you ever...
+
+- tried to install a program or run someone else's code, only to be confronted by a bunch of error messages?
+- shared your code and data with someone else, only for them to be confronted by error messages?
+- re-run your own analyses after a major package update, only to find that the code no longer works or the results have changed?
+
+--
+
+Containers are way to solve these (and many other) problems.
+
+--
+
+### Docker
+
+By far the most widely used and best supported container technology.
+- Certainly true for the types of problems that we are concerned with in this course.
+- So, while there are other container platforms around, when I talk about "containers" in this lecture, I'm really talking about [Docker](https://www.docker.com/). 
+
+---
+
+# Why do we care?
+
+I've already prompted some of the main reasons on the previous slide. But to sum things up with two ideas:
+
+### 1. Reproducibility
+
+If we can bundle our code and software in a Docker container, then we don't have to worry about it not working on someone else's system (and vice versa). Similarly, we don't have to worry about it not working on our own systems in the future (e.g. after package or program updates).
+
+### 2. Deployment
+
+There are many deployment scenarios (packaging, testing, etc.). Of particular interest to this course are big data pipelines where you want to deploy software quickly and reliably. Need to run some time-consuming code up on the cloud? Save time and installation headaches by running it through a suitable container, which can easily be deployed to a cluster of machines too.
+
+---
+
+# The analogy
+
+You know those big shipping containers used to transport physical goods?
+
+.pull-left[
+![](http://www.pangeacontainers.nl/wp-content/uploads/2015/08/containerschip2.jpg)
+]
+
+.pull-right[
+![](https://4.bp.blogspot.com/-nV4EifcZH5c/T6BuSJpke3I/AAAAAAAAQT8/IcqQ4rrrlBA/s1600/40Ft+Shipping+container+on+semi.jpg)
+]
+
+They provide a standard format that can accommodate all manner of goods (TVs, fresh produce, whatever). Not only that, but they are stackable and can easily be switched between different modes of transport (ship, road, rail).
+
+--
+
+Docker containers are the software equivalent. 
+- physical goods <-> software
+- transport modes <-> operating systems
+- etc.
+
+---
+
+# How it works
+
+1. Start off with a stripped-down version of an operating system. Usually a Linux distro like Ubuntu.
+
+2. Install _all_ of the programs and dependencies that are needed to run your code.
+
+3. (Add any extra configurations you want.)
+
+4. Package everything up as a [tarball](https://en.wikipedia.org/wiki/Tar_%28computing%29).<sup>*</sup>
+
+.footnote[
+<sup>*</sup> A format for storing a bunch of files as a single object. Can also be compressed to save space.
+]
+
+--
+
+</br>
+
+**Summary:** Containers are like mini, portable operating systems that contain everything needed to run some piece of software (but nothing more!). 
+
+---
+
+# The big idea
+
+![Credit: [Julia Evans](https://twitter.com/b0rk/status/1237464479811633154)](https://pbs.twimg.com/media/ESxbX5IXkAE10N2?format=jpg)
+
+.pull-right[*Credit: [Julia Evans](https://twitter.com/b0rk/status/1237464479811633154). (Buy the [zine](https://wizardzines.com/zines/containers/)!)*]
+
+---
+
+# Quick terminology clarification
+
+*Image* ~ This is (basically) the tarball that we talked about on the previous two slides. It's a set of layers and instructions for building a container.
+
+*Container* ~ A container is a running instance of an image. You can have many containers (i.e. running instances) of the same image.
+
+--
+
+</br>
+
+**Analogy:** Think of the image as the recipe and the container as the cake. You can use the recipe to make many versions of the same cake (even if you only ever plan to make one). And you can share the recipe with others to make their own cake.
+
+---
+
+# Rocker = R + Docker
+
+It should now be clear that Docker is targeted at (and used by) a bewildering array of software applications.
+
+In the realm of economics and data science, that includes every major open-source programming language and software stack.<sup>1</sup> For example, you could download and run a [Julia container](https://hub.docker.com/_/julia/) right now if you so wished.
+
+But for this course, we are primarily concerned with Docker images that bundle R applications.
+
+The good news is that R has outstanding Docker support, primarily as a result of the **Rocker Project** ([website](https://github.com/mathworks-ref-arch/matlab-dockerfile) / [GitHub](https://github.com/rocker-org/rocker)).
+- For the rest of today's lecture we will be using images from Rocker (or derivatives).
+
+.footnote[<sup>1</sup> It's *possible* to build a Docker image on top of proprietary software ([example](https://github.com/mathworks-ref-arch/matlab-dockerfile)). But license restrictions and other limitations make this complicated. I hardly ever see it done in the wild.]
+
+---
+class: inverse, center, middle
+name: examples
+
+# Examples
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+name: r-base
+
+# Base R container
+
+For our first example, let's fire up a simple container that contains little more than a base R installation.
+
+```{bash}
+docker run --rm -it rocker/r-base
+```
+
+This will take a little while to download the first time. But afterwards the container will be ready and waiting for immediate deployment ("instantiation") on your system. 
+
+--
+
+</br>
+A quick note on these `docker run` [flags](https://docs.docker.com/engine/reference/run/):
+
+- `--rm` Automatically remove the container once it exits (i.e. clean up).
+- `-it` Launch with interactive (`i`) shell/terminal (`t`).
+- Type `man docker run` to see a full list of flag options.
+
+--
+
+</br>
+To see a list of running containers on your system, in a new terminal window type:
+
+```{bash}
+docker ps
+```
+
+---
+
+# Base R container (cont.)
+
+Your base R container should have launched directly into R. To exit the container, simply quit R.
+
+```{r}
+q()
+```
+
+Check that it worked:
+
+```{bash}
+docker ps
+```
+
+--
+
+</br>
+
+BTW, if you don't want to launch directly into your container's R console, you can instead start it in the bash shell.
+
+```{bash}
+docker run --rm -it rocker/r-base /bin/bash
+```
+
+This time to close and exit the container, you need to exit the shell, e.g.
+
+```
+root@09dda673a187:/# exit
+```
+
+---
+name: rstudio+
+
+# RStudio+ container
+
+The [Rocker Project](https://www.rocker-project.org/) works by layering Docker images on top of each other in a [grouped stack](https://github.com/rocker-org/rocker#use-cases).
+
+
+An important group here is the [versioned stack](https://github.com/rocker-org/rocker#versioned-stack-builds-on-r-ver) that includes RStudio.
+- For example, the "rstudio" image builds on top of the "r-ver" image (which itself is a versioned "r-base" image). 
+
+I'm going to collectively refer to images in this stack as **RStudio+**.
+- It's not that each image in the stack contains exactly the same things...
+- But they do share some important common features that will make the RStudio+ shorthand convenient for these lecture slides.
+
+
+--
+
+Everyone clear on what I mean by "RStudio+"? Good. 
+
+---
+
+# RStudio+ container (cont.)
+
+Let's try the "tidyverse" image, which is basically base R + RStudio + tidyverse packages. 
+
+Again, this will take a minute or three to download and extract the first time. But it will be ready for immediate deployment in the future.
+
+--
+
+```{bash}
+docker run -d -p 8787:8787 -e PASSWORD=mypassword rocker/tidyverse
+```
+
+If you run this... nothing seems to happen. Don't worry, I'll explain on the next slide. 
+
+--
+name:username
+
+But first, two quick asides on usernames/passwords:
+
+- All RStudio+ images in the Rocker stack require a password. Pretty much anything you want except "rstudio", which is the default username...
+- If you don't like the default "rstudio" username, you can choose your own by adding `-e USER=myusername` to the above command (the extra `-e` flag is required).
+
+---
+
+# RStudio+ container (cont.)
+
+Unlike, the "r-base" container, this time we aren't immediately taken to our R environment. **Reason:** Our container is running RStudio Server, which needs to be opened up in a browser.
+
+So we need to point our browsers to the relevant IP address (plus the assigned `8787` port):
+- **Linux:** `http://localhost:8787` 
+- **Mac/Windows:** Get your IP address by typing `$ docker inspect <containerid>  | grep IPAddress` (see [here](https://stackoverflow.com/a/46310428)). Alternatively, this IP address was also displayed when you first launched your Docker Quickstart Terminal. E.g. The below user would navigate their browser to `192.168.99.100:8787`.
+
+```
+                        ##         .
+                  ## ## ##        ==
+               ## ## ## ## ##    ===
+           /"""""""""""""""""\___/ ===
+      ~~~ {~~ ~~~~ ~~~ ~~~~ ~~~ ~ /  ===- ~~~
+           \______ o           __/
+             \    \         __/
+              \____\_______/
+
+
+docker is configured to use the default machine with `IP 192.168.99.100`
+For help getting started, check out the docs at https://docs.docker.com
+```
+
+---
+
+# RStudio+ container (cont.)
+
+Here's the login-in screen that I see when I navigate my browser to the relevant URL.
+
+![](pics/rocker-rstudio-login.png)
+
+---
+
+# RStudio+ container (cont.)
+
+And here I am in RStudio Server running through Docker! (Pro-tip: Hit F11 to go full-screen.)
+
+![](pics/rocker-rstudio.png)
+
+---
+
+# RStudio+ container (cont.)
+
+To stop this container, open up a new terminal window and grab the container ID with `$ docker ps` (it will be the first column). Then run:
+
+```{bash}
+docker stop <containerid>
+```
+
+--
+
+</b>
+
+**Note:** We actually ran this container as a background process, because we used the `-d` flag when we first instantiated it, i.e.
+
+```{bash}
+docker run `-d` -p 8787:8787 -e PASSWORD=mypassword rocker/tidyverse
+```
+
+If you dropped the `-d` flag and re-ran the above command, your terminal would stay open as an ongoing process. (Try this yourself.)
+- Everything else would remain the same. You'd still navigate to `<IPADDRESS>:8787` to log in, etc.
+- However, I wanted to mention this non-background process version because it offers another way to shut down the container: Simply type `CTRL+c` in the (same, ongoing process) Terminal window. Again, try this yourself.
+- Confirm that the container is stopped by running `$ docker ps`.
+
+---
+class: inverse, center, middle
+name: share
+
+# Sharing files with a container
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+
+# Share files by mounting volumes
+
+Each container runs in a sandboxed environment and cannot access other files and directories on your computer unless you give it explicit permission.
+
+To share files with a container, the `-v` (mount volume) flag is your friend. 
+- Adopts a `LHS:RHS` convention, where `LHS` = `path/on/your/computer/` and `RHS` = `path/on/the/container`.
+
+--
+
+</br>
+
+For example, say I have a folder on my computer located at `/home/grant/coolproject`. I can make this available to my "tidyverse" container by running: 
+
+```{bash}
+docker run `-v /home/grant/coolproject:/home/rstudio/coolproject` -d -p 8787:8787 -e PASSWORD=mypassword rocker/tidyverse
+```
+
+--
+
+</br>
+
+PS &mdash; I'll get back to specifying the correct RHS path in a couple slides.
+
+---
+
+# coolproject
+
+The coolproject directory is now available from RStudio running on the container.
+
+![](pics/rocker-rstudio-share.png)
+
+---
+
+# Choosing the RHS mount point
+
+In the previous example, I specified the RHS mount point as `/home/rstudio/coolproject`. How did I know this would work?
+
+--
+
+The short answer is that `/home/rstudio` is the default user's home directory for images in the RStudio+ stack. If you're running a container from this stack, you should almost always start your RHS with this path root.
+- Exception: If you assigned a different default user than "rstudio" ([back here](#username)). 
+
+--
+
+We have to be be specific about mounting under the user's home directory, because RStudio Server limits how and where users can access files. (This is a security feature that we'll revisit in the next lecture on cloud computing.)
+
+--
+
+OTOH the `/coolproject` directory name is entirely optional. Call it whatever you want... though using the same name as the linked computer directory obviously avoids confusion.
+- Similarly, you're free to add a couple of parent directories. I could have used `-v /home/grant/coolproject:/home/rstudio/parentdir1/parentdir2/coolproject` and it would have worked fine.
+
+---
+
+# Choosing the RHS mount point (cont.)
+
+Choosing a specific RHS mount point is less important for non-RStudio+ containers.
+
+
+Still, be aware that the `/home/rstudio` path won't work for our r-base container from earlier.
+- Reason: There's no "rstudio" user. (Fun fact: When you run an r-base container you are actually logged in as root.)
+
+--
+
+For non-Rstudio+ containers, I recommend a general strategy of mounting external volumes on the dedicated `/mnt` directory that is standard on Linux.<sup>1</sup> For example:
+
+```
+$ docker run -it --rm -v /home/grant/coolproject:/mnt/coolproject r-base /bin/bash
+root@958d28472eb0:/# cd /mnt/coolproject/ 
+root@958d28472eb0:/mnt/coolproject# R
+```
+
+
+.footnote[
+<sup>1</sup> Remember, Docker images are basically just miniaturized, portable Linux OSs.
+]
+
+
+---
+class: inverse, center, middle
+name: next
+
+# Next steps
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+
+# Further reading
+
+- [Rocker website](https://www.rocker-project.org/)
+- [Docker documentation](https://docs.docker.com/)
+- [Using Docker for Data Science](https://www.robertmylesmcdonnell.com/content/posts/docker/) (Very thorough walkthrough, with a focus on composing your own Dockerfiles from scratch.)
+- [ROpenSci Docker Tutorial](http://ropenscilabs.github.io/r-docker-tutorial) (Another detailed and popular tutorial, but quite outdated in parts.)
+- Docker 
+
+
+---
+class: inverse, center, middle
+
+# Next class: Cloud computing with Google Compute Engine
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+
+```{r gen_pdf, include = FALSE, cache = FALSE, eval = TRUE}
+infile = list.files(pattern = '.html')
+pagedown::chrome_print(input = infile, timeout = 100)
+```
