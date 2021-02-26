@@ -203,7 +203,7 @@ It should now be clear that Docker is targeted at (and used by) a bewildering ar
 
 In the realm of economics and data science, that includes every major open-source programming language and software stack.<sup>1</sup> For example, you could download and run a [Julia container](https://hub.docker.com/_/julia/) right now if you so wished.
 
-.footnote[<sup>1</sup> It's possible to build a Docker image on top of proprietary software ([example](https://github.com/mathworks-ref-arch/matlab-dockerfile)). But license restrictions make this complicated. I've rarely ever see it done in practice.]
+.footnote[<sup>1</sup> It's possible to build a Docker image on top of proprietary software ([example](https://github.com/mathworks-ref-arch/matlab-dockerfile)). But license restrictions make this complicated. I've rarely seen it done in practice.]
 
 --
 
@@ -368,7 +368,7 @@ Unlike, the "r-base" container, this time we aren't immediately taken to our R e
 
 So we need to point our browsers to the relevant IP address _plus_ the opened `:8787` port:
 - **Linux:** http://localhost:8787 
-- **Mac/Windows:** Type in `$ docker inspect <containerid>  | grep IPAddress` to get your address (see [here](https://stackoverflow.com/a/46310428)). Note that this information was also displayed when you first launched your Docker Quickstart Terminal. For example:
+- **Mac/Windows:** Type in `$ docker inspect <containerid>  | grep IPAddress` to get your IP address (see [here](https://stackoverflow.com/a/46310428)). Note that this information was also displayed when you first launched your Docker Quickstart Terminal. For example:
 
 .small75[
   
@@ -425,7 +425,7 @@ I can also load the **tidyverse** straight away. (We can ignore those warning me
 
 # Example 2: RStudio+ (cont.)
 
-To stop this container, open up a new terminal window and grab the container ID with `$ docker ps`. Then run:
+To stop this container, open up a new terminal window. Grab the container ID if you've forgotten it with `$ docker ps`. Then run:
 
 ```{bash}
 docker stop <containerid>
@@ -452,7 +452,7 @@ If you dropped the `-d` flag and re-ran the above command, your terminal would s
 
 I'll end this example by reiterating the stacked (or _layered_) nature of the Docker workflow. 
 
-To prove this, consider what happens what happens when I instantiate the [`r-ver:4.0.0`](https://hub.docker.com/r/rocker/r-ver) image at the base of Rocker's versioned stack.
+To prove this, consider what happens when I instantiate the [`r-ver:4.0.0`](https://hub.docker.com/r/rocker/r-ver) image at the base of Rocker's versioned stack.
 
 --
 
@@ -585,7 +585,7 @@ name: next
 ---
 class: inverse, center, middle
 
-# Next class: Cloud computing with Google Compute Engine
+# Next class: Google Compute Engine
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
 
 
