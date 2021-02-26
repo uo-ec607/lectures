@@ -219,7 +219,7 @@ For our first example, let's fire up a simple container that contains little mor
 $ docker run --rm -it rocker/r-base
 ```
 
-This will take a little while to download the first time. But afterwards the container will be ready and waiting for immediate deployment ("instantiation") on your system. 
+This will take a little while to download the first time (GIF on next slide). But the container will be ready and waiting for immediate deployment on your system thereafter.
 
 --
 
@@ -229,6 +229,15 @@ A quick note on these `docker run` flags:
 - `--rm` Automatically remove the container once it exits (i.e. clean up).
 - `-it` Launch with interactive (`i`) shell/terminal (`t`).
 - For a full list of flag options, see [here](https://docs.docker.com/engine/reference/run).
+
+---
+
+# Example 1: Base R (cont.)
+
+As promised, here is a GIF of me running the command on my system. The whole thing takes about a minute and takes me directly into an R session.
+
+&lt;img src="pics/docker-r-base.gif" width="75%" style="display: block; margin: auto;" /&gt;
+
 
 ---
 
