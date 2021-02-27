@@ -149,7 +149,6 @@ They provide a standard format that can accommodate all manner of goods (TVs, fr
 Docker containers are the software equivalent. 
 - physical goods <-> software
 - transport modes <-> operating systems
-- etc.
 
 ---
 
@@ -177,7 +176,9 @@ Docker containers are the software equivalent.
 
 # The big idea
 
-![](pics/b0rk_zine.jpg)
+```{r b0rk_zine, eval = TRUE, echo=FALSE, out.width="90%"}
+knitr::include_graphics("pics/b0rk_zine.jpg")
+```
 
 .pull-right[*Credit: [Julia Evans](https://twitter.com/b0rk/status/1237464479811633154). (Buy the [zine](https://wizardzines.com/zines/containers/)!)*]
 
@@ -337,12 +338,12 @@ count: false
 Let's try the [`tidyverse`](https://hub.docker.com/r/rocker/tidyverse) image from this versioned stack, which layers base R + RStudio + tidyverse. I'll specify R 4.0.0 as my base image.
 
 ```{bash}
-docker run -d -p 8787:8787 -e PASSWORD=mypassword rocker/tidyverse:4.0.0
+docker run -d -p 8787:8787 -e PASSWORD=pswd123 rocker/tidyverse:4.0.0
 ```
 
 - `-d` Detach (i.e. run as background process).
 - `-p 8787:8787` Share a port with the host computer's browser.
-- `-e PASSWORD=mypassword` Password for logging on to RStudio Server.
+- `-e PASSWORD=pswd123` Password for logging on to RStudio Server.
 - `rocker/tidyverse:4.0.0` Use the [`tidyverse`](https://hub.docker.com/r/rocker/tidyverse) image built on top of R 4.0.0.
 
 --
@@ -401,7 +402,7 @@ Here's the login-in screen that I see when I navigate my browser to the relevant
 ![](pics/rocker-rstudio-login.png)
 --
 
-Sign in with your "rstudio" + "mypassword" credential combination.
+Sign in with your "rstudio" + "pswd123" credential combination.
 
 ---
 
@@ -438,7 +439,7 @@ docker stop <containerid>
 **Aside:** Recall that we instantiated this container as a detached/background process (`-d`).
 
 ```{bash}
-docker run `-d` -p 8787:8787 -e PASSWORD=mypassword rocker/tidyverse
+docker run `-d` -p 8787:8787 -e PASSWORD=pswd123 rocker/tidyverse
 ```
 
 If you dropped the `-d` flag and re-ran the above command, your terminal would stay open as an ongoing process. (Try this yourself.)
@@ -463,7 +464,7 @@ To prove this, consider what happens when I instantiate the [`r-ver:4.0.0`](http
 
 I'll end this example by reiterating the stacked (or _layered_) nature of the Docker workflow. 
 
-To prove this, consider what happens what happens when I instantiate the [`r-ver:4.0.0`](https://hub.docker.com/r/rocker/r-ver) image at the base of Rocker's versioned stack.
+To prove this, consider what happens when I instantiate the [`r-ver:4.0.0`](https://hub.docker.com/r/rocker/r-ver) image at the base of Rocker's versioned stack.
 
 **TL;DR** I am immediately taken into a running R 4.0.0 container.
 
@@ -494,7 +495,7 @@ name: share
 Each container runs in a sandboxed environment and cannot access other files and directories on your computer unless you give it explicit permission.
 
 To share files with a container, the `-v` (mount volume) flag is your friend. 
-- Adopts a `LHS:RHS` convention, where `LHS` = `path/on/your/computer/` and `RHS` = `path/on/the/container`.
+- Adopts a **LHS:RHS** convention, where LHS = `path/on/your/computer/` and RHS = `path/on/the/container`.
 
 --
 
@@ -503,7 +504,8 @@ To share files with a container, the `-v` (mount volume) flag is your friend.
 For example, say I have a folder on my computer located at `/home/grant/coolproject`. I can make this available to my "tidyverse" container by running: 
 
 ```{bash}
-docker run `-v /home/grant/coolproject:/home/rstudio/coolproject` -d -p 8787:8787 -e PASSWORD=mypassword rocker/tidyverse
+docker run `-v /home/grant/coolproject:/home/rstudio/coolproject` \
+  -d -p 8787:8787 -e PASSWORD=pswd123 rocker/tidyverse:4.0.0
 ```
 
 --
@@ -519,6 +521,28 @@ PS &mdash; I'll get back to specifying the correct RHS path in a couple slides.
 The coolproject directory is now available from RStudio running on the container.
 
 ![](pics/rocker-rstudio-share.png)
+---
+
+# pwd
+
+In the previous example, I provided the absolute LHS path to `/home/grant/coolproject`.
+
+The reason is that Docker doesn't understand relative paths for mounting external volumes.
+- E.g. I couldn't use `-v .:/home/rstudio` or `-v coolproject:home/rstudio`.
+
+--
+
+But there _is_ a convenient shortcut for mounting the host computer's present working directory: Use <code>\`pwd\`</code> (including the backticks).
+
+```{bash}
+docker run -v \`pwd`:/home/rstudio/coolproject \
+  -d -p 8787:8787 -e PASSWORD=pswd123 rocker/tidyverse:4.0.0
+```
+
+--
+
+This shortcut effectively covers the most common relative path case (i.e. linking a container to our present working directory). You can also specify sub-directories.
+- E.g. <code>-v \`pwd\`/pics:/home/rstudio</code>
 
 ---
 
@@ -552,19 +576,13 @@ Still, be aware that the `/home/rstudio` path won't work for our r-base containe
 
 --
 
-For non-Rstudio+ containers, I recommend a general strategy of mounting external volumes on the dedicated `/mnt` directory that is standard on Linux.<sup>1</sup> For example:
+For non-Rstudio+ containers, I recommend a general strategy of mounting external volumes on the dedicated `/mnt` directory that is standard on Linux. For example:
 
 ```
 $ docker run -it --rm -v /home/grant/coolproject:/mnt/coolproject r-base /bin/bash
 root@958d28472eb0:/# cd /mnt/coolproject/ 
 root@958d28472eb0:/mnt/coolproject# R
 ```
-
-
-.footnote[
-<sup>1</sup> Remember, Docker images are basically just miniaturized, portable Linux OSs.
-]
-
 
 ---
 class: inverse, center, middle

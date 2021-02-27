@@ -136,7 +136,6 @@ They provide a standard format that can accommodate all manner of goods (TVs, fr
 Docker containers are the software equivalent. 
 - physical goods &lt;-&gt; software
 - transport modes &lt;-&gt; operating systems
-- etc.
 
 ---
 
@@ -164,7 +163,7 @@ Docker containers are the software equivalent.
 
 # The big idea
 
-![](pics/b0rk_zine.jpg)
+&lt;img src="pics/b0rk_zine.jpg" width="90%" style="display: block; margin: auto;" /&gt;
 
 .pull-right[*Credit: [Julia Evans](https://twitter.com/b0rk/status/1237464479811633154). (Buy the [zine](https://wizardzines.com/zines/containers/)!)*]
 
@@ -190,7 +189,7 @@ It should now be clear that Docker is targeted at (and used by) a bewildering ar
 
 In the realm of economics and data science, that includes every major open-source programming language and software stack.&lt;sup&gt;1&lt;/sup&gt; For example, you could download and run a [Julia container](https://hub.docker.com/_/julia/) right now if you so wished.
 
-.footnote[&lt;sup&gt;1&lt;/sup&gt; It's possible to build a Docker image on top of proprietary software ([example](https://github.com/mathworks-ref-arch/matlab-dockerfile)). But license restrictions make this complicated. I've rarely ever see it done in practice.]
+.footnote[&lt;sup&gt;1&lt;/sup&gt; It's possible to build a Docker image on top of proprietary software ([example](https://github.com/mathworks-ref-arch/matlab-dockerfile)). But license restrictions make this complicated. I've rarely seen it done in practice.]
 
 --
 
@@ -328,12 +327,12 @@ Let's try the [`tidyverse`](https://hub.docker.com/r/rocker/tidyverse) image fro
 
 
 ```bash
-$ docker run -d -p 8787:8787 -e PASSWORD=mypassword rocker/tidyverse:4.0.0
+$ docker run -d -p 8787:8787 -e PASSWORD=pswd123 rocker/tidyverse:4.0.0
 ```
 
 - `-d` Detach (i.e. run as background process).
 - `-p 8787:8787` Share a port with the host computer's browser.
-- `-e PASSWORD=mypassword` Password for logging on to RStudio Server.
+- `-e PASSWORD=pswd123` Password for logging on to RStudio Server.
 - `rocker/tidyverse:4.0.0` Use the [`tidyverse`](https://hub.docker.com/r/rocker/tidyverse) image built on top of R 4.0.0.
 
 --
@@ -359,7 +358,7 @@ Unlike, the "r-base" container, this time we aren't immediately taken to our R e
 
 So we need to point our browsers to the relevant IP address _plus_ the opened `:8787` port:
 - **Linux:** http://localhost:8787 
-- **Mac/Windows:** Type in `$ docker inspect &lt;containerid&gt;  | grep IPAddress` to get your address (see [here](https://stackoverflow.com/a/46310428)). Note that this information was also displayed when you first launched your Docker Quickstart Terminal. For example:
+- **Mac/Windows:** Type in `$ docker inspect &lt;containerid&gt;  | grep IPAddress` to get your IP address (see [here](https://stackoverflow.com/a/46310428)). Note that this information was also displayed when you first launched your Docker Quickstart Terminal. For example:
 
 .small75[
   
@@ -392,7 +391,7 @@ Here's the login-in screen that I see when I navigate my browser to the relevant
 ![](pics/rocker-rstudio-login.png)
 --
 
-Sign in with your "rstudio" + "mypassword" credential combination.
+Sign in with your "rstudio" + "pswd123" credential combination.
 
 ---
 
@@ -416,7 +415,7 @@ I can also load the **tidyverse** straight away. (We can ignore those warning me
 
 # Example 2: RStudio+ (cont.)
 
-To stop this container, open up a new terminal window and grab the container ID with `$ docker ps`. Then run:
+To stop this container, open up a new terminal window. Grab the container ID if you've forgotten it with `$ docker ps`. Then run:
 
 
 ```bash
@@ -431,7 +430,7 @@ $ docker stop &lt;containerid&gt;
 
 
 ```bash
-$ docker run `-d` -p 8787:8787 -e PASSWORD=mypassword rocker/tidyverse
+$ docker run `-d` -p 8787:8787 -e PASSWORD=pswd123 rocker/tidyverse
 ```
 
 If you dropped the `-d` flag and re-ran the above command, your terminal would stay open as an ongoing process. (Try this yourself.)
@@ -445,7 +444,7 @@ If you dropped the `-d` flag and re-ran the above command, your terminal would s
 
 I'll end this example by reiterating the stacked (or _layered_) nature of the Docker workflow. 
 
-To prove this, consider what happens what happens when I instantiate the [`r-ver:4.0.0`](https://hub.docker.com/r/rocker/r-ver) image at the base of Rocker's versioned stack.
+To prove this, consider what happens when I instantiate the [`r-ver:4.0.0`](https://hub.docker.com/r/rocker/r-ver) image at the base of Rocker's versioned stack.
 
 --
 
@@ -456,7 +455,7 @@ To prove this, consider what happens what happens when I instantiate the [`r-ver
 
 I'll end this example by reiterating the stacked (or _layered_) nature of the Docker workflow. 
 
-To prove this, consider what happens what happens when I instantiate the [`r-ver:4.0.0`](https://hub.docker.com/r/rocker/r-ver) image at the base of Rocker's versioned stack.
+To prove this, consider what happens when I instantiate the [`r-ver:4.0.0`](https://hub.docker.com/r/rocker/r-ver) image at the base of Rocker's versioned stack.
 
 **TL;DR** I am immediately taken into a running R 4.0.0 container.
 
@@ -487,7 +486,7 @@ name: share
 Each container runs in a sandboxed environment and cannot access other files and directories on your computer unless you give it explicit permission.
 
 To share files with a container, the `-v` (mount volume) flag is your friend. 
-- Adopts a `LHS:RHS` convention, where `LHS` = `path/on/your/computer/` and `RHS` = `path/on/the/container`.
+- Adopts a **LHS:RHS** convention, where LHS = `path/on/your/computer/` and RHS = `path/on/the/container`.
 
 --
 
@@ -497,7 +496,8 @@ For example, say I have a folder on my computer located at `/home/grant/coolproj
 
 
 ```bash
-$ docker run `-v /home/grant/coolproject:/home/rstudio/coolproject` -d -p 8787:8787 -e PASSWORD=mypassword rocker/tidyverse
+$ docker run `-v /home/grant/coolproject:/home/rstudio/coolproject` \
+$   -d -p 8787:8787 -e PASSWORD=pswd123 rocker/tidyverse:4.0.0
 ```
 
 --
@@ -513,6 +513,29 @@ PS &amp;mdash; I'll get back to specifying the correct RHS path in a couple slid
 The coolproject directory is now available from RStudio running on the container.
 
 ![](pics/rocker-rstudio-share.png)
+---
+
+# pwd
+
+In the previous example, I provided the absolute LHS path to `/home/grant/coolproject`.
+
+The reason is that Docker doesn't understand relative paths for mounting external volumes.
+- E.g. I couldn't use `-v .:/home/rstudio` or `-v coolproject:home/rstudio`.
+
+--
+
+But there _is_ a convenient shortcut for mounting the host computer's present working directory: Use &lt;code&gt;\`pwd\`&lt;/code&gt; (including the backticks).
+
+
+```bash
+$ docker run -v \`pwd`:/home/rstudio/coolproject \
+$   -d -p 8787:8787 -e PASSWORD=pswd123 rocker/tidyverse:4.0.0
+```
+
+--
+
+This shortcut effectively covers the most common relative path case (i.e. linking a container to our present working directory). You can also specify sub-directories.
+- E.g. &lt;code&gt;-v \`pwd\`/pics:/home/rstudio&lt;/code&gt;
 
 ---
 
@@ -546,19 +569,13 @@ Still, be aware that the `/home/rstudio` path won't work for our r-base containe
 
 --
 
-For non-Rstudio+ containers, I recommend a general strategy of mounting external volumes on the dedicated `/mnt` directory that is standard on Linux.&lt;sup&gt;1&lt;/sup&gt; For example:
+For non-Rstudio+ containers, I recommend a general strategy of mounting external volumes on the dedicated `/mnt` directory that is standard on Linux. For example:
 
 ```
 $ docker run -it --rm -v /home/grant/coolproject:/mnt/coolproject r-base /bin/bash
 root@958d28472eb0:/# cd /mnt/coolproject/ 
 root@958d28472eb0:/mnt/coolproject# R
 ```
-
-
-.footnote[
-&lt;sup&gt;1&lt;/sup&gt; Remember, Docker images are basically just miniaturized, portable Linux OSs.
-]
-
 
 ---
 class: inverse, center, middle
@@ -579,7 +596,7 @@ name: next
 ---
 class: inverse, center, middle
 
-# Next class: Cloud computing with Google Compute Engine
+# Next class: Google Compute Engine
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
 
 
