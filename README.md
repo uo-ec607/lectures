@@ -25,7 +25,7 @@ in the original HTML format.*
 12. Parallel programming \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.html) | [**.pdf**](https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.pdf) | [**.Rmd**](https://raw.githack.com/uo-ec607/lectures/master/12-parallel/12-parallel.Rmd)\]
 13. Docker \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/13-docker/13-docker.html) | [**.pdf**](https://raw.githack.com/uo-ec607/lectures/master/13-docker/13-docker.pdf) | [**.Rmd**](https://raw.githack.com/uo-ec607/lectures/master/13-docker/13-docker.Rmd)\]
 14. Google Compute Engine 
-    - Part I \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/14-gce-i/14-gce-i.html) | [**.pdf**](https://raw.githack.com/uo-ec607/lectures/master/14-gce-i/14-gce-i.pdf) \ [**.Rmd**](https://raw.githack.com/uo-ec607/lectures/master/14-gce-i/14-gce-i.Rmd)\]
+    - Part I \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/14-gce-i/14-gce-i.html) | [**.pdf**](https://raw.githack.com/uo-ec607/lectures/master/14-gce-i/14-gce-i.pdf) | [**.Rmd**](https://raw.githack.com/uo-ec607/lectures/master/14-gce-i/14-gce-i.Rmd)\]
 15. HPC (UO Talapas cluster) \[[**Guest lecture**](https://docs.google.com/presentation/d/146u3W0J0ytGYBq7MZBOoE6wdbkEUrMIV-Fg5N3Cnsls/edit?usp=sharing)\]
 16. Databases \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/16-databases/16-databases.html)\]
 17. Spark \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/17-spark/17-spark.html)\]
