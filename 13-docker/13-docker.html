@@ -49,7 +49,9 @@ name: toc
 
 4. [Sharing files with a container](#share)
 
-5. [Next steps](#next)
+5. [Cleaning up](#clean)
+
+5. [Conclusions](#conclusions)
 
 ---
 class: inverse, center, middle
@@ -171,15 +173,18 @@ Docker containers are the software equivalent.
 
 # Quick terminology clarification
 
-*Image* ~ This is the tarball that we talked about on the previous two slides. It is a set of layers and instructions for building a container.
+*Dockerfile* ~ The list of layers and instructions for building a Docker image. (The sheet music.)
 
-*Container* ~ A container is a running instance of an image. You can have many containers (i.e. running instances) of the same image.
+*Image* ~ This is the tarball that we talked about on the previous two slides. (MP3 file.)
+
+*Container* ~ A container is a running instance of an image. (Song playing on my computer.)
 
 --
+name: imagevscontainer
 
 &lt;/br&gt;
 
-**Analogy:** Think of the image as the recipe and the container as the cake. You can use the recipe to make many versions of the same cake (even if you only ever plan to make one). And you can share the recipe with others to make their own cake.
+**Analogy:** Think of the Dockerfile as a piece of sheet music, which tells us everything we need to play a song (key, instruments, chords, tempo, etc.) The image is a recording of the music that perfectly reflects the sheet music (e.g. an MP3 file). Finally, a container is a playing instance of that file (maybe on my phone, maybe through my home speakers, etc.)
 
 ---
 
@@ -579,17 +584,141 @@ root@958d28472eb0:/mnt/coolproject# R
 
 ---
 class: inverse, center, middle
-name: next
+name: clean 
 
-# Next steps
+# Cleaning up
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+
+# Docker images 
+
+
+As I keep emphasizing, Docker is fantastic. It allows us to very quickly share and access different software environments, with all the reproducibility and deployment benefits that this entails.
+
+--
+
+The "downside" of this convenience is that Docker images require disk space.
+- For example, the `tidyverse` image that we spun up earlier takes up 2.6 GB.
+- Not _huge_ given then size of modern hard drives... but you can quickly eat up a good chunk of disk space once you start building Docker images regularly.
+
+--
+
+To see a list of the images&lt;sup&gt;1&lt;/sup&gt; on your system, simply type:
+
+
+```bash
+$ docker images
+```
+
+.footnote[&lt;sup&gt;1&lt;/sup&gt; [Remember](#imagevscontainer): Images are distinct from containers.]
+
+---
+
+# Removing images
+
+Running the previous command on my system, here's part of what I see.
+
+![](pics/docker-images.png)
+
+--
+
+To remove a particular image (or set of images), we use the `docker rmi &lt;imageid&gt;` command. For example, I could remove both the "rocker/tidyverse" and "rocker/r-ver" images above with:
+
+
+```bash
+$ docker rmi 6b67807352ea daceaa48a457
+```
+
+(Feel free to try this yourself. But don't worry if you'd like to keep the equivalent images on your machine for now.)
+
+---
+
+# Pruning
+
+Recall that Docker makes heavy used of cached layers to speed up build times.
+
+I mention this because, while the `docker rmi` command normally works great, it doesn't necessarily handle "dangling" images or build caches.
+- Basically, intermediate objects that are no longer being used.
+
+This should not matter much for the examples that we've seen today. But, again, these dangling items can waste quite a bit of disk space once you've been building your own Dockerfiles for a while.
+
+--
+
+To fix this, we use the more aggressive `$ docker &lt;object&gt; prune` command, where `&lt;object&gt;` could be an image, etc. There's also a convenient shorthand for cleaning multiple objects at once:
+
+
+```bash
+$ docker system prune
+```
+
+I frequently use this on my own system. (More on pruning [here](https://docs.docker.com/config/pruning/).)
+
+---
+class: inverse, center, middle
+name: conclusions
+
+# Conclusions 
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+
+# Conclusions
+
+Docker makes it easy to configure and share software environments.
+- A self-contained "box" with everything needed to run a project or application.
+- If it runs on your machine, it will run on my machine.
+- Great for testing, reproducibility and deployment.
+
+Terminology analogy
+- Dockerfile = sheet music
+- Docker image = MP3 recording
+- Container = MP3 being played on my computer, phone, etc.
+
+R users are spoilt, thanks to the Rocker Project.
+- Easy to build our own Dockerfiles on top of this (or from scratch) if we want.
+
+Example (interactive terminal running base R 4.0.0)
+
+
+```bash
+$ docker run -it --rm rocker/r-ver:4.0.0
+```
+
+---
+
+# Key commands
+
+- `docker help` list of available commands
+
+- `docker run` downloads (if needed) and runs an image. Useful flags include:
+  - `--rm` remove after run
+  - `-it` interactive terminal
+  - `-v host/path:container/path` share (mount) a directory
+  -`-p 8787:8787` share a browser port: here 8787
+  
+- `docker ps` list of currently running containers
+
+- `docker stop &lt;containerids&gt;` stop one or more running containers
+
+- `docker images` list all installed images
+
+- `docker rmi &lt;imageids&gt;` remove one or more images
+
+- `docker system prune` catch all clean-up (stop any running containers, remove any dangling images, etc.)
 
 ---
 
 # Further reading
 
+### Documentation
+
 - [Rocker website](https://www.rocker-project.org/)
 - [Docker documentation](https://docs.docker.com/)
+
+### Tutorials
+
+- [Using R via Rocker](https://dirk.eddelbuettel.com/papers/cologneRUG2020.pdf) (Excellent overview and slidedeck from Dirk Eddelbuettel, one of the originators of the Rocker Project.)
 - [Using Docker for Data Science](https://www.robertmylesmcdonnell.com/content/posts/docker/) (Very thorough walkthrough, with a focus on composing your own Dockerfiles from scratch.)
 - [ROpenSci Docker Tutorial](http://ropenscilabs.github.io/r-docker-tutorial) (Another detailed and popular tutorial, albeit outdated in parts.)
 

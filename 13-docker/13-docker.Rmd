@@ -64,7 +64,7 @@ knit_hooks$set(
 
 5. [Cleaning up](#clean)
 
-5. [Next steps](#next)
+5. [Conclusions](#conclusions)
 
 ---
 class: inverse, center, middle
@@ -188,16 +188,18 @@ knitr::include_graphics("pics/b0rk_zine.jpg")
 
 # Quick terminology clarification
 
-*Image* ~ This is the tarball that we talked about on the previous two slides. It is a set of layers and instructions for building a container.
+*Dockerfile* ~ The list of layers and instructions for building a Docker image. (The sheet music.)
 
-*Container* ~ A container is a running instance of an image. You can have many containers (i.e. running instances) of the same image.
+*Image* ~ This is the tarball that we talked about on the previous two slides. (MP3 file.)
+
+*Container* ~ A container is a running instance of an image. (Song playing on my computer.)
 
 --
 name: imagevscontainer
 
 </br>
 
-**Analogy:** Think of the image as the recipe and the container as the cake. You can use the recipe to make many versions of the same cake (even if you only ever plan to make one). And you can share the recipe with others to make their own cake.
+**Analogy:** Think of the Dockerfile as a piece of sheet music, which tells us everything we need to play a song (key, instruments, chords, tempo, etc.) The image is a recording of the music that perfectly reflects the sheet music (e.g. an MP3 file). Finally, a container is a playing instance of that file (maybe on my phone, maybe through my home speakers, etc.)
 
 ---
 
@@ -658,10 +660,55 @@ I frequently use this on my own system. (More on pruning [here](https://docs.doc
 
 ---
 class: inverse, center, middle
-name: next
+name: conclusions
 
-# Next steps
+# Conclusions 
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+
+# Conclusions
+
+Docker makes it easy to configure and share software environments.
+- A self-contained "box" with everything needed to run a project or application.
+- If it runs on your machine, it will run on my machine.
+- Great for testing, reproducibility and deployment.
+
+Terminology analogy
+- Dockerfile = sheet music
+- Docker image = MP3 recording
+- Container = MP3 being played on my computer, phone, etc.
+
+R users are spoilt, thanks to the Rocker Project.
+- Easy to build our own Dockerfiles on top of this (or from scratch) if we want.
+
+Example (interactive terminal running base R 4.0.0)
+
+```{bash conc_ex}
+docker run -it --rm rocker/r-ver:4.0.0
+```
+
+---
+
+# Key commands
+
+- `docker help` list of available commands
+
+- `docker run` downloads (if needed) and runs an image. Useful flags include:
+  - `--rm` remove after run
+  - `-it` interactive terminal
+  - `-v host/path:container/path` share (mount) a directory
+  -`-p 8787:8787` share a browser port: here 8787
+  
+- `docker ps` list of currently running containers
+
+- `docker stop <containerids>` stop one or more running containers
+
+- `docker images` list all installed images
+
+- `docker rmi <imageids>` remove one or more images
+
+- `docker system prune` catch all clean-up (stop any running containers, remove any dangling images, etc.)
 
 ---
 
@@ -685,7 +732,7 @@ class: inverse, center, middle
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
 
 
-```{r gen_pdf, include = FALSE, cache = FALSE, eval = FALSE}
+```{r gen_pdf, include = FALSE, cache = FALSE, eval = TRUE}
 infile = list.files(pattern = '.html')
 pagedown::chrome_print(input = infile, timeout = 100)
 ```
