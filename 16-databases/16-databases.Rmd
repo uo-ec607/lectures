@@ -36,7 +36,7 @@ You should already have done this for the lecture on Google Compute Engine. See 
 
 ### R packages 
 
-- New: **dbplyr**, **DBI**, **RSQLite**,**bigrquery**, **glue**
+- New: **dbplyr**, **DBI**, **duckdb**,**bigrquery**, **glue**
 - Already used: **tidyverse**, **hrbrthemes**, **nycflights13**
 
 As per usual, the code chunk below will install (if necessary) and load all of these packages for you. I'm also going to set my preferred ggplot2 theme, but as you wish.
@@ -44,7 +44,7 @@ As per usual, the code chunk below will install (if necessary) and load all of t
 ```{r, cache=F, message=F}
 ## Load/install packages
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(tidyverse, DBI, dbplyr, RSQLite, bigrquery, hrbrthemes, nycflights13, glue)
+pacman::p_load(tidyverse, DBI, dbplyr, duckdb, bigrquery, hrbrthemes, nycflights13, glue)
 ## My preferred ggplot2 theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
@@ -72,27 +72,27 @@ Simply that you can interact with the vast datasets that are stored in relationa
 
 While **DBI** is automatically bundled with **dbplyr**, you'll need to install a specific backend package for the type of database that you want to connect to. You can see a list of commonly used backends [here](https://db.rstudio.com/dplyr/#getting-started). For today, however, we'll focus on two: 
   
-1. **RSQLite** embeds a SQLite database.
+1. **duckdb** embeds a DuckDB database.
 2. **bigrquery** connects to Google BigQuery.
 
-The former is a lightweight SQL database engine that can exist on our local computers. It thus provides the simplest way of demonstrating the key concepts of this section without the additional overhead required by the other database types. (No need to connect to a remote server, for starters.) The latter is the one that I use most frequently in my own work and also requires minimal overhead, seeing as we already set up a Google Cloud account in the previous lecture.
+The former is a lightweight --- but extremely powerful --- database management system (DBMS) that can exist on our local computers. It thus provides the simplest way of demonstrating the key concepts of this section without the additional overhead required by some other common other DBMSs. (No external dependencies, no need to connect to a remote server, etc.) The latter is the one that I use most frequently in my own work and also requires minimal overhead, seeing as we already set up a Google Cloud account in the previous lecture.
 
-## Getting started: SQLite
+## Getting started: DuckDB
 
-This next section is inspired by RStudio's excellent [*Databases using dplyr*](https://db.rstudio.com/dplyr) tutorial. Our goal is to create a makeshift database on our local computers using SQLite. We'll use this to execute some practice queries and illustrate some general principles about interacting with databases.
+This next section is inspired by RStudio's excellent [*Databases using dplyr*](https://db.rstudio.com/dplyr) tutorial. Our goal is to create a makeshift database on our local computers using the superb [DuckDB](https://duckdb.org/docs/api/r) backend. We'll use this to execute some practice queries and illustrate some general principles about interacting with databases.
 
 ### Connecting to a database
 
-Start by opening an (empty) database connection via the `DBI::dbConnect()` function, which we'll call `con`. Note that we are calling the **RSQLite** package in the background for the SQLite backend and telling R that this is a local connection that exists in memory.
+Start by opening an (empty) database connection via the `DBI::dbConnect()` function, which we'll call `con`. Note that we are calling the **duckdb** package in the background for the DuckDB backend and telling R that this is a local connection that exists in memory.
 
 
 ```{r con, cache = FALSE}
 # library(DBI) ## Already loaded
 
-con = dbConnect(RSQLite::SQLite(), path = ":memory:")
+con = dbConnect(duckdb::duckdb(), path = ":memory:")
 ```
 
-The arguments to `DBI::dbConnect()` vary from database to database. However, the first argument is always the database backend, i.e. `RSQLite::SQLite()` in this case since we're using (R)SQLite. Again, while this differs depending on the database type that you're connecting with, SQLite only needs one other argument: the `path` to the database. Here we use the special string, ":memory:", which causes SQLite to make a temporary in-memory database. We'll explore more complicated connections later on that will involve things like password prompts for remote databases.
+The arguments to `DBI::dbConnect()` vary from database to database. However, the first argument is always the database backend, i.e. `duckdb::duckdb()` in this case since we're using DuckDB. Again, while this differs depending on the database type that you're connecting with, DuckDB only needs one other argument: the `path` to the database. Here we use the special string, ":memory:", which causes DuckDB to make a temporary in-memory database. We'll explore more complicated connections later on that will involve things like password prompts for remote databases.
 
 Our makeshift database connection `con` is currently empty. So let's copy across the *flights* dataset that comes bundled together with the **nycflights13** package. There are a couple of ways to do this, but here I'll use the `dplyr::copy_to()` convenience function. Note that we are specifying the table name ("flights") that will exist within this database. You can also see that we're passing a list of indexes to the `copy_to()` function. Indexes enable efficient database performance, although you don't need to worry too much about that right now. These will be set by the database host platform or maintainer in normal applications.
 
@@ -193,7 +193,7 @@ tailnum_delay %>%
   coord_fixed()
 ```
 
-Assuming that we're finished querying our SQLite database at this point, we'd normally disconnect from it by calling `DBI::dbDisconnect(con)`. However, I want to keep the connection open a bit longer, so that I can demonstrate how to execute raw (i.e. untranslated) SQL queries on a database from within R.
+Assuming that we're finished querying our DuckDB database at this point, we'd normally disconnect from it by calling `DBI::dbDisconnect(con)`. However, I want to keep the connection open a bit longer, so that I can demonstrate how to execute raw (i.e. untranslated) SQL queries on a database from within R.
 
 ## Using SQL directly in R
 
@@ -313,7 +313,7 @@ Having set our project IDs, we are now ready to run queries and download BigQuer
 
 ### Example 1) US birth data
 
-The `bigrquery` package supports various ways --- or "abstraction levels" --- of running queries from R, including interacting directly with the low-level API. In the interests of brevity, I'm only going to focus on the **dplyr** approach here.^[I encourage you to read the package documentation to see these other methods for yourself.] As with the the SQLite example from earlier, we start by establishing a connection using `DBI::dbConnect()`. The only difference this time is that we need to specify that are using the BigQuery backend (via `bigrquery::bigquery()`) and provide our credentials (via our project billing ID). Let's proceed by connecting to the "publicdata.samples" dataset.
+The `bigrquery` package supports various ways --- or "abstraction levels" --- of running queries from R, including interacting directly with the low-level API. In the interests of brevity, I'm only going to focus on the **dplyr** approach here.^[I encourage you to read the package documentation to see these other methods for yourself.] As with the the DuckDB example from earlier, we start by establishing a connection using `DBI::dbConnect()`. The only difference this time is that we need to specify that are using the BigQuery backend (via `bigrquery::bigquery()`) and provide our credentials (via our project billing ID). Let's proceed by connecting to the "publicdata.samples" dataset.
 
 ```{r bq_con, cache=F}
 # library(DBI) ## Already loaded
