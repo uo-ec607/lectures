@@ -89,7 +89,7 @@ Start by opening an (empty) database connection via the `DBI::dbConnect()` funct
 ```{r con, cache = FALSE}
 # library(DBI) ## Already loaded
 
-con <- dbConnect(RSQLite::SQLite(), path = ":memory:")
+con = dbConnect(RSQLite::SQLite(), path = ":memory:")
 ```
 
 The arguments to `DBI::dbConnect()` vary from database to database. However, the first argument is always the database backend, i.e. `RSQLite::SQLite()` in this case since we're using (R)SQLite. Again, while this differs depending on the database type that you're connecting with, SQLite only needs one other argument: the `path` to the database. Here we use the special string, ":memory:", which causes SQLite to make a temporary in-memory database. We'll explore more complicated connections later on that will involve things like password prompts for remote databases.
@@ -97,7 +97,8 @@ The arguments to `DBI::dbConnect()` vary from database to database. However, the
 Our makeshift database connection `con` is currently empty. So let's copy across the *flights* dataset that comes bundled together with the **nycflights13** package. There are a couple of ways to do this, but here I'll use the `dplyr::copy_to()` convenience function. Note that we are specifying the table name ("flights") that will exist within this database. You can also see that we're passing a list of indexes to the `copy_to()` function. Indexes enable efficient database performance, although you don't need to worry too much about that right now. These will be set by the database host platform or maintainer in normal applications.
 
 ```{r copy_to, cache = FALSE}
-# if (!require("nycflights13")) install.packages("nycflights13") ## Already installed
+# library(dplyr)        ## Already loaded
+# library(nycflights13) ## Already loaded
 
 copy_to(
   dest = con, 
@@ -119,7 +120,7 @@ Now that we’ve copied over the data, we can reference it from R via the `dplyr
 # library(dplyr) ## Already loaded
 # library(dbplyr) ## Already loaded
 
-flights_db <- tbl(con, "flights")
+flights_db = tbl(con, "flights")
 flights_db
 ```
 
@@ -152,19 +153,19 @@ The *modus operandi* of **dplyr** is to be as lazy as possible. What this means 
 For example, consider an example where we are interested in the mean departure and arrival delays for each plane (i.e. by unique tail number). I'll also drop observations with less than 100 flights.
 
 ```{r tailnum_delay_db}
-tailnum_delay_db <- 
+tailnum_delay_db = 
   flights_db %>% 
   group_by(tailnum) %>%
   summarise(
     mean_dep_delay = mean(dep_delay),
     mean_arr_delay = mean(arr_delay),
     n = n()
-    ) %>% 
-  arrange(desc(mean_arr_delay)) %>%
-  filter(n > 100)
+    ) %>%
+  filter(n > 100) %>% 
+  arrange(desc(mean_arr_delay))
 ```
 
-Surprisingly, this sequence of operations never touches the database.^[It's a little hard to tell from this simple example, but an additional clue is that fact that this sequence of commands would execute instaneously even it it was applied on a massive remote database.] It’s not until you actually ask for the data (say, by printing `tailnum_delay_db`) that **dplyr** generates the SQL and requests the results from the database. Even then it tries to do as little work as possible and only pulls down a few rows.
+Surprisingly, this sequence of operations never touches the database.^[It's a little hard to tell from this simple example, but an additional clue is that fact that this sequence of commands would execute instantaneously even it it was applied on a massive remote database.] It’s not until you actually ask for the data (say, by printing `tailnum_delay_db`) that **dplyr** generates the SQL and requests the results from the database. Even then it tries to do as little work as possible and only pulls down a few rows.
 
 ```{r tailnum_delay_db_print}
 tailnum_delay_db
@@ -176,7 +177,7 @@ tailnum_delay_db
 Typically, you’ll iterate a few times before you figure out what data you need from the database. Once you’ve figured it out, use **`collect()`** to pull all the data into a local data frame. I'm going to assign this collected data frame to a new object (i.e. `tailnum_delay`), but only because I want to keep the queried data base object (`tailnum_delay_db`) separate for demonstrating some SQL translation principles in the next section.
 
 ```{r tailnum_delay}
-tailnum_delay <- 
+tailnum_delay = 
   tailnum_delay_db %>% 
   collect()
 tailnum_delay
@@ -260,12 +261,12 @@ While the above approach works perfectly fine --- i.e. just write out the full S
 # library(glue) ## Already loaded
 
 ## Some local R variables
-tbl <- "flights"
-d_var <- "dep_delay"
-d_thresh <- 240
+tbl = "flights"
+d_var = "dep_delay"
+d_thresh = 240
 
 ## The "glued" SQL query string
-sql_query <-
+sql_query =
   glue_sql("
   SELECT *
   FROM {`tbl`}
@@ -305,7 +306,7 @@ The starting point for using the **bigrquery** package is to provide your GCP pr
 ```{r billing_id}
 # library(bigrquery) ## Already loaded
 
-billing_id <- Sys.getenv("GCE_DEFAULT_PROJECT_ID") ## Replace with your project ID if this doesn't work
+billing_id = Sys.getenv("GCE_DEFAULT_PROJECT_ID") ## Replace with your project ID if this doesn't work
 ```
 
 Having set our project IDs, we are now ready to run queries and download BigQuery data into our R environment. I'll demonstrate using two examples: 1) US birth data from the samples data, and 2) Fishing effort data from the Global Fishing Watch project.
@@ -318,7 +319,7 @@ The `bigrquery` package supports various ways --- or "abstraction levels" --- of
 # library(DBI) ## Already loaded
 # library(dplyr) ## Already loaded
 
-bq_con <- 
+bq_con = 
   dbConnect(
     bigrquery::bigquery(),
     project = "publicdata",
@@ -338,13 +339,13 @@ dbListTables(bq_con)
 For this example, we'll go with the [natality](https://console.cloud.google.com/bigquery?p=bigquery-public-data&d=samples&t=natality&page=table&_ga=2.108840194.-1488160368.1535579560) table, which contains registered birth records for all 50 US states (1969--2008). 
 
 ```{r, bq_natality}
-natality <- tbl(bq_con, "natality")
+natality = tbl(bq_con, "natality")
 ```
 
 As a reference point, the raw natality data on BigQuery is about 22 GB. Not gigantic, but enough to overwhelm most people's RAM. Here's a simple exercise where we collapse the data down to yearly means.
 
 ```{r bw}
-bw <-
+bw =
   natality %>%
   filter(!is.na(state)) %>% ## optional to remove some outliers
   group_by(year) %>%
@@ -364,7 +365,7 @@ For the record, I don't know why birth weights have been falling recently, and w
 
 ```{r bw_st}
 ## Get mean yearly birth weight by state and gender
-bw_st <-
+bw_st =
   natality %>%
   filter(!is.na(state)) %>%
   group_by(year, state, is_male) %>%
@@ -377,9 +378,9 @@ Now let's plot it. I'll highlight a few (arbitrary) states just for interest's s
 
 ```{r bw_st_plot}
 ## Select arbitrary states to highlight
-states <- c("CA","DC","OR","TX","VT")
+states = c("CA","DC","OR","TX","VT")
 ## Rearranging the data will help with the legend ordering
-bw_st <- bw_st %>% arrange(gender, year)
+bw_st = bw_st %>% arrange(gender, year)
 
 ## Plot it
 bw_st %>%
@@ -414,7 +415,7 @@ dbDisconnect(bq_con)
 I know that this lecture is running long now, but I wanted to show you one final example that is closest to my own research. [**Global Fishing Watch**](https://globalfishingwatch.org/) is an incredible initiative that aims to bring transparency to the world's oceans. I've presented on GFW in various forums and I highly encourage you to play around with their [interactive map](https://globalfishingwatch.org/map/) if you get a spare moment. For the moment, though we'll simply look at how to connect to the public GFW data on BigQuery and then extract some summary information about global fishing activity.
 
 ```{r gfw_con, cache=F}
-gfw_con <- 
+gfw_con = 
   dbConnect(
     bigrquery::bigquery(),
     project = "global-fishing-watch",
@@ -432,7 +433,7 @@ dbListTables(gfw_con)
 All of these tables are interesting in their own right, but we're going to be querying the "fishing_effort" table. Let's link it to a local (lazy) data frame that we'll call `effort`.
 
 ```{r effort}
-effort <- tbl(gfw_con, "fishing_effort")
+effort = tbl(gfw_con, "fishing_effort")
 effort
 ```
 
@@ -473,9 +474,9 @@ Okay, here's a quick final query to get global fishing effort in 2016. I'm not g
 
 ```{r globe}
 ## Define the desired bin resolution in degrees
-resolution <- 1
+resolution = 1
 
-globe <-
+globe =
   effort %>%
   filter(
     `_PARTITIONTIME` >= "2016-01-01 00:00:00",
