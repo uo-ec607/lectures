@@ -355,7 +355,7 @@ docker run -d -p 8787:8787 -e PASSWORD=pswd123 rocker/tidyverse:4.0.0
 
 If you run this... nothing seems to happen. Don't worry, I'll explain on the next slide.
 
-- Confirm for yourself that it's actually running with `$ docker ps`. (Mac and Windows users should definitely do this because you'll need the container ID shortly.)
+- Confirm for yourself that it's actually running with `$ docker ps`. (Windows users should definitely do this because you'll need the container ID shortly.)
 
 --
 name:username
@@ -373,8 +373,8 @@ Unlike, the "r-base" container, this time we aren't immediately taken to our R e
 --
 
 So we need to point our browsers to the relevant IP address _plus_ the opened `:8787` port:
-- **Linux:** http://localhost:8787 
-- **Mac/Windows:** Type in `$ docker inspect <containerid>  | grep IPAddress` to get your IP address (see [here](https://stackoverflow.com/a/46310428)). Note that this information was also displayed when you first launched your Docker Quickstart Terminal. For example:
+- **Linux/Mac:** http://localhost:8787 
+- **Windows:** Type in `$ docker inspect <containerid>  | grep IPAddress` to get your IP address (see [here](https://stackoverflow.com/a/46310428)). Note that this information was also displayed when you first launched your Docker Quickstart Terminal. For example:
 
 .small75[
   
@@ -396,7 +396,7 @@ So we need to point our browsers to the relevant IP address _plus_ the opened `:
 
 --
 
-So this Mac/Windows user would point their browser to http://192.168.99.100:8787.
+So this Windows user would point their browser to http://192.168.99.100:8787.
 
 ---
 
