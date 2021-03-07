@@ -293,9 +293,9 @@ chunk_func = function(x, n) split(x, cut(seq_along(x), n, labels = FALSE))
 # chunk_func(as.factor(LETTERS[1:5]), 2)
 ```
 
-Okay, now we're really ready to make full use our cluster. For this example, I'll even go ahead and run 40 iterations of our `slow_func()` function in total. Note that this would take 200 seconds to run sequentially. Based on the total number of cores available to us in this cluster, we would we hope to drop this computation time to around 25 seconds (i.e. an **8 times speedup**) by running everything in parallel. I've commented the code quite explicitly, so please read carefully to see what's happening. In words, though: first we parallelize over the three VMs; then we chunk the input data so that each VM works on a distinct part of problem; and finally we feed the chunked data to our `slow_func` function where it is run in parallel on each VM.
+Okay, now we're really ready to make full use our cluster. For this example, I'll even go ahead and run 40 iterations of our `slow_func()` function in total. Note that this would take 200 seconds to run sequentially. Based on the total number of cores available to us in this cluster, we would we hope to drop this computation time to around 25 seconds (i.e. an **8 times speedup**) by running everything in parallel. I've commented the code quite explicitly, so please read carefully to see what's happening. In words, though: first we parallelize over the two VMs; then we chunk the input data so that each VM works on a distinct part of problem; and finally we feed the chunked data to our `slow_func` function where it is run in parallel on each VM.
 
-```{r future_nested_cluster_noeval, dependson=vms_nested, dependson=chunk_func, eval=FALSE}
+```{r future_nested_cluster_noeval, dependson=vms_nested, eval=FALSE}
 ## Input data (vector to be iterated over by our function)
 input_data = 1:40
 
@@ -316,7 +316,7 @@ future_nested_cluster =
 toc()
 ```
 
-```{r future_nested_cluster, dependson=vms_nested, dependson=chunk_func, message=FALSE, echo=FALSE}
+```{r future_nested_cluster, dependson=vms_nested, message=FALSE, echo=FALSE}
 ## NOTE: This chunk simply repeats the previous ones, but actually *evaluates*
 ## them. Why do this? Because keeping the plan() and the future_lapply() calls
 ## together avoids problems with Rmd caching missteps. Obviously we'll set 
@@ -386,7 +386,7 @@ plan(list(
 
 Let's prove to ourselves that the installation of **data.table** worked by running a very slightly modified version of our earlier code. This time we'll use `data.table::rbindList()` to coerce the resulting list objects from each `future_lapply()` call into a data table. Note that we'll need to do this twice: once for our inner loop(s) and once for the outer loop.
 
-```{r future_nested_cluster_DT_noeval, dependson=vms_nested, dependson=chunk_func, eval=FALSE}
+```{r future_nested_cluster_DT_noeval, dependson=vms_nested, eval=FALSE}
 ## Same as earlier, but this time binding the results into a data.table with
 ## data.table::rbindlist()
 
@@ -412,7 +412,7 @@ future_nested_cluster_DT =
 future_nested_cluster_DT
 ```
 
-```{r future_nested_cluster_DT, dependson=vms_nested, dependson=chunk_func, message=FALSE, echo=FALSE}
+```{r future_nested_cluster_DT, dependson=vms_nested, message=FALSE, echo=FALSE}
 ## NOTE: This chunk simply repeats the previous ones, but actually *evaluates*
 ## them. Why do this? Because keeping the plan() and the future_lapply() calls
 ## together avoids problems with Rmd caching missteps. Obviously we'll set 

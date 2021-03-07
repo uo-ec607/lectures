@@ -555,16 +555,16 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">predefined_type =</span> <span class="st">&quot;n1-standard-4&quot;</span>,    <span class="do">## CHANGED: Each VM has four CPUs</span></span>
 <span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">scheduling =</span> <span class="fu">list</span>(<span class="at">preemptible =</span> <span class="cn">TRUE</span>) <span class="do">## OPTIONAL: Use cheaper, preemptible machines</span></span>
 <span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div>
-<pre><code>## 2021-03-06 17:15:59&gt; # Creating cluster with settings: predefined_type = n1-standard-4, scheduling = list(preemptible = TRUE), template = r-base, dynamic_image = rocker/r-parallel, wait = FALSE</code></pre>
-<pre><code>## 2021-03-06 17:16:03&gt; Operation running...</code></pre>
-<pre><code>## 2021-03-06 17:16:06&gt; Operation running...</code></pre>
-<pre><code>## 2021-03-06 17:16:13&gt; Operation complete in 5 secs</code></pre>
-<pre><code>## 2021-03-06 17:16:16&gt; Operation complete in 7 secs</code></pre>
-<pre><code>## 2021-03-06 17:16:17&gt; nested-cluster1 VM running</code></pre>
-<pre><code>## 2021-03-06 17:16:18&gt; nested-cluster2 VM running</code></pre>
-<pre><code>## 2021-03-06 17:16:26&gt; Public SSH key uploaded to instance</code></pre>
-<pre><code>## 2021-03-06 17:16:33&gt; Public SSH key uploaded to instance</code></pre>
-<pre><code>## 2021-03-06 17:16:33&gt; # Testing cluster:</code></pre>
+<pre><code>## 2021-03-06 19:56:38&gt; # Creating cluster with settings: predefined_type = n1-standard-4, scheduling = list(preemptible = TRUE), template = r-base, dynamic_image = rocker/r-parallel, wait = FALSE</code></pre>
+<pre><code>## 2021-03-06 19:56:42&gt; Operation running...</code></pre>
+<pre><code>## 2021-03-06 19:56:45&gt; Operation running...</code></pre>
+<pre><code>## 2021-03-06 19:56:51&gt; Operation complete in 6 secs</code></pre>
+<pre><code>## 2021-03-06 19:56:54&gt; Operation complete in 7 secs</code></pre>
+<pre><code>## 2021-03-06 19:56:56&gt; nested-cluster1 VM running</code></pre>
+<pre><code>## 2021-03-06 19:56:57&gt; nested-cluster2 VM running</code></pre>
+<pre><code>## 2021-03-06 19:57:07&gt; Public SSH key uploaded to instance</code></pre>
+<pre><code>## 2021-03-06 19:57:15&gt; Public SSH key uploaded to instance</code></pre>
+<pre><code>## 2021-03-06 19:57:15&gt; # Testing cluster:</code></pre>
 <p>Now comes part where we need to tweak our cluster setup. Nesting in the future framework is operationalised by defining a series of so-called <a href="https://cran.r-project.org/web/packages/future/vignettes/future-3-topologies.html">future “topologies”</a>. You can click on the previous link for more details, but the gist is that we define a nested plan of futures using the <code>plan(list(tweak(...), tweak(...)))</code> syntax. In this case, we are going to define two topology layers:</p>
 <ul>
 <li><strong>Topology 1.</strong> The “outer” plan, which tells <code>future</code> to use the cluster of two remote VMs.</li>
@@ -592,7 +592,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a><span class="co"># chunk_func(1:8, 2)</span></span>
 <span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a><span class="co"># chunk_func(1:5, 3)</span></span>
 <span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a><span class="co"># chunk_func(as.factor(LETTERS[1:5]), 2)</span></span></code></pre></div>
-<p>Okay, now we’re really ready to make full use our cluster. For this example, I’ll even go ahead and run 40 iterations of our <code>slow_func()</code> function in total. Note that this would take 200 seconds to run sequentially. Based on the total number of cores available to us in this cluster, we would we hope to drop this computation time to around 25 seconds (i.e. an <strong>8 times speedup</strong>) by running everything in parallel. I’ve commented the code quite explicitly, so please read carefully to see what’s happening. In words, though: first we parallelize over the three VMs; then we chunk the input data so that each VM works on a distinct part of problem; and finally we feed the chunked data to our <code>slow_func</code> function where it is run in parallel on each VM.</p>
+<p>Okay, now we’re really ready to make full use our cluster. For this example, I’ll even go ahead and run 40 iterations of our <code>slow_func()</code> function in total. Note that this would take 200 seconds to run sequentially. Based on the total number of cores available to us in this cluster, we would we hope to drop this computation time to around 25 seconds (i.e. an <strong>8 times speedup</strong>) by running everything in parallel. I’ve commented the code quite explicitly, so please read carefully to see what’s happening. In words, though: first we parallelize over the two VMs; then we chunk the input data so that each VM works on a distinct part of problem; and finally we feed the chunked data to our <code>slow_func</code> function where it is run in parallel on each VM.</p>
 <div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Input data (vector to be iterated over by our function)</span></span>
 <span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>input_data <span class="ot">=</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">40</span></span>
 <span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -611,7 +611,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <span id="cb56-16"><a href="#cb56-16" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb56-17"><a href="#cb56-17" aria-hidden="true" tabindex="-1"></a>    })</span>
 <span id="cb56-18"><a href="#cb56-18" aria-hidden="true" tabindex="-1"></a><span class="fu">toc</span>()</span></code></pre></div>
-<pre><code>## 31.391 sec elapsed</code></pre>
+<pre><code>## 28.103 sec elapsed</code></pre>
 <p>And it worked! There’s a little bit of overhead, but we are very close to the maximum theoretical speedup. Note that this overhead time would increase if we were transferring large amounts of data around the cluster — which, again future will take care of automatically for us — but the same basic principles would apply.</p>
 <p><strong>Bottom line:</strong> You can create can create a mini supercomputer up in the cloud using only a few lines of code, and then interact with it directly from your local R environment. Honestly, what’s not to like?</p>
 <p>Normally, I would remind you to shut down your VM instances now. But first, let’s quickly using them again for one last example.</p>
@@ -711,17 +711,17 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a><span class="fu">gce_vm_stop</span>(vms_nested)</span></code></pre></div>
 <pre><code>## [[1]]
 ## ==Zone Operation stop :  RUNNING
-## Started:  2021-03-06 17:19:07
+## Started:  2021-03-06 19:59:44
 ## [[2]]
 ## ==Zone Operation stop :  RUNNING
-## Started:  2021-03-06 17:19:08</code></pre>
+## Started:  2021-03-06 19:59:44</code></pre>
 <div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gce_vm_delete</span>(vms_nested)</span></code></pre></div>
 <pre><code>## [[1]]
 ## ==Zone Operation delete :  PENDING
-## Started:  2021-03-06 17:19:08
+## Started:  2021-03-06 19:59:45
 ## [[2]]
 ## ==Zone Operation delete :  PENDING
-## Started:  2021-03-06 17:19:09</code></pre>
+## Started:  2021-03-06 19:59:45</code></pre>
 </div>
 </div>
 <div id="other-topics-and-further-resources" class="section level2">
