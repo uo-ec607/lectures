@@ -600,7 +600,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Run the function in (nested) parallel on our cluster</span></span>
 <span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a>future_nested_cluster <span class="ot">=</span> </span>
 <span id="cb56-7"><a href="#cb56-7" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb56-8"><a href="#cb56-8" aria-hidden="true" tabindex="-1"></a>  <span class="do">## Outer future_lapply() loop over the three VMS</span></span>
+<span id="cb56-8"><a href="#cb56-8" aria-hidden="true" tabindex="-1"></a>  <span class="do">## Outer future_lapply() loop over the two VMS</span></span>
 <span id="cb56-9"><a href="#cb56-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">future_lapply</span>(<span class="fu">seq_along</span>(vms_nested), <span class="cf">function</span>(v) {</span>
 <span id="cb56-10"><a href="#cb56-10" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb56-11"><a href="#cb56-11" aria-hidden="true" tabindex="-1"></a>    <span class="do">## Split the input data into distinct chunks for each VM</span></span>
@@ -649,7 +649,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a>  <span class="do">## Bind into a data.table</span></span>
 <span id="cb59-8"><a href="#cb59-8" aria-hidden="true" tabindex="-1"></a>  data.table<span class="sc">::</span><span class="fu">rbindlist</span>(</span>
 <span id="cb59-9"><a href="#cb59-9" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb59-10"><a href="#cb59-10" aria-hidden="true" tabindex="-1"></a>    <span class="do">## Outer future_lapply() loop over the three VMs</span></span>
+<span id="cb59-10"><a href="#cb59-10" aria-hidden="true" tabindex="-1"></a>    <span class="do">## Outer future_lapply() loop over the two VMs</span></span>
 <span id="cb59-11"><a href="#cb59-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">future_lapply</span>(<span class="fu">seq_along</span>(vms_nested), <span class="cf">function</span>(v) {</span>
 <span id="cb59-12"><a href="#cb59-12" aria-hidden="true" tabindex="-1"></a>      </span>
 <span id="cb59-13"><a href="#cb59-13" aria-hidden="true" tabindex="-1"></a>      <span class="do">## Split the input data into distinct chunks for each VM</span></span>
@@ -740,7 +740,7 @@ University of Oregon | <a href="https://github.com/uo-ec607/lectures">EC 607</a>
 <li id="fn2"><p>The use of GCE templates is quite similar to the pre-configured <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html">machine images</a> available on AWS. I should add that you can, of course, download bespoke Docker images as part the <code>gce_vm()</code> call instead of using the given templates. See <a href="https://cloudyr.github.io/googleComputeEngineR/articles/docker.html">here</a>.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
 <li id="fn3"><p>Of course, you can also combine a cluster of very power machines to get a <em>really</em> powerful system. That’s what supercomputing services like the University of Oregon’s <a href="https://hpcf.uoregon.edu/content/talapas">Talapas cluster</a> provide, which is the subject of a later lecture.<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
 <li id="fn4"><p>It is also possible to spin up preemptible versions of other, larger VMs using the <code>scheduling = list(preemptible = TRUE)</code> argument. We’ll see an example of that shortly.<a href="#fnref4" class="footnote-back">↩︎</a></p></li>
-<li id="fn5"><p>Indeed, we’re going to be using the same three VMs. These should still be running in the background, unless you’ve taken a long time to get to this next section. Just spin them up again if you run into problems.<a href="#fnref5" class="footnote-back">↩︎</a></p></li>
+<li id="fn5"><p>Indeed, we’re going to be using the same two VMs. These should still be running in the background, unless you’ve taken a long time to get to this next section. Just spin them up again if you run into problems.<a href="#fnref5" class="footnote-back">↩︎</a></p></li>
 </ol>
 </div>
 

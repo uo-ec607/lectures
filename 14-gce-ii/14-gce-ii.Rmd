@@ -303,7 +303,7 @@ tic()
 ## Run the function in (nested) parallel on our cluster
 future_nested_cluster = 
   
-  ## Outer future_lapply() loop over the three VMS
+  ## Outer future_lapply() loop over the two VMS
   future_lapply(seq_along(vms_nested), function(v) {
     
     ## Split the input data into distinct chunks for each VM
@@ -357,7 +357,7 @@ Normally, I would remind you to shut down your VM instances now. But first, let'
 
 #### One final example
 
-The final example that I'm going to show you is a slight adaptation of the nested cluster that we just covered.^[Indeed, we're going to be using the same three VMs. These should still be running in the background, unless you've taken a long time to get to this next section. Just spin them up again if you run into problems.] This time we're going to install and use an additional R package on our remote VMs that didn't come pre-installed on the "r-parallel" Docker image. (The package in question is going to be [**data.table**](https://raw.githack.com/uo-ec607/lectures/master/05-datatable/05-datatable.html), but that's not really the point of the exercise.) I wanted to cover this kind of scenario because a) it's very likely that you'll want to do something similar if you start using remote clusters regularly, and b) the commands for doing so aren't obvious if you're not used to R scripting on Docker containers. The good news is that it's pretty easy once you've seen an example and that everything can be done through `plan()`. Let's proceed.
+The final example that I'm going to show you is a slight adaptation of the nested cluster that we just covered.^[Indeed, we're going to be using the same two VMs. These should still be running in the background, unless you've taken a long time to get to this next section. Just spin them up again if you run into problems.] This time we're going to install and use an additional R package on our remote VMs that didn't come pre-installed on the "r-parallel" Docker image. (The package in question is going to be [**data.table**](https://raw.githack.com/uo-ec607/lectures/master/05-datatable/05-datatable.html), but that's not really the point of the exercise.) I wanted to cover this kind of scenario because a) it's very likely that you'll want to do something similar if you start using remote clusters regularly, and b) the commands for doing so aren't obvious if you're not used to R scripting on Docker containers. The good news is that it's pretty easy once you've seen an example and that everything can be done through `plan()`. Let's proceed.
 
 The [`Rscript`](https://raw.githack.com/uo-ec607/lectures/master/03-shell/03-shell.html#rscript) shell command is probably the most common way to install additional R packages on a Docker container at load time. The slight complication here is that we we need this to happen on each of the remote VMs in our cluster. That's what the `rscript = c(...)` line below is doing; it's launching `Rscript` in each Docker container. Next we feed it the actual command, i.e. `Rscript -e install.packages(PACKAGE)`. This looks a little abstruse here, because it has to go through the `rscript_args = c(...)` argument, but hopefully you get the idea.
 
@@ -396,7 +396,7 @@ future_nested_cluster_DT =
   ## Bind into a data.table
   data.table::rbindlist(
     
-    ## Outer future_lapply() loop over the three VMs
+    ## Outer future_lapply() loop over the two VMs
     future_lapply(seq_along(vms_nested), function(v) {
       
       ## Split the input data into distinct chunks for each VM
