@@ -99,6 +99,9 @@ Both approaches have their merits, but I think it's important to start with the 
 
 *<b>Note:</b> It's possible to complete nearly all of the steps in this section via the [GCE browser console](https://console.cloud.google.com/compute/instances). However, we'll stick to using the [shell](https://raw.githack.com/uo-ec607/lectures/master/03-shell/03-shell.html), because that will make it easier to document our steps.*
 
+*<b>Windows users:</b> You will need to run any multi-line commands (i.e. those that are chained with the [backslash](https://www.gnu.org/software/bash/manual/html_node/Escape-Character.html#Escape-Character) character) as single line commands. Basically, delete the trailing "`\`" characters at the end of any sub-lines and run it as one long command on a single line.*
+
+
 ### Confirm that you have installed `gcloud` correctly
 
 You'll need to choose an operating system (OS) for your VM, as well as its designated zone. Let's quickly look at the available options, since this will also be a good time to confirm that you correctly installed the [`gcloud` command-line interface](https://cloud.google.com/sdk/). Open up your shell and enter:
@@ -126,6 +129,8 @@ gcloud compute instances create my-vm \
   --machine-type n1-standard-8 \
   --zone us-west1-a
 ```
+
+> **Tip:** Windows users, remember that you can't execute multi-line shell commands. Delete the trailing "`\`" characters above and run it as one long command on a single line.
 
 Here is a breakdown of the command and a quick explanation of my choices.
 
@@ -369,7 +374,7 @@ It's also possible to transfer files using your regular desktop file browser tha
 
 This is my own preferred option. Ubuntu, like all virtually Linux distros, comes with Git preinstalled. You should thus be able to sync your results across systems using Git(Hub) in the [usual fashion](http://happygitwithr.com/). I tend to use the command line for all my Git operations (committing, pulling, pushing, etc.) and this works exactly as expected once you've SSH'd into your VM. However, Rstudio Server's built-in Git UI also works well and comes with some nice added functionality (highlighted diff. sections and so forth).
 
-While I haven't tried it myself, you should also be able to install [Box](http://xmodulo.com/how-to-mount-box-com-cloud-storage-on-linux.html), [Dropbox](https://www.linuxbabe.com/cloud-storage/install-dropbox-ubuntu-16-04) or [Google Drive](http://www.techrepublic.com/article/how-to-mount-your-google-drive-on-linux-with-google-drive-ocamlfuse/) on your VM and sync across systems that way. If you go this route, then I'd advise installing these programs as sub-directories of the user's "home" directory. Even then you may run into problems related to user permissions. However, just follow the instructions for linking to the hypothetical "TeamProject" folder that I describe below (except that you must obviously point towards the relevant Box/Dropbox/GDrive folder location instead) and you should be fine.
+While I haven't tried it myself, you should also be able to install [Box](http://xmodulo.com/how-to-mount-box-com-cloud-storage-on-linux.html), [Dropbox](https://www.linuxbabe.com/ubuntu/install-dropbox-ubuntu-20-04) or [Google Drive](http://www.techrepublic.com/article/how-to-mount-your-google-drive-on-linux-with-google-drive-ocamlfuse/) on your VM and sync across systems that way. If you go this route, then I'd advise installing these programs as sub-directories of the user's "home" directory. Even then you may run into problems related to user permissions. However, just follow the instructions for linking to the hypothetical "TeamProject" folder that I describe below (except that you must obviously point towards the relevant Box/Dropbox/GDrive folder location instead) and you should be fine.
 
 > **Tip:** Remember that your VM lives on a server and doesn't have the usual graphical interface — including installation utilities — of a normal desktop. You'll thus need to follow command line installation instructions for these programs. Make sure you scroll down to the relevant sections of the links that I have provided above.
 
