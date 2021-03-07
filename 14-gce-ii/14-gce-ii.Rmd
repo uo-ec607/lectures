@@ -225,7 +225,7 @@ And just look at that: **A three times speedup!** Of course, we could also have 
 
 Following good practice, let's stop and then delete this cluster of VMs so that we aren't billed for them.
 
-```{r delete_cluster, dependson=future_cluster}
+```{r delete_cluster, dependson=vms, dependson=future_cluster}
 ## Shut down instances when finished
 gce_vm_stop(vms)
 gce_vm_delete(vms)
@@ -260,7 +260,7 @@ Now comes part where we need to tweak our cluster setup. Nesting in the future f
 - **Topology 1.** The "outer" plan, which tells `future` to use the cluster of two remote VMs.
 - **Topology 2.** The "inner" plan, which tells future to use all four cores on each VM via the `multicore` option. 
 
-```{r plan_nested, dependson=vms_nested, message=FALSE, results=FALSE}
+```{r plan_nested, message=FALSE, dependson=vms_nested, results=FALSE, eval=FALSE}
 plan(list( 
   ## Topology 1: Use the cluster of remote VMs 
   tweak(cluster, workers = as.cluster(vms_nested)),  
@@ -295,7 +295,40 @@ chunk_func = function(x, n) split(x, cut(seq_along(x), n, labels = FALSE))
 
 Okay, now we're really ready to make full use our cluster. For this example, I'll even go ahead and run 40 iterations of our `slow_func()` function in total. Note that this would take 200 seconds to run sequentially. Based on the total number of cores available to us in this cluster, we would we hope to drop this computation time to around 25 seconds (i.e. an **8 times speedup**) by running everything in parallel. I've commented the code quite explicitly, so please read carefully to see what's happening. In words, though: first we parallelize over the three VMs; then we chunk the input data so that each VM works on a distinct part of problem; and finally we feed the chunked data to our `slow_func` function where it is run in parallel on each VM.
 
-```{r future_nested_cluster, dependson=plan_nested, dependson=chunk_func}
+```{r future_nested_cluster_noeval, dependson=vms_nested, dependson=chunk_func, eval=FALSE}
+## Input data (vector to be iterated over by our function)
+input_data = 1:40
+
+tic()
+## Run the function in (nested) parallel on our cluster
+future_nested_cluster = 
+  
+  ## Outer future_lapply() loop over the three VMS
+  future_lapply(seq_along(vms_nested), function(v) {
+    
+    ## Split the input data into distinct chunks for each VM
+    input_chunk = chunk_func(input_data, length(vms_nested))[[v]] 
+    
+    ## Inner future_lapply() loop within each of the VMs  
+    future_lapply(input_chunk, slow_func)
+    
+    })
+toc()
+```
+
+```{r future_nested_cluster, dependson=vms_nested, dependson=chunk_func, message=FALSE, echo=FALSE}
+## NOTE: This chunk simply repeats the previous ones, but actually *evaluates*
+## them. Why do this? Because keeping the plan() and the future_lapply() calls
+## together avoids problems with Rmd caching missteps. Obviously we'll set 
+## echo=FALSE to avoid printing things out twice in the knitted document.
+
+plan(list( 
+  ## Topology 1: Use the cluster of remote VMs 
+  tweak(cluster, workers = as.cluster(vms_nested)),  
+  
+  ## Topology 2: Use all CPUs on each VM
+  tweak(multicore)  
+  ))
 ## Input data (vector to be iterated over by our function)
 input_data = 1:40
 
@@ -328,7 +361,7 @@ The final example that I'm going to show you is a slight adaptation of the neste
 
 The [`Rscript`](https://raw.githack.com/uo-ec607/lectures/master/03-shell/03-shell.html#rscript) shell command is probably the most common way to install additional R packages on a Docker container at load time. The slight complication here is that we we need this to happen on each of the remote VMs in our cluster. That's what the `rscript = c(...)` line below is doing; it's launching `Rscript` in each Docker container. Next we feed it the actual command, i.e. `Rscript -e install.packages(PACKAGE)`. This looks a little abstruse here, because it has to go through the `rscript_args = c(...)` argument, but hopefully you get the idea.
 
-```{r plan_nested_DT, dependson=vms_nested, message=FALSE, results=FALSE}
+```{r plan_nested_DT, dependson=vms_nested, message=FALSE, results=FALSE, eval=FALSE}
 plan(list( 
   ## Topology 1: Use the cluster of remote VMs 
   tweak(cluster, 
@@ -353,7 +386,57 @@ plan(list(
 
 Let's prove to ourselves that the installation of **data.table** worked by running a very slightly modified version of our earlier code. This time we'll use `data.table::rbindList()` to coerce the resulting list objects from each `future_lapply()` call into a data table. Note that we'll need to do this twice: once for our inner loop(s) and once for the outer loop.
 
-```{r future_nested_cluster_DT, dependson=plan_nested_DT, dependson=chunk_func}
+```{r future_nested_cluster_DT_noeval, dependson=vms_nested, dependson=chunk_func, eval=FALSE}
+## Same as earlier, but this time binding the results into a data.table with
+## data.table::rbindlist()
+
+## Run the function in (nested) parallel on our cluster
+future_nested_cluster_DT =
+  
+  ## Bind into a data.table
+  data.table::rbindlist(
+    
+    ## Outer future_lapply() loop over the three VMs
+    future_lapply(seq_along(vms_nested), function(v) {
+      
+      ## Split the input data into distinct chunks for each VM
+      input_chunk = chunk_func(input_data, length(vms_nested))[[v]]
+      
+      ## Inner future_lapply() loop within each of the VMs
+      data.table::rbindlist(future_lapply(input_chunk, slow_func))
+      
+      })
+    )
+
+## Show that it worked
+future_nested_cluster_DT
+```
+
+```{r future_nested_cluster_DT, dependson=vms_nested, dependson=chunk_func, message=FALSE, echo=FALSE}
+## NOTE: This chunk simply repeats the previous ones, but actually *evaluates*
+## them. Why do this? Because keeping the plan() and the future_lapply() calls
+## together avoids problems with Rmd caching missteps. Obviously we'll set 
+## echo=FALSE to avoid printing things out twice in the knitted document.
+
+plan(list( 
+  ## Topology 1: Use the cluster of remote VMs 
+  tweak(cluster, 
+        workers = as.cluster(
+        vms_nested,
+        ## Launch Rscript inside the r-parallel Docker containers on each VM
+        rscript = c(
+          "docker", "run", "--net=host", "rocker/r-parallel",
+          "Rscript"
+          ),
+          ## Install the data.table package on the R instances running in the containers 
+          rscript_args = c("-e", shQuote("install.packages('data.table')"))
+          )
+        ), 
+  
+  ## Topology 2: Use all the CPUs on each VM
+  tweak(multicore)  
+))
+
 ## Same as earlier, but this time binding the results into a data.table with
 ## data.table::rbindlist()
 
@@ -389,11 +472,11 @@ gce_vm_stop(vms_nested)
 gce_vm_delete(vms_nested)
 ```
 
-### Other topics
+## Other topics and further resources
 
 The **googleComputeEngineR** package offers a lot more functionality than I can cover here. However, I wanted to briefly mention the fact that GCE offers GPU instances that are production-ready for training hardcore deep learning models. In my view, this is one of the most exciting developments of cloud-based computation services, as it puts the infrastructure necessary for advanced machine learning in the hands of just about everyone. See Mark's [introductory GPU tutorial](https://cloudyr.github.io/googleComputeEngineR/articles/gpu.html) on the **googleComputeEngineR** website. *Note:* These GPU instances are not available during the GCP free trial period, although users can always upgrade their account if they want.
 
-## Further resources
+Here are some further resources that you may wish to consult.
 
 - The [googleComputeEngineR website](https://cloudyr.github.io/googleComputeEngineR/index.html) is very good, providing lots of helpful examples.
 - Thinking about other cloud platforms with transferable ideas, [Davis Vaughan](https://blog.davisvaughan.com/) provides a concise [AWS example](https://davisvaughan.github.io/furrr/articles/advanced-furrr-remote-connections.html) using the `furrr` package (which treads a similar path to our nested `future_lapply()` example). [Andrew Heiss](https://www.andrewheiss.com/) has a very lucid [blog tutorial on his Digital Ocean setup](https://www.andrewheiss.com/blog/2018/07/30/disposable-supercomputer-future/) for those who want to try going that route.
