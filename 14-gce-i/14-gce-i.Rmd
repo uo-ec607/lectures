@@ -349,9 +349,9 @@ You have three main options.
 
 #### 1. Manually transfer files directly from RStudio Server
 
-This is arguably the simplest option and works well for copying files from your VM to your local computer. However, I can't guarantee that it will work as well going the other way; you may need to adjust some user privileges first.
+RStudio's "Files" pane (at the bottom-right) provides various options for moving files and directories around. This includes *uploading* from your local computer to VM, or *exporting* the other way around --- see the screenshot below. This is arguably the simplest option and works especially well for quick or small jobs.
 
-![](pics/rstudio-move-cropped.png)
+![](pics/rstudio-export.png)
 
 #### 2. Manually transfer files and folders using the command line or SCP
 
