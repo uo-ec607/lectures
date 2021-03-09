@@ -139,7 +139,7 @@ copy_to(
 
 Now that we've copied over the data, we can reference it from R via the `dplyr::tbl()` function:
 
-```{r flights_db}
+```{r flights_db, cache=FALSE}
 # library(dplyr) ## Already loaded
 # library(dbplyr) ## Already loaded
 
@@ -342,6 +342,97 @@ dbGetQuery(con, sql_query)
 ```
 
 I know this seems like more work (undeniably so for this simple example). However, the `glue::glue_sql()` approach really pays off when you start working with bigger, nested queries. See the [documentation](https://glue.tidyverse.org/reference/glue_sql.html) for more examples and functionality, including how to match on or iterate over or multiple input values.
+
+### Common Table Expressions
+
+There's a _lot_ more to say about writing direct SQL queries. But I'm going to limit myself to one last topic, i.e. Common Table Expressions (CTEs). These are a popular way to write complex queries --- typically involving various subqueries --- since they allow you to name each component. We do this by using the `WITH` keyword and chain multiple subqueries with commas. An example may help to illustrate.
+
+Suppose that we are interested in redoing (a slightly modified version of) our left join operation from earlier in pure SQL. One way to start thinking about this is that we are really joining two subqueries. I'll use the `glue_sql()` function to write and assign these two subqueries, since that will prove convenient for the comparison that I want to make below.^[CTEs have nothing to do with `glue_sql()` in particular --- the latter being an R-based construct --- but they do combine really nicely as we're about to see.]
+
+The first subquery (the "left-hand" table) is really simple. It's just selecting all of the variables from the `flights` table.
+
+```{r flights_subquery}
+flights_subquery = 
+  glue_sql(
+    "
+    SELECT * 
+    FROM flights
+    ", 
+    .con = con)
+```
+
+The second query (the "right-hand" table) is only slightly more nuanced. This time we want to select only a few columns and rename one of them in the process to avoid duplicate column names (i.e. `year AS year_built`).^[Note that the renaming is not strictly necessary, since we have to specify the join columns in SQL. SQL will automatically prefix any duplicate columns with a table identifier, but we're getting ahead of ourselves here. I also think it's just good practice to avoid duplicate names that don't refer to the same things.] 
+
+```{r planes_subquery}
+planes_subquery = 
+  glue_sql(
+    "
+    SELECT tailnum, year AS year_built, model 
+    FROM planes
+    ", 
+    .con = con
+    )
+```
+
+With our subqueries in hand, let's compare two equally valid approaches to joining the resulting tables. I'll let you decide which of the two you prefer and find more readable. 
+
+::::: {.columns}
+::: {.column width="48%" data-latex="{0.48\textwidth}"}
+Here is the regular, non-CTE syntax for a SQL join.
+
+```{r non_cte, cache=FALSE}
+join_string =
+  glue_sql(
+    "
+    SELECT year, dep_time, 
+      a.tailnum AS tailnum,
+      year_built, model
+    FROM ({flights_subquery}) AS a
+    LEFT JOIN ({planes_subquery}) AS b
+    ON a.tailnum = b.tailnum
+    LIMIT 4
+    ",
+    .con = con
+  )
+
+dbGetQuery(con, join_string)
+```
+:::
+
+::: {.column width="4%" data-latex="{0.04\textwidth}"}
+\ <!-- an empty Div (with a white space), serving as a column separator -->
+:::
+
+::: {.column width="48%" data-latex="{0.48\textwidth}"}
+And here is the CTE equivalent.
+
+```{r cte, cache=FALSE}
+cte_join_string =
+  glue_sql(
+    "
+    WITH 
+    a AS ({flights_subquery}),
+    b AS ({planes_subquery})
+    SELECT year, dep_time, 
+      a.tailnum AS tailnum,
+      year_built, model
+    FROM a
+    LEFT JOIN b
+    ON a.tailnum = b.tailnum
+    LIMIT 4
+    ",
+    .con = con
+  )
+
+dbGetQuery(con, cte_join_string)
+```
+:::
+::::::
+\ <!-- an empty Div again to give some extra space before the next block -->
+
+Before closing up this section, there are a couple of other things to note. The first is that, regardless of which approach we use, SQL joins work best if we name the intermediate tables. Here I have called them `a` and `b`, but you can use whatever you like. The reason is that we need to be explicit about which table a particular set of variables is coming from. For example, we have to specify `ON a.tailnum = b.tailnum` as the joining variables, even though they are called exactly the same thing.^[In contrast, both **dplyr** and **data.table** allow us to merge data frames by specifying a common joining variable once. E.g. `left_join(d1, d2, by = "id")` or `merge(DT1, DT2, by = "id").`] Similarly, note that in selecting the final set of return variables --- which, again, comes first because of SQL's confusing lexical ordering --- I actually have to specify *which* of the two identical joining columns I want (i.e. `a.tailnum` or `b.tailnum`).^[Actually, that's note quite true. I'd automatically get a duplicate "tailnum" column if I instead used, say, `SELECT *`. But that's not desirable either.] Here I have gone with the former and renamed it by dropping the now superfluous "a." prefix.
+
+If this all sounds quite finicky and arcane... that's because it is. All of which is to say that you should be patient with yourself when learning SQL. It's an extremely powerful tool, but has some design features that have rightly been superseded or tweaked in modern data wrangling libraries.
 
 ### Disconnect
 
@@ -590,10 +681,10 @@ dbDisconnect(gfw_con)
 
 ## Where to next: Learning and practicing SQL
 
-I realise that this lecture has not gone into much depth about SQL itself. My goal has been to get you up running and running with databases as quickly and painlessly as possible. I really do think that you can get a great deal of mileage using the **dplyr** database integration that we've focused on here. However, learning SQL will make a big difference to your life once you start working with databases regularly. I expect that it will also boost your employment options significantly. The good news is that you are already well on your way to internalising the basic commands and structure of SQL queries. We've seen the `show_query()` function, which is a great way to get started if your coming from R and the tidyverse. Another helpful **dplyr** resource is the provided by the "sql-translation" vignette, so take a look:
+While we did cover some SQL basics and syntax, my primary goal for this lecture has been to get you up running and running with databases as quickly and painlessly as possible. I really do think that you can get a great deal of mileage using the **dplyr** database integration that we've focused on here. However, learning SQL will make a big difference to your life once you start working with databases regularly. I expect that it will also boost your employment options significantly. The good news is that you are already well on your way to internalising the basic commands and structure of SQL queries. We've seen the `show_query()` function, which is a great way to get started if your coming from R and the tidyverse. Another helpful **dbplyr** resource is the "sql" vignette, so take a look:
 
 ```{r, eval=FALSE}
-vignette("sql-translation")
+vignette('sql', package = 'dbplyr')
 ```
 
 In my experience, though the best best way to learn SQL is simply to *start writing your own queries*. The [**BigQuery web UI**](https://console.cloud.google.com/bigquery) is especially helpful in this regard. Not only is it extremely cheap to use (free up to 1 TB), but it also comes with a bunch of useful features like in-built query formatting and preemptive error detection. A good way to start is by copying over someone else's SQL code --- e.g. [here](https://towardsdatascience.com/bigquery-without-a-credit-card-discover-learn-and-share-199e08d4a064) or [here](https://globalfishingwatch.org/data-blog/our-data-in-bigquery/) --- modifying it slightly, and then see if you can run it in the BigQuery web UI.
