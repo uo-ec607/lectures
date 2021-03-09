@@ -8,12 +8,35 @@ author:
 output: 
   html_document:
     theme: flatly
-    highlight: haddock 
+    highlight: haddock
     # code_folding: show
     toc: yes
     toc_depth: 4
     toc_float: yes
-    keep_md: true
+    keep_md: false
+    keep_tex: false ## Change to true if want keep intermediate .tex file
+    css: css/preamble.css ## For multi-col environments
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    dev: cairo_pdf
+    # fig_width: 7 ## Optional: Set default PDF figure width
+    # fig_height: 6 ## Optional: Set default PDF figure height
+    includes:
+      in_header: tex/preamble.tex ## For multi-col environments
+      extra_dependencies: ["float", "booktabs", "longtable"]
+    pandoc_args:
+        --template=tex/mytemplate.tex ## For affiliation field. See: https://bit.ly/2T191uZ
+always_allow_html: true
+urlcolor: blue
+mainfont: cochineal
+sansfont: Fira Sans
+monofont: Fira Code ## Although, see: https://tex.stackexchange.com/q/294362
+## Automatically knit to both formats:
+knit: (function(inputFile, encoding) {
+ rmarkdown::render(inputFile, encoding = encoding, 
+ output_format = 'all') 
+ })
 ---
 
 ```{r setup, include=FALSE}
@@ -51,11 +74,11 @@ theme_set(hrbrthemes::theme_ipsum())
 
 ## Databases 101
 
-Many "big data" problems could be accurately described as "small data problems in disguise". Which is to say, the data that we care about is only a subset or aggregation of some larger dataset. For example, we might want to access US Census data... but only for a handful of counties along the border of two contiguous states. Or, we might want to analyse climate data collected from a large number of weather stations... but aggregated up to the national or monthly level. In such cases, the underlying bottleneck is interacting with the original data, which is too big to fit into memory. How do we store data of this magnitude and and then access it effectively? The answer is through **relational databases**. 
+Many "big data" problems could be more accurately described as "small data problems in disguise". Which is to say, the data that we care about is only a subset or aggregation of some larger dataset. For example, we might want to access US Census data... but only for a handful of counties along the border of two contiguous states. Or, we might want to analyse climate data collected from a large number of weather stations... but aggregated up to the national or monthly level. In such cases, the underlying bottleneck is interacting with the original data, which is too big to fit into memory. How do we store data of this magnitude and and then access it effectively? The answer is through **relational databases**. 
 
 Databases^[For the rest of this lecture, I'll be using "databases" and "relational databases" interchangeably, so don't be put off if I switch between them.] can exist either locally or remotely, though the latter is more common. The key point is that they are stored on-disk somewhere, rather than in-memory. Extracting the specific information that we want is a matter of submitting a **query** to the database. The query is where we tell the database how to manipulate or subset the data into a more manageable form, which we can then pull into our local environment (i.e. memory) and conduct analysis on. 
 
-At this point, you might be tempted to think of a database as the "thing" that you interact with directly. However, it's important to realise that the data are actually organised in one or more **tables** within the database. These tables are rectangular, consisting of rows and columns, where each row is indentified by a unique key. In that sense, they are very much like the data frames that we're all used to working with. Continuing with the analogy, a database then is rather like a list of data frames of R. To access information from a specific table (data frame), we first have to index it from the database (list) and then execute our query functions. The only material difference being that databases can hold much more information and are extremely efficient at executing queries over their vast contents.
+At this point, you might be tempted to think of a database as the "thing" that you interact with directly. However, it's important to realise that the data are actually organised in one or more **tables** within the database. These tables are rectangular, consisting of rows and columns, where each row is identified by a unique key. In that sense, they are very much like the data frames that we're all used to working with. Continuing with the analogy, a database then is rather like a list of data frames of R. To access information from a specific table (data frame), we first have to index it from the database (list) and then execute our query functions. The only material difference being that databases can hold much more information and are extremely efficient at executing queries over their vast contents.
 
 > **Tip:** A table in a database is like a data frame in an R list. 
 
@@ -66,7 +89,7 @@ Virtually relational database in existence makes use of [**SQL**](https://en.wik
 
 What does this mean? 
 
-Simply that you can interact with the vast datasets that are stored in relational databases using the *same* tidyverse verbs and syntax that we already know. All of this is possible thanks to the [**dbplyr**](https://dbplyr.tidyverse.org/) package, which provides a database backend to `dplyr`. What's happening even further behind the scenes is that, upon installation, **dbplyr** suggests the [**DBI**](https://db.rstudio.com/dbi) package as a dependency. **DBI** provides a common interface that allows **dplyr** to work with many different databases using exactly the same code. You don't even need to leave your RStudio session or learn SQL!
+Simply that you can interact with the vast datasets that are stored in relational databases using the *same* tidyverse verbs and syntax that we already know. All of this is possible thanks to the **dbplyr** package ([link](https://dbplyr.tidyverse.org/)), which provides a database backend to **dplyr**. What's happening even further behind the scenes is that, upon installation, **dbplyr** suggests the **DBI** package ([link](https://db.rstudio.com/dbi)) as a dependency. **DBI** provides a common interface that allows **dplyr** to work with many different databases using exactly the same code. You don't even need to leave your RStudio session or learn SQL!
 
 > **Aside:** Okay, you will probably want to learn SQL eventually. Luckily, **dplyr** and **dbplyr** come with several features that can really help to speed up the learning and translation process. We'll get to these later in the lecture.
 
@@ -114,7 +137,7 @@ copy_to(
   )
 ```
 
-Now that we’ve copied over the data, we can reference it from R via the `dplyr::tbl()` function:
+Now that we've copied over the data, we can reference it from R via the `dplyr::tbl()` function:
 
 ```{r flights_db}
 # library(dplyr) ## Already loaded
@@ -165,7 +188,7 @@ tailnum_delay_db =
   arrange(desc(mean_arr_delay))
 ```
 
-Surprisingly, this sequence of operations never touches the database.^[It's a little hard to tell from this simple example, but an additional clue is that fact that this sequence of commands would execute instantaneously even it it was applied on a massive remote database.] It’s not until you actually ask for the data (say, by printing `tailnum_delay_db`) that **dplyr** generates the SQL and requests the results from the database. Even then it tries to do as little work as possible and only pulls down a few rows.
+Surprisingly, this sequence of operations never touches the database.^[It's a little hard to tell from this simple example, but an additional clue is that fact that this sequence of commands would execute instantaneously even it it was applied on a massive remote database.] It's not until you actually ask for the data (say, by printing `tailnum_delay_db`) that **dplyr** generates the SQL and requests the results from the database. Even then it tries to do as little work as possible and only pulls down a few rows.
 
 ```{r tailnum_delay_db_print}
 tailnum_delay_db
@@ -174,7 +197,7 @@ tailnum_delay_db
 
 ### Collect the data into your local R environment
 
-Typically, you’ll iterate a few times before you figure out what data you need from the database. Once you’ve figured it out, use **`collect()`** to pull all the data into a local data frame. I'm going to assign this collected data frame to a new object (i.e. `tailnum_delay`), but only because I want to keep the queried data base object (`tailnum_delay_db`) separate for demonstrating some SQL translation principles in the next section.
+Typically, you'll iterate a few times before you figure out what data you need from the database. Once you've figured it out, use **`collect()`** to pull all the data into a local data frame. I'm going to assign this collected data frame to a new object (i.e. `tailnum_delay`), but only because I want to keep the queried data base object (`tailnum_delay_db`) separate for demonstrating some SQL translation principles in the next section.
 
 ```{r tailnum_delay}
 tailnum_delay = 
@@ -207,19 +230,30 @@ tailnum_delay_db %>% show_query()
 
 Note that the SQL call is much less appealing/intuitive our piped **dplyr** code. In part, this is an artefact of the translation steps involved. The **dplyr** translation engine includes various safeguards that are designed to ensure that the resulting SQL code works. But this comes at the expense of code concision (e.g. those repeated `SELECT` commands at the top of the SQL string are redundant). However, it also reflects the simple fact that SQL is not an elegant language to work with. In particular, SQL imposes a *lexical* order of operations that doesn't necessarily preserve the *logical* order of operations.^[Which stands in direct contrast to our piped **dplyr** code, i.e. "take this object, do this, then do this", etc. I even made a meme about it for you: https://www.captiongenerator.com/1325222/Dimitri-doesnt-need-SQL] This lexical ordering is also known as "order of execution" and is strict in the sense that every SQL query must follow the same hierarchy of commands. Here is how [Julia Evans](https://twitter.com/b0rk) lays it out in her wonderful zine, [*Become A Select Star*](https://wizardzines.com/zines/sql/) (which you should totally buy).
 
-![](https://wizardzines.com/zines/sql/samples/from.png)
-I don't really want to go through all of this now. But I do want to make you aware of the fact that SQL queries are not written in the order that we would think about them. While it can take a while to wrap your head around, the good news is that it is certainly learnable. Again, I recommend Julia's [zine](https://wizardzines.com/zines/sql/) as a great starting point ([here](https://www.eversql.com/sql-order-of-operations-sql-query-order-of-execution/) and [here](https://blog.jooq.org/2016/12/09/a-beginners-guide-to-the-true-order-of-sql-operations/) are good resources too.) 
+```{r b0rk_from, echo=FALSE, out.width='85%', fig.align='center', fig.cap='Credit: Julia Evans. ([Source](https://wizardzines.com/zines/sql/samples/from.png).)'}
+if (knitr::is_html_output()){
+  knitr::include_graphics('pics/b0rk-from.png')
+} else {
+  message("Sorry, this image is only available in the the HTML version of the notes.\nYou can see the original here:\nhttps://wizardzines.com/zines/sql/samples/from.png.")
+}
+```
+
+I don't really want to get into all of this now. But I *do* want to make you aware of the fact that SQL queries are not written in a way that you would think about them logically. Still, while it can take a while to wrap your head around, the good news is that SQL's lexical ordering is certainly learnable. Again, I recommend Julia's [zine](https://wizardzines.com/zines/sql/) as a great starting point.^[More good resources [here](https://www.eversql.com/sql-order-of-operations-sql-query-order-of-execution/) and [here](https://blog.jooq.org/2016/12/09/a-beginners-guide-to-the-true-order-of-sql-operations/).]
 
 Now, at this point, you may be wondering: Do we even need to learn SQL, given that it's a pain and that the **dplyr** translation works so well? 
 
-That's a fair question. The short answer is that, "yes", at some point you will probably find yourself needing to write raw SQL code. The good news is that writing and submitting SQL queries directly from R and RStudio is easily done, thanks to the **DBI** package. I'll walk you through two different ways of doing so below. But first, let's generate (translate) a simple SQL query that we can use as an example. 
+That's a fair question. The short answer is that, "yes", at some point you will probably find yourself needing to write raw SQL code. Luckily, writing and submitting SQL queries directly from R and RStudio is easily done, thanks to the **DBI** package. In fact, I'm about to walk you through two different ways of doing so. But first, let's generate (translate) a simple SQL query that we can use as an orientating example. 
 
 ```{r sql_direct_translate}
 ## Show the equivalent SQL query for these dplyr commands
-flights_db %>% filter(dep_delay > 240) %>% head(5) %>% show_query()
+flights_db %>% 
+  select(month, day, dep_time, sched_dep_time, dep_delay) %>% 
+  filter(dep_delay > 240) %>% 
+  head(5) %>% 
+  show_query()
 ```
 
-**Note:** In the SQL code chunks that follow, I'm going to be dropping the backticks around the object names (`dep_delay` and `flights`), as well as the parentheses around the `WHERE` filter. These aren't strictly necessary and are just extra safeguards that the **dplyr** translation uses to ensure compatibility across the various potential SQL backends. Feel free to include them if you want, though. It won't do any harm. 
+**Note:** In the SQL code chunks that follow, I'm going to simplify my queries quite a lot relative to the suggested translation above. Again, **dplyr** adds in various safeguards to ensure that its translation works across various edge cases and potential SQL backends. While these translations should always work --- confirm for yourself by running the suggested translation above --- they typically carry quite a bit excess verbiage and syntax. My goal here is to give you a sense of how we can "trim the fat", while still using **dplyr**'s suggestion as a good starting point.
 
 ### Option 1: Use R Markdown `sql` chunks
 
@@ -227,7 +261,7 @@ If you're writing up a report or paper in R Markdown, then you can include SQL c
 
 ````markdown
 `r ''````{sql, connection=con}
-SELECT *
+SELECT month, day, dep_time, sched_dep_time, dep_delay, origin, dest
 FROM flights
 WHERE dep_delay > 240
 LIMIT 5
@@ -237,7 +271,7 @@ LIMIT 5
 And, just to prove it, here's the same query / code chunk evaluated directly in these lecture notes.
 
 ```{sql sql_direct_rmd, connection=con, cache=FALSE}
-SELECT *
+SELECT month, day, dep_time, sched_dep_time, dep_delay, origin, dest
 FROM flights
 WHERE dep_delay > 240
 LIMIT 5
@@ -246,7 +280,7 @@ LIMIT 5
 
 ### Option 2: Use DBI:dbGetQuery()
 
-Of course, we don't want to be limited to running SQL queries from within R Markdown documents. To run SQL queries in regular R scripts, we can use the `DBI::dbGetQuery()` function.
+Of course, we don't want to be limited to running SQL queries from within R Markdown documents. To run SQL queries in regular R scripts, we can use the `DBI::dbGetQuery()` function. For no particular reason except to keep the SQL string short enough to fit on a single line, this time I'll return _all_ the variables from the dataset via `SELECT *`.
 
 ```{r sql_direct}
 ## Run the query using SQL directly on the connection.
@@ -255,7 +289,7 @@ dbGetQuery(con, "SELECT * FROM flights WHERE dep_delay > 240.0 LIMIT 5")
 
 ### Recommendation: Use glue::glue_sql()
 
-While the above approach works perfectly fine --- i.e. just write out the full SQL query string in quotation marks inside `dbGetQuery()` --- I'm going to recommend that you consider the `glue_sql()` function from the [**glue**](https://glue.tidyverse.org/) package. This provides a more integrated approach that allows you to 1) use local R variables in your SQL queries, and 2) divide long queries into sub-queries. Here's a simple example of the former.
+While the above approach works perfectly fine --- i.e. just write out the full SQL query string in quotation marks inside `dbGetQuery()` --- I'm going to recommend that you consider the `glue_sql()` function from the **glue** package ([link](https://glue.tidyverse.org/)). This provides a more integrated approach that allows you to 1) use local R variables in your SQL queries, and 2) divide long queries into sub-queries. Here's a simple example of the former.
 
 ```{r sql_direct_glue}
 # library(glue) ## Already loaded
@@ -272,7 +306,7 @@ sql_query =
   FROM {`tbl`}
   WHERE ({`d_var`} > {d_thresh})
   LIMIT 5
-  ", 
+  ",
   .con = con
   )
 
@@ -293,15 +327,15 @@ dbDisconnect(con)
 
 ## Scaling up: Google BigQuery
 
-Now that you've hopefully absorbed the key principles of database interaction from our demonstration example, let's move on to a more realistic use-case. In particular, the database service that I rely on most during my own daily workflow is [**Google BigQuery**](https://cloud.google.com/bigquery/). The advertising tagline is that BigQuery is a "serverless, highly scalable, enterprise data warehouse designed to make all your data analysts productive at an unmatched price-performance." Technical and marketing jargon notwithstanding, I think it's fair to say that BigQuery is a fantastic product. The salient features from our perspective are: 
+Now that you've hopefully absorbed the key principles of database interaction from our demonstration example, let's move on to a more realistic use-case. In particular, the database service that I rely on most during my own daily workflow is [**Google BigQuery**](https://cloud.google.com/bigquery/). The advertising tagline is that BigQuery is a "serverless, highly scalable, enterprise data warehouse designed to make all your data analysts productive at an unmatched price-performance." Technical and marketing jargon notwithstanding, I think it's fair to say that BigQuery is a fantastic product. The salient features from our perspective are:
 
 - **Accessibility.** BigQuery is part of the Google Cloud Platform (GCP) that we signed up for in the [cloud computing lecture](https://raw.githack.com/uo-ec607/lectures/master/14-gce/14-gce.html). So you should already have *gratis* access to it. Sign up for a GCP [12-month free trial](https://console.cloud.google.com/freetrial) now if you haven't done so yet.
-- **Economy.** It is extremely fast and economical to use. (See: [Pricing](https://cloud.google.com/bigquery/pricing).) Even disregarding our free trial period, you are allowed to query 1 TB of data for free each month.^[That's "T" as in *terabytes*.] Each addtional TB beyond that will only cost you $5 once your free trial ends. Storage is also very cheap, although you already have access to an array of public datasets. Speaking of which...
+- **Economy.** It is extremely fast and economical to use. (See: [Pricing](https://cloud.google.com/bigquery/pricing).) Even disregarding our free trial period, you are allowed to query 1 TB of data for free each month.^[That's "T" as in *terabytes*.] Each additional TB beyond that will only cost you $5 once your free trial ends. Storage is also very cheap, although you already have access to an array of public datasets. Speaking of which...
 - **Data availability.** BigQuery hosts several [sample tables](https://cloud.google.com/bigquery/public-data/#sample_tables) to get you started. Beyond that, however, there are some incredible [public datasets](https://www.reddit.com/r/bigquery/wiki/datasets) available on the platform. You can find everything from NOAA's worldwide weather records... to Wikipedia data... to Facebook comments... to liquor sales in Iowa... to real estate transactions across Latin America. I daresay you could generate an effective research program simply by staring at these public datasets.
 
-Most heavy BigQuery users tend to interact with the platform directly in the [web UI](https://console.cloud.google.com/bigquery). This has a bunch of nice features like automatic SQL query formatting and table previewing. I recommend you try the BigQuery web UI out after going through these lecture notes.^[[Here's](https://towardsdatascience.com/bigquery-without-a-credit-card-discover-learn-and-share-199e08d4a064) a neat example showing how to find the most popular "Alan" according to Wikipedia page views.] For now, however, I'll focus on interacting with BigQuery databases from R, with help from the very useful [**bigrquery**](https://bigrquery.r-dbi.org/) package.
+Most heavy BigQuery users tend to interact with the platform directly in the [web UI](https://console.cloud.google.com/bigquery). This has a bunch of nice features like automatic SQL query formatting and table previewing. I recommend you try the BigQuery web UI out after going through these lecture notes.^[[Here's](https://towardsdatascience.com/bigquery-without-a-credit-card-discover-learn-and-share-199e08d4a064) a neat example showing how to find the most popular "Alan" according to Wikipedia page views.] For now, however, I'll focus on interacting with BigQuery databases from R, with help from the very useful **bigrquery** package ([link](https://bigrquery.r-dbi.org/)).
 
-The starting point for using the **bigrquery** package is to provide your GCP project billing ID. It's easy enough to specify this as a string directly in your R script. However, you may recall that we already stored our GCP credentials during the [cloud computing lecture](https://raw.githack.com/uo-ec607/lectures/master/14-gce/14-gce.html). In particular, your project ID should be saved as an environment variable in the `.Renviron` file in your home directory.^[We did this as part of the authentication process of the **googleComputeEngineR** package. If you aren't sure, you can confirm for yourself by running `usethis::edit_r_environ()` in your R console. If you don't see a variable called `GCE_DEFAULT_PROJECT_ID`, then you should rather specify your project ID directly.] In that case, we can just call it by using the `Sys.getenv()` command. I'm going to use this latter approach, since it provides a safe and convenient way for me to share these lecture notes without compromising security. But as you wish.
+The starting point for using the **bigrquery** package is to provide your GCP project billing ID. It's easy enough to specify this as a string directly in your R script. However, you may recall that we already stored our GCP credentials during the [cloud computing lecture](https://raw.githack.com/uo-ec607/lectures/master/14-gce-ii/14-gce-ii.html#Google_Cloud_API_Service_Account_key). In particular, your project ID should be saved as an environment variable in the `.Renviron` file in your home directory.^[We did this as part of the authentication process of the **googleComputeEngineR** package. If you aren't sure, you can confirm for yourself by running `usethis::edit_r_environ()` in your R console. If you don't see a variable called `GCE_DEFAULT_PROJECT_ID`, then you should rather specify your project ID directly.] In that case, we can just call it by using the `Sys.getenv()` command. I'm going to use this latter approach, since it provides a safe and convenient way for me to share these lecture notes without compromising security. But as you wish.
 
 ```{r billing_id}
 # library(bigrquery) ## Already loaded
@@ -313,13 +347,13 @@ Having set our project IDs, we are now ready to run queries and download BigQuer
 
 ### Example 1) US birth data
 
-The `bigrquery` package supports various ways --- or "abstraction levels" --- of running queries from R, including interacting directly with the low-level API. In the interests of brevity, I'm only going to focus on the **dplyr** approach here.^[I encourage you to read the package documentation to see these other methods for yourself.] As with the the DuckDB example from earlier, we start by establishing a connection using `DBI::dbConnect()`. The only difference this time is that we need to specify that are using the BigQuery backend (via `bigrquery::bigquery()`) and provide our credentials (via our project billing ID). Let's proceed by connecting to the "publicdata.samples" dataset.
+The **bigquery** package supports various ways --- or "abstraction levels" --- of running queries from R, including interacting directly with the low-level API. In the interests of brevity, I'm only going to focus on the **dplyr** approach here.^[I encourage you to read the package documentation to see these other methods for yourself.] As with the the DuckDB example from earlier, we start by establishing a connection using `DBI::dbConnect()`. The only difference this time is that we need to specify that are using the BigQuery backend (via `bigrquery::bigquery()`) and provide our credentials (via our project billing ID). Let's proceed by connecting to the "publicdata.samples" dataset.
 
 ```{r bq_con, cache=F}
 # library(DBI) ## Already loaded
 # library(dplyr) ## Already loaded
 
-bq_con = 
+bq_con =
   dbConnect(
     bigrquery::bigquery(),
     project = "publicdata",
@@ -336,7 +370,7 @@ One neat thing about this setup is that the connection holds for any tables with
 dbListTables(bq_con)
 ```
 
-For this example, we'll go with the [natality](https://console.cloud.google.com/bigquery?p=bigquery-public-data&d=samples&t=natality&page=table&_ga=2.108840194.-1488160368.1535579560) table, which contains registered birth records for all 50 US states (1969--2008). 
+For this example, we'll go with the [natality](https://console.cloud.google.com/bigquery?p=bigquery-public-data&d=samples&t=natality&page=table&_ga=2.108840194.-1488160368.1535579560) table, which contains registered birth records for all 50 US states (1969--2008).
 
 ```{r, bq_natality}
 natality = tbl(bq_con, "natality")
@@ -349,7 +383,7 @@ bw =
   natality %>%
   filter(!is.na(state)) %>% ## optional to remove some outliers
   group_by(year) %>%
-  summarise(weight_pounds = mean(weight_pounds, na.rm=T)) %>% 
+  summarise(weight_pounds = mean(weight_pounds, na.rm=TRUE)) %>%
   collect()
 ```
 
@@ -357,11 +391,11 @@ Plot it.
 
 ```{r bw_plot}
 bw %>%
-  ggplot(aes(year, weight_pounds)) + 
+  ggplot(aes(year, weight_pounds)) +
   geom_line()
 ```
 
-For the record, I don't know why birth weights have been falling recently, and whether that is a good (e.g. declining maternal obesity rates) or bad (e.g. maternal malutrition) thing.^[See [here](https://twitter.com/grant_mcdermott/status/1156260684126048256) for more discussion and help from some epidemiologists on Twitter.] One thing we can do, however, is provide a more disaggregated look at the data. This time, I'll query the natality table in a way that summarises mean bith weight by US state and gender. 
+For the record, I don't know why birth weights have been falling recently, and whether that is a good (e.g. declining maternal obesity rates) or bad (e.g. maternal malutrition) thing.^[See [here](https://twitter.com/grant_mcdermott/status/1156260684126048256) for more discussion and help from some epidemiologists on Twitter.] One thing we can do, however, is provide a more disaggregated look at the data. This time, I'll query the natality table in a way that summarises mean bith weight by US state and gender.
 
 ```{r bw_st}
 ## Get mean yearly birth weight by state and gender
@@ -369,8 +403,8 @@ bw_st =
   natality %>%
   filter(!is.na(state)) %>%
   group_by(year, state, is_male) %>%
-  summarise(weight_pounds = mean(weight_pounds, na.rm=T)) %>% 
-  mutate(gender = ifelse(is_male, "Male", "Female")) %>% 
+  summarise(weight_pounds = mean(weight_pounds, na.rm=TRUE)) %>%
+  mutate(gender = ifelse(is_male, "Male", "Female")) %>%
   collect()
 ```
 
@@ -384,25 +418,25 @@ bw_st = bw_st %>% arrange(gender, year)
 
 ## Plot it
 bw_st %>%
-  ggplot(aes(year, weight_pounds, group=state)) + 
-  geom_line(col="grey75", lwd = 0.25) + 
+  ggplot(aes(year, weight_pounds, group=state)) +
+  geom_line(col="grey75", lwd = 0.25) +
   geom_line(
-    data = bw_st %>% filter(state %in% states), 
+    data = bw_st %>% filter(state %in% states),
     aes(col=fct_reorder2(state, year, weight_pounds)),
     lwd=0.75
     ) +
-  facet_wrap(~gender) + 
+  facet_wrap(~gender) +
   scale_color_brewer(palette = "Set1", name=element_blank()) +
   labs(
     title = "Mean birth weight, by US state over time",
     subtitle = "Selected states highlighted",
     x = NULL, y = "Pounds",
     caption = "Data sourced from Google BigQuery"
-    ) + 
-  theme_ipsum(grid=F)
+    ) +
+  theme_ipsum(grid=FALSE)
 ```
 
-Again, this is not my field of specialization and I'm not entirely sure what to make of these trends. However, a clearer picture is beginning to emerge with the disaggregated data. I'll let you dig more into this with your own queries, which hopefully you've seen is very quick and easy to do. 
+Again, this is not my field of specialization and I don't want to take too strong of a stance on the observed trends. However, a clearer picture is beginning to emerge with the disaggregated data. I'll let you dig more into this with your own queries, which hopefully you've seen is very quick and easy to do.
 
 As before, its best practice to disconnect from the server once you are finished.
 
@@ -415,7 +449,7 @@ dbDisconnect(bq_con)
 I know that this lecture is running long now, but I wanted to show you one final example that is closest to my own research. [**Global Fishing Watch**](https://globalfishingwatch.org/) is an incredible initiative that aims to bring transparency to the world's oceans. I've presented on GFW in various forums and I highly encourage you to play around with their [interactive map](https://globalfishingwatch.org/map/) if you get a spare moment. For the moment, though we'll simply look at how to connect to the public GFW data on BigQuery and then extract some summary information about global fishing activity.
 
 ```{r gfw_con, cache=F}
-gfw_con = 
+gfw_con =
   dbConnect(
     bigrquery::bigquery(),
     project = "global-fishing-watch",
@@ -460,7 +494,7 @@ effort %>%
     ) %>%
   ## End of partition time filtering
   group_by(flag) %>%
-  summarise(total_fishing_hours = sum(fishing_hours, na.rm=T)) %>%
+  summarise(total_fishing_hours = sum(fishing_hours, na.rm=TRUE)) %>%
   arrange(desc(total_fishing_hours)) %>%
   collect()
 ```
@@ -492,15 +526,15 @@ globe =
     lon_bin_center = floor(lon_bin/resolution)*resolution + 0.5*resolution
     ) %>%
   group_by(lat_bin_center, lon_bin_center) %>%
-  summarise(fishing_hours = sum(fishing_hours, na.rm=T)) %>%
+  summarise(fishing_hours = sum(fishing_hours, na.rm=TRUE)) %>%
   collect()
 ```
 
 Let's reward ourselves with a nice plot.
 
 ```{r globe_plot}
-globe %>% 
-  filter(fishing_hours > 1) %>% 
+globe %>%
+  filter(fishing_hours > 1) %>%
   ggplot() +
   geom_tile(aes(x=lon_bin_center, y=lat_bin_center, fill=fishing_hours))+
   scale_fill_viridis_c(
@@ -515,7 +549,7 @@ globe %>%
     y = NULL, x = NULL,
     caption = "Data from Global Fishing Watch"
     ) +
-  theme_ipsum(grid=F) +
+  theme_ipsum(grid=FALSE) +
   theme(axis.text=element_blank())
 ```
 
@@ -543,6 +577,6 @@ In my experience, though the best best way to learn SQL is simply to *start writ
 You are spoilt for choice here and I've already hyperlinked to many resources throughout this lecture. So here are some final suggestions to get you querying databases like a boss.
 
 - [Juan Mayorga](https://twitter.com/juansmayorga) has a super tutorial on "[Getting Global Fishing Watch Data from Google Big Query using R](http://jsmayorga.com/post/getting-global-fishing-watch-from-google-bigquery-using-r)". He also dives into some of the reasons why you might want to learn SQL (i.e. beyond just using the **dplyr** translation).
-- If you want a dedicated resource for learning SQL, then again I'm going to stump for [Julia Evans'](https://twitter.com/b0rk) [*Become A Select Star*](https://wizardzines.com/zines/sql/). It's a great, concise introduction to the major concepts and a steal at only $12. 
+- If you want a dedicated resource for learning SQL, then again I'm going to stump for [Julia Evans'](https://twitter.com/b0rk) [*Become A Select Star*](https://wizardzines.com/zines/sql/). It's a great, concise introduction to the major concepts and a steal at only $12.
 - On the other end of the scale, the official BigQuery [documentation](https://cloud.google.com/bigquery/docs/) provides an exhaustive overview of the many functions and syntax for so-called standard SQL (including specialised operations on say, datetime and JSON objects).
 - There are also loads of online tutorials (e.g. [W3Schools](https://www.w3schools.com/sql/default.asp)) and courses (e.g. [Codecademy](https://www.codecademy.com/learn/learn-sql)) that you can check out.
