@@ -24,6 +24,8 @@ output:
 ```
 
 ```{r setup, include=FALSE}
+xaringanExtra::use_scribble() ## Draw on slides. Requires dev version of xaringanExtra.
+
 options(htmltools.dir.version = FALSE)
 library(knitr)
 opts_chunk$set(
@@ -37,6 +39,7 @@ library(tidyverse)
 library(hrbrthemes)
 library(fontawesome)
 ```
+
 
 # Table of contents
 
