@@ -42,8 +42,17 @@ opts_chunk$set(
 2. [Tidyverse basics](#basics)
 
 3. [Data wrangling with dplyr](#dplyr)
+  - [filter](#filter)
+  - [arrange](#arrange)
+  - [select](#select)
+  - [mutate](#mutate)
+  - [summarise](#summarise)
+  - [joins](#joins)
 
 4. [Data tidying with tidyr](#tidyr)
+  - [pivot_longer](#pivot_longer) / [pivot_wider](#pivot_wider)
+  - [separate](#separate)
+  - [unite](#unite)
 
 5. [Summary](#summary)
 
@@ -323,6 +332,7 @@ There are five key dplyr verbs that you need to learn.
 Let's practice these commands together using the `starwars` data frame that comes pre-packaged with dplyr. 
 
 ---
+name: filter
 
 # 1) dplyr::filter
 
@@ -362,6 +372,7 @@ starwars %>%
 To remove missing observations, simply use negation: `filter(!is.na(height))`. Try this yourself.
 
 ---
+name: arrange
 
 # 2) dplyr::arrange
 
@@ -385,6 +396,7 @@ starwars %>%
 ```
 
 ---
+name: select
 
 # 3) dplyr::select
 
@@ -436,6 +448,7 @@ starwars %>%
 *Note:* The new `relocate` function available in dplyr 1.0.0 has brought a lot more functionality to ordering of columns. See [here](https://www.tidyverse.org/blog/2020/03/dplyr-1-0-0-select-rename-relocate/).
 
 ---
+name: mutate
 
 # 4) dplyr::mutate
 
@@ -495,6 +508,7 @@ starwars %>%
 *Note:* This workflow (i.e. combining `mutate` and `across`) supersedes the old "scoped" variants of `mutate` that you might have used previously. More details [here](https://www.tidyverse.org/blog/2020/04/dplyr-1-0-0-colwise/) and [here](https://dplyr.tidyverse.org/dev/articles/colwise.html).
 
 ---
+name: summarise
 
 # 5) dplyr::summarise
 
@@ -577,8 +591,9 @@ The final set of dplyr "goodies" are the family of join operations. However, the
 
 
 ---
+name: joins
 
-# Joining operations
+# Joins
 
 One of the mainstays of the dplyr package is merging data with the family [join operations](https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html).
 - `inner_join(df1, df2)`
@@ -606,7 +621,7 @@ planes
 
 ---
 
-# Joining operations (cont.)
+# Joins (cont.)
 
 Let's perform a [left join](https://stat545.com/bit001_dplyr-cheatsheet.html#left_joinsuperheroes-publishers) on the flights and planes datasets. 
 - *Note*: I'm going subset columns after the join, but only to keep text on the slide.
@@ -620,7 +635,7 @@ left_join(flights, planes) %>%
 
 ---
 
-# Joining operations (cont.)
+# Joins (cont.)
 
 (*continued from previous slide*)
 
@@ -641,7 +656,7 @@ Luckily, there's an easy way to avoid this problem.
 
 ---
 
-# Joining operations (cont.)
+# Joins (cont.)
 
 (*continued from previous slide*)
 
@@ -659,7 +674,7 @@ left_join(
 
 ---
 
-# Joining operations (cont.)
+# Joins (cont.)
 
 (*continued from previous slide*)
 
@@ -712,6 +727,7 @@ Let's practice these verbs together in class.
 - Side question: Which of `pivot_longer` vs `pivot_wider` produces "tidy" data?
   
 ---
+name: pivot_longer
 
 # 1) tidyr::pivot_longer
 
@@ -740,6 +756,7 @@ tidy_stocks =
 ```
 
 ---
+name: pivot_wider
 
 # 2) tidyr::pivot_wider
 
@@ -763,6 +780,7 @@ There's a long-running joke about no-one being able to remember Stata's "reshape
 It's easy to see this happening with the `pivot_*` functions too. However, I find that I never forget the commands as long as I remember the argument order is *"names"* then *"values"*.
 
 ---
+name: separate
 
 # 3) tidyr::separate
 
@@ -783,6 +801,7 @@ This command is pretty smart. But to avoid ambiguity, you can also specify the s
 # 3) tidyr::separate *cont.*
 
 A related function is `separate_rows`, for splitting up cells that contain multiple fields or observations (a frustratingly common occurence with survey data).
+
 ```{r sep2}
 jobs = data.frame(
   name = c("Jack", "Jill"),
@@ -792,7 +811,9 @@ jobs
 ## Now split out Jill's various occupations into different rows
 jobs %>% separate_rows(occupation)
 ```
+
 ---
+name: unite
 
 # 4) tidyr::unite
 
