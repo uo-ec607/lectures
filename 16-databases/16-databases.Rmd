@@ -83,7 +83,7 @@ At this point, you might be tempted to think of a database as the "thing" that y
 > **Tip:** A table in a database is like a data frame in an R list. 
 
 
-## Databases and the tidyverse
+## Databases and dplyr 
 
 Virtually relational database in existence makes use of [**SQL**](https://en.wikipedia.org/wiki/SQL) (**S**tructured **Q**uery **L**anguage ).  SQL is an extremely powerful tool and has become something of prerequisite for many data science jobs. ([Exhibit A](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.html#21).) However, it is also an archaic language that is much less intuitive than the tidyverse tools that we have using thus far in the course. We'll see several examples of this shortly, but first the good news: You already have all the programming skills you need to start working with databases. This is because the tidyverse --- through **dplyr** --- allows for direct communication with databases from your local R environment.
 
@@ -117,7 +117,7 @@ con = dbConnect(duckdb::duckdb(), path = ":memory:")
 
 The arguments to `DBI::dbConnect()` vary from database to database. However, the first argument is always the database backend, i.e. `duckdb::duckdb()` in this case since we're using DuckDB. Again, while this differs depending on the database type that you're connecting with, DuckDB only needs one other argument: the `path` to the database. Here we use the special string, ":memory:", which causes DuckDB to make a temporary in-memory database. We'll explore more complicated connections later on that will involve things like password prompts for remote databases.
 
-Our makeshift database connection `con` is currently empty. So let's copy across the *flights* dataset that comes bundled together with the **nycflights13** package. There are a couple of ways to do this, but here I'll use the `dplyr::copy_to()` convenience function. Note that we are specifying the table name ("flights") that will exist within this database. You can also see that we're passing a list of indexes to the `copy_to()` function. Indexes enable efficient database performance, although you don't need to worry too much about that right now. These will be set by the database host platform or maintainer in normal applications.
+Our makeshift database connection `con` is currently empty. So let's copy across the *flights* dataset that comes bundled together with the **nycflights13** package. There are a couple of ways to do this, but here I'll use the `dplyr::copy_to()` convenience function. Note that we are specifying the table name ("flights") that will exist within this database. You can also see that we're passing a list of indexes to the `copy_to()` function. Indexes are what enable efficient database performance, since they specify how the data should be laid out for very quick search and aggregation.^[Databases rely on [binary search](https://en.wikipedia.org/wiki/Binary_search_algorithm), which is the same algorithmic approach that we implicitly used when we [set keys](https://raw.githack.com/uo-ec607/lectures/master/05-datatable/05-datatable.html#keys) back in the **data.table** lecture.] At the same time, I don't want you to worry too much about this right now. Indexes will be set by the database host platform or maintainer in normal applications.
 
 ```{r copy_to, cache = FALSE}
 # library(dplyr)        ## Already loaded
@@ -214,6 +214,33 @@ tailnum_delay %>%
   geom_point(alpha=0.3) +
   geom_abline(intercept = 0, slope = 1, col="orange") +
   coord_fixed()
+```
+
+### Joins
+
+One of the things that databases excel at are joins. At interesting touchpoint here is that **dplyr**'s collection of joining functions are based on their SQL equivalents (including names). You'll hence be relieved to know that the translation carries over rather nicely for joins too. Here is a simple example, using the exact same left join that [we saw](https://raw.githack.com/uo-ec607/lectures/master/05-tidyverse/05-tidyverse.html#joins) back in the **tidyverse** lecture. Note that I'm copying over the `planes` data frame to the same DuckDB connection that is housing the `flights` table. Again, I want to emphasise that databases are like lists, in the sense that they can hold multiple datasets (i.e. tables).
+
+```{r planes_join, cache = FALSE}
+## Copy over the "planes" dataset to the same "con" DuckDB connection.
+copy_to(
+    dest = con, 
+    df = nycflights13::planes, 
+    name = "planes",
+    temporary = FALSE, 
+    indexes = "tailnum"
+    )
+
+## Reference from dplyr
+planes_db = tbl(con, 'planes')
+
+## Run the equivalent left join that we saw back in the tidyverse lecture
+left_join(
+    flights_db,
+    planes_db %>% rename(year_built = year),
+    by = "tailnum" ## Important: Be specific about the joining column
+) %>%
+    select(year, month, day, dep_time, arr_time, carrier, flight, tailnum,
+           year_built, type, model) 
 ```
 
 Assuming that we're finished querying our DuckDB database at this point, we'd normally disconnect from it by calling `DBI::dbDisconnect(con)`. However, I want to keep the connection open a bit longer, so that I can demonstrate how to execute raw (i.e. untranslated) SQL queries on a database from within R.
