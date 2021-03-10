@@ -74,18 +74,23 @@ theme_set(hrbrthemes::theme_ipsum())
 
 ## Databases 101
 
-Many "big data" problems could be more accurately described as "small data problems in disguise". Which is to say, the data that we care about is only a subset or aggregation of some larger dataset. For example, we might want to access US Census data... but only for a handful of counties along the border of two contiguous states. Or, we might want to analyse climate data collected from a large number of weather stations... but aggregated up to the national or monthly level. In such cases, the underlying bottleneck is interacting with the original data, which is too big to fit into memory. How do we store data of this magnitude and and then access it effectively? The answer is through **relational databases**. 
+Many "big data" problems could be more accurately described as "small data problems in disguise". Which is to say, the data that we care about is only a subset or aggregation of some larger dataset. For example, we might want to access US Census data... but only for a handful of counties along the border of two contiguous states. Or, we might want to analyse climate data collected from a large number of weather stations... but aggregated up to the national or monthly level. In such cases, the underlying bottleneck is interacting with the original data, which is too big to fit into memory. How do we store data of this magnitude and and then access it effectively? The answer is through a **database**. 
 
-Databases^[For the rest of this lecture, I'll be using "databases" and "relational databases" interchangeably, so don't be put off if I switch between them.] can exist either locally or remotely, though the latter is more common. The key point is that they are stored on-disk somewhere, rather than in-memory. Extracting the specific information that we want is a matter of submitting a **query** to the database. The query is where we tell the database how to manipulate or subset the data into a more manageable form, which we can then pull into our local environment (i.e. memory) and conduct analysis on. 
+Databases can exist either locally or remotely, as well as in-memory or on-disk. Regardless of where a database is located, the key point is that information is stored in a way that allows very quick extraction and/or aggregation. Think back to our filing cabinet analogy from the **data.table** lecture:
 
+> A filing cabinet arranges items by alphabetical order: Files starting "ABC" in the top drawer, "DEF" in the second drawer, etc. To find Alice's file, you'd only have to search the top draw. For Fred, the second draw, and so on.
+
+This analogy, whilst slightly imperfect, captures the essence of what makes databases so efficient.^[In truth, most databases rely on [binary search trees](https://en.wikipedia.org/wiki/Binary_search_tree) ("b-trees"). A b-tree shares the spirit of the file cabinet ordering system, but takes it step further so that we eliminate at least half of the remaining data from our search at each step. E.g. We need to find a person's tax records in a million-row dataset. In the first step we immediately realise that it's somewhere in the first 500k rows. In the next step we immediately realise that it's somewhere in rows 250k-500k, etc.] They can very quickly identify the components that they need to focus on for a particular operation.
+
+Extracting the specific information that we want is a simple matter of submitting a **query** to the database. The query is where we tell the database how to manipulate or subset the data into a more manageable form, which we can then pull into our analysis environment (R, Python, Julia, etc.) 
 At this point, you might be tempted to think of a database as the "thing" that you interact with directly. However, it's important to realise that the data are actually organised in one or more **tables** within the database. These tables are rectangular, consisting of rows and columns, where each row is identified by a unique key. In that sense, they are very much like the data frames that we're all used to working with. Continuing with the analogy, a database then is rather like a list of data frames of R. To access information from a specific table (data frame), we first have to index it from the database (list) and then execute our query functions. The only material difference being that databases can hold much more information and are extremely efficient at executing queries over their vast contents.
 
 > **Tip:** A table in a database is like a data frame in an R list. 
 
 
-## Databases and dplyr 
+## Databases and R 
 
-Virtually relational database in existence makes use of [**SQL**](https://en.wikipedia.org/wiki/SQL) (**S**tructured **Q**uery **L**anguage ).  SQL is an extremely powerful tool and has become something of prerequisite for many data science jobs. ([Exhibit A](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.html#21).) However, it is also an archaic language that is much less intuitive than the tidyverse tools that we have using thus far in the course. We'll see several examples of this shortly, but first the good news: You already have all the programming skills you need to start working with databases. This is because the tidyverse --- through **dplyr** --- allows for direct communication with databases from your local R environment.
+Virtually every database in existence makes use of [**SQL**](https://en.wikipedia.org/wiki/SQL) (**S**tructured **Q**uery **L**anguage ). SQL is an extremely powerful tool and has become something of prerequisite for many data science jobs. ([Exhibit A](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.html#21).) However, it is also an archaic language that is much less intuitive than the R tools that we have using thus far in the course. We'll see several examples of this shortly, but first the good news: You already have all the programming skills you need to start working with databases. This is because the tidyverse --- through **dplyr** --- allows for direct communication with databases from your local R environment.
 
 What does this mean? 
 
@@ -98,11 +103,11 @@ While **DBI** is automatically bundled with **dbplyr**, you'll need to install a
 1. **duckdb** embeds a DuckDB database.
 2. **bigrquery** connects to Google BigQuery.
 
-The former is a lightweight --- but extremely powerful --- database management system (DBMS) that can exist on our local computers. It thus provides the simplest way of demonstrating the key concepts of this section without the additional overhead required by some other common other DBMSs. (No external dependencies, no need to connect to a remote server, etc.) The latter is the one that I use most frequently in my own work and also requires minimal overhead, seeing as we already set up a Google Cloud account in the previous lecture.
+The former is a lightweight --- but extremely powerful --- [database management system (DBMS)](https://en.wikipedia.org/wiki/Database#Database_management_system) that can exist on our local computers. It thus provides the simplest way of demonstrating the key concepts of this section without the additional overhead required by some other common other DBMSs. (No external dependencies, no need to connect to a remote server, etc.) The latter is the one that I use most frequently in my own work and also requires minimal overhead, seeing as we already set up a Google Cloud account in the previous lecture.
 
 ## Getting started: DuckDB
 
-This next section is inspired by RStudio's excellent [*Databases using dplyr*](https://db.rstudio.com/dplyr) tutorial. Our goal is to create a makeshift database on our local computers using the superb [DuckDB](https://duckdb.org/docs/api/r) backend. We'll use this to execute some practice queries and illustrate some general principles about interacting with databases.
+Our goal for this section is to create a makeshift database on our local computers--- using the excellent [DuckDB](https://duckdb.org/docs/api/r) backend --- and then connect to it from R. I'll use this to demonstrate the ease with which we can execute queries from R, as well as underscore some principles for working with databases in general. The lessons that we learn here will carry over to more complicated cases and much larger datasets.
 
 ### Connecting to a database
 
@@ -117,7 +122,7 @@ con = dbConnect(duckdb::duckdb(), path = ":memory:")
 
 The arguments to `DBI::dbConnect()` vary from database to database. However, the first argument is always the database backend, i.e. `duckdb::duckdb()` in this case since we're using DuckDB. Again, while this differs depending on the database type that you're connecting with, DuckDB only needs one other argument: the `path` to the database. Here we use the special string, ":memory:", which causes DuckDB to make a temporary in-memory database. We'll explore more complicated connections later on that will involve things like password prompts for remote databases.
 
-Our makeshift database connection `con` is currently empty. So let's copy across the *flights* dataset that comes bundled together with the **nycflights13** package. There are a couple of ways to do this, but here I'll use the `dplyr::copy_to()` convenience function. Note that we are specifying the table name ("flights") that will exist within this database. You can also see that we're passing a list of indexes to the `copy_to()` function. Indexes are what enable efficient database performance, since they specify how the data should be laid out for very quick search and aggregation.^[Databases rely on [binary search](https://en.wikipedia.org/wiki/Binary_search_algorithm), which is the same algorithmic approach that we implicitly used when we [set keys](https://raw.githack.com/uo-ec607/lectures/master/05-datatable/05-datatable.html#keys) back in the **data.table** lecture.] At the same time, I don't want you to worry too much about this right now. Indexes will be set by the database host platform or maintainer in normal applications.
+Our makeshift database connection `con` is currently empty. So let's copy across the *flights* dataset that comes bundled together with the **nycflights13** package. There are a couple of ways to do this, but here I'll use the `dplyr::copy_to()` convenience function. Note that we are specifying the table name ("flights") that will exist within this database. You can also see that we're passing a list of indexes to the `copy_to()` function. Indexes are what enable efficient database performance, since they specify how the data should be laid out for very quick search and aggregation.^[Again, dDatabases rely on [binary search](https://en.wikipedia.org/wiki/Binary_search_algorithm), which is the same algorithmic approach that we used when we [set keys](https://raw.githack.com/uo-ec607/lectures/master/05-datatable/05-datatable.html#keys) back in the **data.table** lecture.] At the same time, I don't want you to worry too much about this right now. Indexes will be set by the database host platform or maintainer in normal applications.
 
 ```{r copy_to, cache = FALSE}
 # library(dplyr)        ## Already loaded
@@ -140,9 +145,6 @@ copy_to(
 Now that we've copied over the data, we can reference it from R via the `dplyr::tbl()` function:
 
 ```{r flights_db, cache=FALSE}
-# library(dplyr) ## Already loaded
-# library(dbplyr) ## Already loaded
-
 flights_db = tbl(con, "flights")
 flights_db
 ```
@@ -694,6 +696,7 @@ In my experience, though the best best way to learn SQL is simply to *start writ
 
 You are spoilt for choice here and I've already hyperlinked to many resources throughout this lecture. So here are some final suggestions to get you querying databases like a boss.
 
+- RStudio's [Databases using R](https://db.rstudio.com) is a one-stop reference shop for much that we have covered today and more.
 - [Juan Mayorga](https://twitter.com/juansmayorga) has a super tutorial on "[Getting Global Fishing Watch Data from Google Big Query using R](http://jsmayorga.com/post/getting-global-fishing-watch-from-google-bigquery-using-r)". He also dives into some of the reasons why you might want to learn SQL (i.e. beyond just using the **dplyr** translation).
 - If you want a dedicated resource for learning SQL, then again I'm going to stump for [Julia Evans'](https://twitter.com/b0rk) [*Become A Select Star*](https://wizardzines.com/zines/sql/). It's a great, concise introduction to the major concepts and a steal at only $12.
 - On the other end of the scale, the official BigQuery [documentation](https://cloud.google.com/bigquery/docs/) provides an exhaustive overview of the many functions and syntax for so-called standard SQL (including specialised operations on say, datetime and JSON objects).
