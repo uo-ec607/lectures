@@ -59,7 +59,7 @@ You should already have done this for the lecture on Google Compute Engine. See 
 
 ### R packages 
 
-- New: **dbplyr**, **DBI**, **duckdb**,**bigrquery**, **glue**
+- New: **DBI**, **duckdb**, **bigrquery**, **glue**
 - Already used: **tidyverse**, **hrbrthemes**, **nycflights13**
 
 As per usual, the code chunk below will install (if necessary) and load all of these packages for you. I'm also going to set my preferred ggplot2 theme, but as you wish.
@@ -67,7 +67,7 @@ As per usual, the code chunk below will install (if necessary) and load all of t
 ```{r, cache=F, message=F}
 ## Load/install packages
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(tidyverse, DBI, dbplyr, duckdb, bigrquery, hrbrthemes, nycflights13, glue)
+pacman::p_load(tidyverse, DBI, duckdb, bigrquery, hrbrthemes, nycflights13, glue)
 ## My preferred ggplot2 theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
