@@ -55,7 +55,7 @@ knitr::knit_hooks$set(
 
 ### Create an account on Google Cloud Platform (free)
 
-You should already have done this for the lecture on Google Compute Engine. See [here](https://raw.githack.com/uo-ec607/lectures/master/14-gce/14-gce.html) if not. 
+You should already have done this for the lecture on Google Compute Engine. See [here](https://raw.githack.com/uo-ec607/lectures/master/14-gce-i/14-gce-i.html#Create_an_account_on_Google_Cloud_Platform_(free)) if not. 
 
 ### R packages 
 
