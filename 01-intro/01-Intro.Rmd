@@ -24,7 +24,7 @@ output:
 ```
 
 ```{r setup, include=FALSE}
-xaringanExtra::use_scribble() ## Draw on slides. Requires dev version of xaringanExtra.
+# xaringanExtra::use_scribble() ## Draw on slides. Requires dev version of xaringanExtra.
 
 options(htmltools.dir.version = FALSE)
 library(knitr)
@@ -282,6 +282,7 @@ name: r4ds
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
 
 ---
+name: whyr
 
 # Why R and RStudio? (cont.)
 ```{R, indeeddotcom, echo = F, fig.height = 6, fig.width = 9, dev = "svg"}
