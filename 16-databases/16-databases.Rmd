@@ -89,7 +89,7 @@ At this point, you might be tempted to think of a database as the "thing" that y
 
 ## Databases and R 
 
-Virtually every database in existence makes use of [**SQL**](https://en.wikipedia.org/wiki/SQL) (**S**tructured **Q**uery **L**anguage ). SQL is an extremely powerful tool and has become something of prerequisite for many data science jobs. ([Exhibit A](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.html#21).) However, it is also an archaic language that is much less intuitive than the R tools that we have using thus far in the course. We'll see several examples of this shortly, but first the good news: You already have all the programming skills you need to start working with databases. This is because the tidyverse --- through **dplyr** --- allows for direct communication with databases from your local R environment.
+Virtually every database in existence makes use of [**SQL**](https://en.wikipedia.org/wiki/SQL) (**S**tructured **Q**uery **L**anguage ). SQL is an extremely powerful tool and has become something of prerequisite for many data science jobs. ([Exhibit A](https://raw.githack.com/uo-ec607/lectures/master/01-intro/01-Intro.html#whyr).) However, it is also an archaic language that is much less intuitive than the R tools that we have using thus far in the course. We'll see several examples of this shortly, but first the good news: You already have all the programming skills you need to start working with databases. This is because the tidyverse --- through **dplyr** --- allows for direct communication with databases from your local R environment.
 
 What does this mean? 
 
@@ -689,7 +689,7 @@ dbDisconnect(gfw_con)
 
 ## Where to next: Learning and practicing SQL
 
-While we did cover some SQL basics and syntax, my primary goal for this lecture has been to get you up running and running with databases as quickly and painlessly as possible. I really do think that you can get a great deal of mileage using the **dplyr** database integration that we've focused on here. However, learning SQL will make a big difference to your life once you start working with databases regularly. I expect that it will also boost your employment options significantly. The good news is that you are already well on your way to internalising the basic commands and structure of SQL queries. We've seen the `show_query()` function, which is a great way to get started if your coming from R and the tidyverse. Another helpful **dbplyr** resource is the "sql" vignette, so take a look:
+While we did cover some SQL basics and syntax, my primary goal for this lecture has been to get you up running with databases as quickly and painlessly as possible. I really do think that you can get a great deal of mileage using the **dplyr** database integration that we've focused on here. However, learning SQL will make a big difference to your life once you start working with databases regularly. I expect that it will also boost your employment options significantly. The good news is that you are already well on your way to internalising the basic commands and structure of SQL queries. We've seen the `show_query()` function, which is a great way to get started if your coming from R and the tidyverse. Another helpful **dbplyr** resource is the "sql" vignette, so take a look:
 
 ```{r, eval=FALSE}
 vignette('sql', package = 'dbplyr')
