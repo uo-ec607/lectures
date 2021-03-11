@@ -106,7 +106,7 @@ The former is a lightweight --- but extremely powerful --- [database management 
 
 ## Getting started: DuckDB
 
-Our goal for this section is to create a makeshift database on our local computers--- using the excellent [DuckDB](https://duckdb.org/docs/api/r) backend --- and then connect to it from R. I'll use this to demonstrate the ease with which we can execute queries from R, as well as underscore some principles for working with databases in general. The lessons that we learn here will carry over to more complicated cases and much larger datasets.
+Our goal for this section is to create a makeshift database on our local computers --- using the excellent [DuckDB](https://duckdb.org/docs/api/r) backend --- and then connect to it from R. I'll use this to demonstrate the ease with which we can execute queries from R, as well as underscore some principles for working with databases in general. The lessons that we learn here will carry over to more complicated cases and much larger datasets.
 
 ### Connecting to a database
 
@@ -141,9 +141,13 @@ copy_to(
   )
 ```
 
-Now that we've copied over the data, we can reference it from R via the `dplyr::tbl()` function:
+Now that we've copied over the data, we can reference it from R via the `dplyr::tbl()` function. This will allow us to treat it as a normal data frame that be manipulated with **dplyr** commands.
 
 ```{r flights_db, cache=FALSE}
+## List tables in our DuckDB database connection (optional)
+# dbListTables(con)
+
+## Reference the table from R
 flights_db = tbl(con, "flights")
 flights_db
 ```
@@ -162,7 +166,7 @@ flights_db %>% filter(dep_delay > 240)
 ## Get the mean delay by destination (group and then summarise)
 flights_db %>%
   group_by(dest) %>%
-  summarise(delay = mean(dep_time))
+  summarise(mean_dep_delay = mean(dep_delay))
 ```
 
 Again, everything seems to be working great with the minor exception being that our output looks a little different to normal. In particular, you might be wondering what `# Source:   lazy query` means.
@@ -230,6 +234,9 @@ copy_to(
     temporary = FALSE, 
     indexes = "tailnum"
     )
+
+## List tables in our "con" database connection (i.e. now "flights" and "planes")
+dbListTables(con)
 
 ## Reference from dplyr
 planes_db = tbl(con, 'planes')
