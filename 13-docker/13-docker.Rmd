@@ -199,7 +199,7 @@ name: imagevscontainer
 
 </br>
 
-**Analogy:** Think of the Dockerfile as a piece of sheet music, which tells us everything we need to play a song (key, instruments, chords, tempo, etc.) The image is a recording of the music that perfectly reflects the sheet music (e.g. an MP3 file). Finally, a container is a playing instance of that file (maybe on my phone, maybe through my home speakers, etc.)
+**Analogy:** Think of the Dockerfile as a piece of sheet music, which tells us everything we need to play a song (key, instruments, chords, tempo, etc.). The image is a recording of the music that perfectly reflects the sheet music (e.g. an MP3 file). Finally, a container is a playing instance of that file (maybe on my phone, maybe through my home speakers, etc.)
 
 ---
 
@@ -562,7 +562,7 @@ The short answer is that `/home/rstudio` is the default user's home directory fo
 
 --
 
-We have to be be specific about mounting under the user's home directory, because RStudio Server limits how and where users can access files. (This is a security feature that we'll revisit in the next lecture on cloud computing.)
+We have to be specific about mounting under the user's home directory, because RStudio Server limits how and where users can access files. (This is a security feature that we'll revisit in the next lecture on cloud computing.)
 
 --
 
