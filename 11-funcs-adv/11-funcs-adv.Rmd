@@ -388,7 +388,7 @@ if (knitr::is_latex_output()){
 } 
 ```
 
-It's possible (and often very helpful) to add verbose prompts to our memoised functions. Consider the code below, which which folds our `mem_square_persistent()` function into two sections:
+It's possible (and often very helpful) to add verbose prompts to our memoised functions. Consider the code below, which folds our `mem_square_persistent()` function into two sections:
 
 1. Check for and load previously cached results. Print the results to screen.
 2. Run our memoised function on any inputs that have not already been evaluated.( These results will be cached in turn for future use.) Again, print the results to screen.
