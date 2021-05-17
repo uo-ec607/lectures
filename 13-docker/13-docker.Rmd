@@ -59,9 +59,10 @@ knit_hooks$set(
 3. [Examples](#examples)
   
   - [Base R](#r-base)
+  - [R-dev](#r-dev)
   - [RStudio+](#rstudio+)
 
-4. [Writing your own Dockerfiles & images](#writing)
+4. [Write your own Dockerfiles & images](#own)
 
 5. [Sharing files with a container](#share)
 
@@ -180,7 +181,8 @@ More importantly, it allows us to always run code from a pristine, predictable s
 
 ### 1. Reproducibility
 
-If we can bundle our code and software in a Docker container, then we don't have to worry about it not working on someone else's system (and vice versa). Similarly, we don't have to worry about it not working on our own systems in the future (e.g. after package or program updates).
+If we can bundle our code and software in a Docker container, then we don't have to worry about it not working on someone else's system (and vice versa). Similarly, we don't have to worry about it not working on our own systems in the future (e.g. after package or program updates). 
+- Examples of academic research projects using Docker for reproducibility [here](https://github.com/grantmcdermott/sceptic-priors) and [here](https://github.com/johnjosephhorton/wages_of_paycuts).
 
 ### 2. Deployment
 
@@ -261,8 +263,12 @@ The good news is that R has outstanding Docker support, primarily thanks to the 
 
 
 ---
+class: inverse, center, middle
 name: r-base
 
+# Example 1: Base R
+
+---
 # Example 1: Base R
 
 For our first example, let's fire up a simple container that contains little more than a base R installation.
@@ -352,9 +358,38 @@ root@09dda673a187:/# exit
 ```
 
 ---
+class: inverse, center, middle
+name: r-dev
+
+# Example 2: R-dev
+
+---
+
+# Example 2: R-dev
+
+One of Docker's exemplar uses is testing software ahead of time. For example, we can safely test a new version of R in a Docker container before upgrading.
+
+--
+
+In that vein, we can also test the development version of R via the [`rocker/drd`](https://hub.docker.com/r/rocker/drd) image. 
+ - At the time of writing this slide, the release of R version 4.1.0 was just a few days away. So, this provides a convenient way to test drive some of the [new features](https://cran.rstudio.com/) (a native pipe, lambda functions, etc.)
+
+```{bash}
+docker run --rm -it rocker/drd
+```
+
+```{r r_dev_pipe_gif, eval = TRUE, echo=FALSE, out.width="75%"}
+knitr::include_graphics("pics/r-dev-pipe.gif")
+```
+
+---
+class: inverse, center, middle
 name: rstudio+
 
-# Example 2: RStudio+
+# Example 3: RStudio+
+
+---
+# Example 3: RStudio+
 
 The Rocker Project works by layering Docker images on top of each other in a [grouped stack](https://github.com/rocker-org/rocker#use-cases). An important group here is the [**versioned**](https://github.com/rocker-org/rocker-versioned2#version-stable-rocker-images-for-r--400) stack.
 
@@ -365,7 +400,7 @@ Allows us to easily spin up different versions of R (3.6.1, 4.0.2, etc), plus ex
 
 ---
 
-# Example 2: RStudio+ (cont.)
+# Example 3: RStudio+ (cont.)
 
 Let's try the [`tidyverse`](https://hub.docker.com/r/rocker/tidyverse) image from this versioned stack, which layers base R + RStudio + tidyverse. I'll specify R 4.0.0 as my base image.
 
@@ -375,7 +410,7 @@ Let's try the [`tidyverse`](https://hub.docker.com/r/rocker/tidyverse) image fro
 name: tverseinit
 count: false
 
-# Example 2: RStudio+ (cont.)
+# Example 3: RStudio+ (cont.)
 
 Let's try the [`tidyverse`](https://hub.docker.com/r/rocker/tidyverse) image from this versioned stack, which layers base R + RStudio + tidyverse. I'll specify R 4.0.0 as my base image.
 
@@ -401,7 +436,7 @@ name:username
 
 ---
 
-# Example 2: RStudio+ (cont.)
+# Example 3: RStudio+ (cont.)
 
 Unlike, the "r-base" container, this time we aren't immediately taken to our R environment.
 
@@ -438,7 +473,7 @@ So this Windows user would point their browser to http://192.168.99.100:8787.
 
 ---
 
-# Example 2: RStudio+ (cont.)
+# Example 3: RStudio+ (cont.)
 
 Here's the login-in screen that I see when I navigate my browser to the relevant URL.
 
@@ -449,7 +484,7 @@ Sign in with your "rstudio" + "pswd123" credential combination.
 
 ---
 
-# Example 2: RStudio+ (cont.)
+# Example 3: RStudio+ (cont.)
 
 And here I am in RStudio Server running through Docker! (Pro-tip: Hit F11 to go full-screen.)
 
@@ -457,7 +492,7 @@ And here I am in RStudio Server running through Docker! (Pro-tip: Hit F11 to go 
 ---
 count: false
 
-# Example 2: RStudio+ (cont.)
+# Example 3: RStudio+ (cont.)
 
 I can also load the **tidyverse** straight away. (We can ignore those warning messages.)
 
@@ -467,7 +502,7 @@ I can also load the **tidyverse** straight away. (We can ignore those warning me
 
 ---
 
-# Example 2: RStudio+ (cont.)
+# Example 3: RStudio+ (cont.)
 
 To stop this container, you would grab the container ID (i.e. with `$ docker ps`) and then run:
 
@@ -493,7 +528,7 @@ If you dropped the `-d` flag and re-ran the above command, your terminal would s
 
 ---
 
-# Example 2: RStudio+ (cont.)
+# Example 3: RStudio+ (cont.)
 
 I'll end this example by reiterating the stacked (or _layered_) nature of the Docker workflow. 
 
@@ -504,7 +539,7 @@ To prove this, consider what happens when I instantiate the [`r-ver:4.0.0`](http
 ![](pics/r-dev-4_0_0.png)
 ---
 
-# Example 2: RStudio+ (cont.)
+# Example 3: RStudio+ (cont.)
 
 I'll end this example by reiterating the stacked (or _layered_) nature of the Docker workflow. 
 
@@ -527,9 +562,9 @@ All of which provides a nice segue to our next section...
 
 ---
 class: inverse, center, middle
-name: writing
+name: own
 
-# Writing your own Dockerfiles & images
+# Write your own Dockerfiles & images
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
 
 ---
@@ -537,7 +572,7 @@ name: writing
 # Add to an existing container
 
 The easiest way to start writing our own Docker images is by layering on top of existing containers.
-- Remember: [Like ogres](https://www.youtube.com/watch?v=aJQmVZSAqlc), Docker containers are all about layers.
+- Remember: [Like ogres](https://www.youtube.com/watch?v=aJQmVZSAqlc), Docker is all about the layers.
 
 --
 
@@ -583,7 +618,7 @@ I'm going to show you how on the next slide to keep everything in one place...
 
 # Add to an existing container (cont.)
 
-**Step 1:** Run `docker ps` to ID the running container. We've already done this, but...
+**Step 1:** Run `docker ps` to ID the running container. We've already done this, but still...
 
 ```{bash}
 docker ps
@@ -601,7 +636,7 @@ CONTAINER ID   IMAGE                    COMMAND   CREATED         STATUS        
  docker commit -m "tidverse + data.table" 802dbd3841c7 tidyverse_dt:4.0.0
 ```
 
-Again, this should feel _very_ familiar to our Git workflow. We even wrote ourselves a helpful commit message. Note that I added a "tag" to the image (i.e. `4.0.0`). This is optional, but good practice. Here, I'm reminding myself that I've built on top of the R 4.0.0 versioned stack.
+Again, this should feel _very_ familiar to our Git workflow. We even wrote ourselves a helpful commit message. Note that I added a version tag (i.e. `:4.0.0`). This is optional, but good practice. Here, I'm reminding myself that I've built on top of the R 4.0.0 versioned stack.
 
 --
 
@@ -615,14 +650,14 @@ docker images
 
 # Adding things outside of R?
 
-For our simple example, I installed a single R package. But the process would work exactly the same if I did any other operations from within R(studio).
+For the simple example on the previous slide, we installed a single R package. But the process would work exactly the same if we did any other operations from within R(studio).
 
 - Install multiple packages
 - Save datasets, scripts, figures, etc.
 
 --
 
-**Question:** What happens if I want to install/update something outside of R(Studio)? Say, Ubuntu system libraries or another program like Python?
+**Question:** What happens if we want to install/update something outside of R(Studio)? Say, Ubuntu system libraries or another program like Python?
 
 --
 
@@ -664,11 +699,13 @@ docker stop $(docker ps -q)
 
 # Write your own Dockerfile
 
-Recall that `Dockerfiles` are the "sheet music" of the whole operation. These are simple text files that provide the full set of (shell) instructions for building our Docker images.
+The interactive approach to building Docker images &mdash; i.e. committing changes to a running container &mdash; is a convenient way to get up and running quickly. However, at some point you'll probably want to start writing your own `Dockerfiles`.
+
+- Remember: `Dockerfiles` are the "sheet music" of the whole operation. These are simple text files that provide the full set of (shell) instructions for building our Docker images.
 
 --
 
-There is a whole host of [commands and considerations](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/) for writing your own Dockerfiles &mdash; all of which I am going to skip for this lecture. (We simply don't have the time.)
+There is a whole host of [commands and considerations](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/) for writing `Dockerfiles` &mdash; all of which I am going to skip for this lecture. (We simply don't have the time.)
 
 --
 
@@ -678,19 +715,18 @@ BUT... I will briefly say that the Rocker Project again has our backs with a bun
 
 For example, if we wanted to modify the `r-ver4.0.0` image so that it also included Python, our Dockerfile would be as simple as the following two lines:
 
-```docker
+```bash
 FROM rocker/r-ver:4.0.0
 RUN /rocker_scripts/install_python.sh
 ```
-</br></br>
 
-.pull-right[*Continues on next slide.*]
+.pull-right[*(Continues on next slide.)*]
 
 ---
 
 # Write your own Dockerfile (cont.)
 
-```docker
+```bash
 FROM rocker/r-ver:4.0.0
 RUN /rocker_scripts/install_python.sh
 ```
@@ -719,11 +755,57 @@ docker run -it --rm r_py:4.0.0
 
 ---
 
+# Write your own Dockerfile (cont.)
+
+Okay, one last tip about writing your own Dockerfiles. Let's say we wanted to add an R package (e.g. data.table) to our `r_py` image at build time. How could we do this?
+
+--
+
+Well, remember that Dockerfiles are (basically) just a set of shell instructions. So we can tell our Dockerfile to install an R package via an appropriate bash command like `Rscript`.<sup>†</sup>
+- We also need to pre-pend any bash command with the special Docker verb `RUN`.
+
+.footnote[<sup>†</sup> We covered `Rscript` back in the [shell lecture](https://raw.githack.com/uo-ec607/lectures/master/03-shell/03-shell.html#rscript).]
+
+--
+
+Our Dockerfile thus becomes:
+
+```bash
+FROM rocker/r-ver:4.0.0
+RUN /rocker_scripts/install_python.sh
+RUN R -e "install.packages('data.table')"
+```
+--
+
+If you build this image you'll see that it completes almost instantly... because the first two lines (i.e. layers) have already been cached. Clever!
+
+---
+
+# Automated Dockerfiles
+
+Say that you have an existing research project or repo. Is there an easy way to write a Dockerfile / Docker image based on the contents?
+
+**Answer:** Yes!
+
+I don't have time to go into details, but automated Docker tools include:
+
+- [`containerit`](https://o2r.info/containerit/)
+
+- [`repo2docker`](https://repo2docker.readthedocs.io/en/latest/)
+
+Check them out. (I have a small `containerit` demo [here](https://github.com/grantmcdermott/containerit-demo).)
+
+---
+
 # Docker Hub: Share your Docker images
+
+So, you've written a cool Dockerfile that you want to share with world. What next?
+
+--
 
 You can share your Dockerfiles and images in various ways.
 
-- I sometimes provide Dockerfiles on the GitHub repo associated with a particular research project. This provides a convenient way for others to reproduce the same computing environment that I used for conducting my analysis. (Example [here](https://github.com/grantmcdermott/sceptic-priors#docker).)
+- For my research projects, I add a Dockerfile to the companion GitHub repo. This provides a convenient way for others to reproduce the (potentially complex) computing environment that I used for conducting my analysis. (Example [here](https://github.com/grantmcdermott/sceptic-priors#docker).)
 
 
 The most popular way to share Docker images is by hosting them on [**Docker Hub**](https://hub.docker.com/).
@@ -741,7 +823,7 @@ name: share
 # Prep: Stop all running containers
 
 
-*This next section is all about sharing files and folders between your computer and a container. To avoid unexpected behaviour, it would be best to stop all running containers before continuing.*
+*This next section is all about sharing files and folders between your computer and a container. To avoid unexpected behaviour, it would be best to stop all running containers before proceeding.*
 
 ```{bash}
 docker stop $(docker ps -q)
@@ -749,13 +831,17 @@ docker stop $(docker ps -q)
 
 --
 
-*You're good to continue now...*
+</br></br>
+
+*You should be good to continue now...*
 
 ---
 
 # Share files by mounting volumes
 
 Each container runs in a sandboxed environment and cannot access other files and directories on your computer unless you give it explicit permission.
+
+--
 
 To share files with a container, the `-v` (mount volume) flag is your friend. 
 - Adopts a **LHS:RHS** convention, where LHS = `path/on/your/computer/` and RHS = `path/on/the/container`.
@@ -775,7 +861,7 @@ docker run `-v /home/grant/coolproject:/home/rstudio/coolproject` \
 
 </br>
 
-PS &mdash; I'll get back to specifying the correct RHS path in a couple slides.
+PS &mdash; I'll get back to specifying the correct RHS path in a couple of slides.
 
 ---
 
@@ -815,8 +901,9 @@ In the previous example, I specified the RHS mount point as `/home/rstudio/coolp
 
 --
 
-The short answer is that `/home/rstudio` is the default user's home directory for images in the RStudio+ stack. If you're running a container from this stack, you should almost always start your RHS with this path root.
-- Exception: If you assigned a different default user than "rstudio" ([back here](#username)). 
+The short answer is that `/home/rstudio` is the default user's home directory for images in the RStudio+ stack. If you're running a container from this stack, you should almost always start your RHS with this path root.<sup>†</sup>
+
+.footnote[<sup>†</sup> Exception: If you assigned a different default user than "rstudio" ([back here](#username)).] 
 
 --
 
@@ -975,6 +1062,7 @@ docker run -it --rm rocker/r-ver:4.0.0
 ### Documentation
 
 - [Rocker website](https://www.rocker-project.org/)
+- [R Journal article (Nüst et. al., 2020)](https://journal.r-project.org/archive/2020/RJ-2020-007/index.html)
 - [Docker documentation](https://docs.docker.com/)
 
 ### Tutorials
@@ -982,6 +1070,30 @@ docker run -it --rm rocker/r-ver:4.0.0
 - [Using R via Rocker](https://dirk.eddelbuettel.com/papers/cologneRUG2020.pdf) (Excellent overview and slidedeck from Dirk Eddelbuettel, one of the originators of the Rocker Project.)
 - [Using Docker for Data Science](https://www.robertmylesmcdonnell.com/content/posts/docker/) (Very thorough walkthrough, with a focus on composing your own Dockerfiles from scratch.)
 - [ROpenSci Docker Tutorial](http://ropenscilabs.github.io/r-docker-tutorial) (Another detailed and popular tutorial, albeit outdated in parts.)
+
+---
+name: toc2
+
+# Table of contents
+
+1. [Prologue](#prologue)
+
+2. [Docker 101](#intro)
+
+3. [Examples](#examples)
+  
+  - [Base R](#r-base)
+  - [R-dev](#r-dev)
+  - [RStudio+](#rstudio+)
+
+4. [Write your own Dockerfiles & images](#own)
+
+5. [Sharing files with a container](#share)
+
+6. [Cleaning up](#clean)
+
+7. [Conclusions](#conclusions)
+
 
 ```{r gen_pdf, include = FALSE, cache = FALSE, eval = TRUE}
 infile = list.files(pattern = '.html')
