@@ -256,6 +256,7 @@ Remember: Using vertical space costs nothing and makes for much more readable/wr
 PS — The pipe is originally from the [**magrittr**](https://magrittr.tidyverse.org/) package ([geddit?](https://en.wikipedia.org/wiki/The_Treachery_of_Images)), which can do some other cool things if you're inclined to explore.
 
 ---
+name: nativepipe
 
 # A further aside on the base R pipe: |>
 
