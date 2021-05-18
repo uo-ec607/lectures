@@ -198,10 +198,10 @@ There are many deployment scenarios (packaging, testing, etc.). Of particular in
 
 3. (Add any extra configurations you want.)
 
-4. Package everything up as a [tarball](https://en.wikipedia.org/wiki/Tar_%28computing%29).<sup>*</sup>
+4. Package everything up as a [tarball](https://en.wikipedia.org/wiki/Tar_%28computing%29).<sup>†</sup>
 
 .footnote[
-<sup>*</sup> A format for storing a bunch of files as a single object. Can also be compressed to save space.
+<sup>†</sup> A format for storing a bunch of files as a single object. Can also be compressed to save space.
 ]
 
 --
@@ -252,7 +252,7 @@ It should now be clear that Docker is targeted at (and used by) a bewildering ar
 
 In the realm of economics and data science, that includes every major open-source programming language and software stack.<sup>†</sup> For example, you could download and run a [Julia container](https://hub.docker.com/_/julia/) right now if you so wished.
 
-.footnote[<sup>†</sup> It's possible to build a Docker image on top of proprietary software ([example](https://github.com/mathworks-ref-arch/matlab-dockerfile)). But license restrictions make this complicated. I've rarely seen it done in practice.]
+.footnote[<sup>†</sup> Building a Docker image on top of proprietary software is tricker and less common due to license restrictions. But it is still possible; see examples [here](https://github.com/mathworks-ref-arch/matlab-dockerfile) and [here](https://github.com/AEADataEditor/docker-stata).]
 
 --
 
@@ -572,7 +572,7 @@ name: own
 # Add to an existing container
 
 The easiest way to start writing our own Docker images is by layering on top of existing containers.
-- Remember: [Like ogres](https://www.youtube.com/watch?v=aJQmVZSAqlc), Docker is all about the layers.
+- Remember: Like an [ogre](https://www.youtube.com/watch?v=aJQmVZSAqlc), Docker is all about the layers.
 
 --
 
@@ -1070,6 +1070,7 @@ docker run -it --rm rocker/r-ver:4.0.0
 - [Using R via Rocker](https://dirk.eddelbuettel.com/papers/cologneRUG2020.pdf) (Excellent overview and slidedeck from Dirk Eddelbuettel, one of the originators of the Rocker Project.)
 - [Using Docker for Data Science](https://www.robertmylesmcdonnell.com/content/posts/docker/) (Very thorough walkthrough, with a focus on composing your own Dockerfiles from scratch.)
 - [ROpenSci Docker Tutorial](http://ropenscilabs.github.io/r-docker-tutorial) (Another detailed and popular tutorial, albeit outdated in parts.)
+- [Introduction to Docker](https://carpentries-incubator.github.io/docker-introduction/index.html) (Yet another comprehensive tutorial available from The Carpentries Incubator.)
 
 ---
 name: toc2
