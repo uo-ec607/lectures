@@ -29,7 +29,7 @@ in the original HTML format.*
     - Part 2 \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/14-gce-ii/14-gce-ii.html) | [**.pdf**](https://raw.githack.com/uo-ec607/lectures/master/14-gce-ii/14-gce-ii.pdf) | [**.Rmd**](https://raw.githack.com/uo-ec607/lectures/master/14-gce-ii/14-gce-ii.Rmd)\]
 15. HPC (UO Talapas cluster) \[[**Guest lecture**](https://docs.google.com/presentation/d/146u3W0J0ytGYBq7MZBOoE6wdbkEUrMIV-Fg5N3Cnsls/edit?usp=sharing)\]
 16. Databases \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/16-databases/16-databases.html) | [**.pdf**](https://raw.githack.com/uo-ec607/lectures/master/16-databases/16-databases.pdf) | [**.Rmd**](https://raw.githack.com/uo-ec607/lectures/master/16-databases/16-databases.Rmd)\]
-17. Spark \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/17-spark/17-spark.html)\]
+17. Spark \[[**.html**](https://raw.githack.com/uo-ec607/lectures/master/17-spark/17-spark.html) | [**.pdf**](https://raw.githack.com/uo-ec607/lectures/master/17-spark/17-spark.pdf) | [**.Rmd**](https://raw.githack.com/uo-ec607/lectures/master/17-spark/17-spark.Rmd)\]
 18. Machine learning
 19. Workflow & project management
 
