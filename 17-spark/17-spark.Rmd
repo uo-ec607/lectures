@@ -204,16 +204,16 @@ The [Wikipedia page](https://en.wikipedia.org/wiki/Apache_Spark) is a good place
 
 Spark's tagline is that it provides a *unified analytics engine for large-scale data processing*. **Translation:** Spark provides a common platform for tackling all of the problems that we typically encounter in big data pipelines. This includes distributed data storage, data wrangling, and analytics (machine learning and co.) Spark achieves this by bringing together various sub-components:
 
-- Spark Core (the foundation of the project, enabling things like distributed computing. We'll get back to this in a second.)
-- Spark SQL (exactly what it sounds like: a SQL implementation for querying and storing data in Spark)
-- MLlib (an extensive machine learning library)
+- **Spark Core**. The foundation of the project, enabling things like distributed computing and memory-mapping.
+- **Spark SQL**. A SQL implementation for efficiently querying and storing data in Spark.
+- **MLlib**. An extensive machine learning library.
 - etc.
 
 Now, at this point you may be asking yourself: "Hang on a minute, haven't we been learning to do all these things in R? Why do we need this Spark stuff if R already provides a (quote unquote) 'unified framework' for our data science needs?" 
 
 The short answer is that Spark can scale in ways that R simply can't. You can move your analysis from a test dataset living on your local computer, to a massive dataset running over a cluster of distributed machines with minimal changes to your code. But at a deeper level, asking yourself the above questions is to miss the point. We will be running all of our Spark functions and analysis from R, thanks to the **sparklyr** package. It will look like R code and it will return R outputs.
 
-**Aside:** You'll note that Spark is often compared to a predecessor framework for cluster computing and distributed data processing called [(Hadoop) MapReduce](https://en.wikipedia.org/wiki/MapReduce). The key difference between these two frameworks is that Spark allows for in-memory processing, whereas MapReduce relies solely on I/O to disk. (See [here](https://www.scnsoft.com/blog/spark-vs-hadoop-mapreduce) and [here](https://www.quora.com/What-is-the-difference-in-idea-design-and-code-between-Apache-Spark-and-Apache-Hadoop/answer/Shubham-Sinha-202.)) You don't need to worry too much about all this now. It basically means that Spark is faster and better suited to our present needs. Spark also comes with a bunch of really cool extension libraries, which we'll barely scratch the surface of today.
+> **Aside:** You'll note that Spark is often compared to a predecessor framework for cluster computing and distributed data processing, i.e. [(Hadoop) MapReduce](https://en.wikipedia.org/wiki/MapReduce). The key difference between these two frameworks is that Spark allows for in-memory processing, whereas MapReduce relies solely on I/O to disk. (See [here](https://www.scnsoft.com/blog/spark-vs-hadoop-mapreduce) and [here](https://www.quora.com/What-is-the-difference-in-idea-design-and-code-between-Apache-Spark-and-Apache-Hadoop/answer/Shubham-Sinha-202.)) You don't need to worry too much about all this now. It essentially means that Spark is faster and better suited to our present needs. Spark also comes with a bunch of really cool extension libraries, of which we'll barely scratch the surface today.
 
 ## Big data and Spark
 
@@ -431,7 +431,7 @@ flights_cached
 
 > **Tip:** Open the Spark web UI (`spark_web(sc)`) and click the "Storage" tab to see which of your tables are cached and held in memory.
 
-Remembering that "flights_cached" still only exists as a Spark table, here's something cool: We can use the **dbplot** package ([link](https://db.rstudio.com/dbplot/)) to perform plot calculations *inside* the Spark connection (i.e. database). While this might seem like overkill for this particular example --- and it is --- this database plotting functionality is extremely useful extracting insights from large database connections.
+Remembering that "flights_cached" still only exists as a Spark table, here's something cool: We can use the **dbplot** package ([link](https://db.rstudio.com/dbplot/)) to perform plot calculations *inside* the Spark connection (i.e. database). While this might seem like overkill for this particular example --- and it is --- this database plotting functionality is extremely useful for extracting insights from large database connections.
 
 ```{r flights_cached_plot}
 # library(dbplot) ## Already loaded
@@ -444,13 +444,13 @@ And there we have our same plot from before, but now executed from inside the Sp
 
 ## Machine Learning
 
-Some of the most exciting applications of Spark involve machine learning; both through its built-in [MLlib](http://spark.rstudio.com/mlib/) library and its (seamless) interface to external platforms like H2O's [Sparkling Water](https://www.h2o.ai/sparkling-water/). There's a lot to cover here and I'm not going to be able to explain everything in depth. (We'll have a dedicated intro-to-machine-learning lecture next week.) But here's a simple example that uses our cached flights data to predict arrival delays with different algorithms.
+Some of the most exciting applications of Spark involve machine learning; both through its built-in [MLlib](http://spark.rstudio.com/mlib/) library and its (seamless) interface to external platforms like H2O's [Sparkling Water](https://www.h2o.ai/sparkling-water/). There's a lot to cover here and I'm not going to be able to explain everything in depth. But in this section I'll demonstrate by running several different models (algorithms) on our cached flights dataset. In each case our task will be exactly the same: Predict whether a plan will be late arriving at its destination based on when it departed.
 
 ### Prepare and the data
 
 First, I'm going to prepare the data. For this simple example, I'm not going to worry about scaling and any of the other feature engineering tricks that we'd normally heed in a real-life ML problem. Instead, I'm just going to create a binary (1/0) variable called "late", which records whether a flight arrived more than 15 minutes behind schedule. In other words, this is going to be a *classification* problem.
 
-As ever with prediction algorithms, we also need to partition our data into random samples for testing and validation. This will help us avoid overfitting. In this case, I'm only going to use 10% of the data for model building and testing. This 10% sample will in turn be split 30-70 between training and testing data, respectively.
+As ever with prediction algorithms, we also need to partition our data into random samples for testing and validation. This will help us avoid overfitting. In this case, I'm only going to use 10% of the data for model building and testing to reduce estimation time.^[Estimating models on random samples is very common practice in industries where you are working with extremely large datasets.] This 10% sample will then be split 30-70 between training and testing data, respectively.
 
 ```{r flights_sample, cache=TRUE}
 flights_sample = 
