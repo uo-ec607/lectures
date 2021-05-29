@@ -135,14 +135,14 @@ If you're having trouble with Java installation, then please consult the [*Maste
 ### R packages 
 
 - New: **sparklyr**, **dbplot**
-- Already used: **tidyverse**, **DBI**, **hrbrthemes**, **lubridate**, **janitor**, **httr**, **here**
+- Already used: **dplyr**, **DBI**, **ggplot2**, **hrbrthemes**, **janitor**, **httr**, **here**
 
 As per usual, the code chunk below will install (if necessary) and load all of these packages for you.
 
 ```{r packages, cache=FALSE, message=FALSE}
 ## Load/install packages
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(tidyverse, DBI, hrbrthemes, lubridate, janitor, httr, 
+pacman::p_load(dplyr, DBI, ggplot2, hrbrthemes, lubridate, janitor, httr, 
                sparklyr, dbplot, here)
 ## My preferred ggplot2 theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
@@ -213,7 +213,7 @@ Now, at this point you may be asking yourself: "Hang on a minute, haven't we bee
 
 The short answer is that Spark can scale in ways that R simply can't. You can move your analysis from a test dataset living on your local computer, to a massive dataset running over a cluster of distributed machines with minimal changes to your code. But at a deeper level, asking yourself the above questions is to miss the point. We will be running all of our Spark functions and analysis from R, thanks to the **sparklyr** package. It will look like R code and it will return R outputs.
 
-> **Aside:** You'll note that Spark is often compared to a predecessor framework for cluster computing and distributed data processing, i.e. [(Hadoop) MapReduce](https://en.wikipedia.org/wiki/MapReduce). The key difference between these two frameworks is that Spark allows for in-memory processing, whereas MapReduce relies solely on I/O to disk. (See [here](https://www.scnsoft.com/blog/spark-vs-hadoop-mapreduce) and [here](https://www.quora.com/What-is-the-difference-in-idea-design-and-code-between-Apache-Spark-and-Apache-Hadoop/answer/Shubham-Sinha-202.)) You don't need to worry too much about all this now. It essentially means that Spark is faster and better suited to our present needs. Spark also comes with a bunch of really cool extension libraries, of which we'll barely scratch the surface today.
+> **Aside:** You'll note that Spark is often compared to a predecessor framework for cluster computing and distributed data processing, i.e. [(Hadoop) MapReduce](https://en.wikipedia.org/wiki/MapReduce). The key difference between these two frameworks is that Spark allows for in-memory processing, whereas MapReduce relies solely on I/O to disk. (See [here](https://www.scnsoft.com/blog/spark-vs-hadoop-mapreduce) and [here](https://www.quora.com/What-is-the-difference-in-idea-design-and-code-between-Apache-Spark-and-Apache-Hadoop/answer/Shubham-Sinha-202).) You don't need to worry too much about all this now. It essentially means that Spark is faster and better suited to our present needs. Spark also comes with a bunch of really cool extension libraries, of which we'll barely scratch the surface today.
 
 ## Big data and Spark
 
@@ -234,7 +234,7 @@ Before getting started, we need to instantiate a Spark connection via the `spark
 ```{r sc, cache=FALSE}
 # library(sparklyr) ## Already loaded
 
-## Give our Spark instance a bit more memory
+## Give our Spark instance a bit more memory (default is 2 GB)
 config = spark_config()
 config$spark.executor.memory = "4G"
 
@@ -282,23 +282,23 @@ head -1 data/airOT201201.csv > data/combined.csv
 for i in $(ls data/airOT*); do tail -n +2 $i >> data/combined.csv; done
 ```  
 
-These two commands should run quickly. The required memory usage should also be barely discernible, which again highlights some key advantages of the shell. 
+These two commands should run very quickly. The required memory usage should also be barely discernible, which again highlights some key advantages of the shell. 
 
 Combined file duly created, we can now read the dataset into our R environment using Spark via the **sparklyr** package.
 
 **Aside 1:** Right now, you might be wondering: "Why not just do this with a regular `fread()`/`read_csv()` call?" Yes, that would work perfectly well. But remember that this simple pedagogical example is only meant to *emulate* a case where we have a dataset that is bigger than memory. Spark provides the framework for working with these huge files, since it is efficiently splits operations between memory and disk. It uses memory (i.e. RAM) whenever it is available, otherwise it will switch to disk I/O. So, the same basic principles would apply if you were to actually start working with very large files.
 
-**Aside 2:** Something else these examples don't demonstrate --- but I want to emphasise nonetheless --- is that Spark can also read compressed (.gzip and .bz2), as well as parquet file types. This is obviously important for efficient disk useage when dealing with big data.
+**Aside 2:** Something else these examples don't demonstrate --- but I want to emphasise nonetheless --- is that Spark can also read compressed (.gzip and .bz2), as well as [parquet](https://parquet.apache.org/) file types. This is obviously important for efficient disk use when dealing with big data.
 
-Okay, time to feed our empty `sc` connection some data by copying over the (pretend) big `combined.csv` file that we created just a few seconds ago. We'll do so using the `sparklyr::spark_read_csv()` function.^[A point of convenience is that **sparklyr** offers intuitive aliases for many base/tidyverse R functions.] In another similarity to our databases lecture, we should give the dataset a unique table name that distinguishes it in the Spark connection panel. I'll call it "air" and then also reference it from R by assigning it to a new object called `air_spark`.^[I'm only giving the R object a different name to avoid confusion. You can certainly call them both "air" if you want.] The next command will take a few seconds to run.
+Okay, time to feed our empty `sc` connection some data by copying over the (pretend) big `combined.csv` file that we created just a few seconds ago. We'll do so using the `sparklyr::spark_read_csv()` function.^[A point of convenience is that **sparklyr** offers intuitive aliases for many base/tidyverse R functions.] In another similarity to our databases lecture, we should give the dataset a unique table name that distinguishes it in the Spark connection panel. I'll call this table "air" and then reference it from R by assigning it to a new object also called `air`.^[Remember from our databases lecture: The table and referenced R object don't have to be called the same thing. But you'll probably find it helpful to give them the same (or, at least, similar) names.] I'm also going to set `memory = FALSE` to avoid caching the table in RAM; we'll come back to this idea later.
 
 ```{r air_spark, cache=TRUE}
-## Read in the file as a Spark object
-air_spark = 
+air = 
   spark_read_csv(
     sc, 
-    name = "air", 
-    path = here("17-spark/data/combined.csv")
+    name = "air",
+    path = here("17-spark/data/combined.csv"),
+    memory = FALSE
     )
 ```
 
@@ -310,24 +310,26 @@ The "Connections" tab of your RStudio IDE should now contain the "air" table tha
 
 > **Tip:** I won't go through it here. But you can open the (native) Spark web interface in your internet browser by clicking the Spark icon in your Connections pane, or by typing `spark_web(sc)` in your R console. See [Chapter 2.4.1](https://therinspark.com/starting.html#starting-spark-web-interface) of *Mastering Spark in R* for more details. 
 
-You can also get a (lazy) preview of table by printing the `air_spark` reference object in your R console. 
+You can also get a (lazy) preview of table by printing the `air` reference object in your R console. 
 
-```{r air_spark_print}
-air_spark
+```{r air_print}
+air
 ```
 
-Since I keep referencing the databases lecture, the good news is that all of the **dplyr** verbs and tidyverse syntax carry over to a **sparklyr** table connection.^[In the background, these are getting translated to Spark SQL.] Let's create a new data frame that contains the mean departure delay for each day of our table.
+Since I keep referencing the databases lecture, the good news is that all of the **dplyr** verbs and tidyverse syntax carry over to a **sparklyr** table connection.^[In the background, these are getting translated to Spark SQL.] Let's create a new data frame that contains the mean departure delay for each day of our table.^[You might note that that I'm not using **lubridate** for the date conversions in the query that follows. That's because Spark relies on [Hive functions](https://spark.rstudio.com/dplyr/#hive-functions) for built-in aggregation, including datetime operations. Luckily, the base R `as.Date()` function works just fine.]
 
 ```{r mean_dep_delay}
-# library(tidyverse) ## Already loaded
+# library(dplyr) ## Already loaded
 
 mean_dep_delay = 
-  air_spark %>%
+  air %>%
   group_by(YEAR, MONTH, DAY_OF_MONTH) %>%
-  summarise(mean_delay = mean(DEP_DELAY))
+  summarise(mean_delay = mean(DEP_DELAY)) %>%
+  mutate(date = as.Date(paste(YEAR, MONTH, DAY_OF_MONTH, sep = "-"))) %>%
+  arrange(date) 
 ```
 
-This works incredibly quickly, but remember that we're dealing with a *lazy* query here. The `mean_dep_delay` object hasn't actually been created yet; it's just a pointer to a set of aspirational commands. To actually execute the query and pull the resulting object into our R environment, we'll use `dplyr::collect()`. At the risk of repeating myself, this is exactly the same approach that we adopted in the databases lecture. 
+The above code chunk completes almost instantly. But remember that we're dealing with a *lazy* query here. The `mean_dep_delay` object hasn't actually been created yet; it's just a pointer to a set of aspirational commands. To actually execute the query and pull the resulting object into our R environment, we'll use `dplyr::collect()`. At the risk of repeating myself, this is exactly the same approach that we adopted in the databases lecture. 
 
 ```{r collected_mean_dep_delay, message=FALSE}
 # mean_dep_delay %>% show_query() ## Show the Spark SQL translation
@@ -335,15 +337,10 @@ mean_dep_delay = collect(mean_dep_delay)
 mean_dep_delay
 ```
 
-All that hard work deserves a nice plot, don't you think? Let's see how departure delays vary over the course of a year. Note that I'm using the **lubridate** package to create some sensible dates.
+All that hard work deserves a nice plot, don't you think? Let's see how departure delays vary over the course of a year. 
 
 ```{r collected_mean_dep_delay_plot, dependson=mean_dep_delay, message=FALSE}
-# library(lubridate) ## Already loaded
-
-mean_dep_delay = 
-  mean_dep_delay %>%
-  arrange(YEAR, MONTH, DAY_OF_MONTH) %>%
-  mutate(date = ymd(paste(YEAR, MONTH, DAY_OF_MONTH, sep = "-")))
+# library(ggplot2) ## Already loaded
 
 mean_dep_delay %>%
   ggplot(aes(date, mean_delay)) + 
@@ -353,9 +350,9 @@ mean_dep_delay %>%
 
 **Bottom line:** Looks like you want to avoid flying over the December and summer holidays. (This kind of deep analysis is what they pay us the big bucks for.)
 
-We'd normally disconnect from our `sc` connection at this point using `spark_disconnect(sc)`, but I want to keep it open for the moment and copy over some new data.
+We'd normally disconnect from our `sc` connection at this point using `spark_disconnect(sc)`, but I want to keep it open and copy over some new data.
 
-### Option 2: Distributed analysis using **sparklyr**
+### Option 2: Distributed mapping using **sparklyr**
 
 While the above method is great for showing off the power of the shell and the basic functionality of **sparklyr**, it doesn't demonstrate the core *distributed* functionality of the Spark ecosystem. In particular, Spark is very efficient --- optimised, even --- for working with a distributed files. Our second example is intended to demonstrate this functionality. Note that, while it will involve a pretty simple distributed set of files on our local computer, the same ideas would apply to more complicated cluster setups. 
 
@@ -366,18 +363,9 @@ file.remove(here("17-spark/data/combined.csv"))
 list.files(here("17-spark/data/"))
 ```
 
-Good. We're only left with the individual monthly CSVs. Now we instantiate a new spark connection. (which we'll again call "sc" but that doesn't matter). Similar to the earlier shell-based approach where we extracted the column names from the first file, we'll read this structure into a separate vector called `col_names`. I'll also use the `janitor` package to clean up the column names.
+Good. We're only left with the individual monthly CSVs. 
 
-```{r col_names}
-# library(janitor) ## Already loaded
-
-col_names = 
-  read.csv(here("17-spark/data/airOT201201.csv"), nrows = 1) %>% 
-  clean_names() %>%
-  names()
-```
-
-Now, we read in the distributed files. We'll be using the same `spark_read_csv()` function as before, but now I'll just use the path for the whole `data/` directory rather than any individual CSVs. I'll call this new (distributed) Spark object `flights`, but only to keep it clear that this is not the same object as before.
+Time to read in the distributed files. Note that we'll be using the same `spark_read_csv()` function as before. This time, however, we just need to specify the path for the whole `data/` directory, rather than any individual CSVs. I'll call this new (distributed) Spark object `flights`, but only to keep it clear that this is distinct from the "air" object that we already created.
 
 ```{r flights, cache=TRUE}
 flights = 
@@ -385,66 +373,103 @@ flights =
   sc,
   name = "flights",
   path = here("17-spark/data/"),
-  memory = FALSE,
-  columns = col_names,
-  infer_schema = FALSE
+  memory = FALSE
   )
-
-## Count rows to prove all 6+ million obs have been read in
-count(flights)
 ```
 
 You should now be able to see the "flights" table, alongside the original "air" table in your Connections pane.
 
 ![](pics/sc-rstudio-flights.png)
 
-This next step is not strictly necessary, but since we'll no longer be using the original "air" table anymore, it's safe to remove it and conserve memory for other Spark objects. We can do this with the `DBI::dbRemoveTable()` function.
+We count prove to ourselves that all 6+ million rows across the 12 distributed CSV files have been mapped by quickly counting the data.
 
-```{r rm_air, cache=TRUE}
-dbRemoveTable(sc, "air")
+```{r}
+count(flights)
 ```
 
-(You may need to refresh your Connections pane to confirm that the "air" table is no longer there.)
+Remembering that our "flights" table still only exists as pointers to the files on disk, here's something cool: We can use run a query and/or then use the **dbplot** package ([link](https://db.rstudio.com/dbplot/)) to perform plot calculations *inside* the Spark connection (i.e. database). This is essentially like having a **ggplot2** backend for database connections.
 
-Alright, let's query and mutate some columns from our new "flights" table.^[You might note that that I'm not using **lubridate** for the date conversions in the query that follows. That's because Spark relies on Hive functions for built-in aggregation, including datetime operations. See [here](https://spark.rstudio.com/dplyr/#hive-functions).] I'm also going to go ahead and cache the resulting table in Spark's memory allocation to improve performance. There are various configurations and considerations that we'd normally want to weigh before caching a Spark table --- see [here](https://spark.rstudio.com/guides/caching/) --- but the default settings will suffice for this simple example. In truth, the benefit from explicit caching is not clear for this particular case, since the whole dataset is small enough to be held in memory regardless.^[By default, local Spark instances only request 2 GB of memory for the Spark driver. However, you can easily change this by requesting a larger memory allocation (among other features) via the `config` argument. See the **sparklyr** [website](https://spark.rstudio.com/deployment/#configuration) or [Chapter 9](https://therinspark.com/tuning.html) of *Mastering Spark with R* for more details.] Again, I just want to demonstrate some general principles that would apply with more relevancy when working with bigger datasets. 
-
-```{r flights_cached, cache=TRUE}
-flights_cached = 
-  flights %>% 
-  select(
-    fl_date, month, dep_time, arr_time, arr_delay, dep_delay, distance,
-    sched_dep_time = crs_dep_time, sched_arr_time = crs_arr_time
-    ) %>%
-  ## Can't use lubridate functions like ymd(), but as.Date() works for Spark SQL tables 
-  mutate(fl_date = as.Date(fl_date)) %>%
-  ## Convert all other variables to numeric
-  mutate(across(-fl_date, as.numeric)) %>%
-  ## Register resulting Spark SQL in Spark connection
-  sdf_register("flights_cached")
-
-## Cache it (i.e. load into memory for better performance)
-tbl_cache(sc, "flights_cached")
-
-## Preview it
-flights_cached
-```
-
-> **Tip:** Open the Spark web UI (`spark_web(sc)`) and click the "Storage" tab to see which of your tables are cached and held in memory.
-
-Remembering that "flights_cached" still only exists as a Spark table, here's something cool: We can use the **dbplot** package ([link](https://db.rstudio.com/dbplot/)) to perform plot calculations *inside* the Spark connection (i.e. database). While this might seem like overkill for this particular example --- and it is --- this database plotting functionality is extremely useful for extracting insights from large database connections.
-
-```{r flights_cached_plot}
+```{r flights_plot}
 # library(dbplot) ## Already loaded
 
-flights_cached %>%
-  dbplot_line(fl_date, mean(dep_delay))
+flights %>% 
+  mutate(FL_DATE = as.Date(FL_DATE)) %>%
+  ## Plot the data, executing an aggregation function (i.e. mean) inside Spark
+  dbplot_line(FL_DATE, mean(DEP_DELAY))
 ```
 
-And there we have our same plot from before, but now executed from inside the Spark table, which in turn was created from a directory of distributed files. Pretty cool and very powerful once you start working with big data proper.
+And there we have our same plot from before, but now executed from inside the Spark table --- which, in turn, was mapped over a directory of distributed files. Pretty cool and very powerful once you start working with big data proper.
+
+## Memory management and caching
+
+Recall that we used the `memory = FALSE` option when reading in our Spark tables via `spark_read_csv()`. This means that Spark just "mapped" the underlying files without loading everything into memory. The advantage of this approach is that the mapped reading happens very quickly, so we can inspect the first few rows without hammering our RAM. On the other hand, performing actual queries will take longer, because now the data has to read from disk before it can be manipulated.^[More details on the considerations for caching Spark tables [here](https://spark.rstudio.com/guides/caching/) and [here](https://therinspark.com/data.html#memory).]
+
+I want to emphasise that setting `memory = FALSE` doesn't make much sense for a dataset of this moderate size.^[Well, unless you are working on a severely RAM-constrained machine.] Sticking with the (default!) `memory = TRUE` option is a perfectly sensible option, since we'd like to optimise performance and aren't pushing up against the memory bounds of most computers. However, I wanted to show you this functionality, so that you can invoke it if and when you *are* faced with a really large dataset that doesn't fit into your RAM.
+
+To drive home the point, consider what happens to my RAM when I read in another copy of the air traffic data. First, to set a baseline, here is my current memory load.
+
+```{bash free_1, prompt = TRUE}
+free -h
+```
+
+Now, let's read in another copy of the data with the `memory` option again set to FALSE.
+
+```{r flights2, cache=TRUE}
+flights2 = 
+  spark_read_csv(
+  sc,
+  name = "flights2",
+  path = here("17-spark/data/"),
+  memory = FALSE
+  )
+```
+
+Unsurprisingly, my memory load hasn't changed at all:
+
+```{bash free_2, prompt = TRUE}
+free -h
+```
+
+Let's read in one last copy of the data. This time, however, we'll use the default option of `memory = TRUE`.
+
+```{r flights3, cache=TRUE}
+flights3 = 
+  spark_read_csv(
+  sc,
+  name = "flights3",
+  path = here("17-spark/data/"),
+  memory = TRUE ## Changed (also: the default behaviour)
+  )
+```
+
+Now we _do_ see an increase in memory usage. Again, this should be unsurprising since we've explicitly told Spark to load the table into RAM, rather than just mapping it out to pointers on disk.
+
+```{bash free_3, prompt = TRUE}
+free -h
+```
+
+> **Tip:** Open up the Spark web UI (`spark_web(sc)`) and click the "Storage" tab to see which of your tables are cached and held in memory.
+
+### Cleaning up
+
+We can remove Spark tables and free up any RAM that they might be taking up via the `DBI::dbRemoveTable()` function. Note that we have to remove the corresponding R objects separately --- a good idea too, since they will no longer be referencing a valid table. In the below code chunk, I'm going to remove everything except the "flights" table, which I want to use in the next section.
+
+```{r cleanup, cache=TRUE}
+## Remove tables from the Spark connection
+dbRemoveTable(sc, "air"); dbRemoveTable(sc, "flights2"); dbRemoveTable(sc, "flights3")
+## Remove the corresponding R objects (i.e. references)
+rm(air, flights2, flights3)            
+```
+
+(You may need to refresh your Connections pane in Rstudio to confirm that these tables are no longer there.)
+
+### Cache a queried (or existing) table
+
+While `spark_read_*` provides the option to automatically, and sensibly, cache a table at read-time into memory, we can also cache existing tables using the `sparklyr::tbl_cache()` function. I'm going to hold off doing that for a moment, since we'll see an explicit example in the [next section](#Machine_Learning) on machine learning.
 
 ## Machine Learning
 
-Some of the most exciting applications of Spark involve machine learning; both through its built-in [MLlib](http://spark.rstudio.com/mlib/) library and its (seamless) interface to external platforms like H2O's [Sparkling Water](https://www.h2o.ai/sparkling-water/). There's a lot to cover here and I'm not going to be able to explain everything in depth. But in this section I'll demonstrate by running several different models (algorithms) on our cached flights dataset. In each case our task will be exactly the same: Predict whether a plan will be late arriving at its destination based on when it departed.
+Some of the most exciting applications of Spark involve machine learning; both through its built-in [MLlib](http://spark.rstudio.com/mlib/) library and its (seamless) interface to external platforms like H2O's [Sparkling Water](https://www.h2o.ai/sparkling-water/). There's a lot to cover here and I'll only be able to scratch the surface. My goal for this section is to demonstrate Spark's basic ML functionality by running several different models (algorithms) on our flights. In each case our task will be exactly the same: Predict whether a plane was late arriving at its destination based on when it departed.
 
 ### Prepare and the data
 
@@ -454,98 +479,120 @@ As ever with prediction algorithms, we also need to partition our data into rand
 
 ```{r flights_sample, cache=TRUE}
 flights_sample = 
-  flights_cached %>%
-  filter(!is.na(arr_delay)) %>%
-  ## Create our binary outcome variable: "late" 
+  flights %>% 
+  select(FL_DATE, ARR_DELAY, DEP_DELAY, SCHED_DEP_TIME = CRS_DEP_TIME) %>%
+  filter(!is.na(ARR_DELAY)) %>%
+  mutate(FL_DATE = as.Date(FL_DATE)) %>%
+  ## Create our binary outcome variable: LATE 
   ## Measures whether arrival > 15 min delayed
-  ft_binarizer(input_col = "arr_delay", 
-               output_col = "late", 
-               threshold = 15) %>%
-  ## Create a new discretized predictor variable: dep_block
+  ft_binarizer(
+      input_col = "ARR_DELAY", 
+      output_col = "LATE", 
+      threshold = 15
+      ) %>%
+  ## Create a new discretized predictor variable: DEP_BLOCK
   ## Divides departure times into six evenly-spaced "blocks" (i.e. 4 hours apart)
-  ft_bucketizer(input_col = "sched_dep_time", 
-                output_col = "dep_block", 
-                splits = seq(0, 2400, by = 400)) %>% 
-  mutate(dep_block = paste0(as.integer(dep_block))) %>%
+  ft_bucketizer(
+      input_col = "SCHED_DEP_TIME", 
+      output_col = "DEP_BLOCK", 
+      splits = seq(0, 2400, by = 400)
+      ) %>% 
+  mutate(DEP_BLOCK = paste0(as.integer(DEP_BLOCK))) %>%
   ## Partition the data: Randomly sample 10% for training (7%) and testing (3%)
-  sdf_random_split(train = 0.03, test = 0.07, other = 0.9,
-                   seed = 123)
+  sdf_random_split(train = 0.03, test = 0.07, other = 0.9, seed = 123)
 ```
 
-Register and then cache the sampled tables in our Spark instance.
+The next thing we'll do is register these training and testing datasets in our Spark connection. We'll do this with the `sdf_register()` function, which will generate the resulting tables in our Connections pane.
 
-```{r flights_train, cache=TRUE}
+```{r register, cache=TRUE}
+## Register the resulting tables in our Spark connection
 flights_train = sdf_register(flights_sample$train, "flights_train")
-tbl_cache(sc, "flights_train")
+flights_test = sdf_register(flights_sample$test, "flights_test")
+```
 
+As a final data preparation step, we'll cache these two tables in memory using the aforementioned `tbl_cache()` function. This will enable improved performance, especially since we'll be running multiple algorithms over the same datasets and don't want to worry about relaying back and forth to data stored on disk.
+
+```{r tbl_cache, cache=TRUE}
+## Cache them (i.e. load into RAM for better performance)
+tbl_cache(sc, "flights_train")
+tbl_cache(sc, "flights_test")
+
+## Quick check of how big these (sampled) datasets are
 tally(flights_train)
+tally(flights_test)
 ```
 
 ### Models
 
-I'm going to compare three different models/algorithms: 1) logistic regression, 2) random forest, and 3) neural network. The point is simply to demonstrate the flexibility of Spark's MLlib and give you an idea of the required syntax. I am *not* trying to optimize model performance here. 
+Data preparation out of the way, I'm going to compare three different models/algorithms: 
 
-With the appropriate caveat out of the way, it will prove convenient to save the (very simple) formula that I'll be using for all three models as its own object. This will allow me to quickly recycle it quickly with minimal typing or typos... And is thus a good habit to get into for the more complex types of comparative analyses that you will confront in real-life.
+1. logistic regression
+2. random forest
+3. neural network
+
+The point is simply to demonstrate the flexibility of Spark's MLlib and give you an idea of the required syntax. I am *not* trying to optimize model performance here. 
+
+With the appropriate caveatS out of the way, it will prove convenient to save the (very simple) formula that we'll be using for all three models as its own object. This will allow us to quickly recycle it quickly with minimal typing or typos... And is thus a good habit to get into for the more complex types of comparative analyses that you will confront in real-life.
 
 ```{r fml}
-fml = late ~ dep_delay + dep_block
+fml = LATE ~ DEP_DELAY + DEP_BLOCK
 ```
 
 
 #### Logistic regression
 
-We start with a simple logistic regression. For this first model/algorithm class I'll walk you through the individual modeling steps in more detail. The function of interest here is `sparklyr::ml_logistic_regression`.
+We start with a simple logistic regression. For this first model/algorithm class I'll walk you through the individual modeling steps in more detail. The function of interest here is `sparklyr::ml_logistic_regression` and we can summarise it as we would a normal regression in R. Let's run it on our training data.
 
-```{r log_mod, dependson=fml}
-log_mod = 
+```{r lg_mod, dependson=fml}
+lg_mod = 
   flights_train %>%
   ml_logistic_regression(fml)
 
-summary(log_mod)
+summary(lg_mod)
 ```
 
-Now, we turn to our holdout "test" (i.e. holdout) sample to run predictions on data that the model has never seen, using the `sparklyr::ml_predict()` function.
+Next, we turn to our "test" (i.e. holdout) sample to run predictions on data that the model has never seen. The key function here is `sparklyr::ml_predict()`.
 
-```{r log_pred}
-log_pred = ml_predict(log_mod, flights_sample$test)
+```{r lg_pred}
+lg_pred = ml_predict(lg_mod, flights_sample$test)
 
 ## Preview the prediction results
-log_pred %>% 
-  select(late, prediction, probability) %>% 
+lg_pred %>% 
+  select(truth = LATE, prediction, probability) %>% 
   head(5)
 ```
 
-How did we do overall?
+How did we do?
 
-```{r log_pred_tally}
+```{r lg_pred_tally}
 ## Summary metrics:
-ml_binary_classification_evaluator(log_pred) ## area under ROC
-ml_multiclass_classification_evaluator(log_pred) ## F1 score
+ml_binary_classification_evaluator(lg_pred) ## area under ROC
+ml_multiclass_classification_evaluator(lg_pred) ## F1 score
 
 ## We'll also create a confusion matrix for use later
-log_cmat =
-  log_pred %>%
-  group_by(late, prediction) %>%
+lg_cmat =
+  lg_pred %>%
+  group_by(truth = LATE, prediction) %>%
   tally() %>%
   collect()
 ```
 
 #### Random forest
 
-Second, we have a random forest model.
+Second, we have a random forest model. Conveniently, the steps will stay exactly the same as for the logistic regression model. The only change we need to make is to specify a different model type, i.e. `ml_random_forest()`.
 
 ```{r rf_mod, dependson=fml}
 ## Train the RF model
 rf_mod = 
   flights_train %>%
-  ml_random_forest(fml, type = "classification")
+  ml_random_forest(fml, type = "classification")  ## The only thing that changes!
 
 ## Run predictions on test (i.e. holdout) sample
 rf_pred = ml_predict(rf_mod, flights_sample$test)
 
 ## Preview the prediction results
 # rf_pred %>% 
-#   select(late, dep_block, prediction) %>% 
+#   select(truth = LATE, prediction) %>% 
 #   head(5)
 
 ## Summary metrics:
@@ -555,42 +602,39 @@ ml_multiclass_classification_evaluator(rf_pred) ## F1 score
 ## Create confusion matrix
 rf_cmat =
   rf_pred %>%
-  group_by(late, prediction) %>%
+  group_by(truth = LATE, prediction) %>%
   tally() %>%
   collect()
 ```
 
 #### Neural network
 
-Third, we'll train a (feedforward) neural network model with three layers.
+Third, we'll train a (feedforward) neural network model with three layers. The relevant model function in this case is `ml_multilayer_perceptron_classifier()`.
 
-```{r nnet_mod, dependson=fml}
+*Note: The number in the first layer of the NN model must correspond to the number of input features; in this case 6 (i.e. 1 for DEP_DELAY plus 5 for the DEP_BLOCK dummies, so as to avoid the dummy variable trap). Similarly, the last layer must correspond to the number of output classes; in this case 2 (i.e. LATE or not LATE.) The intermediate layers are flexible.*
+
+```{r nn_mod, dependson=fml}
 ## Train the neural net
-## Note: The number in the first layer must correspond to the number of input 
-## features; in this case 6 (i.e. 1 for dep_delay + 5 for the dep_block dummies
-## so as to avoid the dummy variable trap). Similarly, the last layer must 
-## correspond to the number of output classes; in this case 2 (i.e. late or not 
-## late.) The intermediate layers are flexible.
-nnet_model = 
+nn_model = 
   flights_train %>%
-  ml_multilayer_perceptron_classifier(fml, layers = c(6, 3, 2))
+  ml_multilayer_perceptron_classifier(fml, layers = c(6, 3, 2)) ## Only thing that changes!
 
 ## Run predictions on test (i.e. holdout) sample
-nnet_pred = ml_predict(nnet_model, flights_sample$test)
+nn_pred = ml_predict(nn_model, flights_sample$test)
 
 ## Preview the prediction results
-# nnet_pred %>%
-#   select(late, dep_block, prediction) %>%
+# nn_pred %>%
+#   select(truth = LATE, prediction) %>%
 #   head(5)
 
 ## Summary metrics:
-ml_binary_classification_evaluator(nnet_pred) ## area under ROC
-ml_multiclass_classification_evaluator(nnet_pred) ## F1 score
+ml_binary_classification_evaluator(nn_pred) ## area under ROC
+ml_multiclass_classification_evaluator(nn_pred) ## F1 score
 
 ## Create confusion matrix
-nnet_cmat =
-  nnet_pred %>%
-  group_by(late, prediction) %>%
+nn_cmat =
+  nn_pred %>%
+  group_by(truth = LATE, prediction) %>%
   tally() %>%
   collect()
 ```
@@ -598,13 +642,13 @@ nnet_cmat =
 
 #### Model comparison
 
-We can compare our three confusion matrices now. The logistic model does (slightly) better on true positives, whilst the random forest does (slightly) better on true negatives. The neural net is somewhere in the middle. All three tend to underestimate the number of late arrivals.
+With our three model groups now having been run, we can compare the resulting confusion matrices. The logistic model does (slightly) better on true positives, whilst the random forest does (slightly) better on true negatives. The neural net is somewhere in the middle. All three tend to underestimate the number of late arrivals.
 
 ```{r cmat}
 bind_rows(
-  log_cmat %>% mutate(mod = "Logistic regression"), 
+  lg_cmat %>% mutate(mod = "Logistic regression"), 
   rf_cmat %>% mutate(mod = "Random forest"),
-  nnet_cmat %>% mutate(mod = "Neural network")
+  nn_cmat %>% mutate(mod = "Neural network")
   ) %>% 
   pivot_wider(names_from = mod, values_from = n)
 ```
@@ -613,20 +657,17 @@ And here's the same information in plot form.
 
 ```{r cmat_plot}
 bind_rows(
-  log_cmat %>% mutate(mod = "Logistic regression"), 
+  lg_cmat %>% mutate(mod = "Logistic regression"), 
   rf_cmat %>% mutate(mod = "Random forest"), 
-  nnet_cmat %>% mutate(mod = "Neural network")
+  nn_cmat %>% mutate(mod = "Neural network")
   ) %>%
   mutate(mod = factor(mod, levels = c("Logistic regression", "Random forest", "Neural network"))) %>%
-  mutate_at(vars(late, prediction), factor) %>%
-  ggplot(aes(x = late, y = n, fill = prediction)) +
+  mutate(across(c(truth, prediction), as.factor)) %>%
+  ggplot(aes(x = truth, y = n, fill = prediction)) +
   geom_col(alpha = 0.5) + 
   scale_fill_brewer(palette = "Set1") +
   scale_y_continuous(labels = scales::comma) + 
-  labs(
-    title = "Predicting late arrivals: Model performance",
-    x = "observation"
-    ) +
+  labs(title = "Predicting late arrivals: Model performance") +
   facet_wrap(~ mod) + 
   theme(
     axis.title.y = element_blank(),
