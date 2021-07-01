@@ -1238,6 +1238,7 @@ for i in {1..5}; do echo $i; done
 ```
 
 ---
+name: combine_csvs
 
 # Example 2: Combine CSVs
 
@@ -1274,11 +1275,13 @@ Did it work? (See next slide.)
 
 # Example 2: Combine CSVs (cont.)
 
-Hmmm. Sort of, but we need to get rid of the repeating header. 
-
 ```{bash for2b}
 cat examples/meals/mealplan.csv
 ```
+
+--
+
+Hmmm. Sort of, but we need to get rid of the repeating header. 
 
 --
 

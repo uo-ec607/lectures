@@ -45,13 +45,16 @@ name: toc
 3. [Examples](#examples)
   
   - [Base R](#r-base)
+  - [R-dev](#r-dev)
   - [RStudio+](#rstudio+)
 
-4. [Sharing files with a container](#share)
+4. [Write your own Dockerfiles &amp; images](#own)
 
-5. [Cleaning up](#clean)
+5. [Sharing files with a container](#share)
 
-5. [Conclusions](#conclusions)
+6. [Cleaning up](#clean)
+
+7. [Conclusions](#conclusions)
 
 ---
 class: inverse, center, middle
@@ -83,43 +86,37 @@ name: intro
 
 ---
 
-# What is a container?
+# Motivation
 
 Have you ever...
 
-- tried to install a program or run someone else's code, only to be confronted by a bunch of error messages?
-- shared your code and data with someone else, only for them to be confronted by error messages?
-- re-run your own analyses after a major package update, only to find that the code no longer works or the results have changed?
+--
+
+- tried to install a program or run someone else's code, only to be confronted by a bunch of error messages (missing packages, dependencies, etc.)?
 
 --
 
-Containers are way to solve these (and many other) problems.
+- shared your code and data with someone else, only for _them_ to be confronted by a bunch of error messages (missing packages, dependencies, etc.)?
+
+--
+
+- re-run your _own_ code after updating some packages, only to find that it no longer works or the results have changed?
+
+--
+
+&lt;/br&gt;
+Containers are way to solve these and other common software problems.
 
 --
 
 ### Docker
 
-By far the most widely used and best supported container technology.
-- Certainly true for the types of problems that we are concerned with in this course.
-- So, while there are other container platforms around, when I talk about "containers" in this lecture, I'm really talking about [**Docker**](https://www.docker.com/). 
+By far the most widely used and best supported container technology. While there are other container platforms around, when I talk about "containers" in this lecture, I'm really talking about [**Docker**](https://www.docker.com/). 
+
 
 ---
 
-# Why do we care?
-
-I've already prompted some of the main reasons on the previous slide. But to sum things up with two ideas:
-
-### 1. Reproducibility
-
-If we can bundle our code and software in a Docker container, then we don't have to worry about it not working on someone else's system (and vice versa). Similarly, we don't have to worry about it not working on our own systems in the future (e.g. after package or program updates).
-
-### 2. Deployment
-
-There are many deployment scenarios (packaging, testing, etc.). Of particular interest to this course are data science pipelines where you want to deploy software quickly and reliably. Need to run some time-consuming code up on the cloud? Save time and installation headaches by running it through a suitable container, which can easily be deployed to a cluster of machines too.
-
----
-
-# The analogy
+# The "container" analogy
 
 You know those big shipping containers used to transport physical goods?
 
@@ -131,13 +128,51 @@ You know those big shipping containers used to transport physical goods?
 ![](pics/container-truck.jpg)
 ]
 
-They provide a standard format that can accommodate all manner of goods (TVs, fresh produce, whatever). Not only that, but they are stackable and can easily be switched between different modes of transport (ship, road, rail).
+They provide a standard format for transporting all kinds of goods (TVs, fresh produce, whatever). Moreover, they are stackable and can easily be switched between different transport modes (ship, road, rail).
 
 --
 
 Docker containers are the software equivalent. 
 - physical goods &lt;-&gt; software
 - transport modes &lt;-&gt; operating systems
+
+---
+
+# In even simpler terms...
+
+A docker container is just the software equivalent of a box.&lt;sup&gt;†&lt;/sup&gt;
+
+.footnote[&lt;sup&gt;†&lt;/sup&gt; This description (the whole slide, really) is shamelessly stolen from [Dirk Eddelbuettel](https://dirk.eddelbuettel.com/papers/cologneRUG2020.pdf).]
+
+.pull-left[
+![kunal, CC BY-SA 3.0 &lt;https://creativecommons.org/licenses/by-sa/3.0&gt;, via Wikimedia Commons](pics/box.jpg)
+]
+
+.pull-right[
+✓ Standardized shape and form.
+
+✓ Everyone can use.
+
+✓ "If it runs on your machine, it will run on my machine."
+]
+
+--
+
+&lt;/br&gt;
+More importantly, it allows us to always run code from a pristine, predictable state.
+
+---
+
+# Why do we care?
+
+### 1. Reproducibility
+
+If we can bundle our code and software in a Docker container, then we don't have to worry about it not working on someone else's system (and vice versa). Similarly, we don't have to worry about it not working on our own systems in the future (e.g. after package or program updates). 
+- Examples of academic research projects using Docker for reproducibility [here](https://github.com/grantmcdermott/sceptic-priors) and [here](https://github.com/johnjosephhorton/wages_of_paycuts).
+
+### 2. Deployment
+
+There are many deployment scenarios (packaging, testing, etc.). Of particular interest to this course are data science pipelines where you want to deploy software quickly and reliably. Need to run some time-consuming code up on the cloud? Save time and installation headaches by running it through a suitable container, which can easily be deployed to a cluster of machines too.
 
 ---
 
@@ -149,10 +184,10 @@ Docker containers are the software equivalent.
 
 3. (Add any extra configurations you want.)
 
-4. Package everything up as a [tarball](https://en.wikipedia.org/wiki/Tar_%28computing%29).&lt;sup&gt;*&lt;/sup&gt;
+4. Package everything up as a [tarball](https://en.wikipedia.org/wiki/Tar_%28computing%29).&lt;sup&gt;†&lt;/sup&gt;
 
 .footnote[
-&lt;sup&gt;*&lt;/sup&gt; A format for storing a bunch of files as a single object. Can also be compressed to save space.
+&lt;sup&gt;†&lt;/sup&gt; A format for storing a bunch of files as a single object. Can also be compressed to save space.
 ]
 
 --
@@ -173,18 +208,25 @@ Docker containers are the software equivalent.
 
 # Quick terminology clarification
 
-*Dockerfile* ~ The list of layers and instructions for building a Docker image. (The sheet music.)
+**Dockerfile** ~ "The sheet music." The list of layers and instructions for building a Docker image.
 
-*Image* ~ This is the tarball that we talked about on the previous two slides. (MP3 file.)
+**Image** ~ "The MP3 file." This is the tarball that we talked about on the previous two slides.
 
-*Container* ~ A container is a running instance of an image. (Song playing on my computer.)
+**Container** ~ "Song playing on my phone." A container is a running instance of an image.
 
 --
 name: imagevscontainer
 
 &lt;/br&gt;
 
-**Analogy:** Think of the Dockerfile as a piece of sheet music, which tells us everything we need to play a song (key, instruments, chords, tempo, etc.) The image is a recording of the music that perfectly reflects the sheet music (e.g. an MP3 file). Finally, a container is a playing instance of that file (maybe on my phone, maybe through my home speakers, etc.)
+Think of the Dockerfile as a piece of sheet music, which tells us everything we need to play a song (key, instruments, chords, tempo, etc.) The image is a recording of the music that perfectly reflects the sheet music (e.g. an MP3 file). A container is a playing instance of that file (maybe on my phone, maybe through my home speakers, etc.)
+
+---
+class: inverse, center, middle
+name: examples
+
+# Examples
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
 
 ---
 
@@ -192,9 +234,9 @@ name: imagevscontainer
 
 It should now be clear that Docker is targeted at (and used by) a bewildering array of software applications.
 
-In the realm of economics and data science, that includes every major open-source programming language and software stack.&lt;sup&gt;1&lt;/sup&gt; For example, you could download and run a [Julia container](https://hub.docker.com/_/julia/) right now if you so wished.
+In the realm of economics and data science, that includes every major open-source programming language and software stack.&lt;sup&gt;†&lt;/sup&gt; For example, you could download and run a [Julia container](https://hub.docker.com/_/julia/) right now if you so wished.
 
-.footnote[&lt;sup&gt;1&lt;/sup&gt; It's possible to build a Docker image on top of proprietary software ([example](https://github.com/mathworks-ref-arch/matlab-dockerfile)). But license restrictions make this complicated. I've rarely seen it done in practice.]
+.footnote[&lt;sup&gt;†&lt;/sup&gt; Building a Docker image on top of proprietary software is tricker and less common due to license restrictions. But it is still possible; see examples [here](https://github.com/mathworks-ref-arch/matlab-dockerfile) and [here](https://github.com/AEADataEditor/docker-stata).]
 
 --
 
@@ -206,14 +248,11 @@ The good news is that R has outstanding Docker support, primarily thanks to the 
 
 ---
 class: inverse, center, middle
-name: examples
-
-# Examples
-&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
-
----
 name: r-base
 
+# Example 1: Base R
+
+---
 # Example 1: Base R
 
 For our first example, let's fire up a simple container that contains little more than a base R installation.
@@ -238,7 +277,7 @@ A quick note on these `docker run` flags:
 
 # Example 1: Base R (cont.)
 
-As promised, here is a GIF of me running the command on my system. The whole thing takes about a minute and takes me directly into an R session.
+As promised, here is a GIF of me running the command on my system. The whole thing takes about a minute and launches directly into an R session.
 
 &lt;img src="pics/docker-r-base.gif" width="75%" style="display: block; margin: auto;" /&gt;
 
@@ -263,14 +302,15 @@ CONTAINER ID   IMAGE           COMMAND   CREATED          STATUS          PORTS 
 
 --
 
-The container ID (here: "1fcdee074beb") is probably the most important bit of information.
-- We'll be using container IDs later in the lecture. For now, just remember that you can grab them with the `$ docker ps` command.
+The container ID (here: `fcdee074beb`) is probably the most important bit of information.
+
+We'll be using container IDs later in the lecture. For now, just remember that you can grab them with the `$ docker ps` command.
 
 ---
 
 # Example 1: Base R (cont.)
 
-Your base R container should have launched directly into R. Feel feel to kick the tyres. Run a regression on the mtcars dataset, do some addition, etc.
+Your base R container should have launched directly into R. Feel feel to kick the tyres. Do some addition, run a regression on the `mtcars` dataset, etc.
 
 --
 
@@ -289,6 +329,7 @@ $ docker ps
 ```
 
 --
+name: shell
 
 BTW, if you don't want to launch directly into your container's R console, you can instead start it in the bash shell.
 
@@ -304,9 +345,37 @@ root@09dda673a187:/# exit
 ```
 
 ---
+class: inverse, center, middle
+name: r-dev
+
+# Example 2: R-dev
+
+---
+
+# Example 2: R-dev
+
+One of Docker's exemplar uses is testing software ahead of time. For example, we can safely test a new version of R in a Docker container before upgrading.
+
+--
+
+In that vein, we can also test the development version of R via the [`rocker/drd`](https://hub.docker.com/r/rocker/drd) image. 
+ - At the time of writing this slide, the release of R version 4.1.0 was just a few days away. So, this provides a convenient way to test drive some of the [new features](https://cran.rstudio.com/) (a native pipe, lambda functions, etc.)
+
+
+```bash
+$ docker run --rm -it rocker/drd
+```
+
+&lt;img src="pics/r-dev-pipe.gif" width="75%" style="display: block; margin: auto;" /&gt;
+
+---
+class: inverse, center, middle
 name: rstudio+
 
-# Example 2: RStudio+
+# Example 3: RStudio+
+
+---
+# Example 3: RStudio+
 
 The Rocker Project works by layering Docker images on top of each other in a [grouped stack](https://github.com/rocker-org/rocker#use-cases). An important group here is the [**versioned**](https://github.com/rocker-org/rocker-versioned2#version-stable-rocker-images-for-r--400) stack.
 
@@ -317,16 +386,17 @@ Allows us to easily spin up different versions of R (3.6.1, 4.0.2, etc), plus ex
 
 ---
 
-# Example 2: RStudio+ (cont.)
+# Example 3: RStudio+ (cont.)
 
 Let's try the [`tidyverse`](https://hub.docker.com/r/rocker/tidyverse) image from this versioned stack, which layers base R + RStudio + tidyverse. I'll specify R 4.0.0 as my base image.
 
 *Again, this next line will take a minute or three to download and extract the first time. But the container will be ready for immediate deployment on your system thereafter.*
 
 ---
+name: tverseinit
 count: false
 
-# Example 2: RStudio+ (cont.)
+# Example 3: RStudio+ (cont.)
 
 Let's try the [`tidyverse`](https://hub.docker.com/r/rocker/tidyverse) image from this versioned stack, which layers base R + RStudio + tidyverse. I'll specify R 4.0.0 as my base image.
 
@@ -353,7 +423,7 @@ name:username
 
 ---
 
-# Example 2: RStudio+ (cont.)
+# Example 3: RStudio+ (cont.)
 
 Unlike, the "r-base" container, this time we aren't immediately taken to our R environment.
 
@@ -384,12 +454,13 @@ So we need to point our browsers to the relevant IP address _plus_ the opened `:
 ]
 
 --
+name: login
 
 So this Windows user would point their browser to http://192.168.99.100:8787.
 
 ---
 
-# Example 2: RStudio+ (cont.)
+# Example 3: RStudio+ (cont.)
 
 Here's the login-in screen that I see when I navigate my browser to the relevant URL.
 
@@ -400,7 +471,7 @@ Sign in with your "rstudio" + "pswd123" credential combination.
 
 ---
 
-# Example 2: RStudio+ (cont.)
+# Example 3: RStudio+ (cont.)
 
 And here I am in RStudio Server running through Docker! (Pro-tip: Hit F11 to go full-screen.)
 
@@ -408,7 +479,7 @@ And here I am in RStudio Server running through Docker! (Pro-tip: Hit F11 to go 
 ---
 count: false
 
-# Example 2: RStudio+ (cont.)
+# Example 3: RStudio+ (cont.)
 
 I can also load the **tidyverse** straight away. (We can ignore those warning messages.)
 
@@ -418,18 +489,20 @@ I can also load the **tidyverse** straight away. (We can ignore those warning me
 
 ---
 
-# Example 2: RStudio+ (cont.)
+# Example 3: RStudio+ (cont.)
 
-To stop this container, open up a new terminal window. Grab the container ID if you've forgotten it with `$ docker ps`. Then run:
+To stop this container, you would grab the container ID (i.e. with `$ docker ps`) and then run:
 
 
 ```bash
 $ docker stop &lt;containerid&gt;
 ```
 
+Please don't do this yet, however! I want to continue using this running container in the next section.
+
 --
 
-&lt;/b&gt;
+&lt;/b&gt;&lt;/br&gt;
 
 **Aside:** Recall that we instantiated this container as a detached/background process (`-d`).
 
@@ -438,14 +511,13 @@ $ docker stop &lt;containerid&gt;
 $ docker run `-d` -p 8787:8787 -e PASSWORD=pswd123 rocker/tidyverse:4.0.0
 ```
 
-If you dropped the `-d` flag and re-ran the above command, your terminal would stay open as an ongoing process. (Try this yourself.)
-- Everything else would remain the same. You'd still navigate to `&lt;IPADDRESS&gt;:8787` to log in, etc.
-- However, I wanted to mention this non-background process version because it offers another way to shut down the container: Simply type `CTRL+c` in the (same, ongoing process) Terminal window. Again, try this yourself.
-- Confirm that the container is stopped by running `$ docker ps`.
+If you dropped the `-d` flag and re-ran the above command, your terminal would stay open as an ongoing process. (Try this for yourself later.)
+- Everything else would stay the same. You'd still log in at `&lt;IPADDRESS&gt;:8787`, etc.
+- However, I wanted to mention this non-background process version because it offers another way to shut down the container: Simply type `CTRL+c` in the (same, ongoing process) Terminal window. Again, try this for yourself later.
 
 ---
 
-# Example 2: RStudio+ (cont.)
+# Example 3: RStudio+ (cont.)
 
 I'll end this example by reiterating the stacked (or _layered_) nature of the Docker workflow. 
 
@@ -456,7 +528,7 @@ To prove this, consider what happens when I instantiate the [`r-ver:4.0.0`](http
 ![](pics/r-dev-4_0_0.png)
 ---
 
-# Example 2: RStudio+ (cont.)
+# Example 3: RStudio+ (cont.)
 
 I'll end this example by reiterating the stacked (or _layered_) nature of the Docker workflow. 
 
@@ -475,7 +547,266 @@ This layered approach is not unique to the Rocker stack. It is integral to Docke
 
 --
 
-We'll return to these ideas at the end of the lecture.
+All of which provides a nice segue to our next section...
+
+---
+class: inverse, center, middle
+name: own
+
+# Write your own Dockerfiles &amp; images
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+
+# Add to an existing container
+
+The easiest way to start writing our own Docker images is by layering on top of existing containers.
+- Remember: Like an [ogre](https://www.youtube.com/watch?v=aJQmVZSAqlc), Docker is all about the layers.
+
+--
+
+Let's see a simple example where we add an R library to our `tidyverse:4.0.0` image. First, make sure that the container is still running. You should see something like:
+
+
+```bash
+$ docker ps
+```
+```bash
+CONTAINER ID   IMAGE                    COMMAND   CREATED         STATUS         PORTS                                       NAMES
+802dbd3841c7   rocker/tidyverse:4.0.0   "/init"   8 minutes ago   Up 8 minutes   0.0.0.0:8787-&gt;8787/tcp, :::8787-&gt;8787/tcp   sweet_maxwell
+
+```
+
+*(If you don't see something like the above, please re-start your container and then log-in to RStudio Server, using the same steps that we saw [previously](#tverseinit).)*
+
+--
+
+Once you are in RStudio, install **data.table** like you would any normal R library.
+- I'm not going to show this with a GIF, but either use RStudio's library installer or run `install.packages("data.table")`.
+
+---
+
+# Add to an existing container (cont.)
+
+Okay, data.table should now be installed on your running container.
+
+**Question:** If you stopped your container and restarted it, would data.table still be there?
+
+--
+
+**Answer:** No! 
+--
+Remember, the whole point of Docker is to always start from the same pristine state.
+
+--
+
+So, we have to commit these changes as part of a new (different) pristine state. The good news is that this is going to look very similar to our Git workflow. 
+
+I'm going to show you how on the next slide to keep everything in one place...
+
+---
+
+# Add to an existing container (cont.)
+
+**Step 1:** Run `docker ps` to ID the running container. We've already done this, but still...
+
+
+```bash
+$ docker ps
+```
+```bash
+CONTAINER ID   IMAGE                    COMMAND   CREATED         STATUS         PORTS                                       NAMES
+802dbd3841c7   rocker/tidyverse:4.0.0   "/init"   8 minutes ago   Up 8 minutes   0.0.0.0:8787-&gt;8787/tcp, :::8787-&gt;8787/tcp   sweet_maxwell
+
+```
+--
+
+**Step 2.** Grab the container ID (in my case: `802dbd3841c7`). We're going to use this to commit our changes and create a new Docker image, which I'll call `tidyverse_dt`.
+
+
+```bash
+$  docker commit -m "tidverse + data.table" 802dbd3841c7 tidyverse_dt:4.0.0
+```
+
+Again, this should feel _very_ familiar to our Git workflow. We even wrote ourselves a helpful commit message. Note that I added a version tag (i.e. `:4.0.0`). This is optional, but good practice. Here, I'm reminding myself that I've built on top of the R 4.0.0 versioned stack.
+
+--
+
+**Step 3.** Profit. (There's no step 3. Just confirm for yourself that your image has been created.)
+
+
+```bash
+$ docker images
+```
+
+---
+
+# Adding things outside of R?
+
+For the simple example on the previous slide, we installed a single R package. But the process would work exactly the same if we did any other operations from within R(studio).
+
+- Install multiple packages
+- Save datasets, scripts, figures, etc.
+
+--
+
+**Question:** What happens if we want to install/update something outside of R(Studio)? Say, Ubuntu system libraries or another program like Python?
+
+--
+
+**Answer:** It still works exactly the same. You just have to add things through your container's bash shell. Either:
+
+- Launch directly into the shell to start with (remember: [here](#shell)). Or,
+
+- Use [`docker exec`](https://docs.docker.com/engine/reference/commandline/exec/) to open the shell of a running container. For example:
+
+&lt;p span style="font-family:Fira Code; font-size:80%; color: #333; background: #f8f8f8; padding: 0.5em;";&gt;
+$ docker exec -it 802dbd3841c7 bash
+&lt;/br&gt;
+root@802dbd3841c7:/# apt update -y &amp;&amp; apt install htop
+&lt;/br&gt;
+root@802dbd3841c7:/# htop &lt;span class="hljs-comment"&gt;## Show all available CPU cores. Press 'q' to quit.&lt;/span&gt;
+&lt;/span&gt;
+
+--
+
+(Obviously, you'd now have to commit this change to add `htop` to your image.)
+
+---
+
+# Aside: Stop your container(s)
+
+Okay, now is a good time to stop your container if you haven't done so already. Grab your container ID and run:
+
+
+```bash
+$ docker stop &lt;container-id&gt;
+```
+
+Alternatively, you can stop all running containers with the following command:
+
+
+```bash
+$ docker stop $(docker ps -q)
+```
+
+---
+
+# Write your own Dockerfile
+
+The interactive approach to building Docker images &amp;mdash; i.e. committing changes to a running container &amp;mdash; is a convenient way to get up and running quickly. However, at some point you'll probably want to start writing your own `Dockerfiles`.
+
+- Remember: `Dockerfiles` are the "sheet music" of the whole operation. These are simple text files that provide the full set of (shell) instructions for building our Docker images.
+
+--
+
+There is a whole host of [commands and considerations](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/) for writing `Dockerfiles` &amp;mdash; all of which I am going to skip for this lecture. (We simply don't have the time.)
+
+--
+
+BUT... I will briefly say that the Rocker Project again has our backs with a bunch of [ready-made scripts](https://github.com/rocker-org/rocker-versioned2#modifying-and-extending-images-in-the-new-architecture) for building on and extending their Docker images. 
+
+--
+
+For example, if we wanted to modify the `r-ver4.0.0` image so that it also included Python, our Dockerfile would be as simple as the following two lines:
+
+```bash
+FROM rocker/r-ver:4.0.0
+RUN /rocker_scripts/install_python.sh
+```
+
+.pull-right[*(Continues on next slide.)*]
+
+---
+
+# Write your own Dockerfile (cont.)
+
+```bash
+FROM rocker/r-ver:4.0.0
+RUN /rocker_scripts/install_python.sh
+```
+--
+
+Try this yourself by creating a file called `Dockerfile`&lt;sup&gt;†&lt;/sup&gt; comprising the above lines.
+
+.footnote[&lt;sup&gt;†&lt;/sup&gt;Every `Dockerfile` is called exactly that. Only one `Dockerfile` is allowed per (sub) directory.]
+
+--
+
+Next, build your Docker image from this `Dockerfile` using the following shell command. I'm going to call my image `r_py` and give it the "4.0.0" version stamp (both choices being optional). **Important:** Make sure that your shell/terminal is in the same directory as the `Dockerfile`when you run this command.
+
+
+```bash
+$ # docker build --tag &lt;name&gt;:&lt;version&gt; &lt;directory&gt;
+$ docker build --tag r_py:4.0.0 . 
+```
+
+--
+
+This will take a minute to pull everything in. But your `r_py` image with be ready for immediate deployment thereafter, and now includes Python and [reticulate](https://rstudio.github.io/reticulate/).
+
+
+```bash
+$ docker run -it --rm r_py:4.0.0
+```
+
+---
+
+# Write your own Dockerfile (cont.)
+
+Okay, one last tip about writing your own Dockerfiles. Let's say we wanted to add an R package (e.g. data.table) to our `r_py` image at build time. How could we do this?
+
+--
+
+Well, remember that Dockerfiles are (basically) just a set of shell instructions. So we can tell our Dockerfile to install an R package via an appropriate bash command like `Rscript`.&lt;sup&gt;†&lt;/sup&gt;
+- We also need to pre-pend any bash command with the special Docker verb `RUN`.
+
+.footnote[&lt;sup&gt;†&lt;/sup&gt; We covered `Rscript` back in the [shell lecture](https://raw.githack.com/uo-ec607/lectures/master/03-shell/03-shell.html#rscript).]
+
+--
+
+Our Dockerfile thus becomes:
+
+```bash
+FROM rocker/r-ver:4.0.0
+RUN /rocker_scripts/install_python.sh
+RUN R -e "install.packages('data.table')"
+```
+--
+
+If you build this image you'll see that it completes almost instantly... because the first two lines (i.e. layers) have already been cached. Clever!
+
+---
+
+# Automated Dockerfiles
+
+Say that you have an existing research project or repo. Is there an easy way to write a Dockerfile / Docker image based on the contents?
+
+**Answer:** Yes!
+
+I don't have time to go into details, but automated Docker tools include:
+
+- [`containerit`](https://o2r.info/containerit/)
+
+- [`repo2docker`](https://repo2docker.readthedocs.io/en/latest/)
+
+Check them out. (I have a small `containerit` demo [here](https://github.com/grantmcdermott/containerit-demo).)
+
+---
+
+# Docker Hub: Share your Docker images
+
+So, you've written a cool Dockerfile that you want to share with world. What next?
+
+--
+
+You can share your Dockerfiles and images in various ways.
+
+- For my research projects, I add a Dockerfile to the companion GitHub repo. This provides a convenient way for others to reproduce the (potentially complex) computing environment that I used for conducting my analysis. (Example [here](https://github.com/grantmcdermott/sceptic-priors#docker).)
+
+
+The most popular way to share Docker images is by hosting them on [**Docker Hub**](https://hub.docker.com/).
+- I'm not going to show you how to do that here. But the good news is that it's very straightforward. See [here](https://jsta.github.io/r-docker-tutorial/04-Dockerhub.html) for a quick walkthrough.
 
 ---
 class: inverse, center, middle
@@ -486,9 +817,29 @@ name: share
 
 ---
 
+# Prep: Stop all running containers
+
+
+*This next section is all about sharing files and folders between your computer and a container. To avoid unexpected behaviour, it would be best to stop all running containers before proceeding.*
+
+
+```bash
+$ docker stop $(docker ps -q)
+```
+
+--
+
+&lt;/br&gt;&lt;/br&gt;
+
+*You should be good to continue now...*
+
+---
+
 # Share files by mounting volumes
 
 Each container runs in a sandboxed environment and cannot access other files and directories on your computer unless you give it explicit permission.
+
+--
 
 To share files with a container, the `-v` (mount volume) flag is your friend. 
 - Adopts a **LHS:RHS** convention, where LHS = `path/on/your/computer/` and RHS = `path/on/the/container`.
@@ -509,7 +860,7 @@ $   -d -p 8787:8787 -e PASSWORD=pswd123 rocker/tidyverse:4.0.0
 
 &lt;/br&gt;
 
-PS &amp;mdash; I'll get back to specifying the correct RHS path in a couple slides.
+PS &amp;mdash; I'll get back to specifying the correct RHS path in a couple of slides.
 
 ---
 
@@ -550,8 +901,9 @@ In the previous example, I specified the RHS mount point as `/home/rstudio/coolp
 
 --
 
-The short answer is that `/home/rstudio` is the default user's home directory for images in the RStudio+ stack. If you're running a container from this stack, you should almost always start your RHS with this path root.
-- Exception: If you assigned a different default user than "rstudio" ([back here](#username)). 
+The short answer is that `/home/rstudio` is the default user's home directory for images in the RStudio+ stack. If you're running a container from this stack, you should almost always start your RHS with this path root.&lt;sup&gt;†&lt;/sup&gt;
+
+.footnote[&lt;sup&gt;†&lt;/sup&gt; Exception: If you assigned a different default user than "rstudio" ([back here](#username)).] 
 
 --
 
@@ -641,7 +993,7 @@ Recall that Docker makes heavy used of cached layers to speed up build times.
 I mention this because, while the `docker rmi` command normally works great, it doesn't necessarily handle "dangling" images or build caches.
 - Basically, intermediate objects that are no longer being used.
 
-This should not matter much for the examples that we've seen today. But, again, these dangling items can waste quite a bit of disk space once you've been building your own Dockerfiles for a while.
+This should not matter much for the examples that we've seen today. But these dangling images can waste quite a bit of disk space once you've been building your own Dockerfiles for a while.
 
 --
 
@@ -668,22 +1020,22 @@ name: conclusions
 Docker makes it easy to configure and share software environments.
 - A self-contained "box" with everything needed to run a project or application.
 - If it runs on your machine, it will run on my machine.
-- Great for testing, reproducibility and deployment.
+- Great for reproducibility, testing, and deployment.
 
 Terminology analogy
 - Dockerfile = sheet music
 - Docker image = MP3 recording
-- Container = MP3 being played on my computer, phone, etc.
+- Container = MP3 being played on my phone, etc.
 
-R users are spoilt, thanks to the Rocker Project.
-- Easy to build our own Dockerfiles on top of this (or from scratch) if we want.
-
-Example (interactive terminal running base R 4.0.0)
+R users are spoilt, thanks to the Rocker Project. Easy to build our own Dockerfiles on top of this, or from scratch if we want.
+- Example (interactive terminal running base R 4.0.0)
 
 
 ```bash
 $ docker run -it --rm rocker/r-ver:4.0.0
 ```
+
+*(See next slide for a list of key commands.)*
 
 ---
 
@@ -699,7 +1051,7 @@ $ docker run -it --rm rocker/r-ver:4.0.0
   
 - `docker ps` list of currently running containers
 
-- `docker stop &lt;containerids&gt;` stop one or more running containers
+- `docker stop &lt;container-ids&gt;` stop one or more running containers
 
 - `docker images` list all installed images
 
@@ -714,6 +1066,7 @@ $ docker run -it --rm rocker/r-ver:4.0.0
 ### Documentation
 
 - [Rocker website](https://www.rocker-project.org/)
+- [R Journal article (Nüst et. al., 2020)](https://journal.r-project.org/archive/2020/RJ-2020-007/index.html)
 - [Docker documentation](https://docs.docker.com/)
 
 ### Tutorials
@@ -721,12 +1074,30 @@ $ docker run -it --rm rocker/r-ver:4.0.0
 - [Using R via Rocker](https://dirk.eddelbuettel.com/papers/cologneRUG2020.pdf) (Excellent overview and slidedeck from Dirk Eddelbuettel, one of the originators of the Rocker Project.)
 - [Using Docker for Data Science](https://www.robertmylesmcdonnell.com/content/posts/docker/) (Very thorough walkthrough, with a focus on composing your own Dockerfiles from scratch.)
 - [ROpenSci Docker Tutorial](http://ropenscilabs.github.io/r-docker-tutorial) (Another detailed and popular tutorial, albeit outdated in parts.)
+- [Introduction to Docker](https://carpentries-incubator.github.io/docker-introduction/index.html) (Yet another comprehensive tutorial available from The Carpentries Incubator.)
 
 ---
-class: inverse, center, middle
+name: toc2
 
-# Next class: Google Compute Engine
-&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+# Table of contents
+
+1. [Prologue](#prologue)
+
+2. [Docker 101](#intro)
+
+3. [Examples](#examples)
+  
+  - [Base R](#r-base)
+  - [R-dev](#r-dev)
+  - [RStudio+](#rstudio+)
+
+4. [Write your own Dockerfiles &amp; images](#own)
+
+5. [Sharing files with a container](#share)
+
+6. [Cleaning up](#clean)
+
+7. [Conclusions](#conclusions)
 
 
 

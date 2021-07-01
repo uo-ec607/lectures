@@ -7,7 +7,7 @@ author:
 # date: Lecture 6  #"`r format(Sys.time(), '%d %B %Y')`"
 output: 
   html_document:
-    theme: flatly
+    theme: journal
     highlight: haddock
     # code_folding: show
     toc: yes
@@ -54,23 +54,25 @@ It's important to note that "base" R already provides all of the tools we need f
 - New: **fixest**, **estimatr**, **ivreg**, **sandwich**, **lmtest**,  **mfx**, **margins**, **broom**, **modelsummary**, **vtable**
 - Already used: **tidyverse**, **hrbrthemes**, **listviewer**
 
-Note that I'm using **ivreg** 0.6.0, which must be installed as the [development version](https://john-d-fox.github.io/ivreg/news/index.html) as of the time of writing. A convenient way to install (if necessary) and load everything is by running the below code chunk.
+A convenient way to install (if necessary) and load everything is by running the below code chunk.
 
 ```{r libs_print, cache=FALSE, eval=FALSE}
-## Install development version of ivreg if necessary
-if (numeric_version(packageVersion("ivreg")) < numeric_version("0.6.0")) {
-  remotes::install_github("john-d-fox/ivreg")
-}
 ## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(mfx, tidyverse, hrbrthemes, estimatr, ivreg, fixest, sandwich, lmtest, margins, vtable, broom, modelsummary)
+pacman::p_load(mfx, tidyverse, hrbrthemes, estimatr, ivreg, fixest, sandwich, 
+               lmtest, margins, vtable, broom, modelsummary)
+
+## Make sure we have at least version 0.6.0 of ivreg
+if (numeric_version(packageVersion("ivreg")) < numeric_version("0.6.0")) install.packages("ivreg")
+
 ## My preferred ggplot2 plotting theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
 ```{r libs, cache=FALSE, message=FALSE, echo=FALSE}
 ## Load and install the packages that we'll be using today
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(mfx, tidyverse, hrbrthemes, estimatr, ivreg, fixest, sandwich, lmtest, margins, vtable, broom, modelsummary, kableExtra)
+pacman::p_load(mfx, tidyverse, hrbrthemes, estimatr, ivreg, fixest, sandwich, 
+               lmtest, margins, vtable, broom, modelsummary, kableExtra)
 ## My preferred ggplot2 plotting theme (optional)
 theme_set(hrbrthemes::theme_ipsum())
 ```
@@ -94,17 +96,12 @@ R's workhorse command for running regression models is the built-in `lm()` funct
 lm(y ~ x1 + x2 + x3 + ..., data = df)
 ```
 
-You'll note that the `lm()` call includes a reference to the data source (in this case, a hypothetical data frame called `df`). We covered this in our earlier lecture on R language basics and object-orientated programming, but the reason is that many objects (e.g. data frames) can exist in your R environment at the same time. So we need to be specific about where our regression variables are coming from --- even if `df` is the only data frame in our global environment at the time. Another option would be to use indexing, but I find it a bit verbose:
-
-```r
-lm(df$y ~ df$x1 + df$x2 + df$x3 + ...)
-```
+You'll note that the `lm()` call includes a reference to the data source (in this case, a hypothetical data frame called `df`). We [covered this](https://raw.githack.com/uo-ec607/lectures/master/04-rlang/04-rlang.html#global_env) in our earlier lecture on R language basics and object-orientated programming, but the reason is that many objects (e.g. data frames) can exist in your R environment at the same time. So we need to be specific about where our regression variables are coming from --- even if `df` is the only data frame in our global environment at the time. 
 
 Let's run a simple bivariate regression of mass on height using our dataset of starwars characters.
 
 ```{r ols1}
 ols1 = lm(mass ~ height, data = starwars)
-# ols1 = lm(starwars$mass ~ starwars$height) ## Also works
 ols1
 ```
 
@@ -202,7 +199,7 @@ The overall model fit is much improved by the exclusion of this outlier, with R<
 
 Dealing with statistical irregularities (heteroskedasticity, clustering, etc.) is a fact of life for empirical researchers. However, it says something about the economics profession that a random stranger could walk uninvited into a live seminar and ask, "How did you cluster your standard errors?", and it would likely draw approving nods from audience members. 
 
-The good news is that there are *lots* of ways to get nonstandard errors in R. For many years, these have been based on the excellent **sandwich** package ([link](https://cran.r-project.org/web/packages/sandwich/index.html)). However, my preferred way these days is to use the **estimatr** package ([link](https://declaredesign.org/r/estimatr/articles/getting-started.html)), which is both fast and provides convenient aliases for the standard regression functions. Some examples follow below. 
+The good news is that there are *lots* of ways to get nonstandard errors in R. For many years, these have been based on the excellent **sandwich** package ([link](http://sandwich.r-forge.r-project.org/articles/sandwich.html)). However, here I'll demonstrate using the **estimatr** package ([link](https://declaredesign.org/r/estimatr/articles/getting-started.html)), which is both fast and provides convenient aliases for the standard regression functions. Some examples follow below. 
 
 ### Robust standard errors
 
@@ -235,7 +232,7 @@ On thing I want to flag is that **estimatr** does not yet offer support for HAC 
 sqrt(diag(NeweyWest(ols1))) ## Print the HAC SEs
 ```
 
-If you plan to use HAC SEs for inference, then I recommend converting the model object with `lmtest::coeftest()`. This function builds on **sandwich** and provides a convenient way to do on-the-fly hypothesis testing with your model, swapping out a wide variety of alternate variance-covariance (VCOV) matrices. These alternate VCOV matrices could extended way beyond HAC --- including HC, clustered, bootsrapped, etc. --- but here's how it would work for the present case:
+If you plan to use HAC SEs for inference, then I recommend converting the model object with `lmtest::coeftest()`. This function builds on **sandwich** and provides a convenient way to do [on-the-fly](https://grantmcdermott.com/better-way-adjust-SEs/) hypothesis testing with your model, swapping out a wide variety of alternate variance-covariance (VCOV) matrices. These alternate VCOV matrices could extended way beyond HAC --- including HC, clustered, bootstrapped, etc. --- but here's how it would work for the present case:
 
 ```{r ols1_hac}
 # library(lmtest) ## Already loaded
@@ -260,14 +257,13 @@ lm_robust(mass ~ height, data = starwars, clusters = homeworld)
 
 ## Dummy variables and interaction terms
 
-For the next few sections, it will prove convenient to demonstrate using a subsample of the starwars data that comprises only the human characters. Let's quickly create this new dataset before continuing. Note that I'm creating a factored (i.e. ordered) version of the "gender" variable, since I want to demonstrate some general principles about factors in the paragraphs that follow.
+For the next few sections, it will prove convenient to demonstrate using a subsample of the starwars data that comprises only the human characters. Let's quickly create this new dataset before continuing.
 
 ```{r humans}
 humans = 
   starwars %>% 
   filter(species=="Human") %>%
-  mutate(gender_factored = as.factor(gender)) %>% ## create factored version of "gender"
-  select(contains("gender"), everything())
+  select(where(Negate(is.list))) ## Drop list columns (optional)
 humans
 ```
 
@@ -275,13 +271,13 @@ humans
 
 Dummy variables are a core component of many regression models. However, these can be a pain to create in some statistical languages, since you first have to tabulate a whole new matrix of binary variables and then append it to the original data frame. In contrast, R has a very convenient framework for creating and evaluating dummy variables in a regression: Simply specify the variable of interest as a [factor](https://r4ds.had.co.nz/factors.html).^[Factors are variables that have distinct qualitative levels, e.g. "male", "female", "hermaphrodite", etc.]
 
-Here's an example using the "gendered_factored" variable that we explicitly created earlier. Since I don't plan on reusing this model, I'm just going to print the results to screen rather than saving it to my global environment.
+Here's an example where we explicitly tell R that "gender" is a factor. Since I don't plan on reusing this model, I'm just going to print the results to screen rather than saving it to my global environment.
 
 ```{r ols_dv}
-summary(lm(mass ~ height + gender_factored, data = humans))
+summary(lm(mass ~ height + as.factor(gender), data = humans))
 ```
 
-Okay, I should tell you that I'm actually making things more complicated than they need to be with the heavy-handed emphasis on factors. R is "friendly" and tries to help whenever it thinks you have misspecified a function or variable. While this is something to be [aware of](https://rawgit.com/grantmcdermott/R-intro/master/rIntro.html#r_tries_to_guess_what_you_meant), normally It Just Works<sup>TM</sup>. A case in point is that we don't actually *need* to specify a string (i.e. character) variable as a factor in a regression. R will automatically do this for you regardless, since it's the only sensible way to include string variables in a regression.
+Okay, I should tell you that I'm actually making things more complicated than they need to be with the heavy-handed emphasis on factors. R is "friendly" and tries to help whenever it thinks you have misspecified a function or variable. While this is something to be [aware of](https://rawgit.com/grantmcdermott/R-intro/master/rIntro.html#r_tries_to_guess_what_you_meant), normally It Just Works^TM^. A case in point is that we don't actually *need* to specify a string (i.e. character) variable as a factor in a regression. R will automatically do this for you regardless, since it's the only sensible way to include string variables in a regression.
 
 ```{r ols_dv2}
 ## Use the non-factored version of "gender" instead; R knows it must be ordered
@@ -292,13 +288,13 @@ summary(lm(mass ~ height + gender, data = humans))
 
 ### Interaction effects
 
-Like dummy variables, R provides a convenient syntax for specifying interaction terms directly in the regression model without having to create them manually beforehand.^[Although there are very good reasons that you might want to modify your parent variables before doing so (e.g. centering them). As it happens, I'm [on record](https://twitter.com/grant_mcdermott/status/903691491414917122) as stating that interaction effects are most widely misunderstood and misapplied concept in econometrics. However, that's a topic for another day. (Read the paper in the link!)] You can use any of the following expansion operators:
+Like dummy variables, R provides a convenient syntax for specifying interaction terms directly in the regression model without having to create them manually beforehand.^[Although there are very good reasons that you might want to modify your parent variables before doing so (e.g. centering them). As it happens, I'm [on record](https://twitter.com/grant_mcdermott/status/903691491414917122) as stating that interaction effects are most widely misunderstood and misapplied concept in econometrics. However, that's a topic for another day.] You can use any of the following expansion operators:
 
 - `x1:x2` "crosses" the variables (equivalent to including only the x1 × x2 interaction term)
 - `x1/x2` "nests" the second variable within the first (equivalent to `x1 + x1:x2`; more on this [later](#nestedmarg))
 - `x1*x2` includes all parent and interaction terms (equivalent to `x1 + x2 + x1:x2`) 
 
-As a rule of thumb, albeit [not always](#nestedmarg), it is generally advisable to include all of the parent terms alongside their interactions. This makes the `*` option a good default. 
+As a rule of thumb, if [not always](#nestedmarg), it is generally advisable to include all of the parent terms alongside their interactions. This makes the `*` option a good default. 
 
 For example, we might wonder whether the relationship between a person's body mass and their height is modulated by their gender. That is, we want to run a regression of the form,
 
@@ -316,9 +312,9 @@ summary(ols_ie)
 
 ### Fixed effects with the **fixest** package
 
-The simplest (and least efficient) way to include fixed effects in a regression model is, of course, to use dummy variables. However, it isn't very efficient or scalable. What's the point learning all that stuff about the [Frisch-Waugh-Lovell](https://en.wikipedia.org/wiki/Frisch%E2%80%93Waugh%E2%80%93Lovell_theorem), within-group transformations, etc. etc. if we can't use them in our software routines? Again, there are several options to choose from here. For example, many of you are probably familiar with the excellent **lfe** package ([link](https://cran.r-project.org/web/packages/lfe/index.html)), which offers near-identical functionality to the popular Stata library, **reghdfe** ([link](http://scorreia.com/software/reghdfe/)). However, for fixed effects models in R, I am going to advocate that you take a look at the **fixest** package ([link](https://github.com/lrberge/fixest)).
+The simplest (and least efficient) way to include fixed effects in a regression model is, of course, to use dummy variables. However, it isn't very efficient or scalable. What's the point learning all that stuff about the [Frisch-Waugh-Lovell](https://en.wikipedia.org/wiki/Frisch%E2%80%93Waugh%E2%80%93Lovell_theorem), within-group transformations, etc. etc. if we can't use them in our software routines? Again, there are several options to choose from here. For example, many of you are probably familiar with the excellent **lfe** package ([link](https://cran.r-project.org/web/packages/lfe/index.html)), which offers near-identical functionality to the popular Stata library, **reghdfe** ([link](http://scorreia.com/software/reghdfe/)). However, for fixed effects models in R, I am going to advocate that you look no further than the **fixest** package ([link](https://lrberge.github.io/fixest)).
 
-**fixest** is relatively new on the scene and has quickly become one of my packages in the entire R catalogue. It has a boatload of functionality built in to it: support for nonlinear models, high-dimensional fixed effects, multiway clustering, etc. It is also insanely fast... as in, up to [*orders of magnitude*](https://github.com/lrberge/fixest#benchmarking) faster than **lfe** or **reghdfe**. I won't be able to cover all of **fixest**'s features in depth here --- see the [introductory vignette](https://cran.r-project.org/web/packages/fixest/vignettes/fixest_walkthrough.html) for a thorough walkthrough --- but I hope to least give you a sense of why I am so enthusiastic about it. Let's start off with a simple example before moving on to something a little more demanding.
+**fixest** is relatively new on the scene and has quickly become one of my absolute favourite packages. It has an *boatload* of functionality built in to it: support for nonlinear models, high-dimensional fixed effects, multiway clustering, multi-model estimation, LaTeX tables, etc, etc. It is also insanely fast... as in, up to [orders of magnitude](https://lrberge.github.io/fixest/#benchmarking) faster than **lfe** or **reghdfe**. I won't be able to cover all of **fixest**'s features in depth here --- see the [introductory vignette](https://lrberge.github.io/fixest/articles/fixest_walkthrough.html) for a thorough walkthrough --- but I hope to least give you a sense of why I am so enthusiastic about it. Let's start off with a simple example before moving on to something slightly more demanding.
 
 #### Simple FE model
 
@@ -331,13 +327,34 @@ ols_fe = feols(mass ~ height | species, data = starwars) ## Fixed effect(s) go a
 ols_fe
 ```
 
-Note that the resulting model object has automatically clustered the standard errors by the fixed effect variable (i.e. species). We'll explore some more options for adjusting standard errors in **fixest** objects shortly, but you can specify vanilla standard errors simply by calling the `se` argument in `summary.fixest()` as follows.
+Note that the resulting model object has automatically clustered the standard errors by the fixed effect variable (i.e. species). We'll explore some more options for adjusting standard errors in **fixest** objects shortly. But to preview things, you can specify the standard errors you want at estimation time... or you can adjust the standard errors for any existing model via `summary.fixest()`. For example, here are two equivalent ways to specify vanilla (iid) standard errors:
 
-```{r ols_fe_standard}
-summary(ols_fe, se = 'standard')
+:::::: {.columns}
+::: {.column width="48%" data-latex="{0.48\textwidth}"}
+Specify SEs at estimation time.
+
+```{r ols_fe_standard_et, message=FALSE}
+feols(mass ~ height | species, 
+      data = starwars, se = 'standard')
 ```
+:::
 
-Before continuing, let's quickly save a "tidied" data frame of the coefficients for later use. I'll use vanilla standard errors again, if only to show you that the `broom::tidy()` method for `fixest` objects also accepts an `se` argument. This basically just provides another convenient way for you to adjust standard errors for your models on the fly.
+::: {.column width="4%" data-latex="{0.04\textwidth}"}
+\ <!-- an empty Div (with a white space), serving as a column separator -->
+:::
+
+::: {.column width="48%" data-latex="{0.48\textwidth}"}
+Adjust SEs of an existing model (`ols_fe`) on the fly.
+
+```{r ols_fe_standard_otf}
+summary(ols_fe, 
+        se = 'standard')
+```
+:::
+::::::
+\ <!-- an empty Div again to give some extra space before the next block -->
+
+Before continuing, let's quickly save a "tidied" data frame of the coefficients for later use. I'll use iid standard errors again, if only to show you that the `broom::tidy()` method for `fixest` objects also accepts an `se` argument. This basically just provides another convenient way for you to adjust standard errors for your models on the fly.
 
 ```{r coefs_fe}
 # coefs_fe = tidy(summary(ols_fe, se = 'standard'), conf.int = TRUE) ## same as below
@@ -350,22 +367,49 @@ As I already mentioned above, **fixest** supports (arbitrarily) high-dimensional
 
 ```{r ols_hdfe, message = FALSE}
 ## We now have two fixed effects: species and homeworld
-ols_hdfe = feols(mass ~ height |  species + homeworld, data = starwars)
+ols_hdfe = feols(mass ~ height | species + homeworld, data = starwars)
 ols_hdfe
 ```
 
-Easy enough, but the standard errors of the above model are automatically clustered by species, i.e. the first fixed effect variable. Let's go a step further and cluster by both "species" and "homeworld". ^[I most definitely am not claiming that this is a particularly good or sensible clustering strategy, but just go with it.] We can do this using either the `se` or `cluster` arguments of `summary.fixest()`. I'll (re)assign the model to the same `ols_hdfe` object, but you could, of course, create a new object if you so wished.
+Easy enough, but the standard errors of the above model are automatically clustered by species, i.e. the first fixed effect variable. Let's go a step further and cluster by both "species" and "homeworld". ^[I make no claims to this is a particularly good or sensible clustering strategy, but just go with it.] **fixest** provides several ways for us to do this --- via the `se` or `cluster` arguments --- and, again, you can specify your clustering strategy at estimation time, or adjust the standard errors of an existing model on-the-fly. I'll (re)assign the model to the same `ols_hdfe` object, but you could, of course, create a new object if you so wished.
 
 ```{r ols_hdfe_twoway}
 ## Cluster by both species and homeworld
-# ols_hdfe = summary(ols_hdfe, se = 'twoway') ## Same effect as the next line
-ols_hdfe = summary(ols_hdfe, cluster = c('species', 'homeworld'))
+
+## These next few lines all do the same thing. Pick your favourite!
+
+## Specify desired SEs at estimation time...
+# ols_hdfe = feols(mass ~ height | species + homeworld, se = 'twoway', data = starwars)
+# ols_hdfe = feols(mass ~ height | species + homeworld, cluster = c('species', 'homeworld'), data = starwars)
+# ols_hdfe = feols(mass ~ height | species + homeworld, cluster = ~ species + homeworld, data = starwars)
+# 
+##... or, adjust the SEs of an existing model on the fly
+# ols_hdfe = summary(ols_hdfe, se = 'twoway')
+# ols_hdfe = summary(ols_hdfe, cluster = c('species', 'homeworld'))
+ols_hdfe = summary(ols_hdfe, cluster = ~ species + homeworld) ## I'll go with this one
+
 ols_hdfe
 ```
 
 #### Comparing our model coefficients
 
-**fixest** provides an inbuilt `coefplot()` function for plotting estimation results. This is especially useful for tracing the evolution of treatment effects over time. (Take a look [here](https://cran.r-project.org/web/packages/fixest/vignettes/fixest_walkthrough.html#23_adding_interactions:_yearly_treatment_effect).) When it comes to comparing coefficients across models, however, I often like to do this "manually" with **ggplot2**. Consider the below example, which leverages the fact that we have saved (or can save) regression models as data frames with `broom::tidy()`. As I suggested earlier, this makes it very easy to construct our own bespoke coefficient plots.
+We'll get to [model presentation](https://raw.githack.com/uo-ec607/lectures/master/08-regression/08-regression.html#Presentation) at the very end of the lecture. For now, I want to quickly flag that **fixest** provides some really nice, built-in functions for comparing models. For example, you can get regression tables with [`fixest::etable()`](https://lrberge.github.io/fixest/articles/exporting_tables.html).
+
+```{r etable}
+etable(ols_fe, ols_hdfe)
+```
+
+Similarly, the [`fixest::coefplot()`](https://lrberge.github.io/fixest/reference/coefplot.html) function for plotting estimation results:
+
+```{r coefplot}
+coefplot(list(ols_fe, ols_hdfe))
+
+## Add legend (optional)
+legend("bottomleft", col = 1:2, lwd = 1, pch = c(20, 17),
+       legend = c("FE and no clustering", "HDFE and twoway clustering"))
+```
+
+`coefplot()` is especially useful for tracing the evolution of treatment effects over time, as in a difference-in-differences setup (see [Examples](https://lrberge.github.io/fixest/reference/coefplot.html#examples)). However, I realise some people may find it a bit off-putting that it produces base R plots, rather than a **ggplot2** object. We'll get to an automated **ggplot2** coefficient plot solution further below with `modelsummary::modelplot()`. Nevertheless, let me close this out this section by demonstrating the relative ease with which you can do this "manually". Consider the below example, which leverages the fact that we have saved (or can save) regression models as data frames with `broom::tidy()`. As I suggested earlier, this makes it simple to construct our own bespoke coefficient plots.
 
 ```{r fe_mods_compared}
 # library(ggplot2) ## Already loaded
@@ -393,11 +437,11 @@ FWIW, we'd normally expect our standard errors to blow up with clustering. Here 
 
 #### Aside on standard errors
 
-We've now seen some of the different options that **fixest** has for specifying different error structures. In short, run your model and then use either the `se` or `cluster` arguments in `summary.fixest()` (or `broom::tidy()`) if you aren't happy with the default clustering choice. There are two additional points that I want to draw your attention to.
+We've now seen the various options that **fixest** has for specifying different standard error structures. In short, you invoke either of the `se` or `cluster` arguments. Moreover, you can choose to do so either at estimation time, or by adjusting the standard errors for an existing model post-estimation (e.g. with `summary.fixest(mod, cluster = ...)`). There are two additional points that I want to draw your attention to.
 
-First, if you're coming from another statistical language or package, adjusting the standard errors after the fact rather than in the original model call may seem slightly odd. But this behaviour is actually extremely powerful, because it allows us to analyse the effect of different error structures *on-the-fly* without having to rerun the entire model again. **fixest** is already the fastest game in town, but just think about the implied timesavings for really large models.^[To be clear, adjusting the standard errors via, say, `summary.fixest()` completes instantaneously. It's a testament to how well the package is put together and the [novel estimation method](https://wwwen.uni.lu/content/download/110162/1299525/file/2018_13) that Laurent (the package author) has derived.]
+First, if you're coming from another statistical language, adjusting the standard errors post-estimation (rather than always at estimation time) may seem slightly odd. But this behaviour is actually extremely powerful, because it allows us to analyse the effect of different error structures *on-the-fly* without having to rerun the entire model again. **fixest** is already the fastest game in town, but just think about the implied time savings for really large models.^[To be clear, adjusting the standard errors via, say, `summary.fixest()` completes instantaneously.] I'm a huge fan of the flexibility, safety, and speed that on-the-fly standard error adjustment offers us. I even wrote a whole [blog post](https://grantmcdermott.com/better-way-adjust-SEs/) about it if you'd like to read more.
 
-Second, reconciling standard errors across different software is a much more complicated process than you may realise. There are a number of unresolved theoretical issues to consider --- especially when it comes to multiway clustering --- and package maintainers have to make a number of arbitrary decisions about the best way to account for these. See [here](https://github.com/sgaure/lfe/issues/1#issuecomment-530643808) for a detailed discussion. Luckily, Laurent (the package author) has taken the time to write out a [detailed vignette](https://cran.r-project.org/web/packages/fixest/vignettes/standard_errors.html) about how to replicate standard errors from other methods and software packages.^[If you want a deep dive into the theory with even more simulations, then [this paper](https://cran.r-project.org/web/packages/sandwich/vignettes/sandwich-CL.pdf) by the authors of the **sandwich** paper is another excellent resource.]
+Second, reconciling standard errors across different software is a much more complicated process than you may realise. There are a number of unresolved theoretical issues to consider --- especially when it comes to multiway clustering --- and package maintainers have to make a number of arbitrary decisions about the best way to account for these. See [here](https://github.com/sgaure/lfe/issues/1#issuecomment-530643808) for a detailed discussion. Luckily, Laurent (the **fixest** package author) has taken the time to write out a [detailed vignette](https://lrberge.github.io/fixest/articles/standard_errors.html) about how to replicate standard errors from other methods and software packages.^[If you want a deep dive into the theory with even more simulations, then [this paper](http://sandwich.r-forge.r-project.org/articles/jss_2020.html) by the authors of the **sandwich** paper is another excellent resource.]
 
 ### Random and mixed effects
 
@@ -531,7 +575,13 @@ To run a generalised linear model (GLM), we use the in-built `glm()` function an
 
 ```{r logit, warning = FALSE}
 glm_logit = glm(am ~ cyl + hp + wt, data = mtcars, family = binomial)
-tidy(glm_logit, conf.int = TRUE)
+summary(glm_logit)
+```
+
+Alternatively, you may recall me saying earlier that **fixest** supports nonlinear models. So you could (in this case, without fixed-effects) also estimate:
+
+```{r logit_fixest, warning = FALSE}
+feglm(am ~ cyl + hp + wt, data = mtcars, family = binomial)
 ```
 
 Remember that the estimates above simply reflect the naive coefficient values, which enter multiplicatively via the link function. We'll get a dedicated section on extracting [marginal effects](#marginal-effects) from non-linear models in a moment. But I do want to quickly flag the **mfx** package ([link](https://cran.r-project.org/web/packages/mfx/vignettes/mfxarticle.pdf)), which provides convenient aliases for obtaining marginal effects from a variety of GLMs. For example,
@@ -543,10 +593,8 @@ Remember that the estimates above simply reflect the naive coefficient values, w
 ## want, e.g. `select = dplyr::select`
 
 ## Get marginal effects for the above logit model
-glm_logitmfx = logitmfx(glm_logit, atmean = TRUE, data = mtcars)
-## Could also plug in the original formula directly
-# glm_logitmfx = logitmfx(am ~ cyl + hp + wt, atmean = TRUE, data = mtcars)
-tidy(glm_logitmfx, conf.int = TRUE)
+# logitmfx(am ~ cyl + hp + wt, atmean = TRUE, data = mtcars) ## Can also estimate directly
+logitmfx(glm_logit, atmean = TRUE, data = mtcars)
 ```
 
 
@@ -660,7 +708,7 @@ Where this approach really shines is when you are estimating interaction terms i
 
 #### Regression tables
 
-There are loads of [different options](https://hughjonesd.github.io/huxtable/design-principles.html) here.^[FWIW, the **fixest** package also provides its own dedicated function for exporting regression models, namely `etable()`. This function is highly optimised and is capable of producing great looking tables with minimal effort, but is limited to `fixest` model objects only. More [here](https://cran.r-project.org/web/packages/fixest/vignettes/fixest_walkthrough.html#14_viewing_the_results_in_r) and [here](https://cran.r-project.org/web/packages/fixest/vignettes/exporting_tables.html).] These days, however, I find myself using the **modelsummary** package ([link](https://vincentarelbundock.github.io/modelsummary)) for creating and exporting regression tables. It is extremely flexible and handles all manner of models and output formats. **modelsummary** also supports automated coefficient plots and data summary tables, which I'll get back to in a moment. The [documentation](https://vincentarelbundock.github.io/modelsummary/articles/modelsummary.html) is outstanding and you should read it, but here is a bare-boned example just to demonstrate.
+There are loads of [different options](https://hughjonesd.github.io/huxtable/design-principles.html) here. We've already seen the excellent `etable()` function from **fixest** above.^[Note that `etable()` is limited to fixest models only.] However, my own personal favourite tool or creating and exporting regression tables is the **modelsummary** package ([link](https://vincentarelbundock.github.io/modelsummary)). It is extremely flexible and handles all manner of models and output formats. **modelsummary** also supports automated coefficient plots and data summary tables, which I'll get back to in a moment. The [documentation](https://vincentarelbundock.github.io/modelsummary/articles/modelsummary.html) is outstanding and you should read it, but here is a bare-boned example just to demonstrate.
 
 ```{r msum, warning=FALSE}
 # library(modelsummary) ## Already loaded
@@ -670,7 +718,7 @@ msummary(list(ols1, ols_ie, ols_fe, ols_hdfe))
 ```
 
 </br>
-One nice thing about **modelsummary** is that it plays very well with R Markdown and will automatically coerce your tables to the format that matches your document output: HTML, LaTeX/PDF, RTF, etc. Of course, you can also [specify the output type](https://vincentarelbundock.github.io/modelsummary/#saving-and-viewing-output-formats) if you aren't using R Markdown and want to export a table for later use. Finally, you can even specify special table formats like *threepartable* for LaTeX and, provided that you have called the necessary packages in your preamble, it will render correctly (see example [here](https://twitter.com/VincentAB/status/1265255622943150081)).
+One nice thing about **modelsummary** is that it plays very well with R Markdown and will automatically coerce your tables to the format that matches your document output: HTML, LaTeX/PDF, RTF, etc. Of course, you can also [specify the output type](https://vincentarelbundock.github.io/modelsummary/#saving-and-viewing-output-formats) if you aren't using R Markdown and want to export a table for later use. Finally, you can even specify special table formats like *threepartable* for LaTeX and, provided that you have called the necessary packages in your preamble, it will render correctly (see example [here](https://github.com/grantmcdermott/lecturenotes).
 
 #### Summary tables
 
@@ -678,7 +726,7 @@ A variety of summary tables --- balance, correlation, etc. --- can be produced b
 
 ```{r datsum}
 datasummary_balance(~ gender,
-                    data = select(humans, gender, height, mass, birth_year, eye_color))
+                    data = humans %>% select(height:mass, birth_year, eye_color, gender))
 ```
 
 </br>
@@ -692,18 +740,14 @@ Another package that I like a lot in this regard is **vtable** ([link](https://n
 otype = ifelse(knitr::is_latex_output(), 'return', 'kable')
 
 ## st() is an alias for sumtable()
-st(select(humans, gender, height, mass, birth_year, eye_color),
+st(humans %>% select(height:mass, birth_year, eye_color, gender),
    group = 'gender', 
    out = otype)
 ```
 
 </br>
-In case you were wondering, `vtable::st()` does a clever job of automatically picking defaults and dropping "unreasonable" variables (e.g. list variables or factors with too many levels). Here's what we get if we just ask it to produce a summary table of the main "starwars" data frame.
 
-```{r st2, results='asis'}
-st(starwars, out = otype)
-```
-
+Lastly, Stata users in particular might like the `qsu()` and `descr()` functions from the lightning-fast **collapse** package ([link](https://sebkrantz.github.io/collapse)).
 
 ### Figures
 
