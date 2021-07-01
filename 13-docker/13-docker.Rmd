@@ -907,7 +907,7 @@ The short answer is that `/home/rstudio` is the default user's home directory fo
 
 --
 
-We have to be be specific about mounting under the user's home directory, because RStudio Server limits how and where users can access files. (This is a security feature that we'll revisit in the next lecture on cloud computing.)
+We have to be specific about mounting under the user's home directory, because RStudio Server limits how and where users can access files. (This is a security feature that we'll revisit in the next lecture on cloud computing.)
 
 --
 

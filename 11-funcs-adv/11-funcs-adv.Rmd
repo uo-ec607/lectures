@@ -116,7 +116,7 @@ Note the following changes to my RStudio IDE while I'm in debug mode:
   - I've manually entered `x` into the console prompt and confirmed that R returns a value of "one". 
   - **Most importantly:** I then tried running the first line of the function (`x_sq = x^2`) and was been met with an error message ("non-numeric argument to binary operator"). This is the exact point where the function actually fails.
 
-Now, again, in this case particular case the problem was obvious and known ahead of time. But I think this simple example is useful for illustrating some general debugging principles and the power of being able to step inside functions via debugger mode. It gives you a chance to see what the functions "sees" and then work through to the root cause of the problem in a systematic way. Once you have identified the problem, then you can set about correcting your function (or inputs). Ultimately, you want to write robust functions that recognise errors early, fail with some acceptable level of tolerance, and provide helpful feedback to users. This will be the subject of the next section.
+Now, again, in this case particular case the problem was obvious and known ahead of time. But I think this simple example is useful for illustrating some general debugging principles and the power of being able to step inside functions via debugger mode. It gives you a chance to see what the function "sees" and then work through to the root cause of the problem in a systematic way. Once you have identified the problem, then you can set about correcting your function (or inputs). Ultimately, you want to write robust functions that recognise errors early, fail with some acceptable level of tolerance, and provide helpful feedback to users. This will be the subject of the next section.
 
 ### Aside: Manual vs prompted debugging
 
@@ -304,7 +304,7 @@ Enabling caching (i.e. memoisation) of our slow function is a simple matter of f
 mem_square = memoise(slow_square)
 ```
 
-*Note: I've assigned the memoised version as its own function here (i.e. `mem_square()`). However, it's no problem to recycle the original function name if you prefer (i.e. `slow_square < - memoise(slow_square)`).*
+*Note: I've assigned the memoised version as its own function here (i.e. `mem_square()`). However, it's no problem to recycle the original function name if you prefer (i.e. `slow_square <- memoise(slow_square)`).*
 
 The first time we execute our memoised `slow_square_mem()` function, it won't be able to draw on any saved results. This means that it will have to run through all of the underlying computation. In the process of doing so, however, it will save both the inputs and results for immediate retrieval later on.
 
@@ -388,7 +388,7 @@ if (knitr::is_latex_output()){
 } 
 ```
 
-It's possible (and often very helpful) to add verbose prompts to our memoised functions. Consider the code below, which which folds our `mem_square_persistent()` function into two sections:
+It's possible (and often very helpful) to add verbose prompts to our memoised functions. Consider the code below, which folds our `mem_square_persistent()` function into two sections:
 
 1. Check for and load previously cached results. Print the results to screen.
 2. Run our memoised function on any inputs that have not already been evaluated.( These results will be cached in turn for future use.) Again, print the results to screen.
