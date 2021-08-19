@@ -7,7 +7,7 @@ author:
 # date: Lecture 11  #"`r format(Sys.time(), '%d %B %Y')`"
 output: 
   html_document:
-    theme: flatly
+    theme: journal
     highlight: haddock
     # code_folding: show
     toc: yes
@@ -344,23 +344,22 @@ As expected, this only took (5 $\times$ 2 = ) 10 seconds to generate the new res
 
 ### Aside 1: Caching across R sessions
 
-```{r pdf_cache1, echo = FALSE}
-if (knitr::is_latex_output()){
-   message(
-    "Note: The benchmarked timing in this section might not line up with the text if you are viewing
-    the PDF version of the lecture notes."
-    )
-} 
-```
-
-
 The previous paragraph elides an important caveat: The default `memoise()` cache is only valid for the current R session. You can see this more clearly by exploring the help documentation of the function, where you will note the internal `cache = cache_memory()` argument. To enable caching that persists across sessions --- including when your computer crashes --- you need to specify a dedicated cache directory with `cache = cache_filesystem(PATH)`. This directory can be located anywhere on your system (or, indeed, on a linked cloud storage service) and you can even have multiple cache directories for different projects. My only modest recommendation is that you use a `.rcache/` naming pattern to keep things orderly. 
 
 For example, we can specify a new, persistent memoise cache location for our `slow_square()` function within this lecture sub-directory as follows.
 
-```{r cache_dir, dependson=slow_square}
-## Cache directory path (which I've already created)
+```{r clear_rcache, include=FALSE, cache=FALSE}
+## Internal code chunk to ensure consistent rcache output when re-knitting
 cache_dir = here("11-funcs-adv/.rcache")
+if (dir.exists(cache_dir)) unlink(cache_dir, recursive = TRUE)
+```
+
+```{r cache_dir, cache=FALSE}
+## Cache directory path
+cache_dir = here("11-funcs-adv/.rcache")
+
+## Create this directory if it doesn't yet exist
+if (!dir.exists(cache_dir)) dir.create(cache_dir)
 
 ## (Re-)memoise our function with the persistent cache location
 mem_square_persistent = memoise(slow_square, cache = cache_filesystem(cache_dir))
@@ -368,7 +367,7 @@ mem_square_persistent = memoise(slow_square, cache = cache_filesystem(cache_dir)
 
 Run our new memoised function and check that it saved the cached output to the specified directory.
 
-```{r m4}
+```{r m4, cache=FALSE}
 m4 = map_df(1:7, mem_square_persistent)
 
 cached_files = list.files(cache_dir)
@@ -379,21 +378,12 @@ cached_files
 
 ### Aside 2: Verbose output
 
-```{r pdf_cache2, echo = FALSE}
-if (knitr::is_latex_output()){
-  message(
-    "Note: The benchmarked timing in this section might not line up with the text if you are viewing
-    the PDF version of the lecture notes."
-    )
-} 
-```
-
 It's possible (and often very helpful) to add verbose prompts to our memoised functions. Consider the code below, which folds our `mem_square_persistent()` function into two sections:
 
 1. Check for and load previously cached results. Print the results to screen.
 2. Run our memoised function on any inputs that have not already been evaluated.( These results will be cached in turn for future use.) Again, print the results to screen.
 
-```{r mem_square_verbose,  dependson=mem_square_persistent}
+```{r mem_square_verbose, cache=FALSE}
 mem_square_verbose = 
   function(x) {
     ## 1. Load cached data if already generated
@@ -414,7 +404,7 @@ mem_square_verbose =
 
 And here's an example of the verbose function in action. The output is probably less impressive in a knitted R Markdown document, but I find the real-time feedback to be very informative in a live session. (Try it yourself.)
 
-```{r m5, dependson=mem_square_verbose, dependson=m4}
+```{r m5, cache=FALSE}
 system.time({
   m5 = map_df(1:10, mem_square_verbose)
 })
@@ -422,7 +412,7 @@ system.time({
 
 Finally, albeit probably unnecessary, we can also prove to ourselves that we've added the three new cases (i.e. for `8:10`) to our cache directory by comparing to what we had previously.
 
-```{r cache_comp}
+```{r cache_comp, cache=FALSE}
 setdiff(list.files(cache_dir), cached_files)
 ```
 
