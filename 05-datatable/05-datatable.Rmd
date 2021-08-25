@@ -799,7 +799,7 @@ starwars_dt[, !c("name", "height")]
 You can rename (set) a column by reference. Again, run this yourself:
 
 ```{r, eval=FALSE}
-setnames(starwars_dt, old = c("name", "homeworld"), new = c"(alias", "crib"))[]
+setnames(starwars_dt, old = c("name", "homeworld"), new = c("alias", "crib"))[]
 ## Better change it back, in case we use "name" or "homeworld" on a later slide
 setnames(starwars_dt, old = c("alias", "crib"), new = c("name", "homeworld"))
 ```
