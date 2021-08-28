@@ -137,7 +137,7 @@ school."*
 
 - You can swap out one homework assignment for an (approved) final presentation of your own research.
 - [Short presentations](https://github.com/uo-ec607/presentations) summarize either a key lecture reading, or an (approved) software package/platform.
-- We'll get to OSS contribution later in the course, but I particularly encourage contributions to [LOST](lost-stats.github.io/).
+- We'll get to OSS contribution later in the course, but I particularly encourage contributions to [LOST](https://lost-stats.github.io/).
 
 --
 
