@@ -226,7 +226,7 @@ Here's Henrik [describing](https://cran.r-project.org/web/packages/future/vignet
 
 As I've tried to emphasise, **future** is relatively new on the scene. It is certainly not the first or only way to implement parallel processes in R. However, I think that it provides a simple and unified framework that makes it the preeminent choice. What's more, the same commands that we use here will carry over very neatly to more complicated settings involving high-performance computing clusters. We'll experience this first hand when we get to the big data section of the course.
 
-You've probably also noted that keep referring to the "future ecosystem". This is because **future** provides the framework for other packages to implement parallel versions of their functions. The two that I am focusing on today are
+You've probably also noted that I keep referring to the "future ecosystem". This is because **future** provides the framework for other packages to implement parallel versions of their functions. The two that I am focusing on today are
 
 1. the **future.apply** package ([link](https://cran.r-project.org/web/packages/future.apply/index.html)), also by Henrik, and
 2. the **furrr** package ([link](https://davisvaughan.github.io/furrr/index.html)), an implementation for **purrr** by [Davis Vaughan](https://twitter.com/dvaughan32).
