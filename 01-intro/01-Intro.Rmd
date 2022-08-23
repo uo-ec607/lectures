@@ -43,6 +43,8 @@ library(fontawesome)
 
 # Table of contents
 
+0. GRANT IS AWESOME!!!
+
 1. [Prologue](#prologue)
 
 2. [Syllabus highlights](#syllabus)
