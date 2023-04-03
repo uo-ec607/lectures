@@ -67,7 +67,7 @@ name: prologue
 
 Resources:
 - Website: https://rmarkdown.rstudio.com
-- Cheatsheat: https://github.com/rstudio/cheatsheets/raw/master/rmarkdown-2.0.pdf
+- Cheatsheet: https://github.com/rstudio/cheatsheets/raw/main/rmarkdown-2.0.pdf
 - Book: [*R Markdown: The Definitive Guide*](https://bookdown.org/yihui/rmarkdown) (Yihui Xie, JJ Allaire, and Garrett Grolemund)
 
 Other points:
