@@ -1626,7 +1626,7 @@ Here's a quick comparison table with some common permission levels.
 |:-----------:|:-----------------:|:----------------:|
 | 777         | a+rwx             | rwxrwxrwx        |
 | 770         | u+rwx,g+rwx,o-rwx | rwxrwx---        |
-| 755         | a+rwx,g=rw,o=rw   | rwxrwxrwx        |
+| 755         | a+rwx,g-w,o-w     | rwxr-xr-x        |
 | 700         | u+rwx,g-rwx,o-rwx | rwx------        |
 | 644         | u=rw,g=r,o=r      | rw-r--r--        |
 
